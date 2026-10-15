@@ -24,9 +24,15 @@ DAW, in step with the host's transport.
 > The sound engine will be Manguebyte once it runs in the browser. See
 > [docs/VISION.md](docs/VISION.md) for where it is going.
 
+## Try it
+
+**<https://alessonqueirozdev-hub.github.io/aratu/>**: the editor in the
+browser, nothing to install. Pick an example, press *Tocar* (Play), and
+change the text while it plays.
+
 ## Running the editor
 
-You need Rust (with `rustup target add wasm32-unknown-unknown`) and Node.
+To run it from the source you need Rust (with `rustup target add wasm32-unknown-unknown`) and Node.
 
 ```
 cd web
