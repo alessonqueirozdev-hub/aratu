@@ -84,6 +84,33 @@ drums {
 A line can span bars with a bar line (`| ... | ... |`), and the subdivision
 can be stated where the count alone is not enough (`hh/16 = ...`).
 
+**2b. Rhythms inside a beat (refines 2).** Musicians count beats and
+subdivide each one ("1 e & a"). Three rules cover the common rhythms:
+
+1. A space separates beats: a line in 4/4 has four groups, and the checker
+   says so when it does not ("this bar has 5 beats, but the meter is 4/4").
+2. Letters written together divide their beat into equal parts: `c` is a
+   quarter, `cc` two eighths, `cccc` four sixteenths, `ccc` an eighth-note
+   triplet with no special syntax.
+3. `_` holds the previous note for one more part; `-` is a rest.
+
+| Rhythm in one beat | Written | Why |
+|---|---|---|
+| four sixteenths | `cccc` | four equal parts |
+| sixteenth, sixteenth, eighth | `ccc_` | four parts, the last note lasts two |
+| sixteenth, eighth, sixteenth | `cc_c` | the middle note lasts two parts |
+| dotted eighth, sixteenth | `c__c`, or `c.c` as a shorthand | the first note lasts three parts of four |
+| eighth-note hi-hat for a bar | `cc cc co cc` | four beats of two eighths |
+
+In 6/8 the beat is a dotted quarter, so `ccc ccc` is a bar as a musician
+counts it. `|` stays the bar line, as in a score, rather than a separator
+inside a beat. This replaces "the number of steps sets the subdivision" from
+recommendation 2: the beat, not the bar, is the unit that is divided.
+
+The question was raised by a first proposal that used `|` inside a beat
+(`cc|c` for sixteenth, sixteenth, eighth); the rules above give each of its
+cases a single reading.
+
 **3. Simple words for time.** `pickup: beat 4` instead of
 `Meter.anacrusis(4/4::4)`; `at bar 30: tempo 130`; a ramp as
 `tempo 120 -> 140 over 4 bars`.
