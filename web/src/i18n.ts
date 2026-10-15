@@ -14,8 +14,15 @@ const words = {
     es: "música escrita para tocar y cambiar mientras suena",
     en: "music written to play, and to change while it plays",
   },
-  themeLight: { pt: "Tema claro", es: "Tema claro", en: "Light theme" },
-  themeDark: { pt: "Tema escuro", es: "Tema oscuro", en: "Dark theme" },
+  light: { pt: "Claro", es: "Claro", en: "Light" },
+  dark: { pt: "Escuro", es: "Oscuro", en: "Dark" },
+  theme: { pt: "Aparência", es: "Apariencia", en: "Appearance" },
+  rhythmMap: { pt: "Mapa do ritmo", es: "Mapa del ritmo", en: "Rhythm map" },
+  rhythmHelp: {
+    pt: "Cada linha é uma parte da música, cada caixa é um compasso e os números são os tempos. As bolinhas mostram onde cada símbolo soa; tocando, a agulha mostra onde a música está.",
+    es: "Cada fila es una parte de la música, cada caja es un compás y los números son los tiempos. Los círculos muestran dónde suena cada símbolo; al tocar, la aguja muestra dónde va la música.",
+    en: "Each row is a part of the music, each box is a bar and the numbers are the beats. The dots show where each symbol sounds; while it plays, the needle shows where the music is.",
+  },
 
   // The playground.
   play: { pt: "Tocar", es: "Tocar", en: "Play" },

@@ -479,3 +479,19 @@ mod tests {
         );
     }
 }
+
+#[test]
+fn a_part_going_out_is_heard_as_silence() {
+    use crate::compile;
+    let s = compile("drums { hh = c c c c }\nbaixo = | dó2 _ _ _ |");
+    let a = compile(
+        "drums { hh = c c c c }\nbaixo = | dó2 _ _ _ |\nat bar 2: drums: out\nat bar 3: drums: in",
+    );
+    assert!(!a.has_errors(), "{:?}", a.diagnostics);
+    let opts = CheckOptions {
+        bars: Some(4),
+        ..CheckOptions::default()
+    };
+    let p = check(&s.piece, &a.piece, opts);
+    assert!(!p.is_empty(), "{:?}", a.piece.commands);
+}

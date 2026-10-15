@@ -2,7 +2,7 @@
 
 import { Aratu, type Program } from "./aratu";
 import { Engine } from "./audio";
-import { drawGrid, mountBlocks } from "./blocks";
+import { Needle, drawGrid, mountBlocks } from "./blocks";
 import { examples } from "./examples";
 import { LANGS, type Lang, isWord, tr } from "./i18n";
 import { Session } from "./session";
@@ -50,9 +50,9 @@ async function main(): Promise<void> {
 
   const applyTheme = () => {
     document.documentElement.dataset.theme = theme;
-    const t = $("theme");
-    t.textContent = theme === "dark" ? "☀" : "☾";
-    t.title = tr(theme === "dark" ? "themeLight" : "themeDark", lang);
+    $("theme-light").classList.toggle("on", theme === "light");
+    $("theme-dark").classList.toggle("on", theme === "dark");
+    $("theme-switch").setAttribute("aria-label", tr("theme", lang));
   };
 
   const applyWords = () => {
@@ -89,6 +89,7 @@ async function main(): Promise<void> {
   };
 
   // The playground.
+  const needle = new Needle($("play-grid"), getEngine);
   const messages = (p: Program) => {
     const ul = $("messages");
     ul.innerHTML = "";
@@ -123,6 +124,7 @@ async function main(): Promise<void> {
     onCompile: messages,
     onChange: (t) => save("aratu.text", t),
     onBar: (info, at) => {
+      needle.bar(info, at);
       const ctx = getEngine().ctx;
       const delay = Math.max(0, (at - ctx.currentTime) * 1000);
       window.setTimeout(() => {
@@ -144,7 +146,11 @@ async function main(): Promise<void> {
       $("note").textContent = `${tr("next", lang)} ${at}.`;
       window.setTimeout(() => ($("note").textContent = ""), 3000);
     },
-    onPlaying: (on) => $("play").classList.toggle("on", on),
+    onPlaying: (on) => {
+      $("play").classList.toggle("on", on);
+      if (on) needle.start();
+      else needle.stop();
+    },
   });
   $("play").onclick = () => void playground.play();
   $("stop").onclick = () => playground.stop();
@@ -274,11 +280,13 @@ async function main(): Promise<void> {
     route();
   };
   for (const l of LANGS) $(`lang-${l}`).onclick = () => void setLang(l);
-  $("theme").onclick = () => {
-    theme = theme === "dark" ? "light" : "dark";
+  const setTheme = (t: "light" | "dark") => {
+    theme = t;
     save("aratu.theme", theme);
     applyTheme();
   };
+  $("theme-light").onclick = () => setTheme("light");
+  $("theme-dark").onclick = () => setTheme("dark");
 
   playground.compile();
   await loadBook();

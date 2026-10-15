@@ -29,7 +29,9 @@
         <div class="lang" role="group" aria-label="Idioma / Idioma / Language">
           <button id="lang-pt">PT</button><button id="lang-es">ES</button><button id="lang-en">EN</button>
         </div>
-        <button id="theme" class="theme" aria-label="theme">☾</button>
+        <div class="lang theme-switch" role="group" id="theme-switch">
+          <button id="theme-light">☀ <span data-word="light"></span></button><button id="theme-dark">☾ <span data-word="dark"></span></button>
+        </div>
       </div>
     </header>
 
@@ -54,9 +56,15 @@
           <h2 data-word="messages"></h2>
           <ul id="messages" class="messages"></ul>
           <p class="note" id="note"></p>
-          <div class="side-grid" id="play-grid"></div>
         </aside>
       </div>
+      <section class="rhythm sheet">
+        <div class="rhythm-head">
+          <h2 data-word="rhythmMap"></h2>
+          <p data-word="rhythmHelp"></p>
+        </div>
+        <div id="play-grid" class="rhythm-grid"></div>
+      </section>
       <p class="hint" data-word="hint"></p>
     </main>
 
