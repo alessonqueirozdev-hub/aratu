@@ -1,12 +1,28 @@
-//! Every example in the manual must be read without errors, so the manual
-//! and the language cannot drift apart.
+//! Every example in the manual, in every language, must be read without
+//! errors, so the manual and the language cannot drift apart.
 
 use aratu::compile;
 use aratu::diag::{Lang, Message};
 use aratu::parse::parse;
 use aratu::span::line_col;
 
-const MANUAL: &str = include_str!("../../../docs/MANUAL.md");
+const MANUALS: [(&str, &str); 3] = [
+    ("pt", include_str!("../../../book/pt/manual.md")),
+    ("es", include_str!("../../../book/es/manual.md")),
+    ("en", include_str!("../../../book/en/manual.md")),
+];
+
+/// Every block of every manual, with where it comes from.
+fn all_blocks() -> Vec<(String, usize, String)> {
+    MANUALS
+        .iter()
+        .flat_map(|(lang, md)| {
+            code_blocks(md)
+                .into_iter()
+                .map(move |(line, src)| (lang.to_string(), line, src))
+        })
+        .collect()
+}
 
 /// The fenced code blocks of a Markdown text, with the line each starts on.
 pub fn code_blocks(md: &str) -> Vec<(usize, String)> {
@@ -28,15 +44,15 @@ pub fn code_blocks(md: &str) -> Vec<(usize, String)> {
 
 #[test]
 fn every_example_in_the_manual_parses() {
-    let blocks = code_blocks(MANUAL);
-    assert!(blocks.len() > 20, "found only {} examples", blocks.len());
+    let blocks = all_blocks();
+    assert!(blocks.len() >= 60, "found only {} examples", blocks.len());
     let mut failures = Vec::new();
-    for (line, src) in &blocks {
+    for (lang, line, src) in &blocks {
         let (_, diags) = parse(src);
         for d in diags.iter().filter(|d| d.is_error()) {
             let (l, _) = line_col(src, d.span.start);
             failures.push(format!(
-                "MANUAL.md line {}: `{}`: {}",
+                "book/{lang}/manual.md line {}: `{}`: {}",
                 line + l - 1,
                 &src[d.span.start..d.span.end],
                 d.text(Lang::En)
@@ -47,8 +63,8 @@ fn every_example_in_the_manual_parses() {
 }
 
 /// Whether a pattern or section of this name is defined in some example.
-fn defined_somewhere(blocks: &[(usize, String)], name: &str) -> bool {
-    blocks.iter().any(|(_, src)| {
+fn defined_somewhere(blocks: &[(String, usize, String)], name: &str) -> bool {
+    blocks.iter().any(|(_, _, src)| {
         src.contains(&format!("pattern {name} ")) || src.contains(&format!("section {name} "))
     })
 }
@@ -57,9 +73,9 @@ fn defined_somewhere(blocks: &[(usize, String)], name: &str) -> bool {
 /// may be defined in another, but nothing else may be wrong.
 #[test]
 fn every_example_in_the_manual_checks() {
-    let blocks = code_blocks(MANUAL);
+    let blocks = all_blocks();
     let mut failures = Vec::new();
-    for (line, src) in &blocks {
+    for (lang, line, src) in &blocks {
         let compiled = compile(src);
         for d in compiled.errors() {
             let elsewhere = match &d.message {
@@ -73,7 +89,7 @@ fn every_example_in_the_manual_checks() {
             }
             let (l, _) = line_col(src, d.span.start);
             failures.push(format!(
-                "MANUAL.md line {}: `{}`: {}",
+                "book/{lang}/manual.md line {}: `{}`: {}",
                 line + l - 1,
                 &src[d.span.start..d.span.end],
                 d.text(Lang::En)

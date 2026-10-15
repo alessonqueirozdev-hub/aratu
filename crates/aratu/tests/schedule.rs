@@ -492,7 +492,12 @@ fn meter_changes_move_the_bar_lines() {
 
 #[test]
 fn every_example_in_the_manual_schedules() {
-    let manual = include_str!("../../../docs/MANUAL.md");
+    let manual = [
+        include_str!("../../../book/pt/manual.md"),
+        include_str!("../../../book/es/manual.md"),
+        include_str!("../../../book/en/manual.md"),
+    ]
+    .concat();
     let mut in_code = false;
     let mut block = String::new();
     for line in manual.lines() {

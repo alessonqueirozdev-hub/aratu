@@ -1,0 +1,519 @@
+# The Aratu manual
+
+Aratu is written the way a musician thinks: in bars, beats, note values,
+chords and score words. If you can read a lead sheet and count a bar, you
+can read an Aratu piece. This manual describes the whole language; the
+**Learn** course teaches it step by step. Every example here can be heard
+and changed.
+
+## 1. A first piece
+
+```aratu
+meter: 4/4
+tempo: 96
+key: A minor
+
+drums {
+  hh = cc cc co cc
+  bd = b - b -
+  sd = - s - s
+}
+
+bass = | a2 _ e2 _ | f2 _ c3 _ |
+
+guitar {
+  chords = | Am | F | C G | G |
+  strum  = D du -u du
+}
+```
+
+The first lines set the frame of the piece: meter, tempo and key. Each part
+follows. There is no `main`, no braces to balance before the music plays,
+and no word that exists only for the computer. `//` starts a comment.
+
+## 2. Rhythm: beats and their parts
+
+Three rules describe every rhythm in a bar.
+
+**Rule 1. A space separates beats.** A line in 4/4 has four groups. If a bar
+has the wrong number of beats, Aratu says so in those words: *"bar 2 of
+`bass` has 5 beats, but the meter is 4/4"*.
+
+**Rule 2. Symbols written together share their beat equally.**
+
+| Written | In one beat |
+|---|---|
+| `c` | a quarter note |
+| `cc` | two eighths |
+| `cccc` | four sixteenths |
+| `ccc` | an eighth-note triplet |
+| `ccccc` | a quintuplet |
+
+**Rule 3. `_` holds the sound before it for one more part; `-` is a rest.**
+
+| Rhythm in one beat | Written |
+|---|---|
+| sixteenth, sixteenth, eighth | `ccc_` |
+| sixteenth, eighth, sixteenth | `cc_c` |
+| eighth, sixteenth, sixteenth | `c_cc` |
+| dotted eighth, sixteenth | `c__c`, or the shorthand `c.c` |
+| eighth rest, eighth | `-c` |
+
+A `_` on its own is a whole beat held, so `c _` is a half note and `c _ _ _`
+a whole note. A `_` at the start of a bar ties across the bar line.
+
+**Rests** follow the same rules: `-` takes one part, as a note would.
+
+| Rest | Written in 4/4 |
+|---|---|
+| a whole bar, in any meter | `\| - \|` |
+| eight bars | `\| - x8 \|` |
+| half | `- -` |
+| quarter | `-` as a beat |
+| eighth | `-c` or `c-` |
+| sixteenth | `-ccc`, `c-cc` |
+| dotted eighth, then a sixteenth | `-__c` or `-.c` |
+
+**Compound meters.** In 6/8 the beat is a dotted quarter, so `ccc ccc` is one
+bar of eighths, counted in two, as a musician counts it.
+
+```aratu
+meter: 6/8
+tempo: 70
+hh = ccc ccc
+bd = b__ b__
+```
+
+**Accents.** An upper-case symbol is accented: `cC cc` accents the "and" of
+beat one.
+
+**Bar lines.** `|` is a bar line, as in a score. A line can hold several
+bars: `| cc cc | co cc |`. A line with no bar line is one bar.
+
+**Groups.** Square brackets make a group that shares one part, and spaces
+are allowed inside them: `c[cc]` is an eighth and two sixteenths. The `.`
+shorthand stands for `__`, so `c.c` is `c__c`.
+
+## 3. Drums
+
+Each drum has a line, and each line follows the rhythm rules. The symbol
+decides the sound, whatever the line is called:
+
+| Symbol | Sound |
+|---|---|
+| `c` | closed hi-hat |
+| `o` | open hi-hat |
+| `b` | bass drum |
+| `s` | snare |
+| `r` | ride |
+| `x` | crash |
+
+```aratu
+drums {
+  hh = cc cc co cc
+  bd = b - bb -
+  sd = - s - S        // an accented backbeat on four
+}
+```
+
+Every line inside `drums { }` is a drum line, and so is a line called `hh`,
+`bd`, `sd`, `cr`, `rd`, `kick`, `snare`, `hat`, `ride` or `crash` anywhere
+in the piece. An apostrophe makes a hit short: `c'` is a tight hi-hat. A
+closed hi-hat cuts an open one that is still ringing.
+
+## 4. Melodies
+
+Notes are written in lower case, with the octave: `c4` is middle C. Sharps
+and flats follow the letter: `f#4`, `eb4`. Solfège works too: `dó4 ré4 mi4`
+or `do4 re4 mi4`. Upper case accents a note: `C4`. An apostrophe makes it
+short, staccato: `c4'`.
+
+```aratu
+melody = | c4 e4 g4 _ | a4 g4 e4 c4 |
+```
+
+The octave carries over until it changes, so `| c4 e g c5 |` is C4, E4, G4,
+C5. A note written before any octave is taken as octave 4, and Aratu says
+so.
+
+Two or more notes in one beat go in square brackets: `[d e]` is two eighths,
+`[b b]` two B eighths, `[eb g]` E-flat then G, `[c4 _ _ d]` a dotted eighth
+and a sixteenth. Rests and holds can sit next to a note without brackets
+(`-e4` is a rest, then an eighth), but two notes cannot: `eb` reads as
+E-flat, so for two notes Aratu asks for the brackets.
+
+Notes sounding together are joined with `+`: `c4+e4+g4` is a C major chord
+on one beat.
+
+## 5. Chords and strumming
+
+A progression is written as a lead sheet, on a line called `chords`. The
+rule of sharing works one level up: chords that share a bar divide it
+equally.
+
+```aratu
+chords = | Am | F | C G | Am _ _ G |
+```
+
+C and G take half a bar each; Am lasts three beats and G one. The shares
+must fall on the beats: three chords in a 4/4 bar would split it between
+beats, so Aratu asks how long each lasts.
+
+Chord symbols keep their usual spelling: `Am`, `F`, `G7`, `Cmaj7`, `Dm7b5`,
+`E/G#`, and the spellings of a Brazilian *cifra* too: `C7M`, `Bº`, `G7(b9)`.
+
+**Strumming.** A line called `strum` uses the rhythm rules with guitar
+symbols:
+
+| Symbol | Meaning |
+|---|---|
+| `d` | strum down |
+| `u` | strum up |
+| `m` | muted strum (a chuck) |
+| `-` | the hand passes without striking |
+| `_` | let it ring |
+| upper case | accented strum |
+
+```aratu
+guitar {
+  chords = | Am | F | C G | G |
+  strum  = D du -u du
+}
+```
+
+The strum repeats every bar and the chords change on their own. A down
+strum sounds the strings from low to high a few milliseconds apart, an up
+strum from high to low; accents strum harder and faster. Without a strum,
+the chords play whole, like a keyboard.
+
+## 6. Dynamics
+
+Dynamic marks are the score's: `ppp pp p mp mf f ff fff`, and `sfz`, `fp`.
+
+**Inside a bar**, a mark sits on the note it starts with a colon, so it
+does not count as a beat:
+
+```aratu
+melody = | p:c4 e4 g4 c5 | f:g4 _ _ _ |
+```
+
+**Hairpins** are written as in a score: `<` crescendo, `>` diminuendo, from
+the beat after them to the next mark.
+
+```aratu
+melody = | p:c4< d4 e4 f4 | f:g4> f4 e4 d4 | p:c4 _ _ _ |
+```
+
+**For a whole part**, one line changes its level:
+
+```text
+piano: mf
+piano: cresc to ff over 4 bars
+drums: dim to p over 2 bars
+all: fade out over 8 bars
+```
+
+A part's level scales the marks written in its lines: at `mf` they sound as
+written, at `ff` everything is louder by the same proportion, and
+`fade out` takes the part to silence.
+
+Each mark stands for a fixed velocity: ppp 16, pp 33, p 49, mp 64, mf 80,
+f 96, ff 112, fff 127. An accent adds to the current one. A hairpin with no
+mark after it moves one step (from `mf` to `f`, say) by the end of the line.
+
+## 7. Tempo and time
+
+```aratu
+tempo: 96
+at bar 3: rit to 70 over 2 bars
+at bar 5: a tempo
+hh = c c c c
+```
+
+| Write | Means |
+|---|---|
+| `tempo: 96` | the first tempo |
+| `at bar 30: tempo 130` | a new tempo at a bar |
+| `rit to 80 over 2 bars` | ritardando (`rall` works too) |
+| `accel to 140 over 4 bars` | accelerando |
+| `a tempo` | back to the tempo before the rit |
+| `tempo primo` | back to the first tempo |
+| `tempo 120 -> 140 over 4 bars` | a ramp between two tempos |
+
+**When a change happens.** A change with `at bar N:` happens at that bar. A
+change written on its own happens where the piece starts or, while you play,
+at the next bar line after you write it.
+
+During a ritardando or accelerando the tempo changes evenly, beat by beat,
+as a score reads, and every note lands at its exact time.
+
+**Fermata.** `^` on a note holds it: `g4^` lasts twice its value, and every
+part waits for it.
+
+**Pickup.** `pickup: beat 4` starts the piece on the fourth beat of an
+incomplete first bar. The pickup is bar 0, so bar 1 is the first full bar,
+as musicians number them. A line whose first bar is as long as the pickup
+starts in it; the others start at bar 1.
+
+**Meter changes.** `at bar 17: meter 7/8`.
+
+## 8. Feel: rubato, swing and humanize
+
+**Rubato** means robbed time, and robbed time is given back.
+`piano: rubato 10%` stretches and shrinks the beats inside each bar and
+arrives at the bar line on time, so the piano breathes while the drums keep
+the pulse. `all: rubato 10%` bends the whole piece together.
+
+**Swing.** `swing 60%` delays every second eighth (50% is straight, 66% a
+triplet feel).
+
+```aratu
+swing 62%
+hh = cc cc cc cc
+bd = b - b -
+```
+
+**Humanize.** `humanize` adds small random deviations of timing and
+velocity, as a player would; `humanize 5 ms` sets how much.
+
+## 9. Patterns, sections, repeats and form
+
+Material is prepared in advance and given a name:
+
+```aratu
+pattern groove {
+  hh = cc cc co cc
+  bd = b - b -
+  sd = - s - s
+}
+
+pattern fill {
+  hh = cc cc cc cc
+  bd = bb -b bb -b
+  sd = ss ss SS SS
+}
+
+play groove
+at bar 4: play fill
+at bar 5: play groove
+```
+
+### Repeat signs
+
+```text
+chords = |: Am | F |1 C | G :|2 C | C |      // repeat, first and second endings
+chords = |: Am | F :| x4                      // the passage four times
+chords = | Am | % | % | F |                   // % repeats the bar before
+chords = | Am | F | %% |                      // %% repeats the two before
+```
+
+`|:` and `:|` mark a passage played twice, unless `x` says how many times.
+`|1` and `|2` start the first and second endings.
+
+### Jumps
+
+Markers go at the start of a bar, jumps at its end:
+
+```aratu
+melody = | c4 e g c5 | segno: d4 f a _ | e4 g b _ | fine: c4 _ _ _ | g4 _ _ _ D.S. al fine |
+```
+
+| Marker | Jump |
+|---|---|
+| `segno:` | `D.S.`, `D.S. al fine`, `D.S. al coda` |
+| `fine:` | where `al fine` stops |
+| `coda:` | where `to coda` goes |
+| | `D.C.`, `D.C. al fine`: back to the start |
+
+The piece is unrolled as a musician reads it. A jump without its marker is
+an error stated plainly: *"there is a D.S. at bar 24 of `melody` but no
+segno for it"*.
+
+### Form
+
+Sections are named parts of a piece, and a form line orders them:
+
+```aratu
+section intro  { bass = | a2 _ _ _ | e2 _ _ _ | }
+section verse  {
+  bass = | a2 _ e2 _ | f2 _ c3 _ |
+  drums { hh = cc cc co cc; bd = b - b - }
+}
+section chorus {
+  guitar { chords = | Am | F | C | G |; strum = D du -u du }
+}
+section outro  { bass = | a2 _ _ _ | }
+
+form: intro verse x2 chorus verse chorus x2 outro
+```
+
+A section holds parts and lines the way the whole piece does, and lasts as
+long as its longest line. The form plays the sections in order (`x2` plays
+one twice) and then starts again. A block can sit on one line, with `;`
+between its lines.
+
+### Varying a loop
+
+```aratu
+pattern groove { hh = cc cc co cc; bd = b - b -; sd = - s - s }
+pattern fill   { hh = cc cc cc cc; sd = ss ss SS SS }
+pattern crash  { cr = x - - - }
+
+play groove x3, fill
+every 8 bars, first: add crash
+```
+
+`play` chooses the pattern that sounds; `play groove x3, fill` plays a
+phrase of patterns in turn and loops it. `every 4 bars: play fill` plays
+the fill in the fourth bar of every four, in place of the groove; `add`
+plays a pattern on top of the one that is sounding.
+
+## 10. Playing live
+
+While a piece plays, you change it; you do not rewrite it.
+
+- **Everything loops.** Each line plays over and over, each over its own
+  length.
+- **A change is one line.** `hh = cc cc oc cc` replaces the hi-hat and
+  nothing else; the other parts keep playing.
+- **Changes land on the beat.** An edit takes effect at the next bar line;
+  `now:` makes it take effect at the next beat instead.
+- **Prepare ahead.** `at bar 17: play fill` schedules a change.
+- **Out and in.** `guitar: out` silences a part from the next bar line and
+  `guitar: in` brings it back; `all: out` stops everything. They work with
+  `at bar` and `every` too.
+- **Nothing restarts.** Parts keep their place in the bar when another part
+  changes, and while the text has an error the last good version keeps
+  playing.
+
+## 11. Transformations
+
+Short verbs change a part, a line or a pattern without rewriting it:
+
+| Verb | Effect |
+|---|---|
+| `hh.rotate 1` | shifts the pattern by one part |
+| `hh.density 50%` | keeps about half of the hits |
+| `drums.velocity 0.8` | plays softer |
+| `bass.transpose +12` | an octave up |
+| `melody.invert` | turns the intervals upside down |
+| `melody.retrograde` | plays it backwards |
+| `melody.augment` | doubles the note values |
+| `melody.diminish` | halves the note values |
+
+```aratu
+melody = | c4 d e g | a g e d |
+melody.transpose +7
+```
+
+## 12. Chance
+
+A loop that repeats exactly the same soon sounds mechanical. Chance gives it
+life: the computer decides, a little at random, what to play each time
+round. It is the *ad lib* of a score.
+
+**Sometimes.** A `?` after a symbol plays it only some of the time, half of
+the time by default; a percentage sets how often:
+
+```aratu
+hh = cc cc c?30% cc
+sd = - s - s?80%
+```
+
+**One or the other.** Braces choose one of several, separated by `|`, each
+time the loop comes round:
+
+```aratu
+bass = | {c2|g1} _ c2 _ |
+hh   = {cc|co} cc cc cc
+```
+
+**The same chance again.** The choices are drawn again every time round, but
+from a fixed seed, so the same piece improvises the same way each time it is
+played from the start. `seed 7` picks another improvisation; `seed random`
+makes every performance different. Changing one line does not change how
+the others improvise.
+
+## 13. Sound and effects
+
+Each part has a sound and a chain of effects, written as signal flow:
+
+```aratu
+bass: synth.saw -> lowpass -> reverb
+bass = | c2 _ c2 eb2 | f2 _ g2 bb1 |
+bass {
+  reverb.mix = 0.42
+  lowpass.cutoff = 800 Hz
+  lowpass.resonance = 0.3
+}
+```
+
+Every number that sets a parameter is also a control: the editor draws a
+knob beside it, shaped by the parameter (a cutoff knob reads in hertz on a
+logarithmic scale, a mix knob from 0 to 1). Turning the knob rewrites the
+number, so saving the text saves the performance. Hold Shift for finer
+steps. A number written in another unit keeps it: `1.2 kHz` turns in
+kilohertz, `40%` in percent.
+
+| Parameter | Range |
+|---|---|
+| `volume` | 0 to 1 |
+| `pan` | -1 (left) to 1 (right) |
+| `attack`, `release` | 1 to 2000 ms, 5 to 5000 ms |
+| `lowpass.cutoff`, `highpass.cutoff` | 20 to 20000 Hz |
+| `lowpass.resonance`, `highpass.resonance` | 0 to 1 |
+| `reverb.mix` | 0 to 1 |
+| `delay.time` | 10 to 2000 ms |
+| `delay.feedback`, `delay.mix` | 0 to 0.95, 0 to 1 |
+
+The sounds are `synth.saw`, `synth.square`, `synth.sine`, `synth.triangle`
+and `synth.pluck`; drums, strums and chords pick a drum kit, a plucked
+string and a keyboard by themselves. They are simple sounds built into the
+browser, until Manguebyte's engine replaces them.
+
+Parameters can change by bar like anything else: `at bar 16:
+bass.reverb.mix = 0.65`.
+
+## 14. Quick reference
+
+| Write | Means |
+|---|---|
+| `meter: 4/4`, `tempo: 96`, `key: A minor` | the frame of the piece |
+| space | next beat |
+| `cc`, `cccc`, `ccc` | eighths, sixteenths, a triplet in one beat |
+| `_` | hold |
+| `-` | rest |
+| `\| - \|`, `\| - x8 \|` | a whole bar of rest, eight bars of rest |
+| `c.c` | dotted eighth and sixteenth |
+| upper case | accent |
+| `c4'` | staccato |
+| `c?`, `c?30%` | sometimes (half the time, or how often) |
+| `{c2\|g1}` | one or the other, chosen each time round |
+| `seed 7`, `seed random` | the same improvisation again, or a new one each time |
+| `\|` | bar line |
+| `c4 e g` | notes, octave carried over |
+| `f#4`, `eb4`, `dó4` | accidentals, solfège |
+| `[d e]` | notes grouped in one beat (needed for two or more notes) |
+| `c4+e4+g4` | notes together |
+| `\| Am \| F \| C G \|` | chords, shared bars divide equally |
+| `d u m` | strum down, up, muted |
+| `p:`, `mf:`, `f:` | dynamic mark on a note |
+| `<`, `>` | crescendo, diminuendo |
+| `cresc to ff over 4 bars` | a dynamic change for a whole part |
+| `rit`, `accel`, `a tempo`, `tempo primo` | tempo changes |
+| `tempo 120 -> 140 over 4 bars` | a tempo ramp |
+| `g4^` | fermata |
+| `pickup: beat 4` | pickup |
+| `rubato 10%`, `swing 60%`, `humanize` | feel |
+| `pattern name { }`, `play name`, `add name` | named patterns, in turn or on top |
+| `\|: :\|`, `:\| x4`, `\|1 \|2` | repeat, count, endings |
+| `%`, `%%` | repeat the bar before, the two before |
+| `segno:`, `coda:`, `fine:` | markers |
+| `D.C.`, `D.S. al fine`, `D.S. al coda`, `to coda` | jumps |
+| `section name { }`, `form: intro verse x2 chorus` | sections and the form |
+| `every 4 bars: play fill` | a variation inside a loop |
+| `at bar 30:` | a scheduled change |
+| `now:` | a change at the next beat |
+| `guitar: out`, `guitar: in` | silence a part, bring it back |
+| `->` | signal flow |
+| `part.param = value` | a parameter, drawn as a knob |

@@ -27,8 +27,16 @@ DAW, in step with the host's transport.
 ## Try it
 
 **<https://alessonqueirozdev-hub.github.io/aratu/>**: the editor in the
-browser, nothing to install. Pick an example, press *Tocar* (Play), and
-change the text while it plays.
+browser, nothing to install, in Portuguese, Spanish and English. It has
+three places:
+
+- **Learn**: a course of fifteen lessons, from the first sound to a whole
+  piece, where every example plays on the page and every exercise is
+  checked by its sound, with what differs told bar by bar. Made for the
+  classroom.
+- **Manual**: the whole language, with every example playable.
+- **Play**: a free editor with a rhythm map; change the text while it
+  plays and the change comes in at the next bar line.
 
 ## Running the editor
 
@@ -69,8 +77,8 @@ is two eighths), `_` holds and `-` rests. Chords are written as a lead
 sheet, strums with `d` and `u`, dynamics and repeats with the score's own
 signs, and note names in solfège (`dó4 ré4 mi4`) work as well as letters.
 When a bar does not add up, Aratu says so in a musician's words, in
-Portuguese or English: *"o compasso 2 de `bass` tem 5 tempos, mas a fórmula
-de compasso é 4/4"*.
+Portuguese, Spanish or English: *"o compasso 2 de `bass` tem 5 tempos, mas a
+fórmula de compasso é 4/4"*.
 
 ## The Manguebyte ecosystem
 
@@ -87,9 +95,11 @@ linking to the others.
 
 ## Documents
 
-- [docs/MANUAL.md](docs/MANUAL.md): the manual, a draft written from the design so far:
-  rhythm, drums, melodies, chords and strumming, dynamics, tempo, feel,
-  patterns, live playing, transformations, sound, and a quick reference.
+- [book/](book): the course and the manual shown in the editor, in
+  Portuguese, Spanish and English (`book/<lang>/learn/*.md` and
+  `book/<lang>/manual.md`). A test checks that every example plays, every
+  exercise can be solved, and each exercise sounds the same in every
+  language.
 - [docs/DESIGN-NOTES.md](docs/DESIGN-NOTES.md): syntax discussion and recommendations
   (no program ceremony, one pattern line per bar, numbers as controls).
 - [docs/VISION.md](docs/VISION.md): the problem with time in today's
