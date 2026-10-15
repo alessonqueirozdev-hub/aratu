@@ -21,8 +21,9 @@ you can read a Aratu piece.
 9. [Patterns, sections, repeats and form](#9-patterns-sections-repeats-and-form)
 10. [Playing live](#10-playing-live)
 11. [Transformations](#11-transformations)
-12. [Sound and effects](#12-sound-and-effects)
-13. [Quick reference](#13-quick-reference)
+12. [Chance](#12-chance)
+13. [Sound and effects](#13-sound-and-effects)
+14. [Quick reference](#14-quick-reference)
 
 ---
 
@@ -110,7 +111,9 @@ to their own samples.
 
 ## 4. Melodies
 
-Notes are written in lower case, with the octave: `c4` is middle C. Sharps
+Notes are written in lower case, with the octave: `c4` is middle C.
+An apostrophe after a note makes it short, staccato: `c4'` (on drums too:
+`c'` is a short hi-hat). Sharps
 and flats follow the letter: `f#4`, `eb4`. Solfège works too: `dó4 ré4 mi4`.
 Upper case accents a note: `C4`.
 
@@ -347,7 +350,44 @@ Short verbs change a part or a pattern without rewriting it:
 | `melody.augment` | doubles the note values |
 | `melody.diminish` | halves the note values |
 
-## 12. Sound and effects
+## 12. Chance
+
+A loop that repeats exactly the same every bar soon sounds mechanical. A
+drummer never plays two bars quite alike: a hi-hat note drops out, a ghost
+note appears, the bass changes its first note now and then. Chance gives a
+loop that life without you touching it: the computer decides, a little at
+random, what to play each time round. It is the *ad lib* of a score.
+
+**Sometimes.** A `?` after a symbol plays it only some of the time, half of
+the time by default:
+
+```
+hh = cc cc c? cc
+```
+
+The eighth on beat three comes and goes, so every bar is slightly different.
+A percentage sets how often:
+
+```
+hh = cc cc c?30% cc         // three times in ten
+sd = - s - s?80%            // the last backbeat almost always
+```
+
+**One or the other.** Curly brackets choose one of several, separated by
+`|`, each time the loop comes round:
+
+```
+bass = | {c2|g1} _ c2 _ |   // each repeat starts on either C or G
+hh   = {cc|co} cc cc cc     // the first beat is closed, or closed then open
+```
+
+**The same chance again.** Each `?` and each choice is drawn again every time
+the loop passes, but from a fixed seed, so the same piece improvises the same
+way each time it is played from the start: useful for recording or
+rendering. `seed 7` picks another improvisation; `seed random` makes every
+performance different.
+
+## 13. Sound and effects
 
 Each part has a sound and a chain of effects, written as signal flow:
 
@@ -376,7 +416,7 @@ at bar 16: bass.reverb.mix = 0.65
 
 Instruments made with Parabolic can be used as sounds.
 
-## 13. Quick reference
+## 14. Quick reference
 
 | Write | Means |
 |---|---|
@@ -387,6 +427,10 @@ Instruments made with Parabolic can be used as sounds.
 | `-` | rest |
 | `c.c` | dotted eighth and sixteenth |
 | upper case | accent |
+| `c4'` | staccato |
+| `c?`, `c?30%` | sometimes (half the time, or how often) |
+| `{c2\|g1}` | one or the other, chosen each time round |
+| `seed 7`, `seed random` | the same improvisation again, or a new one each time |
 | `\|` | bar line |
 | `c4 e g` | notes, octave carried over |
 | `f#4`, `eb4`, `dó4` | accidentals, solfège |

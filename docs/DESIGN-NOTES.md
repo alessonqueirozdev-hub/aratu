@@ -336,7 +336,8 @@ prefix: `8va: c4 e g`.
 
 **Decided (15 October 2026):** staccato is `c4'`.
 
-**Open:** chance with the live coders' symbols (`?`, `{a|b}`, recommended,
+**Decided (15 October 2026):** chance uses the symbols (`?`, `{a|b}`); the
+manual explains it in its own chapter. Background:
 since chance is used constantly when playing live and `?` reads as
 "maybe?") or musicians' words (`maybe c`, `one of c2 g1`). Chance means the
 computer decides, a little at random, what to play each time round, so a
