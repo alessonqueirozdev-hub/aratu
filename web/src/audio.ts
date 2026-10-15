@@ -40,22 +40,30 @@ export class Engine {
   private readonly chains = new Map<string, Chain>();
   private readonly plucks = new Map<number, AudioBuffer>();
   private readonly voices = new Set<Voice>();
+  /** The open hi-hat ringing in each part, for a closed one to choke. */
+  private readonly openHats = new Map<Chain, Voice>();
   /** The voices made by the event being played, for `play` to return. */
   private made: Voice[] = [];
 
   constructor() {
     this.ctx = new AudioContext({ latencyHint: "interactive" });
     const ctx = this.ctx;
+    // The master: a gentle compressor glues the parts, then a little gain.
     const comp = ctx.createDynamicsCompressor();
-    comp.threshold.value = -10;
-    comp.ratio.value = 4;
-    comp.connect(ctx.destination);
+    comp.threshold.value = -18;
+    comp.knee.value = 6;
+    comp.ratio.value = 3;
+    comp.attack.value = 0.01;
+    comp.release.value = 0.15;
+    const out = ctx.createGain();
+    out.gain.value = 1.25;
+    comp.connect(out).connect(ctx.destination);
     this.master = ctx.createGain();
     this.master.gain.value = 0.7;
     this.master.connect(comp);
 
     this.reverb = ctx.createConvolver();
-    this.reverb.buffer = this.impulse(2.4);
+    this.reverb.buffer = this.impulse(2.2);
     this.reverb.connect(this.master);
 
     const len = ctx.sampleRate;
@@ -64,17 +72,24 @@ export class Engine {
     for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
   }
 
+  /** A room: stereo noise decaying exponentially, darker as it fades. */
   private impulse(seconds: number): AudioBuffer {
     const rate = this.ctx.sampleRate;
     const len = Math.floor(rate * seconds);
     const buf = this.ctx.createBuffer(2, len, rate);
     for (let c = 0; c < 2; c++) {
       const d = buf.getChannelData(c);
-      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+      let lp = 0;
+      for (let i = 0; i < len; i++) {
+        const t = i / len;
+        // A one-pole low-pass that closes over the tail.
+        const k = 0.6 - 0.5 * t;
+        lp += k * (Math.random() * 2 - 1 - lp);
+        d[i] = lp * Math.exp(-5 * t) * (i < rate * 0.01 ? i / (rate * 0.01) : 1);
+      }
     }
     return buf;
   }
-
   private chain(part: string): Chain {
     let c = this.chains.get(part);
     if (c) return c;
@@ -262,12 +277,6 @@ export class Engine {
     };
   }
 
-  private env(gain: GainNode, when: number, peak: number, attack: number, decay: number): void {
-    gain.gain.setValueAtTime(0.0001, when);
-    gain.gain.linearRampToValueAtTime(peak, when + attack);
-    gain.gain.exponentialRampToValueAtTime(0.0001, when + attack + decay);
-  }
-
   private noiseSource(when: number, length: number): AudioBufferSourceNode {
     const src = this.ctx.createBufferSource();
     src.buffer = this.noise;
@@ -278,131 +287,239 @@ export class Engine {
     return src;
   }
 
-  private drum(c: Chain, name: string, when: number, g: number): void {
-    const ctx = this.ctx;
-    const gain = ctx.createGain();
-    gain.connect(c.input);
-    switch (name) {
-      case "kick": {
-        const o = ctx.createOscillator();
-        o.frequency.setValueAtTime(150, when);
-        o.frequency.exponentialRampToValueAtTime(45, when + 0.12);
-        this.env(gain, when, g * 1.6, 0.002, 0.35);
-        o.connect(gain);
-        o.start(when);
-        o.stop(when + 0.4);
-        this.track(o, gain);
-        return;
-      }
-      case "snare": {
-        const n = this.noiseSource(when, 0.25);
-        const hp = ctx.createBiquadFilter();
-        hp.type = "highpass";
-        hp.frequency.value = 1500;
-        n.connect(hp).connect(gain);
-        this.env(gain, when, g, 0.001, 0.18);
-        const o = ctx.createOscillator();
-        o.type = "triangle";
-        o.frequency.value = 185;
-        const og = ctx.createGain();
-        this.env(og, when, g * 0.7, 0.001, 0.09);
-        o.connect(og).connect(c.input);
-        o.start(when);
-        o.stop(when + 0.15);
-        this.track(n, gain);
-        this.track(o, og);
-        return;
-      }
-      default: {
-        const decay = { "closed-hat": 0.05, "open-hat": 0.35, ride: 0.9, crash: 1.6 }[name] ?? 0.1;
-        const freq = { "closed-hat": 7000, "open-hat": 7000, ride: 5000, crash: 3500 }[name] ?? 6000;
-        const level = { "closed-hat": 0.45, "open-hat": 0.4, ride: 0.3, crash: 0.5 }[name] ?? 0.4;
-        const n = this.noiseSource(when, decay + 0.05);
-        const f = ctx.createBiquadFilter();
-        f.type = name === "ride" ? "bandpass" : "highpass";
-        f.frequency.value = freq;
-        n.connect(f).connect(gain);
-        this.env(gain, when, g * level, 0.001, decay);
-        this.track(n, gain);
-      }
+  /** A short burst of filtered noise into `dest`. */
+  private noiseHit(dest: AudioNode, when: number, type: BiquadFilterType, freq: number, q: number, peak: number, decay: number): Voice {
+    const gain = this.ctx.createGain();
+    const n = this.noiseSource(when, decay * 4 + 0.05);
+    const f = this.ctx.createBiquadFilter();
+    f.type = type;
+    f.frequency.value = freq;
+    f.Q.value = q;
+    n.connect(f).connect(gain).connect(dest);
+    gain.gain.setValueAtTime(0.0001, when);
+    gain.gain.linearRampToValueAtTime(peak, when + 0.001);
+    gain.gain.setTargetAtTime(0.0001, when + 0.001, decay);
+    this.track(n, gain);
+    return { src: n, gain };
+  }
+
+  /** The six square waves of an analogue cymbal, high-passed. */
+  private metal(dest: AudioNode, when: number, peak: number, decay: number, cutoff: number): void {
+    const gain = this.ctx.createGain();
+    const hp = this.ctx.createBiquadFilter();
+    hp.type = "highpass";
+    hp.frequency.value = cutoff;
+    hp.connect(gain).connect(dest);
+    gain.gain.setValueAtTime(0.0001, when);
+    gain.gain.linearRampToValueAtTime(peak, when + 0.002);
+    gain.gain.setTargetAtTime(0.0001, when + 0.002, decay);
+    const stop = when + decay * 5 + 0.05;
+    for (const f of [205.3, 304.4, 369.6, 522.7, 540, 800]) {
+      const o = this.ctx.createOscillator();
+      o.type = "square";
+      o.frequency.value = f * 1.7;
+      o.connect(hp);
+      o.start(when);
+      o.stop(stop);
+      this.track(o, gain);
     }
   }
 
-  private pluckBuffer(note: number): AudioBuffer {
-    const cached = this.plucks.get(note);
+  private drum(c: Chain, name: string, when: number, g: number): void {
+    const ctx = this.ctx;
+    // Harder hits are brighter, not only louder.
+    const bright = 0.6 + 0.8 * Math.min(g / 0.6, 1);
+    switch (name) {
+      case "kick": {
+        const gain = ctx.createGain();
+        gain.connect(c.input);
+        const o = ctx.createOscillator();
+        o.frequency.setValueAtTime(150 * Math.min(bright, 1.2), when);
+        o.frequency.exponentialRampToValueAtTime(50, when + 0.05);
+        o.frequency.exponentialRampToValueAtTime(42, when + 0.4);
+        gain.gain.setValueAtTime(0.0001, when);
+        gain.gain.linearRampToValueAtTime(g * 1.9, when + 0.002);
+        gain.gain.setTargetAtTime(0.0001, when + 0.02, 0.12);
+        o.connect(gain);
+        o.start(when);
+        o.stop(when + 0.7);
+        this.track(o, gain);
+        // The beater's click.
+        this.noiseHit(c.input, when, "highpass", 1800 * bright, 0.7, g * 0.5, 0.004);
+        return;
+      }
+      case "snare": {
+        const og = ctx.createGain();
+        og.connect(c.input);
+        for (const f of [185, 330]) {
+          const o = ctx.createOscillator();
+          o.type = "triangle";
+          o.frequency.setValueAtTime(f * 1.15, when);
+          o.frequency.exponentialRampToValueAtTime(f, when + 0.03);
+          o.connect(og);
+          o.start(when);
+          o.stop(when + 0.3);
+          this.track(o, og);
+        }
+        og.gain.setValueAtTime(0.0001, when);
+        og.gain.linearRampToValueAtTime(g * 0.6, when + 0.001);
+        og.gain.setTargetAtTime(0.0001, when + 0.001, 0.035);
+        this.noiseHit(c.input, when, "bandpass", 3200 * bright, 0.6, g * 1.1, 0.06);
+        this.noiseHit(c.input, when, "highpass", 7000, 0.7, g * 0.35, 0.03);
+        return;
+      }
+      case "closed-hat": {
+        // A closed hat chokes an open one still ringing.
+        const open = this.openHats.get(c);
+        if (open) {
+          open.gain.gain.cancelScheduledValues(when);
+          open.gain.gain.setTargetAtTime(0.0001, when, 0.006);
+          this.openHats.delete(c);
+        }
+        this.noiseHit(c.input, when, "highpass", 7500 * Math.min(bright, 1.1), 0.8, g * 0.42, 0.018);
+        this.noiseHit(c.input, when, "bandpass", 10000, 1.5, g * 0.25, 0.012);
+        return;
+      }
+      case "open-hat": {
+        const v = this.noiseHit(c.input, when, "highpass", 7000 * Math.min(bright, 1.1), 0.7, g * 0.38, 0.13);
+        this.openHats.set(c, v);
+        return;
+      }
+      case "ride":
+        this.metal(c.input, when, g * 0.18, 0.35, 6000);
+        this.noiseHit(c.input, when, "bandpass", 8000, 1.2, g * 0.12, 0.25);
+        return;
+      case "crash":
+        this.metal(c.input, when, g * 0.16, 0.5, 4500);
+        this.noiseHit(c.input, when, "highpass", 4000 * bright, 0.7, g * 0.4, 0.45);
+        return;
+      default:
+        this.noiseHit(c.input, when, "highpass", 6000, 0.7, g * 0.4, 0.05);
+    }
+  }
+
+  /** A plucked string (Karplus-Strong), brighter when plucked harder. */
+  private pluckBuffer(note: number, bright: number): AudioBuffer {
+    const level = Math.round(Math.min(Math.max(bright, 0), 1) * 3);
+    const key = note * 4 + level;
+    const cached = this.plucks.get(key);
     if (cached) return cached;
     const rate = this.ctx.sampleRate;
-    const len = Math.floor(rate * 2.5);
+    const len = Math.floor(rate * 3);
     const buf = this.ctx.createBuffer(1, len, rate);
     const d = buf.getChannelData(0);
     const period = Math.max(2, Math.round(rate / mtof(note)));
     const ring = new Float32Array(period);
-    for (let i = 0; i < period; i++) ring[i] = Math.random() * 2 - 1;
-    // Brighter low strings decay slower; the averaging filter is the string.
-    const loss = 0.996 + Math.min(0.0035, period / 400000);
+    // A softer pluck starts from smoother noise.
+    const smooth = [0.25, 0.45, 0.7, 0.95][level];
+    let s = 0;
+    for (let i = 0; i < period; i++) {
+      s += smooth * (Math.random() * 2 - 1 - s);
+      ring[i] = s;
+    }
+    const loss = 0.9965 + Math.min(0.003, period / 500000);
     let idx = 0;
+    let body = 0;
     for (let i = 0; i < len; i++) {
       const next = (idx + 1) % period;
       const v = ring[idx];
-      ring[idx] = loss * 0.5 * (v + ring[next]);
-      d[i] = v;
+      ring[idx] = loss * (0.5 * v + 0.5 * ring[next]);
+      // A gentle body low-pass.
+      body += 0.55 * (v - body);
+      d[i] = body * 1.4;
       idx = next;
     }
-    this.plucks.set(note, buf);
+    this.plucks.set(key, buf);
     return buf;
   }
 
   private note(c: Chain, note: number, when: number, dur: number, g: number): void {
     const ctx = this.ctx;
+    const end = when + dur;
+    const freq = mtof(note);
+    const bright = Math.min(g / 0.6, 1);
     const gain = ctx.createGain();
     gain.connect(c.input);
-    const end = when + dur;
+
     if (c.wave === "pluck") {
       const src = ctx.createBufferSource();
-      src.buffer = this.pluckBuffer(note);
-      gain.gain.setValueAtTime(g * 1.2, when);
-      gain.gain.setTargetAtTime(0.0001, end, 0.05);
+      src.buffer = this.pluckBuffer(note, bright);
+      gain.gain.setValueAtTime(g * 1.3, when);
+      gain.gain.setTargetAtTime(0.0001, end, 0.06);
       src.connect(gain);
       src.start(when);
-      src.stop(end + 0.3);
+      src.stop(end + 0.4);
       this.track(src, gain);
       return;
     }
+
     if (c.wave === "keys") {
-      const o1 = ctx.createOscillator();
-      o1.type = "triangle";
-      o1.frequency.value = mtof(note);
-      const o2 = ctx.createOscillator();
-      o2.frequency.value = mtof(note) * 2;
-      const g2 = ctx.createGain();
-      g2.gain.value = 0.25;
-      o1.connect(gain);
-      o2.connect(g2).connect(gain);
+      // An electric piano: a sine, its octave fading fast, and a tine.
+      const parts: [number, number, number][] = [
+        [1, 1, 1.2],
+        [2, 0.35 * (0.4 + bright), 0.35],
+        [4, 0.12 * bright, 0.05],
+      ];
       gain.gain.setValueAtTime(0.0001, when);
-      gain.gain.linearRampToValueAtTime(g, when + 0.004);
-      gain.gain.setTargetAtTime(g * 0.25, when + 0.004, 0.5);
-      gain.gain.setTargetAtTime(0.0001, end, 0.08);
-      for (const o of [o1, o2]) {
+      gain.gain.linearRampToValueAtTime(g * 0.9, when + 0.004);
+      gain.gain.setTargetAtTime(g * 0.35, when + 0.004, 0.6);
+      gain.gain.setTargetAtTime(0.0001, end, 0.12);
+      for (const [mult, level, decay] of parts) {
+        const o = ctx.createOscillator();
+        o.frequency.value = freq * mult;
+        const og = ctx.createGain();
+        og.gain.setValueAtTime(level, when);
+        og.gain.setTargetAtTime(level * 0.1, when, decay);
+        o.connect(og).connect(gain);
         o.start(when);
-        o.stop(end + 0.5);
+        o.stop(end + 0.8);
+        this.track(o, gain);
       }
-      this.track(o1, gain);
       return;
     }
-    const o = ctx.createOscillator();
-    o.type = c.wave;
-    o.frequency.value = mtof(note);
-    const peak = c.wave === "sine" || c.wave === "triangle" ? g : g * 0.5;
-    gain.gain.setValueAtTime(0.0001, when);
-    gain.gain.linearRampToValueAtTime(peak, when + c.attack);
-    gain.gain.setTargetAtTime(peak * 0.7, when + c.attack, 0.1);
-    gain.gain.setTargetAtTime(0.0001, end, c.release / 3);
-    o.connect(gain);
-    o.start(when);
-    o.stop(end + c.release * 2 + 0.05);
-    this.track(o, gain);
-  }
 
+    // A subtractive synth: detuned oscillators into a filter with its own
+    // envelope, opening on the attack and closing over the decay.
+    const filter = ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.Q.value = 2;
+    const base = Math.min(freq * 2, 18000);
+    const peak = Math.min(freq * (3 + 10 * bright), 18000);
+    filter.frequency.setValueAtTime(base, when);
+    filter.frequency.linearRampToValueAtTime(peak, when + Math.max(c.attack, 0.01));
+    filter.frequency.setTargetAtTime(Math.min(freq * (2 + 4 * bright), 18000), when + c.attack, 0.25);
+    filter.connect(gain);
+    const level = c.wave === "sine" || c.wave === "triangle" ? g : g * 0.42;
+    gain.gain.setValueAtTime(0.0001, when);
+    gain.gain.linearRampToValueAtTime(level, when + c.attack);
+    gain.gain.setTargetAtTime(level * 0.75, when + c.attack, 0.15);
+    gain.gain.setTargetAtTime(0.0001, end, Math.max(c.release / 3, 0.01));
+    const stop = end + c.release * 2 + 0.05;
+    const voices = c.wave === "sine" ? [0] : [-7, 0, 7];
+    for (const cents of voices) {
+      const o = ctx.createOscillator();
+      o.type = c.wave as OscillatorType;
+      o.frequency.value = freq;
+      o.detune.value = cents;
+      const og = ctx.createGain();
+      og.gain.value = 1 / voices.length;
+      o.connect(og).connect(filter);
+      o.start(when);
+      o.stop(stop);
+      this.track(o, gain);
+    }
+    // Basses get a sine an octave below for weight.
+    if (note < 52) {
+      const sub = ctx.createOscillator();
+      sub.frequency.value = freq / 2;
+      const sg = ctx.createGain();
+      sg.gain.value = 0.5;
+      sub.connect(sg).connect(gain);
+      sub.start(when);
+      sub.stop(stop);
+      this.track(sub, gain);
+    }
+  }
   /** Silences everything that sounds or is scheduled. */
   allOff(): void {
     const now = this.ctx.currentTime;
