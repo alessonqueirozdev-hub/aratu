@@ -6,6 +6,7 @@ import firstPiece from "../../examples/first-piece.aratu";
 import form from "../../examples/form.aratu";
 import melody from "../../examples/melody.aratu";
 import patterns from "../../examples/patterns.aratu";
+import sound from "../../examples/sound.aratu";
 import waltz from "../../examples/waltz.aratu";
 
 export const examples = [
@@ -15,4 +16,5 @@ export const examples = [
   { id: "patterns", text: patterns },
   { id: "form", text: form },
   { id: "waltz", text: waltz },
+  { id: "sound", text: sound },
 ] as const;

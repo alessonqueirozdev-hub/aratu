@@ -1,0 +1,22 @@
+// Sounds and knobs: every number that sets a parameter has a knob beside it.
+// Drag a knob up or down; the number changes and so does the sound.
+meter: 4/4
+tempo: 100
+
+bass: synth.saw -> lowpass -> reverb
+bass = | c2 _ c2 eb2 | f2 _ g2 bb1 |
+bass {
+  lowpass.cutoff = 800 Hz
+  lowpass.resonance = 0.3
+  reverb.mix = 0.2
+}
+
+lead: synth.square -> delay
+lead = | g4 _ bb4 c5 | eb5 _ d5 c5 |
+lead {
+  delay.time = 375 ms
+  delay.mix = 0.3
+  volume = 0.5
+}
+
+drums { hh = cc cc cc cc; bd = b - b -; sd = - s - s }

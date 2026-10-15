@@ -25,14 +25,21 @@ export interface PartInfo {
 /** A number in the text drawn as a knob. */
 export interface Control {
   id: string;
+  /** The part it sets, "all" for the whole mix, "" for the tempo. */
   part: string;
+  /** Where the number is written. */
   from: number;
   to: number;
+  /** The value in the parameter's own unit (Hz, ms, 0 to 1, bpm). */
   value: number;
-  min?: number;
-  max?: number;
-  unit?: string;
-  log?: boolean;
+  /** The written number per unit of value (0.001 for kHz, 100 for %). */
+  factor: number;
+  min: number;
+  max: number;
+  unit: string;
+  log: boolean;
+  /** Set at a bar: turning it changes the text, not the sound right away. */
+  timed: boolean;
 }
 
 export interface Program {

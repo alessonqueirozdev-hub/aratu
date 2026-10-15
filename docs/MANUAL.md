@@ -482,6 +482,31 @@ bass {
 }
 ```
 
+Drag a knob up to raise the number and down to lower it (hold Shift for
+finer steps). The sound follows at once; a number set at a bar (`at bar 16:
+...`) and the tempo's own knob change the text, which comes in at the next
+bar line. A number written in another unit keeps it: `1.2 kHz` turns in
+kilohertz, `40%` in percent.
+
+The parameters the editor knows today, with their ranges:
+
+| Parameter | Range |
+|---|---|
+| `volume` | 0 to 1 |
+| `pan` | -1 (left) to 1 (right) |
+| `attack`, `release` | 1 to 2000 ms, 5 to 5000 ms |
+| `lowpass.cutoff`, `highpass.cutoff` | 20 to 20000 Hz, logarithmic |
+| `lowpass.resonance`, `highpass.resonance` | 0 to 1 |
+| `reverb.mix` | 0 to 1 |
+| `delay.time` | 10 to 2000 ms, logarithmic |
+| `delay.feedback`, `delay.mix` | 0 to 0.95, 0 to 1 |
+
+The sounds are `synth.saw`, `synth.square`, `synth.sine`, `synth.triangle`
+and `synth.pluck`; drums, strums and chords pick a drum kit, a plucked
+string and a keyboard by themselves. These are simple built-in sounds;
+Manguebyte's engine will replace them, and its own description of each
+parameter will shape the knobs.
+
 Parameters can change by bar like anything else:
 
 ```

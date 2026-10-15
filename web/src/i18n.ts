@@ -34,6 +34,7 @@ const words = {
   patterns: { pt: "Padrões ao vivo", en: "Live patterns" },
   form: { pt: "Seções e forma", en: "Sections and form" },
   waltz: { pt: "Valsa com anacruse", en: "Waltz with a pickup" },
+  sound: { pt: "Sons e knobs", en: "Sounds and knobs" },
 } as const;
 
 export type Word = keyof typeof words;

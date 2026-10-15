@@ -5,6 +5,7 @@ import { Aratu, type Program } from "./aratu";
 import { Engine } from "./audio";
 import { createEditor, showDiagnostics, showPlaying } from "./editor";
 import { examples } from "./examples";
+import { knobs, showKnobs } from "./knobs";
 import { type Lang, isWord, tr } from "./i18n";
 import { Player, type Scheduled } from "./player";
 
@@ -99,6 +100,11 @@ async function main(): Promise<void> {
     if (broken) aratu.release(broken.handle);
     broken = null;
     showDiagnostics(view, p.diagnostics);
+    showKnobs(view, p.controls, (control, value) => {
+      // Parameters set at a bar, and the tempo, come in with the text.
+      if (control.timed || control.id === "tempo") return;
+      engine?.setNow(control.part, control.id, value);
+    });
     messages(p);
     if (!p.ok) {
       broken = p;
@@ -127,7 +133,7 @@ async function main(): Promise<void> {
     },
     run: () => void play(),
     stop: () => stop(),
-  });
+  }, knobs);
 
   const play = async () => {
     window.clearTimeout(timer);

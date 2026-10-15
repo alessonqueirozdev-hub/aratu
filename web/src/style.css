@@ -298,3 +298,40 @@ button.play.on {
     margin-left: 0;
   }
 }
+
+.cm-knob {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 2px 0 4px;
+  cursor: ns-resize;
+  touch-action: none;
+  user-select: none;
+}
+
+.cm-knob svg {
+  display: block;
+}
+
+.cm-knob .track {
+  fill: #2a1f19;
+  stroke: var(--line);
+  stroke-width: 2;
+}
+
+.cm-knob .value {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.cm-knob line {
+  stroke: var(--accent-2);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.cm-knob:hover .track,
+.cm-knob.turning .track {
+  stroke: var(--accent);
+}

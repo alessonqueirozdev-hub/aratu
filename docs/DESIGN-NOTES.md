@@ -419,3 +419,32 @@ Smaller choices made along the way:
   brings it back, as on a mixer; `all: out` silences everything. Both work
   with `at bar` and `every`. (Also proposed: the score's `tacet` and
   `tutti`, and no new words at all.)
+
+## What building it showed (15 October 2026)
+
+Notes from implementing the language crate and the web editor, for
+decisions still to make.
+
+- **Bare changes need memory in the editor.** Because the editor compiles
+  the whole text on every edit, a line such as `play fill` or
+  `piano: cresc to ff over 4 bars` cannot mean "now" on its own: it would
+  start again on every keystroke. The editor remembers, for each such line,
+  the bar it first sounded from, and the scheduler takes those bars as
+  input. Editing the line makes it a new line that starts at the next bar.
+- **`now:` comes in at the next bar line for now**, not the next beat: the
+  editor schedules whole bars ahead. Changing at a beat means splitting a
+  bar between two versions of the piece; it is possible but not built.
+- **A knob changes the sound at once and the text with it**, so the knob
+  does not wait for the bar line: it sets the parameter on the engine and
+  rewrites the number, and the next version of the piece agrees with it. A
+  number set at a bar, and the tempo, only change the text.
+- **Drum and line names.** With the symbol deciding the drum's sound, the
+  line name (`hh`, `bd`) only names the line, so two lines can play the
+  same drum. The list of names read as drum lines outside `drums { }` is in
+  `crates/aratu/src/parse.rs`.
+- **Chance never shifts with edits elsewhere.** Each line draws from its own
+  stream, seeded by the piece's seed, the line's name, the bar and the
+  symbol, so editing the bass does not change how the hi-hat improvises.
+- **Open:** keywords in Portuguese; the full drum table; a fermata of a
+  given length; tuplets across beats and additive meters (proposed above);
+  how rubato chooses its phrase (today it bends inside each bar).

@@ -365,7 +365,10 @@ impl<'p> Scheduler<'p> {
                 if *b != g {
                     continue;
                 }
-                if let Action::Param { part, id, value } = &c.action {
+                if let Action::Param {
+                    part, id, value, ..
+                } = &c.action
+                {
                     let clock = self.clocks.last().unwrap();
                     self.params.push((
                         g,

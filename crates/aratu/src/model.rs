@@ -26,6 +26,8 @@ pub struct Piece {
     pub commands: Vec<Command>,
     /// Parameters set outside any part, for the whole mix.
     pub params: Vec<ParamSet>,
+    /// Where the number of `tempo:` is written, for its knob.
+    pub tempo_span: Option<Span>,
 }
 
 /// A pattern or a section: parts prepared under a name.
@@ -49,8 +51,13 @@ pub struct Part {
 #[derive(Clone, Debug)]
 pub struct ParamSet {
     pub id: String,
+    /// The value in the parameter's own unit (Hz, ms, 0 to 1).
     pub value: f64,
+    /// Where the number is written, for the knob that rewrites it.
     pub number_span: Span,
+    /// The written number per unit of `value`: 0.001 for `1.2 kHz`, 100
+    /// for `40%`, 1 when written in the parameter's own unit.
+    pub factor: f64,
 }
 
 #[derive(Clone, Debug)]
@@ -135,6 +142,8 @@ pub enum Action {
         part: Option<String>,
         id: String,
         value: f64,
+        number_span: Span,
+        factor: f64,
     },
     Transform {
         target: String,
@@ -247,6 +256,7 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
         form: Vec::new(),
         commands: Vec::new(),
         params: Vec::new(),
+        tempo_span: None,
     };
 
     // The frame.
@@ -261,6 +271,18 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
             }
             StmtKind::Tempo(t) => {
                 piece.tempo = *t;
+                // The number is the first run of digits after the colon.
+                let text = &src[s.span.start..s.span.end];
+                if let Some(colon) = text.find(':') {
+                    let after = &text[colon..];
+                    if let Some(d) = after.find(|c: char| c.is_ascii_digit()) {
+                        let len = after[d..]
+                            .find(|c: char| !(c.is_ascii_digit() || c == '.'))
+                            .unwrap_or(after.len() - d);
+                        let start = s.span.start + colon + d;
+                        piece.tempo_span = Some(Span::new(start, start + len));
+                    }
+                }
                 "tempo"
             }
             StmtKind::Key(k) => {
@@ -359,11 +381,12 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
                         .map(|n| n.text.as_str())
                         .collect::<Vec<_>>()
                         .join(".");
-                    if let Some(v) = param_value(&id, value, diags) {
+                    if let Some((v, factor)) = param_value(&id, value, diags) {
                         list.get(&p.text, p.span).params.push(ParamSet {
                             id,
                             value: v,
                             number_span: value.number_span,
+                            factor,
                         });
                     }
                 }
@@ -394,11 +417,12 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
             .map(|n| n.text.as_str())
             .collect::<Vec<_>>()
             .join(".");
-        if let Some(v) = param_value(&id, &value, diags) {
+        if let Some((v, factor)) = param_value(&id, &value, diags) {
             let set = ParamSet {
                 id,
                 value: v,
                 number_span: value.number_span,
+                factor,
             };
             match part {
                 Some(p) => top.get(&p.text, p.span).params.push(set),
@@ -535,10 +559,16 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
                     .map(|n| n.text.as_str())
                     .collect::<Vec<_>>()
                     .join(".");
-                let Some(v) = param_value(&id, value, diags) else {
+                let Some((v, factor)) = param_value(&id, value, diags) else {
                     continue;
                 };
-                Action::Param { part, id, value: v }
+                Action::Param {
+                    part,
+                    id,
+                    value: v,
+                    number_span: value.number_span,
+                    factor,
+                }
             }
             _ => continue,
         };
@@ -630,9 +660,10 @@ fn check_target(piece: &Piece, target: &Name, diags: &mut Vec<Diagnostic>) {
     ));
 }
 
-/// The value of a parameter in its own unit, with warnings for an unknown
-/// parameter, a unit that does not fit, or a value out of range.
-fn param_value(id: &str, value: &Value, diags: &mut Vec<Diagnostic>) -> Option<f64> {
+/// The value of a parameter in its own unit and the factor back to the
+/// written number, with warnings for an unknown parameter, a unit that does
+/// not fit, or a value out of range.
+fn param_value(id: &str, value: &Value, diags: &mut Vec<Diagnostic>) -> Option<(f64, f64)> {
     let Some(info) = params::lookup(id) else {
         diags.push(Diagnostic::warning(
             value.span,
@@ -640,8 +671,9 @@ fn param_value(id: &str, value: &Value, diags: &mut Vec<Diagnostic>) -> Option<f
                 name: id.to_string(),
             },
         ));
-        return Some(value.number);
+        return Some((value.number, 1.0));
     };
+    let factor = params::normalize(1.0, value.unit.as_deref(), info).map_or(1.0, |m| 1.0 / m);
     let Some(v) = params::normalize(value.number, value.unit.as_deref(), info) else {
         diags.push(Diagnostic::warning(
             value.span,
@@ -663,7 +695,7 @@ fn param_value(id: &str, value: &Value, diags: &mut Vec<Diagnostic>) -> Option<f
             },
         ));
     }
-    Some(v.clamp(info.min, info.max))
+    Some((v.clamp(info.min, info.max), factor))
 }
 
 /// Writes out similes, finds the pickup, unrolls the line and checks that
@@ -914,7 +946,7 @@ mod tests {
         );
         assert!(matches!(
             &p.commands[0].action,
-            Action::Param { part: Some(b), id, value } if b == "bass" && id == "reverb.mix" && *value == 0.65
+            Action::Param { part: Some(b), id, value, .. } if b == "bass" && id == "reverb.mix" && *value == 0.65
         ));
         let (_, d) = build_src("bass { wobble = 3 }");
         assert!(matches!(d[0].message, Message::UnknownParam { .. }));

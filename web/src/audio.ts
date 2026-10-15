@@ -192,8 +192,8 @@ export class Engine {
 
   /** Changes one parameter now, as a knob does. */
   setNow(part: string, id: string, value: number): void {
-    const c = this.chains.get(part);
-    if (c) this.setParam(c, id, value, this.ctx.currentTime);
+    const targets = part === "all" ? [...this.chains.values()] : [this.chains.get(part)];
+    for (const c of targets) if (c) this.setParam(c, id, value, this.ctx.currentTime);
   }
 
   play(e: AratuEvent, when: number): void {

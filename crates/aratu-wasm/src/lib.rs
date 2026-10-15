@@ -160,19 +160,18 @@ fn describe(handle: u32, program: &Program, src: &str, lang: Lang) -> String {
 
     j.key("controls").open_arr();
     for ctl in controls(piece) {
-        let info = params::lookup(&ctl.id);
         j.open_obj();
         j.key("id").str(&ctl.id);
         j.key("part").str(&ctl.part);
         j.key("from").num(program.pos(ctl.span.start) as f64);
         j.key("to").num(program.pos(ctl.span.end) as f64);
-        j.key("value").num(ctl.written);
-        if let Some(info) = info {
-            j.key("min").num(info.min);
-            j.key("max").num(info.max);
-            j.key("unit").str(info.unit);
-            j.key("log").bool(info.scale == params::Scale::Log);
-        }
+        j.key("value").num(ctl.value);
+        j.key("factor").num(ctl.factor);
+        j.key("min").num(ctl.min);
+        j.key("max").num(ctl.max);
+        j.key("unit").str(ctl.unit);
+        j.key("log").bool(ctl.log);
+        j.key("timed").bool(ctl.timed);
         j.close_obj();
     }
     j.close_arr();
@@ -180,19 +179,88 @@ fn describe(handle: u32, program: &Program, src: &str, lang: Lang) -> String {
     j.finish()
 }
 
-/// A number in the text that the editor draws as a knob.
+/// A number in the text that the editor draws as a knob, shaped by the
+/// parameter it sets.
 pub struct Control {
     pub id: String,
+    /// The part it belongs to, or "all".
     pub part: String,
+    /// Where the number is written.
     pub span: aratu::span::Span,
-    /// The number as written (before unit conversion).
-    pub written: f64,
+    /// The value in the parameter's own unit.
+    pub value: f64,
+    /// The written number per unit of `value` (0.001 for kHz, 100 for %).
+    pub factor: f64,
+    pub min: f64,
+    pub max: f64,
+    pub unit: &'static str,
+    pub log: bool,
+    /// Set at a bar (`at bar 16: ...`), so turning it changes the text only.
+    pub timed: bool,
 }
 
-/// The parameters written as numbers, with where each number is.
+/// Every number in the piece that sets a known parameter, plus the tempo.
 pub fn controls(piece: &Piece) -> Vec<Control> {
-    let _ = piece;
-    Vec::new()
+    use aratu::model::{Action, ParamSet};
+    let mut out = Vec::new();
+    let mut push = |part: &str, p: &ParamSet, timed: bool| {
+        if let Some(info) = params::lookup(&p.id) {
+            out.push(Control {
+                id: info.id.to_string(),
+                part: part.to_string(),
+                span: p.number_span,
+                value: p.value,
+                factor: p.factor,
+                min: info.min,
+                max: info.max,
+                unit: info.unit,
+                log: info.scale == params::Scale::Log,
+                timed,
+            });
+        }
+    };
+    for part in piece.all_parts() {
+        for p in &part.params {
+            push(&part.name, p, false);
+        }
+    }
+    for p in &piece.params {
+        push("all", p, false);
+    }
+    for c in &piece.commands {
+        if let Action::Param {
+            part,
+            id,
+            value,
+            number_span,
+            factor,
+        } = &c.action
+        {
+            let set = ParamSet {
+                id: id.clone(),
+                value: *value,
+                number_span: *number_span,
+                factor: *factor,
+            };
+            push(part.as_deref().unwrap_or("all"), &set, true);
+        }
+    }
+    if let Some(span) = piece.tempo_span {
+        out.push(Control {
+            id: "tempo".into(),
+            part: String::new(),
+            span,
+            value: piece.tempo,
+            factor: 1.0,
+            min: 40.0,
+            max: 240.0,
+            unit: "bpm",
+            log: false,
+            timed: false,
+        });
+    }
+    out.sort_by_key(|c| c.span.start);
+    out
 }
 
 /// Renders bars `from..to` of a kept program, in JSON.
@@ -422,5 +490,30 @@ mod tests {
         let events = &r[..r.find("\"bars\"").unwrap()];
         assert!(events.contains("\"bar\":3"));
         assert!(!events.contains("\"bar\":1,"), "{r}");
+    }
+}
+
+#[cfg(test)]
+mod control_tests {
+    use super::*;
+
+    #[test]
+    fn numbers_that_set_parameters_become_knobs() {
+        let src = "tempo: 96\nbass = | c2 _ _ _ |\nbass {\n  reverb.mix = 0.42\n  lowpass.cutoff = 1.2 kHz\n}\nat bar 16: bass.reverb.mix = 65%\nbass { wobble = 3 }";
+        let c = compile(src);
+        let ctl = controls(&c.piece);
+        let ids: Vec<&str> = ctl.iter().map(|c| c.id.as_str()).collect();
+        assert_eq!(ids, ["tempo", "reverb.mix", "lowpass.cutoff", "reverb.mix"]);
+        let text = |c: &Control| &src[c.span.start..c.span.end];
+        assert_eq!(text(&ctl[0]), "96");
+        assert_eq!(text(&ctl[1]), "0.42");
+        assert_eq!(text(&ctl[2]), "1.2");
+        assert_eq!(ctl[2].value, 1200.0);
+        assert!((ctl[2].factor - 0.001).abs() < 1e-12);
+        assert!(ctl[2].log);
+        assert_eq!(text(&ctl[3]), "65");
+        assert_eq!(ctl[3].factor, 100.0);
+        assert!(ctl[3].timed);
+        assert!(ctl.iter().all(|c| c.part == "bass" || c.id == "tempo"));
     }
 }
