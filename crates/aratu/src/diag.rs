@@ -100,6 +100,27 @@ impl Thing {
     }
 }
 
+/// A kind of change in the frame of the piece.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Change {
+    Tempo,
+    Meter,
+    Key,
+}
+
+impl Change {
+    fn words(self, lang: Lang) -> &'static str {
+        match (self, lang) {
+            (Change::Tempo, Lang::En) => "tempo",
+            (Change::Tempo, Lang::Pt) => "andamento",
+            (Change::Meter, Lang::En) => "meter",
+            (Change::Meter, Lang::Pt) => "fórmula de compasso",
+            (Change::Key, Lang::En) => "key",
+            (Change::Key, Lang::Pt) => "tom",
+        }
+    }
+}
+
 /// Everything Aratu can say about a piece.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Message {
@@ -240,7 +261,11 @@ pub enum Message {
     },
     SameBarChange {
         bar: i64,
-        what: String,
+        what: Change,
+    },
+    BadUnit {
+        unit: String,
+        name: String,
     },
 }
 
@@ -523,6 +548,8 @@ impl Message {
             (UnknownParam { name }, Pt) => {
                 format!("ainda não conheço o parâmetro `{name}`, então ele fica sem knob")
             }
+            (BadUnit { unit, name }, En) => format!("`{name}` is not measured in {unit}"),
+            (BadUnit { unit, name }, Pt) => format!("`{name}` não se mede em {unit}"),
             (
                 ParamOutOfRange {
                     name,
@@ -556,10 +583,16 @@ impl Message {
             }
             (DuplicateLine { name }, Pt) => format!("`{name}` aparece duas vezes; vale a última"),
             (SameBarChange { bar, what }, En) => {
-                format!("two {what} changes at bar {bar}; the last one counts")
+                format!(
+                    "two {} changes at bar {bar}; the last one counts",
+                    what.words(En)
+                )
             }
             (SameBarChange { bar, what }, Pt) => {
-                format!("duas mudanças de {what} no compasso {bar}; vale a última")
+                format!(
+                    "duas mudanças de {} no compasso {bar}; vale a última",
+                    what.words(Pt)
+                )
             }
         }
     }

@@ -8,12 +8,41 @@
 pub mod ast;
 pub mod diag;
 pub mod lex;
+pub mod model;
 pub mod music;
+pub mod params;
 pub mod parse;
 pub mod ratio;
 pub mod span;
 pub mod theory;
+pub mod unroll;
 
 pub use diag::{Diagnostic, Lang, Message, Severity};
+pub use model::Piece;
 pub use ratio::Ratio;
 pub use span::Span;
+
+/// A piece read and checked.
+#[derive(Clone, Debug)]
+pub struct Compiled {
+    pub piece: Piece,
+    pub diagnostics: Vec<Diagnostic>,
+}
+
+impl Compiled {
+    pub fn has_errors(&self) -> bool {
+        self.diagnostics.iter().any(Diagnostic::is_error)
+    }
+
+    pub fn errors(&self) -> impl Iterator<Item = &Diagnostic> {
+        self.diagnostics.iter().filter(|d| d.is_error())
+    }
+}
+
+/// Reads and checks a piece.
+pub fn compile(src: &str) -> Compiled {
+    let (ast, mut diagnostics) = parse::parse(src);
+    let piece = model::build(&ast, src, &mut diagnostics);
+    diagnostics.sort_by_key(|d| (d.span.start, d.span.end));
+    Compiled { piece, diagnostics }
+}

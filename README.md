@@ -48,6 +48,9 @@ A space separates beats, symbols written together share their beat (`cc`
 is two eighths), `_` holds and `-` rests. Chords are written as a lead
 sheet, strums with `d` and `u`, dynamics and repeats with the score's own
 signs, and note names in solfège (`dó4 ré4 mi4`) work as well as letters.
+When a bar does not add up, Aratu says so in a musician's words, in
+Portuguese or English: *"o compasso 2 de `bass` tem 5 tempos, mas a fórmula
+de compasso é 4/4"*.
 
 ## The Manguebyte ecosystem
 
