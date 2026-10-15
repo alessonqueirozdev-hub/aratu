@@ -416,12 +416,7 @@ fn a_now_line_comes_in_at_a_beat_inside_the_bar() {
     // The editor anchors `now: play b` to the bar it was written in (2) and
     // renders that bar from the next beat (2): the beats before it belong to
     // the version that was playing.
-    let src = "tempo: 120
-pattern a { hh = c c c c }
-pattern b { sd = s s s s }
-play a
-now: play b
-now: hh.volume = 0.5";
+    let src = "tempo: 120\npattern a { hh = c c c c }\npattern b { sd = s s s s }\nplay a\nnow: play b\nnow: hh.volume = 0.5";
     let c = compile(src);
     assert!(c.errors().next().is_none());
     let mut opts = Options {
@@ -469,6 +464,45 @@ now: hh.volume = 0.5";
         .filter(|e| e.kind == EventKind::Drum(Drum::Snare))
         .count();
     assert_eq!(snares, 4);
+}
+
+#[test]
+fn once_plays_a_pattern_through_and_the_loop_goes_on() {
+    // A four-bar phrase, and a fill played once in its second bar: the
+    // phrase does not lose its place, so its own fill still comes in bar 4.
+    let src = "pattern groove { sd = - s - s }\npattern fill { sd = s s s s }\npattern crash { cr = x - - - }\nplay groove x3, fill\nnow: play fill once\nnow: add crash once";
+    let c = compile(src);
+    let errors: Vec<_> = c.errors().collect();
+    assert!(errors.is_empty(), "{errors:?}");
+    let mut opts = Options::default();
+    opts.anchors.insert("now: play fill once".into(), 2);
+    opts.anchors.insert("now: add crash once".into(), 2);
+    let ev = render(&c.piece, &opts, 1, 9).events;
+    let per_bar = |kind: EventKind| -> Vec<usize> {
+        (1..9)
+            .map(|b| ev.iter().filter(|e| e.bar == b && e.kind == kind).count())
+            .collect()
+    };
+    assert_eq!(
+        per_bar(EventKind::Drum(Drum::Snare)),
+        [2, 4, 2, 4, 2, 2, 2, 4]
+    );
+    assert_eq!(
+        per_bar(EventKind::Drum(Drum::Crash)),
+        [0, 1, 0, 0, 0, 0, 0, 0]
+    );
+
+    // Without `once`, the fill stays.
+    let c = compile(
+        "pattern groove { sd = - s - s }\npattern fill { sd = s s s s }\nplay groove x3, fill\nnow: play fill",
+    );
+    let mut opts = Options::default();
+    opts.anchors.insert("now: play fill".into(), 2);
+    let ev = render(&c.piece, &opts, 1, 6).events;
+    let snares = (1..6)
+        .map(|b| ev.iter().filter(|e| e.bar == b).count())
+        .collect::<Vec<_>>();
+    assert_eq!(snares, [2, 4, 4, 4, 4]);
 }
 
 #[test]

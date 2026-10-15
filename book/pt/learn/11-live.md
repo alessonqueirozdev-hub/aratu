@@ -56,7 +56,9 @@ prato no primeiro tempo de cada oito compassos.
 `at bar 9: play fill` marca uma mudança para o compasso 9. Uma linha
 escrita sem `at bar` entra no começo da peça, ou, se você a escrever com a
 música tocando, no próximo compasso. Escrita com `now:` na frente
-(`now: play fill`), ela entra já no próximo tempo.
+(`now: play fill`), ela entra já no próximo tempo. E com `once` no fim
+(`now: play fill once`), a virada toca uma vez e o groove volta sozinho, no
+lugar em que estaria.
 
 ## Tirar e trazer uma parte
 

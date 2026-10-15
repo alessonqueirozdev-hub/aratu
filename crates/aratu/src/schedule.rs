@@ -537,18 +537,23 @@ impl<'p> Scheduler<'p> {
             }
         }
 
-        // The pattern being played, unless an `every` takes its place.
+        // The pattern being played, unless an `every` takes its place. A
+        // `play ... once` takes the place of the one before only while it
+        // lasts; that one keeps counting its bars meanwhile.
         let mut current: Option<(usize, i64)> = None;
         for (b, c) in &self.timed {
             if *b > g {
                 break;
             }
-            if let Action::Play(list) = &c.action {
+            if let Action::Play { list, once } = &c.action {
                 let lens: Vec<i64> = list
                     .iter()
                     .map(|(i, t)| group_len(&piece.patterns[*i].parts) * *t as i64)
                     .collect();
                 let total: i64 = lens.iter().sum();
+                if *once && g - b >= total {
+                    continue;
+                }
                 let mut pos = (g - b).rem_euclid(total.max(1));
                 for ((i, _), len) in list.iter().zip(&lens) {
                     if pos < *len {
@@ -565,8 +570,8 @@ impl<'p> Scheduler<'p> {
                 continue;
             };
             let (pattern, add) = match c.action {
-                Action::Play(ref list) => (list[0].0, false),
-                Action::Add(i) => (i, true),
+                Action::Play { ref list, .. } => (list[0].0, false),
+                Action::Add { pattern, .. } => (pattern, true),
                 _ => continue,
             };
             let len = group_len(&piece.patterns[pattern].parts).min(bars);
@@ -588,8 +593,11 @@ impl<'p> Scheduler<'p> {
             if *b > g {
                 break;
             }
-            if let Action::Add(i) = c.action {
+            if let Action::Add { pattern: i, once } = c.action {
                 let len = group_len(&piece.patterns[i].parts);
+                if once && g - b >= len {
+                    continue;
+                }
                 layers.push((i, (g - b).rem_euclid(len)));
             }
         }

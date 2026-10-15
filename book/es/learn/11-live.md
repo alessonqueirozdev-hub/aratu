@@ -56,7 +56,9 @@ sonando: aquí, un platillo en el primer tiempo de cada ocho compases.
 `at bar 9: play fill` marca un cambio para el compás 9. Una línea escrita
 sin `at bar` entra al principio de la pieza o, si la escribes con la música
 sonando, en el compás siguiente. Escrita con `now:` delante
-(`now: play fill`), entra ya en el tiempo siguiente.
+(`now: play fill`), entra ya en el tiempo siguiente. Y con `once` al final
+(`now: play fill once`), el redoble suena una vez y el groove vuelve solo,
+en el lugar donde estaría.
 
 ## Sacar y traer una parte
 

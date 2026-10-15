@@ -368,6 +368,19 @@ phrase of patterns in turn and loops it. `every 4 bars: play fill` plays
 the fill in the fourth bar of every four, in place of the groove; `add`
 plays a pattern on top of the one that is sounding.
 
+A `play` stays until another one: `at bar 8: play fill` plays the fill
+from bar 8 on. `once` plays it through one time and goes back:
+
+```text
+at bar 8: play fill once     // the fill in bar 8, the groove again in bar 9
+now: play fill once          // a fill now, then the groove where it would be
+now: add crash once          // a crash on top, once
+```
+
+The pattern that was playing keeps counting its bars meanwhile, so
+`play groove x3, fill` does not lose its place in the phrase. With
+`every`, a pattern already plays once each time round.
+
 ## 10. Playing live
 
 While a piece plays, you change it; you do not rewrite it.
@@ -377,7 +390,9 @@ While a piece plays, you change it; you do not rewrite it.
 - **A change is one line.** `hh = cc cc oc cc` replaces the hi-hat and
   nothing else; the other parts keep playing.
 - **Changes land on the beat.** An edit takes effect at the next bar line;
-  `now:` makes it take effect at the next beat instead.
+  `now:` makes it take effect at the next beat instead: `now: play fill
+  once` brings a fill in on the next beat, and the groove comes back at the
+  bar line where it would have been.
 - **Prepare ahead.** `at bar 17: play fill` schedules a change.
 - **Out and in.** `guitar: out` silences a part from the next bar line and
   `guitar: in` brings it back; `all: out` stops everything. They work with
@@ -512,6 +527,7 @@ bass.reverb.mix = 0.65`.
 | `D.C.`, `D.S. al fine`, `D.S. al coda`, `to coda` | jumps |
 | `section name { }`, `form: intro verse x2 chorus` | sections and the form |
 | `every 4 bars: play fill` | a variation inside a loop |
+| `play fill once`, `add crash once` | a pattern once, then back |
 | `at bar 30:` | a scheduled change |
 | `now:` | a change at the next beat |
 | `guitar: out`, `guitar: in` | silence a part, bring it back |

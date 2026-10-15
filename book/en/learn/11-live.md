@@ -56,7 +56,9 @@ crash on the first beat of every eight bars.
 `at bar 9: play fill` schedules a change for bar 9. A line written without
 `at bar` comes in at the start of the piece or, if you write it while the
 music plays, at the next bar. Written with `now:` in front
-(`now: play fill`), it comes in at the very next beat.
+(`now: play fill`), it comes in at the very next beat. And with `once` at
+the end (`now: play fill once`), the fill plays one time and the groove
+comes back by itself, where it would have been.
 
 ## Taking a part out and back in
 

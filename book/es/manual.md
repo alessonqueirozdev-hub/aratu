@@ -382,6 +382,19 @@ patrones en orden y la repite. `every 4 bars: play fill` toca el redoble en
 el cuarto compás de cada cuatro, en lugar del groove; `add` toca un patrón
 encima del que está sonando.
 
+Un `play` vale hasta el siguiente: `at bar 8: play fill` toca el redoble
+del compás 8 en adelante. `once` (una vez) toca el patrón una vez y vuelve:
+
+```text
+at bar 8: play fill once     // el redoble en el compás 8, el groove de nuevo en el 9
+now: play fill once          // un redoble ya, después el groove donde estaría
+now: add crash once          // un platillo encima, una vez
+```
+
+El patrón que estaba sonando sigue contando sus compases mientras tanto, así
+que `play groove x3, fill` no pierde su lugar en la frase. Con `every`, el
+patrón ya suena una vez en cada vuelta.
+
 ## 10. Tocar en vivo
 
 Mientras la pieza suena, la cambias; no la reescribes.
@@ -390,7 +403,9 @@ Mientras la pieza suena, la cambias; no la reescribes.
 - **Un cambio es una línea.** `hh = cc cc oc cc` cambia el hi-hat y nada
   más; las otras partes siguen.
 - **Los cambios caen en el tiempo.** Una edición entra en el compás
-  siguiente; `now:` la hace entrar en el tiempo siguiente.
+  siguiente; `now:` la hace entrar en el tiempo siguiente: `now: play fill
+  once` trae un redoble en el tiempo siguiente, y el groove vuelve en la
+  barra donde estaría.
 - **Prepara de antemano.** `at bar 17: play fill` programa un cambio.
 - **Salir y volver.** `guitarra: out` silencia una parte desde el compás
   siguiente y `guitarra: in` la trae de vuelta; `all: out` detiene todo.
@@ -527,6 +542,7 @@ bajo.reverb.mix = 0.65`.
 | `D.C.`, `D.S. al fine`, `D.S. al coda`, `to coda` | saltos |
 | `section nombre { }`, `form: intro verso x2 estribillo` | secciones y forma |
 | `every 4 bars: play fill` | variación dentro del loop |
+| `play fill once`, `add crash once` | un patrón una vez, después vuelve |
 | `at bar 30:` | cambio programado |
 | `now:` | cambio en el tiempo siguiente |
 | `guitarra: out`, `guitarra: in` | silencia una parte, la trae de vuelta |

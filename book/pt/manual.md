@@ -375,6 +375,19 @@ padrões em sequência e a repete. `every 4 bars: play fill` toca a virada no
 quarto compasso de cada quatro, no lugar do groove; `add` toca um padrão por
 cima do que está soando.
 
+Um `play` vale até outro: `at bar 8: play fill` toca a virada do
+compasso 8 em diante. `once` (uma vez) toca o padrão uma vez e volta:
+
+```text
+at bar 8: play fill once     // a virada no compasso 8, o groove de volta no 9
+now: play fill once          // uma virada já, depois o groove onde estaria
+now: add crash once          // um prato por cima, uma vez
+```
+
+O padrão que estava tocando continua contando os compassos enquanto isso,
+então `play groove x3, fill` não perde o lugar na frase. Com `every`, o
+padrão já toca uma vez a cada volta.
+
 ## 10. Tocar ao vivo
 
 Enquanto a peça toca, você a muda; você não a reescreve.
@@ -383,7 +396,8 @@ Enquanto a peça toca, você a muda; você não a reescreve.
 - **Uma mudança é uma linha.** `hh = cc cc oc cc` troca o chimbal e mais
   nada; as outras partes continuam.
 - **As mudanças caem no tempo.** Uma edição entra no compasso seguinte;
-  `now:` a faz entrar no tempo seguinte.
+  `now:` a faz entrar no tempo seguinte: `now: play fill once` traz uma
+  virada no próximo tempo, e o groove volta na barra em que estaria.
 - **Prepare antes.** `at bar 17: play fill` programa uma mudança.
 - **Sair e voltar.** `violão: out` silencia uma parte a partir do compasso
   seguinte e `violão: in` a traz de volta; `all: out` para tudo. Funcionam
@@ -518,6 +532,7 @@ baixo.reverb.mix = 0.65`.
 | `D.C.`, `D.S. al fine`, `D.S. al coda`, `to coda` | saltos |
 | `section nome { }`, `form: intro verso x2 refrao` | seções e forma |
 | `every 4 bars: play fill` | variação dentro do loop |
+| `play fill once`, `add crash once` | um padrão uma vez, depois volta |
 | `at bar 30:` | mudança programada |
 | `now:` | mudança no próximo tempo |
 | `violão: out`, `violão: in` | silencia uma parte, traz de volta |
