@@ -69,6 +69,9 @@ pub struct Line {
     /// Identifies the line for chance, so that editing another line does not
     /// change how this one improvises.
     pub seed_key: u64,
+    /// The velocity of every hit, by the bar's place in order (or
+    /// [crate::dynamics::PICKUP]) and the hit's source offset.
+    pub levels: HashMap<(usize, usize), u8>,
 }
 
 impl Line {
@@ -330,6 +333,7 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
                     order: Vec::new(),
                     span: s.span,
                     seed_key: 0,
+                    levels: HashMap::new(),
                 };
                 if let Some(i) = part.lines.iter().position(|x| x.name == line.name) {
                     diags.push(Diagnostic::warning(
@@ -706,6 +710,7 @@ fn prepare_line(
             }
         }
     }
+    line.levels = crate::dynamics::levels(line, diags);
     if let Some(p) = line.pickup {
         if line.beats(p, meters.first) != pickup {
             diags.push(Diagnostic::error(

@@ -7,6 +7,7 @@
 
 pub mod ast;
 pub mod diag;
+pub mod dynamics;
 pub mod lex;
 pub mod model;
 pub mod music;
@@ -15,6 +16,7 @@ pub mod parse;
 pub mod ratio;
 pub mod span;
 pub mod theory;
+pub mod time;
 pub mod unroll;
 
 pub use diag::{Diagnostic, Lang, Message, Severity};
