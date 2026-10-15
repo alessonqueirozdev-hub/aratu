@@ -177,6 +177,25 @@ line on time, so one part breathes while the others keep the pulse;
 `all: rubato` bends the whole piece. Separate from it: `humanize` (small
 random deviations of timing and velocity) and `swing 60%`.
 
+**2i. Repeats.** Two kinds, which work differently.
+
+*Repeats in the form* use the score's signs, in the text form ABC notation
+has long used: `|:` and `:|` around a passage (played twice, or `:| x4`),
+`|1` and `|2` for first and second endings, `%` for a measure repeat (the
+shape of the sign itself) and `%%` for two bars, and the jumps: markers
+`segno:`, `coda:` and `fine:` at the start of a bar, jumps `D.C.`, `D.S.`,
+`D.C. al fine`, `D.S. al coda` and `to coda` at the end of one. Sections
+repeat in a form line: `form: intro verse x2 chorus verse chorus x2 outro`.
+The engine unrolls all of this into one timeline, as a musician reads a
+score with its jumps, and the editor shows the unrolled form with its
+brackets. A jump with no marker is reported in a musician's words ("there is
+a D.S. at bar 24 but no segno before it").
+
+*Repeats while playing* need no sign, because patterns loop; what is needed
+is a way to say when to vary: `every 4 bars: drums fill` (the fourth bar of
+every four), `every 8 bars, first: crash`, `play groove x3, fill` (a
+four-bar phrase that loops).
+
 **3. Simple words for time.** `pickup: beat 4` instead of
 `Meter.anacrusis(4/4::4)`; `at bar 30: tempo 130`; a ramp as
 `tempo 120 -> 140 over 4 bars`.

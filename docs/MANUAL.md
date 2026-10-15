@@ -18,7 +18,7 @@ you can read a MusiMangue piece.
 6. [Dynamics](#6-dynamics)
 7. [Tempo and time](#7-tempo-and-time)
 8. [Feel: rubato, swing and humanize](#8-feel-rubato-swing-and-humanize)
-9. [Patterns, sections and form](#9-patterns-sections-and-form)
+9. [Patterns, sections, repeats and form](#9-patterns-sections-repeats-and-form)
 10. [Playing live](#10-playing-live)
 11. [Transformations](#11-transformations)
 12. [Sound and effects](#12-sound-and-effects)
@@ -236,7 +236,7 @@ triplet feel).
 **Humanize.** `humanize` adds small random deviations of timing and velocity,
 as a player would; `humanize 5 ms` sets how much.
 
-## 9. Patterns, sections and form
+## 9. Patterns, sections, repeats and form
 
 Material is prepared in advance and given a name:
 
@@ -264,8 +264,61 @@ at bar 9: play groove
 at bar 30: tempo 130
 ```
 
-**Open:** sections with names (`section verse`, `section chorus`) and form
-(`form: intro verse chorus verse chorus outro`).
+### Repeat signs
+
+The signs of a score, written in text:
+
+```
+chords = |: Am | F |1 C | G :|2 C | C |      // repeat, first and second endings
+chords = |: Am | F :| x4                      // play the passage four times
+chords = | Am | % | % | F |                   // % repeats the previous bar
+chords = | Am | F | %% |                      // %% repeats the previous two
+```
+
+`|:` and `:|` mark a repeated passage, played twice unless `x` says how many
+times. `|1` and `|2` start the first and second endings.
+
+### Jumps
+
+Markers go at the start of a bar, jumps at its end:
+
+```
+melody = | c4 e g c5 | segno: d4 f a _ | e4 g b _ | fine: c4 _ _ _ | g4 _ _ _ D.S. al fine |
+```
+
+| Marker | Jump |
+|---|---|
+| `segno:` | `D.S.`, `D.S. al fine`, `D.S. al coda` |
+| `fine:` | where `al fine` stops |
+| `coda:` | where `to coda` goes |
+| | `D.C.`, `D.C. al fine`: back to the start |
+
+The piece is unrolled as a musician reads it, and the editor shows the result
+on the timeline. A jump without its marker is an error stated plainly:
+*"there is a D.S. at bar 24 but no segno before it"*.
+
+### Form
+
+Sections are named parts of a piece, and a form line orders them:
+
+```
+section verse  { ... }
+section chorus { ... }
+
+form: intro verse x2 chorus verse chorus x2 outro
+```
+
+### Varying a loop while playing
+
+Patterns loop by themselves, so playing live needs a way to say when to vary:
+
+```
+every 4 bars: drums fill          // the fourth bar of every four
+every 8 bars, first: crash        // the first bar of every eight
+play groove x3, fill              // a four-bar phrase, looped
+```
+
+**Open:** the exact syntax of `section`.
 
 ## 10. Playing live
 
@@ -349,6 +402,12 @@ Instruments made with Parabolic can be used as sounds.
 | `pickup: beat 4` | anacrusis |
 | `rubato 10%`, `swing 60%`, `humanize` | feel |
 | `pattern name { }`, `play name` | named patterns |
+| `\|: :\|`, `:\| x4`, `\|1 \|2` | repeat, count, endings |
+| `%`, `%%` | repeat the previous bar, two bars |
+| `segno:`, `coda:`, `fine:` | markers |
+| `D.C.`, `D.S. al fine`, `D.S. al coda`, `to coda` | jumps |
+| `form: intro verse x2 chorus` | the form |
+| `every 4 bars: drums fill` | a variation inside a loop |
 | `at bar 30:` | a scheduled change |
 | `now:` | a change at the next beat |
 | `->` | signal flow |
