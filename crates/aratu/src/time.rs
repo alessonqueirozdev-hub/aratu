@@ -156,7 +156,7 @@ impl BarClock {
         mut fermatas: Vec<(Ratio, Ratio)>,
     ) -> BarClock {
         // Merge overlapping spans so a beat is never stretched twice.
-        fermatas.sort_by(|a, b| a.0.cmp(&b.0));
+        fermatas.sort_by_key(|f| f.0);
         let mut merged: Vec<(Ratio, Ratio)> = Vec::new();
         for (s, e) in fermatas {
             let (s, e) = (s.max(Ratio::ZERO), e.min(beats));
