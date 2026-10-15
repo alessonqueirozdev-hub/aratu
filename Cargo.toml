@@ -12,3 +12,4 @@ rust-version = "1.85"
 [profile.release]
 opt-level = "s"
 lto = true
+strip = true

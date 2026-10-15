@@ -5,3 +5,10 @@ version = 4
 [[package]]
 name = "aratu"
 version = "0.1.0"
+
+[[package]]
+name = "aratu-wasm"
+version = "0.1.0"
+dependencies = [
+ "aratu",
+]

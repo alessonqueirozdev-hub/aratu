@@ -1,0 +1,22 @@
+// Patterns for playing live: change a line while it plays,
+// and the change lands at the next bar line.
+meter: 4/4
+tempo: 112
+
+pattern groove {
+  hh = cc cc co cc
+  bd = b - b b
+  sd = - s - s
+}
+pattern fill {
+  hh = cc cc cc cc
+  sd = ss ss SS SS
+  bd = b - - -
+}
+pattern crash { cr = x - - - }
+
+play groove x3, fill
+every 8 bars, first: add crash
+
+bass = | c2 _ c2 eb2 | f2 _ g2 bb1 |
+swing 58%

@@ -1,0 +1,12 @@
+// Chance: the loop plays a little differently every time round.
+meter: 4/4
+tempo: 104
+seed 7
+
+drums {
+  hh = cc cc c?30% {cc|co}
+  bd = b - b? -
+  sd = - s - s?80%
+}
+
+bass = | {a1|e2} _ a2 c3 | d2 _ {e2|g2} _ |

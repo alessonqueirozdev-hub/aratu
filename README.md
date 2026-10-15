@@ -18,10 +18,24 @@ it. It is built on [Manguebyte](https://github.com/alessonqueirozdev-hub/mangueb
 the open-source audio framework for Rust, and runs on its own or inside a
 DAW, in step with the host's transport.
 
-> **Status: in development.** The language crate (`crates/aratu`) reads
-> every example in the manual; the checker, the scheduler and the web editor
-> are being built now. See [docs/VISION.md](docs/VISION.md) for where it is
-> going.
+> **Status: in development.** The language crate (`crates/aratu`) reads,
+> checks and schedules every example in the manual, and the web editor plays
+> pieces with simple built-in sounds and takes edits at the next bar line.
+> The sound engine will be Manguebyte once it runs in the browser. See
+> [docs/VISION.md](docs/VISION.md) for where it is going.
+
+## Running the editor
+
+You need Rust (with `rustup target add wasm32-unknown-unknown`) and Node.
+
+```
+cd web
+npm install
+npm run dev
+```
+
+Then open <http://localhost:5173>. `Ctrl+Enter` plays or updates, `Ctrl+.`
+stops, and any edit while it plays comes in at the next bar line.
 
 ## A taste
 

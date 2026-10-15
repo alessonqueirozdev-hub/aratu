@@ -1,0 +1,426 @@
+//! Aratu in the browser.
+//!
+//! A handful of exported functions with plain numbers and bytes, and JSON for
+//! everything structured, so the module needs no binding generator. The
+//! editor writes the source into memory from [`aratu_alloc`], calls
+//! [`aratu_compile`], and reads the answer from [`aratu_out_ptr`] and
+//! [`aratu_out_len`]. Positions in the answers are in UTF-16 code units, as
+//! JavaScript strings count them.
+
+use aratu::diag::{Lang, Severity};
+use aratu::model::{At, Piece};
+use aratu::schedule::{EventKind, Options, render};
+use aratu::{Compiled, compile, params};
+use std::cell::RefCell;
+use std::collections::HashMap;
+use std::fmt::Write as _;
+
+pub mod json;
+use json::Json;
+
+/// A compiled piece kept for rendering.
+pub struct Program {
+    pub compiled: Compiled,
+    /// For each byte offset of the source, its UTF-16 offset.
+    utf16: Vec<u32>,
+}
+
+impl Program {
+    fn pos(&self, byte: usize) -> u32 {
+        self.utf16[byte.min(self.utf16.len() - 1)]
+    }
+}
+
+fn utf16_table(src: &str) -> Vec<u32> {
+    let mut table = vec![0u32; src.len() + 1];
+    let mut n = 0u32;
+    for (i, c) in src.char_indices() {
+        for b in 0..c.len_utf8() {
+            table[i + b] = n;
+        }
+        n += c.len_utf16() as u32;
+    }
+    table[src.len()] = n;
+    table
+}
+
+thread_local! {
+    static PROGRAMS: RefCell<HashMap<u32, Program>> = RefCell::new(HashMap::new());
+    static NEXT: RefCell<u32> = const { RefCell::new(1) };
+    static OUT: RefCell<Vec<u8>> = const { RefCell::new(Vec::new()) };
+}
+
+/// What kind of instrument a part sounds like by default.
+fn instrument(part: &aratu::model::Part) -> &'static str {
+    use aratu::ast::LineKind;
+    if part.lines.iter().any(|l| l.kind == LineKind::Strum) {
+        "guitar"
+    } else if !part.lines.is_empty() && part.lines.iter().all(|l| l.kind == LineKind::Drums) {
+        "drums"
+    } else if part.lines.iter().any(|l| l.kind == LineKind::Chords) {
+        "keys"
+    } else {
+        "synth"
+    }
+}
+
+/// Compiles `src`, keeps the program, and answers in JSON.
+pub fn compile_json(src: &str, lang: Lang) -> (u32, String) {
+    let compiled = compile(src);
+    let program = Program {
+        utf16: utf16_table(src),
+        compiled,
+    };
+    let handle = NEXT.with(|n| {
+        let mut n = n.borrow_mut();
+        let h = *n;
+        *n += 1;
+        h
+    });
+    let text = describe(handle, &program, src, lang);
+    PROGRAMS.with(|p| p.borrow_mut().insert(handle, program));
+    (handle, text)
+}
+
+fn describe(handle: u32, program: &Program, src: &str, lang: Lang) -> String {
+    let c = &program.compiled;
+    let piece: &Piece = &c.piece;
+    let mut j = Json::new();
+    j.open_obj();
+    j.key("handle").num(handle as f64);
+    j.key("ok").bool(!c.has_errors());
+    j.key("diagnostics").open_arr();
+    for d in &c.diagnostics {
+        j.open_obj();
+        j.key("severity").str(match d.severity {
+            Severity::Error => "error",
+            Severity::Warning => "warning",
+        });
+        j.key("from").num(program.pos(d.span.start) as f64);
+        j.key("to")
+            .num(program.pos(d.span.end.max(d.span.start)) as f64);
+        let (line, _) = aratu::span::line_col(src, d.span.start);
+        j.key("line").num(line as f64);
+        j.key("message").str(&d.text(lang));
+        j.close_obj();
+    }
+    j.close_arr();
+
+    j.key("live").open_arr();
+    for cmd in &piece.commands {
+        if matches!(cmd.at, At::Live | At::Now) {
+            j.open_obj();
+            j.key("key").str(&cmd.key);
+            j.key("now").bool(cmd.at == At::Now);
+            j.close_obj();
+        }
+    }
+    j.close_arr();
+
+    j.key("tempo").num(piece.tempo);
+    j.key("meter").str(&piece.meter.to_string());
+    j.key("pickup").num(piece.pickup.to_f64());
+
+    // Every part, from the piece, its patterns and its sections, once.
+    let mut seen = Vec::new();
+    j.key("parts").open_arr();
+    for part in piece.all_parts() {
+        if seen.contains(&part.name) {
+            continue;
+        }
+        seen.push(part.name.clone());
+        j.open_obj();
+        j.key("name").str(&part.name);
+        j.key("instrument").str(instrument(part));
+        j.key("chain").open_arr();
+        for u in &part.chain {
+            j.str(u);
+        }
+        j.close_arr();
+        j.key("params").open_arr();
+        for p in &part.params {
+            j.open_obj();
+            j.key("id").str(&p.id);
+            j.key("value").num(p.value);
+            j.close_obj();
+        }
+        j.close_arr();
+        j.close_obj();
+    }
+    j.close_arr();
+
+    j.key("params").open_arr();
+    for p in &piece.params {
+        j.open_obj();
+        j.key("id").str(&p.id);
+        j.key("value").num(p.value);
+        j.close_obj();
+    }
+    j.close_arr();
+
+    j.key("controls").open_arr();
+    for ctl in controls(piece) {
+        let info = params::lookup(&ctl.id);
+        j.open_obj();
+        j.key("id").str(&ctl.id);
+        j.key("part").str(&ctl.part);
+        j.key("from").num(program.pos(ctl.span.start) as f64);
+        j.key("to").num(program.pos(ctl.span.end) as f64);
+        j.key("value").num(ctl.written);
+        if let Some(info) = info {
+            j.key("min").num(info.min);
+            j.key("max").num(info.max);
+            j.key("unit").str(info.unit);
+            j.key("log").bool(info.scale == params::Scale::Log);
+        }
+        j.close_obj();
+    }
+    j.close_arr();
+    j.close_obj();
+    j.finish()
+}
+
+/// A number in the text that the editor draws as a knob.
+pub struct Control {
+    pub id: String,
+    pub part: String,
+    pub span: aratu::span::Span,
+    /// The number as written (before unit conversion).
+    pub written: f64,
+}
+
+/// The parameters written as numbers, with where each number is.
+pub fn controls(piece: &Piece) -> Vec<Control> {
+    let _ = piece;
+    Vec::new()
+}
+
+/// Renders bars `from..to` of a kept program, in JSON.
+///
+/// `anchors` holds one live line per text line, `bar<TAB>key`.
+pub fn render_json(
+    handle: u32,
+    from: i64,
+    to: i64,
+    default_anchor: i64,
+    seed: u64,
+    anchors: &str,
+) -> String {
+    let mut opts = Options {
+        default_anchor,
+        random_seed: seed,
+        ..Options::default()
+    };
+    for l in anchors.lines() {
+        if let Some((bar, key)) = l.split_once('\t') {
+            if let Ok(b) = bar.parse() {
+                opts.anchors.insert(key.to_string(), b);
+            }
+        }
+    }
+    PROGRAMS.with(|p| {
+        let p = p.borrow();
+        let Some(program) = p.get(&handle) else {
+            return "{\"events\":[],\"bars\":[]}".to_string();
+        };
+        let r = render(&program.compiled.piece, &opts, from, to);
+        let mut j = Json::new();
+        j.open_obj();
+        j.key("events").open_arr();
+        for e in &r.events {
+            j.open_obj();
+            j.key("bar").num(e.bar as f64);
+            j.key("beat").num(e.beat.to_f64());
+            j.key("time").num(e.time);
+            j.key("dur").num(e.duration);
+            j.key("part").str(&e.part);
+            j.key("vel").num(e.velocity as f64);
+            match &e.kind {
+                EventKind::Note(n) => {
+                    j.key("note").num(*n as f64);
+                }
+                EventKind::Drum(d) => {
+                    j.key("drum").str(d.name());
+                }
+                EventKind::Param { id, value } => {
+                    j.key("param").str(id);
+                    j.key("value").num(*value);
+                }
+            }
+            j.key("from").num(program.pos(e.span.start) as f64);
+            j.key("to").num(program.pos(e.span.end) as f64);
+            j.close_obj();
+        }
+        j.close_arr();
+        j.key("bars").open_arr();
+        for b in &r.bars {
+            j.open_obj();
+            j.key("bar").num(b.bar as f64);
+            j.key("start").num(b.start_time);
+            j.key("end").num(b.end_time);
+            j.key("beats").num(b.beats.to_f64());
+            j.key("bpm").num(b.bpm);
+            let mut m = String::new();
+            let _ = write!(m, "{}", b.meter);
+            j.key("meter").str(&m);
+            j.close_obj();
+        }
+        j.close_arr();
+        j.close_obj();
+        j.finish()
+    })
+}
+
+pub fn release(handle: u32) {
+    PROGRAMS.with(|p| p.borrow_mut().remove(&handle));
+}
+
+fn set_out(text: String) {
+    OUT.with(|o| *o.borrow_mut() = text.into_bytes());
+}
+
+/// Reserves `len` bytes for the editor to write into.
+#[unsafe(no_mangle)]
+pub extern "C" fn aratu_alloc(len: usize) -> *mut u8 {
+    let mut v = Vec::<u8>::with_capacity(len.max(1));
+    let p = v.as_mut_ptr();
+    std::mem::forget(v);
+    p
+}
+
+/// Gives back memory from [`aratu_alloc`].
+///
+/// # Safety
+/// `ptr` and `len` must come from one call to [`aratu_alloc`].
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn aratu_free(ptr: *mut u8, len: usize) {
+    // SAFETY: the caller passes back exactly what aratu_alloc gave.
+    unsafe { drop(Vec::from_raw_parts(ptr, 0, len.max(1))) };
+}
+
+/// # Safety
+/// `ptr..ptr + len` must be readable memory holding text written by the
+/// caller (invalid UTF-8 is replaced).
+unsafe fn read_text(ptr: *const u8, len: usize) -> String {
+    // SAFETY: guaranteed by the caller.
+    let bytes = unsafe { std::slice::from_raw_parts(ptr, len) };
+    String::from_utf8_lossy(bytes).into_owned()
+}
+
+/// Compiles a piece (`lang` 0 Portuguese, 1 English); the JSON answer is in
+/// the output buffer. Returns the program's handle.
+///
+/// # Safety
+/// `ptr..ptr + len` must be the UTF-8 source, readable.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn aratu_compile(ptr: *const u8, len: usize, lang: u32) -> u32 {
+    // SAFETY: forwarded from the caller.
+    let src = unsafe { read_text(ptr, len) };
+    let lang = if lang == 1 { Lang::En } else { Lang::Pt };
+    let (handle, text) = compile_json(&src, lang);
+    set_out(text);
+    handle
+}
+
+/// Renders bars `from..to`; the JSON answer is in the output buffer.
+///
+/// # Safety
+/// `anchors_ptr..anchors_ptr + anchors_len` must be readable text.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn aratu_render(
+    handle: u32,
+    from: i32,
+    to: i32,
+    default_anchor: i32,
+    seed: u32,
+    anchors_ptr: *const u8,
+    anchors_len: usize,
+) {
+    // SAFETY: forwarded from the caller.
+    let anchors = unsafe { read_text(anchors_ptr, anchors_len) };
+    let text = render_json(
+        handle,
+        from as i64,
+        to as i64,
+        default_anchor as i64,
+        seed as u64,
+        &anchors,
+    );
+    set_out(text);
+}
+
+/// Forgets a program.
+#[unsafe(no_mangle)]
+pub extern "C" fn aratu_release(handle: u32) {
+    release(handle);
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn aratu_out_ptr() -> *const u8 {
+    OUT.with(|o| o.borrow().as_ptr())
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn aratu_out_len() -> usize {
+    OUT.with(|o| o.borrow().len())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn positions_are_utf16() {
+        let t = utf16_table("dó𝄞x");
+        // d=0, ó (2 bytes)=1, 𝄞 (4 bytes, 2 UTF-16 units)=2, x=4.
+        assert_eq!(t[0], 0);
+        assert_eq!(t[1], 1);
+        assert_eq!(t[3], 2);
+        assert_eq!(t[7], 4);
+        assert_eq!(t[8], 5);
+    }
+
+    #[test]
+    fn compile_and_render_answer_in_json() {
+        let (h, text) = compile_json("tempo: 120\nbass = | dó3 _ _ _ |\nhh = c c c c", Lang::Pt);
+        assert!(text.contains("\"ok\":true"), "{text}");
+        assert!(text.contains("\"name\":\"bass\""));
+        assert!(text.contains("\"instrument\":\"drums\""));
+        let r = render_json(h, 1, 2, 1, 0, "");
+        assert!(r.contains("\"note\":48"), "{r}");
+        assert!(r.contains("\"drum\":\"closed-hat\""));
+        // dó3 starts after "tempo: 120\nbass = | " = 20 units.
+        assert!(r.contains("\"from\":20,\"to\":23"), "{r}");
+        release(h);
+        assert_eq!(
+            render_json(h, 1, 2, 1, 0, ""),
+            "{\"events\":[],\"bars\":[]}"
+        );
+    }
+
+    #[test]
+    fn errors_come_in_the_readers_language() {
+        let (_, pt) = compile_json("bass = | c2 _ _ _ _ |", Lang::Pt);
+        assert!(pt.contains("\"ok\":false"));
+        assert!(pt.contains("o compasso 1 de `bass` tem 5 tempos"), "{pt}");
+        let (_, en) = compile_json("bass = | c2 _ _ _ _ |", Lang::En);
+        assert!(en.contains("bar 1 of `bass` has 5 beats"), "{en}");
+    }
+
+    #[test]
+    fn live_lines_are_listed_for_anchoring() {
+        let (h, text) = compile_json("pattern a { hh = c c c c }\nplay a\nnow: play a", Lang::En);
+        assert!(
+            text.contains("{\"key\":\"play a\",\"now\":false}"),
+            "{text}"
+        );
+        assert!(
+            text.contains("{\"key\":\"now: play a\",\"now\":true}"),
+            "{text}"
+        );
+        let r = render_json(h, 1, 4, 1, 0, "3\tplay a\n3\tnow: play a");
+        let events = &r[..r.find("\"bars\"").unwrap()];
+        assert!(events.contains("\"bar\":3"));
+        assert!(!events.contains("\"bar\":1,"), "{r}");
+    }
+}

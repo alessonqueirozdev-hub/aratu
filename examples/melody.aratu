@@ -1,0 +1,9 @@
+// A melody with dynamics, a repeat, a ritardando and a fermata.
+meter: 4/4
+tempo: 84
+
+melody = |: p:c4< e g c5 | b4 g e d | f:c4 e4 g4 a4 :| g4> e c d | p:c4^ _ _ _ |
+bass   = |: c3 _ g2 _ | g2 _ _ _ | c3 _ f2 _ :| g2 _ _ _ | c2 _ _ _ |
+
+at bar 7: rit to 60 over 2 bars
+at bar 9: tempo primo

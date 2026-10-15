@@ -1,0 +1,17 @@
+// The first piece of the manual.
+meter: 4/4
+tempo: 96
+key: A minor
+
+drums {
+  hh = cc cc co cc
+  bd = b - b -
+  sd = - s - s
+}
+
+bass = | a2 _ e2 _ | f2 _ c3 _ |
+
+guitar {
+  chords = | Am | F | C G | G |
+  strum  = D du -u du
+}

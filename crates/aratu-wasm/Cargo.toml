@@ -1,0 +1,15 @@
+[package]
+name = "aratu-wasm"
+description = "Aratu compiled to WebAssembly for the web editor, talking JSON"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+aratu = { path = "../aratu" }

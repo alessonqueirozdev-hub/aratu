@@ -1,0 +1,19 @@
+// Sections and a form.
+meter: 4/4
+tempo: 100
+
+section intro {
+  keys { chords = | Am | F | }
+}
+section verse {
+  bass = | a2 _ e2 _ | f2 _ c3 _ |
+  drums { hh = cc cc co cc; bd = b - b -; sd = - s - s }
+  keys { chords = | Am | F | }
+}
+section chorus {
+  bass = | c3 _ g2 _ | g2 _ d3 _ |
+  drums { hh = cc cc cc cc; bd = b - b b; sd = - s - S }
+  guitar { chords = | C | G |; strum = D du -u du }
+}
+
+form: intro verse x2 chorus x2
