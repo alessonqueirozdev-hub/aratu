@@ -242,3 +242,47 @@ numbers repeat (two 23s, two 33s); `main` opens a brace that never closes;
 the status bar names the language "Rust", which tells a user they are writing
 Rust. The knobs on the panel and in the code would be one and the same
 control.
+
+## A shorter name
+
+"MusiMangue" is long to remember. Candidates tied to manguebeat and
+maracatu, checked free as crate names on crates.io and unused by any
+live-coding project on GitHub (15 October 2026):
+
+| Name | What it is | Why it fits |
+|---|---|---|
+| **Baque** (recommended) | the beat of maracatu (*baque virado*, *baque solto*) | it means "the beat": a rhythm language called Baque, short and easy in any language |
+| **Gonguê** | maracatu's iron bell, which keeps time for everyone | that is the language's job; the accent becomes `gongue` in code and URLs |
+| **Alfaia** | maracatu's bass drum | strong and recognisable |
+| **Aratu** | a mangrove crab | echoes Manguebyte's crab, less tied to rhythm |
+| **Frevo** | Recife's rhythm | Recife in general rather than manguebeat |
+
+A trademark search (INPI) is needed before a name is final.
+
+## Still to represent
+
+In order of how often musicians need them:
+
+1. **Articulations**: staccato, legato (slurs), tenuto, marcato; ghost notes
+   in parentheses as in drum notation (`(s)`); flams, drags and rolls;
+   glissando, slides and bends; vibrato and trills; grace notes; arpeggiated
+   (rolled) chords.
+2. **Harmony by function**: scale degrees and Roman numerals (`I vi IV V`);
+   modulation (`at bar 17: key D major`); voicings (close, open, drop 2) and
+   tensions (`G7b9`); arpeggio patterns assigned like a strum
+   (`arp = up 8ths`).
+3. **Meter**: additive meters (7/8 as 2+2+3, essential for frevo and much
+   music of the Northeast of Brazil); tuplets that span beats (a half-note
+   triplet), which the beat rules do not cover yet; polyrhythm (3 against 2)
+   and polymeter (parts in different meters); metric modulation.
+4. **Brazilian feel**: `swing 60%` is jazz swing. The pushed sixteenths of
+   samba, maracatu and frevo are different; `feel samba`, `feel maracatu`,
+   `feel frevo` would be a cultural strength no live-coding language has.
+5. **More voices and instrument techniques**: two voices in one part, the
+   piano's sustain pedal, breath marks and caesura, 8va.
+6. **Chance**, which live coders expect: "maybe" (`s?`) and "one of"
+   (`{a|b}`), a musician's *ad lib*.
+
+**Open:** how staccato is written: a mark after the note (`c4'`, close to a
+score) or a word (`stacc c4 e4`, easier to remember).
+
