@@ -334,6 +334,14 @@ prefix: `8va: c4 e g`.
 
 **Chance.** `s?` sometimes (half the time), `s?30%`, `{a|b}` one of two.
 
-**Open:** staccato as `c4'` (recommended) or as a word; chance with the live
-coders' symbols (`?`, `{a|b}`) or musicians' words (`maybe`, `ad lib`).
+**Decided (15 October 2026):** staccato is `c4'`.
+
+**Open:** chance with the live coders' symbols (`?`, `{a|b}`, recommended,
+since chance is used constantly when playing live and `?` reads as
+"maybe?") or musicians' words (`maybe c`, `one of c2 g1`). Chance means the
+computer decides, a little at random, what to play each time round, so a
+loop varies by itself the way a drummer never plays a bar quite the same:
+`hh = cc cc c? cc` plays the third-beat eighth only some of the time,
+`c?30%` three times in ten, and `bass = | {c2|g1} _ c2 _ |` starts each
+repeat on either C or G.
 
