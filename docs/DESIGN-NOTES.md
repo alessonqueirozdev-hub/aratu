@@ -150,6 +150,33 @@ model. An earlier sketch applied the strum with an arrow
 (`guitar.chord(Am, F, C, G).measure(1) -> d d u d`); the arrow is kept for
 signal flow (recommendation 5), so the strum is an assignment.
 
+**2f. Dynamics and expression.** Score words, written two ways: inside a
+bar for composing, as one short line for changing a piece live.
+
+- Marks: `ppp pp p mp mf f ff fff`, plus `sfz` and `fp`. Inside a bar a mark
+  is attached to the beat it starts with a colon, so it is not counted as a
+  beat: `| p:c4 e4 g4 c5 |`.
+- Hairpins as in a score: `<` crescendo and `>` diminuendo, from the beat
+  they follow to the next mark: `| p:c4< d4 e4 f4 | f:g4 |`.
+- Live: `piano: cresc to ff over 4 bars`, `drums: dim to p over 2 bars`,
+  `all: fade out over 8 bars`.
+- Each mark is a fixed velocity (ppp 16, pp 33, p 49, mp 64, mf 80, f 96,
+  ff 112, fff 127, the convention notation programs use); an upper-case
+  accent adds to it.
+
+**2g. Tempo changes.** `rit to 90 over 2 bars` (`rall` too),
+`accel to 140 over 4 bars`, `a tempo` back to the tempo before the change,
+`tempo primo` back to the first tempo, a fermata as `^` on a note (`g4^`,
+twice its length by default) or `fermata 3 beats`. For the engine, a tempo
+ramp is integrated (the position of a beat under a linear ramp has a closed
+form), so events stay on their exact sample during a rit.
+
+**2h. Rubato is robbed time that is given back.** `piano: rubato 10%`
+stretches and shrinks the beats inside the phrase and arrives at the bar
+line on time, so one part breathes while the others keep the pulse;
+`all: rubato` bends the whole piece. Separate from it: `humanize` (small
+random deviations of timing and velocity) and `swing 60%`.
+
 **3. Simple words for time.** `pickup: beat 4` instead of
 `Meter.anacrusis(4/4::4)`; `at bar 30: tempo 130`; a ramp as
 `tempo 120 -> 140 over 4 bars`.

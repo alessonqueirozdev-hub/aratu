@@ -32,6 +32,9 @@ Note names in Portuguese (`dó ré mi`) work as well as letters.
 
 ## Documents
 
+- [docs/MANUAL.md](docs/MANUAL.md): the manual, a draft written from the design so far:
+  rhythm, drums, melodies, chords and strumming, dynamics, tempo, feel,
+  patterns, live playing, transformations, sound, and a quick reference.
 - [docs/DESIGN-NOTES.md](docs/DESIGN-NOTES.md): syntax discussion and recommendations
   (no program ceremony, one pattern line per bar, numbers as controls).
 - [docs/VISION.md](docs/VISION.md): the problem with time in today's
