@@ -20,6 +20,7 @@ const words = {
   error: { pt: "erro", en: "error" },
   warning: { pt: "aviso", en: "warning" },
   next: { pt: "A mudança entra no compasso", en: "The change comes in at bar" },
+  beat: { pt: "tempo", en: "beat" },
   hint: {
     pt: "Ctrl+Enter toca ou atualiza · Ctrl+. para · edite enquanto toca: a mudança entra na próxima barra",
     en: "Ctrl+Enter plays or updates · Ctrl+. stops · edit while it plays: the change comes in at the next bar line",

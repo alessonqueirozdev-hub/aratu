@@ -170,8 +170,12 @@ async function main(): Promise<void> {
           }
           scheduled.push(...list);
         },
-        swapped(_program, bar) {
-          $("note").textContent = `${tr("next", lang)} ${bar}.`;
+        cut(bar, beat) {
+          scheduled = scheduled.filter((s) => s.event.bar < bar || (s.event.bar === bar && s.event.beat < beat));
+        },
+        swapped(_program, bar, beat) {
+          const at = beat > 0 ? `${bar}, ${tr("beat", lang)} ${beat + 1}` : String(bar);
+          $("note").textContent = `${tr("next", lang)} ${at}.`;
           window.setTimeout(() => ($("note").textContent = ""), 3000);
         },
       });

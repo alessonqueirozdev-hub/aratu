@@ -401,7 +401,9 @@ While a piece plays, you change it, you do not rewrite it.
 - **A change is one line.** `hh = cc cc oc cc` replaces the hi-hat and
   nothing else; the other parts keep playing.
 - **Changes land on the beat.** An edit takes effect at the next bar line.
-  `now:` makes it take effect at the next beat instead.
+  `now:` makes it take effect at the next beat instead: `now: play fill`
+  written during the second beat brings the fill in on the third, and the
+  fill counts its bars from the bar it came in.
 - **Prepare ahead.** `at bar 17: play fill` schedules a change.
 - **Out and in.** `guitar: out` silences a part from the next bar line and
   `guitar: in` brings it back, as on a mixer; `all: out` stops everything.

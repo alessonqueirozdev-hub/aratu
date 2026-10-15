@@ -431,9 +431,21 @@ decisions still to make.
   start again on every keystroke. The editor remembers, for each such line,
   the bar it first sounded from, and the scheduler takes those bars as
   input. Editing the line makes it a new line that starts at the next bar.
-- **`now:` comes in at the next bar line for now**, not the next beat: the
-  editor schedules whole bars ahead. Changing at a beat means splitting a
-  bar between two versions of the piece; it is possible but not built.
+  The lines already written when playing starts keep bar 1, so the first
+  edit does not restart them.
+- **`now:` splits a bar between two versions of the piece.** The editor
+  schedules whole bars a little ahead. When a new version brings a `now:`
+  line it has not seen, the editor finds the next whole beat it has already
+  scheduled, takes back what the old version scheduled from that beat on
+  (the sounds and the parameter changes), and renders the rest of that bar
+  from the new version, from that beat (`Options::from_beat`). For the
+  scheduler the line is still anchored to a bar: the bar the beat falls in,
+  so a `now: play fill` written during the second beat of bar 5 counts its
+  loop from bar 5, and the fill's first beats, which were never heard, are
+  left out. Parameters set at that bar line are set at the beat instead.
+  Other new lines in the same edit, without `now:`, still wait for the next
+  bar line; everything else edited with it comes in at the beat. If the next
+  beat is the next bar line, the swap happens there, as for any edit.
 - **A knob changes the sound at once and the text with it**, so the knob
   does not wait for the bar line: it sets the parameter on the engine and
   rewrites the number, and the next version of the piece agrees with it. A

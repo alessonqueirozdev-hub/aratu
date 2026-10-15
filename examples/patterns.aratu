@@ -1,5 +1,6 @@
 // Patterns for playing live: change a line while it plays,
-// and the change lands at the next bar line.
+// and the change lands at the next bar line. Write a line
+// such as `now: play fill` and it lands at the next beat.
 meter: 4/4
 tempo: 112
 

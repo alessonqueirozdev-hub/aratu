@@ -79,6 +79,8 @@ export interface BarInfo {
   beats: number;
   bpm: number;
   meter: string;
+  /** When each whole beat starts, in seconds from the start of the piece. */
+  beatTimes: number[];
 }
 
 export interface Rendered {
@@ -94,6 +96,7 @@ interface Exports {
   aratu_render(
     handle: number,
     from: number,
+    fromBeat: number,
     to: number,
     defaultAnchor: number,
     seed: number,
@@ -139,10 +142,18 @@ export class Aratu {
     return JSON.parse(this.output()) as Program;
   }
 
-  render(handle: number, from: number, to: number, anchors: Map<string, number>, seed: number): Rendered {
+  /** Renders bars `from..to`; bar `from` from its beat `fromBeat` on. */
+  render(
+    handle: number,
+    from: number,
+    to: number,
+    anchors: Map<string, number>,
+    seed: number,
+    fromBeat = 0,
+  ): Rendered {
     let text = "";
     for (const [key, bar] of anchors) text += `${bar}\t${key}\n`;
-    this.withText(text, (p, n) => this.x.aratu_render(handle, from, to, 1, seed >>> 0, p, n));
+    this.withText(text, (p, n) => this.x.aratu_render(handle, from, fromBeat, to, 1, seed >>> 0, p, n));
     return JSON.parse(this.output()) as Rendered;
   }
 

@@ -9,6 +9,7 @@
 
 use aratu::diag::{Lang, Severity};
 use aratu::model::{At, Piece};
+use aratu::ratio::Ratio;
 use aratu::schedule::{EventKind, Options, render};
 use aratu::{Compiled, compile, params};
 use std::cell::RefCell;
@@ -263,12 +264,14 @@ pub fn controls(piece: &Piece) -> Vec<Control> {
     out
 }
 
-/// Renders bars `from..to` of a kept program, in JSON.
+/// Renders bars `from..to` of a kept program, in JSON, bar `from` from its
+/// beat `from_beat` (a change with `now:` coming in inside a bar).
 ///
 /// `anchors` holds one live line per text line, `bar<TAB>key`.
 pub fn render_json(
     handle: u32,
     from: i64,
+    from_beat: i64,
     to: i64,
     default_anchor: i64,
     seed: u64,
@@ -277,6 +280,7 @@ pub fn render_json(
     let mut opts = Options {
         default_anchor,
         random_seed: seed,
+        from_beat: Ratio::int(from_beat.max(0)),
         ..Options::default()
     };
     for l in anchors.lines() {
@@ -328,6 +332,11 @@ pub fn render_json(
             j.key("end").num(b.end_time);
             j.key("beats").num(b.beats.to_f64());
             j.key("bpm").num(b.bpm);
+            j.key("beatTimes").open_arr();
+            for t in &b.beat_times {
+                j.num(*t);
+            }
+            j.close_arr();
             let mut m = String::new();
             let _ = write!(m, "{}", b.meter);
             j.key("meter").str(&m);
@@ -390,7 +399,8 @@ pub unsafe extern "C" fn aratu_compile(ptr: *const u8, len: usize, lang: u32) ->
     handle
 }
 
-/// Renders bars `from..to`; the JSON answer is in the output buffer.
+/// Renders bars `from..to`, bar `from` from its beat `from_beat`; the JSON
+/// answer is in the output buffer.
 ///
 /// # Safety
 /// `anchors_ptr..anchors_ptr + anchors_len` must be readable text.
@@ -398,6 +408,7 @@ pub unsafe extern "C" fn aratu_compile(ptr: *const u8, len: usize, lang: u32) ->
 pub unsafe extern "C" fn aratu_render(
     handle: u32,
     from: i32,
+    from_beat: i32,
     to: i32,
     default_anchor: i32,
     seed: u32,
@@ -409,6 +420,7 @@ pub unsafe extern "C" fn aratu_render(
     let text = render_json(
         handle,
         from as i64,
+        from_beat as i64,
         to as i64,
         default_anchor as i64,
         seed as u64,
@@ -454,14 +466,14 @@ mod tests {
         assert!(text.contains("\"ok\":true"), "{text}");
         assert!(text.contains("\"name\":\"bass\""));
         assert!(text.contains("\"instrument\":\"drums\""));
-        let r = render_json(h, 1, 2, 1, 0, "");
+        let r = render_json(h, 1, 0, 2, 1, 0, "");
         assert!(r.contains("\"note\":48"), "{r}");
         assert!(r.contains("\"drum\":\"closed-hat\""));
         // dó3 starts after "tempo: 120\nbass = | " = 20 units.
         assert!(r.contains("\"from\":20,\"to\":23"), "{r}");
         release(h);
         assert_eq!(
-            render_json(h, 1, 2, 1, 0, ""),
+            render_json(h, 1, 0, 2, 1, 0, ""),
             "{\"events\":[],\"bars\":[]}"
         );
     }
@@ -486,7 +498,7 @@ mod tests {
             text.contains("{\"key\":\"now: play a\",\"now\":true}"),
             "{text}"
         );
-        let r = render_json(h, 1, 4, 1, 0, "3\tplay a\n3\tnow: play a");
+        let r = render_json(h, 1, 0, 4, 1, 0, "3\tplay a\n3\tnow: play a");
         let events = &r[..r.find("\"bars\"").unwrap()];
         assert!(events.contains("\"bar\":3"));
         assert!(!events.contains("\"bar\":1,"), "{r}");

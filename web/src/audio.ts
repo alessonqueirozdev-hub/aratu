@@ -10,6 +10,12 @@ const mtof = (n: number) => 440 * Math.pow(2, (n - 69) / 12);
 
 type Wave = OscillatorType | "pluck" | "keys";
 
+/** One sounding source and the gain that shapes it. */
+export interface Voice {
+  src: AudioScheduledSourceNode;
+  gain: GainNode;
+}
+
 interface Chain {
   input: GainNode;
   highpass: BiquadFilterNode;
@@ -33,7 +39,9 @@ export class Engine {
   private readonly noise: AudioBuffer;
   private readonly chains = new Map<string, Chain>();
   private readonly plucks = new Map<number, AudioBuffer>();
-  private readonly voices = new Set<{ src: AudioScheduledSourceNode; gain: GainNode }>();
+  private readonly voices = new Set<Voice>();
+  /** The voices made by the event being played, for `play` to return. */
+  private made: Voice[] = [];
 
   constructor() {
     this.ctx = new AudioContext({ latencyHint: "interactive" });
@@ -196,21 +204,58 @@ export class Engine {
     for (const c of targets) if (c) this.setParam(c, id, value, this.ctx.currentTime);
   }
 
-  play(e: AratuEvent, when: number): void {
+  /** Schedules an event; returns the voices it made, for `cancel`. */
+  play(e: AratuEvent, when: number): Voice[] {
+    this.made = [];
     if (e.param !== undefined && e.value !== undefined) {
       const targets = e.part === "all" ? [...this.chains.values()] : [this.chain(e.part)];
       for (const c of targets) this.setParam(c, e.param, e.value, when);
-      return;
+      return this.made;
     }
     const c = this.chain(e.part);
     const g = Math.pow(e.vel / 127, 1.6) * 0.6;
     if (e.drum) this.drum(c, e.drum, when, g);
     else if (e.note !== undefined) this.note(c, e.note, when, Math.max(e.dur, 0.02), g);
+    return this.made;
+  }
+
+  /** Silences voices scheduled but not yet sounding, as when a version of
+   * the piece is replaced inside a bar. */
+  cancel(voices: Voice[], from: number): void {
+    for (const v of voices) {
+      if (!this.voices.delete(v)) continue;
+      v.gain.disconnect();
+      try {
+        v.src.stop(from);
+      } catch {
+        // Already stopped: nothing more to do.
+      }
+    }
+  }
+
+  /** Forgets the parameter changes scheduled from `from` on. */
+  cancelParams(from: number): void {
+    for (const c of this.chains.values()) {
+      const params = [
+        c.highpass.frequency,
+        c.highpass.Q,
+        c.lowpass.frequency,
+        c.lowpass.Q,
+        c.volume.gain,
+        c.pan.pan,
+        c.delaySend.gain,
+        c.delay.delayTime,
+        c.feedback.gain,
+        c.reverbSend.gain,
+      ];
+      for (const p of params) p.cancelScheduledValues(from);
+    }
   }
 
   private track(src: AudioScheduledSourceNode, gain: GainNode): void {
     const v = { src, gain };
     this.voices.add(v);
+    this.made.push(v);
     src.onended = () => {
       this.voices.delete(v);
       gain.disconnect();

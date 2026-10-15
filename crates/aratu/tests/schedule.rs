@@ -412,6 +412,66 @@ fn scheduled_play_and_live_anchors() {
 }
 
 #[test]
+fn a_now_line_comes_in_at_a_beat_inside_the_bar() {
+    // The editor anchors `now: play b` to the bar it was written in (2) and
+    // renders that bar from the next beat (2): the beats before it belong to
+    // the version that was playing.
+    let src = "tempo: 120
+pattern a { hh = c c c c }
+pattern b { sd = s s s s }
+play a
+now: play b
+now: hh.volume = 0.5";
+    let c = compile(src);
+    assert!(c.errors().next().is_none());
+    let mut opts = Options {
+        from_beat: Ratio::int(2),
+        ..Options::default()
+    };
+    opts.anchors.insert("now: play b".into(), 2);
+    opts.anchors.insert("now: hh.volume = 0.5".into(), 2);
+    let r = render(&c.piece, &opts, 2, 3);
+    let sounds: Vec<&Event> = r
+        .events
+        .iter()
+        .filter(|e| !matches!(e.kind, EventKind::Param { .. }))
+        .collect();
+    assert_eq!(sounds.len(), 2);
+    assert!(
+        sounds
+            .iter()
+            .all(|e| e.kind == EventKind::Drum(Drum::Snare))
+    );
+    assert_eq!(sounds[0].beat, Ratio::int(2));
+    close(sounds[0].time, 3.0);
+    close(sounds[1].time, 3.5);
+    // A parameter set at that bar line is set at the beat instead.
+    let param = r
+        .events
+        .iter()
+        .find(|e| matches!(e.kind, EventKind::Param { .. }))
+        .unwrap();
+    assert_eq!(param.beat, Ratio::int(2));
+    close(param.time, 3.0);
+    // Each whole beat's time, for the editor to find the next one.
+    assert_eq!(r.bars.len(), 1);
+    let bt = &r.bars[0].beat_times;
+    assert_eq!(bt.len(), 4);
+    for (i, t) in bt.iter().enumerate() {
+        close(*t, 2.0 + i as f64 * 0.5);
+    }
+
+    // The bars after it play whole.
+    opts.from_beat = Ratio::ZERO;
+    let next = render(&c.piece, &opts, 3, 4).events;
+    let snares = next
+        .iter()
+        .filter(|e| e.kind == EventKind::Drum(Drum::Snare))
+        .count();
+    assert_eq!(snares, 4);
+}
+
+#[test]
 fn the_form_plays_sections_in_order() {
     let src =
         "section a { m = | c4 _ _ _ | }\nsection b { m = | d4 _ _ _ | e4 _ _ _ | }\nform: a b x2 a";

@@ -29,6 +29,11 @@ pub struct Options {
     pub default_anchor: i64,
     /// The seed used when the piece says `seed random`.
     pub random_seed: u64,
+    /// Where in the first bar asked for rendering begins, in beats. Sounds
+    /// that start before it are left out (the editor keeps those of the
+    /// version of the piece it replaces mid-bar); parameters set at that
+    /// bar line are set at this beat instead.
+    pub from_beat: Ratio,
 }
 
 impl Default for Options {
@@ -37,6 +42,7 @@ impl Default for Options {
             anchors: HashMap::new(),
             default_anchor: 1,
             random_seed: 0,
+            from_beat: Ratio::ZERO,
         }
     }
 }
@@ -115,6 +121,9 @@ pub struct BarInfo {
     pub meter: Meter,
     /// The tempo at the bar's first beat.
     pub bpm: f64,
+    /// When each whole beat of the bar starts, in seconds from the piece's
+    /// start: where a change with `now:` can come in.
+    pub beat_times: Vec<f64>,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -126,7 +135,7 @@ pub struct Rendered {
 /// Renders bars `from..to` of the piece.
 pub fn render(piece: &Piece, opts: &Options, from: i64, to: i64) -> Rendered {
     let mut s = Scheduler::new(piece, opts);
-    s.run(from.max(0), to.max(from))
+    s.run(from.max(0), to.max(from), opts.from_beat)
 }
 
 fn mix(mut z: u64) -> u64 {
@@ -268,7 +277,7 @@ impl<'p> Scheduler<'p> {
         }
     }
 
-    fn run(&mut self, from: i64, to: i64) -> Rendered {
+    fn run(&mut self, from: i64, to: i64, from_beat: Ratio) -> Rendered {
         let mut g = 0;
         let mut start_beat = Ratio::ZERO;
         let mut start_time = 0.0;
@@ -370,12 +379,13 @@ impl<'p> Scheduler<'p> {
                 } = &c.action
                 {
                     let clock = self.clocks.last().unwrap();
+                    let beat = if g == from { from_beat } else { Ratio::ZERO };
                     self.params.push((
                         g,
                         Event {
                             bar: g,
-                            beat: Ratio::ZERO,
-                            time: clock.start_time,
+                            beat,
+                            time: clock.time(beat),
                             duration: 0.0,
                             part: part.clone().unwrap_or_else(|| "all".into()),
                             line: String::new(),
@@ -398,6 +408,9 @@ impl<'p> Scheduler<'p> {
         let mut events = Vec::new();
         for s in std::mem::take(&mut self.done) {
             if s.start.0 < from || s.start.0 >= to {
+                continue;
+            }
+            if s.start.0 == from && s.written < from_beat {
                 continue;
             }
             let t0 = self.time_of(s.start) + s.jitter;
@@ -446,6 +459,11 @@ impl<'p> Scheduler<'p> {
                 beats: c.beats,
                 meter: self.meter_at(c.bar.max(1)),
                 bpm: c.bpm_at(Ratio::ZERO),
+                beat_times: (0..)
+                    .map(Ratio::int)
+                    .take_while(|b| *b < c.beats)
+                    .map(|b| c.time(b))
+                    .collect(),
             })
             .collect();
         Rendered { events, bars }
