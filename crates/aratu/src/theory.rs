@@ -358,6 +358,35 @@ impl Chord {
             .map(|i| (self.root + i).rem_euclid(12))
             .collect()
     }
+
+    /// A keyboard voicing: the bass in the second octave, the chord in close
+    /// position from the third.
+    pub fn block_voicing(&self) -> Vec<i32> {
+        let bass = 36 + self.bass.unwrap_or(self.root);
+        let mut notes = vec![bass];
+        notes.extend(self.intervals.iter().map(|i| 48 + self.root + i));
+        notes
+    }
+
+    /// A guitar-like voicing of up to six strings, low to high: the bass
+    /// between E2 and D#3, then chord tones upwards, at least a minor third
+    /// apart, up to E5.
+    pub fn guitar_voicing(&self) -> Vec<i32> {
+        let pcs = self.pitch_classes();
+        let bass_pc = self.bass.unwrap_or(self.root);
+        let bass = 40 + (bass_pc - 4).rem_euclid(12);
+        let mut notes = vec![bass];
+        let mut n = bass + 3;
+        while notes.len() < 6 && n <= 76 {
+            if pcs.contains(&n.rem_euclid(12)) {
+                notes.push(n);
+                n += 3;
+            } else {
+                n += 1;
+            }
+        }
+        notes
+    }
 }
 
 #[cfg(test)]

@@ -14,6 +14,7 @@ pub mod music;
 pub mod params;
 pub mod parse;
 pub mod ratio;
+pub mod schedule;
 pub mod span;
 pub mod theory;
 pub mod time;
