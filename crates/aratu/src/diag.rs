@@ -1,4 +1,4 @@
-//! Diagnostics in a musician's words, in Portuguese and English.
+//! Diagnostics in a musician's words, in Portuguese, Spanish and English.
 //!
 //! A diagnostic carries what went wrong as data ([`Message`]); the words are
 //! produced on demand in the reader's language, so the editor can switch
@@ -13,6 +13,7 @@ pub enum Lang {
     #[default]
     Pt,
     En,
+    Es,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -96,6 +97,16 @@ impl Thing {
             (Beat, Pt) => "um tempo como `beat 4`",
             (Value, En) => "a value",
             (Value, Pt) => "um valor",
+            (Number, Es) => "un número",
+            (Meter, Es) => "una indicación de compás como 4/4",
+            (Key, Es) => "una tonalidad como A minor",
+            (Name, Es) => "un nombre",
+            (BarNumber, Es) => "un número de compás",
+            (Dynamic, Es) => "una dinámica (ppp pp p mp mf f ff fff)",
+            (Colon, Es) => "dos puntos",
+            (Bars, Es) => "una duración como `over 4 bars`",
+            (Beat, Es) => "un tiempo como `beat 4`",
+            (Value, Es) => "un valor",
         }
     }
 }
@@ -117,6 +128,9 @@ impl Change {
             (Change::Meter, Lang::Pt) => "fórmula de compasso",
             (Change::Key, Lang::En) => "key",
             (Change::Key, Lang::Pt) => "tom",
+            (Change::Tempo, Lang::Es) => "tempo",
+            (Change::Meter, Lang::Es) => "indicación de compás",
+            (Change::Key, Lang::Es) => "tonalidad",
         }
     }
 }
@@ -274,6 +288,14 @@ fn beats_en(n: Ratio) -> String {
         "1 beat".into()
     } else {
         format!("{n} beats")
+    }
+}
+
+fn beats_es(n: Ratio) -> String {
+    if n == Ratio::ONE {
+        "1 tiempo".into()
+    } else {
+        format!("{n} tiempos")
     }
 }
 
@@ -588,6 +610,153 @@ impl Message {
                     what.words(En)
                 )
             }
+            (UnclosedBlock { name }, Es) => {
+                format!("el bloque `{name}` se abre con {{ pero nunca se cierra con }}")
+            }
+            (StrayClose, Es) => "esta } no cierra nada".into(),
+            (UnknownLine, Es) => "no entiendo esta línea".into(),
+            (Expected { what, after }, Es) => {
+                format!("falta {} después de `{after}`", what.words(Es))
+            }
+            (Unexpected { text }, Es) => format!("`{text}` no va aquí"),
+            (BadMeter { text }, Es) => format!(
+                "`{text}` no es una indicación de compás: escribe dos números como 4/4 o 6/8, el de abajo 1, 2, 4, 8, 16 o 32"
+            ),
+            (TempoOutOfRange { bpm }, Es) => {
+                format!("un tempo de {bpm} está fuera de 10 a 400 pulsos por minuto")
+            }
+            (UnknownKey { text }, Es) => {
+                format!("`{text}` no es una tonalidad; escríbela como `A minor` o `F# major`")
+            }
+            (DuplicateHeader { name }, Es) => {
+                format!("`{name}:` aparece dos veces; vale la última")
+            }
+            (BadPickup { beat, beats }, Es) => {
+                format!("un compás de {beats} tiempos no tiene un tiempo {beat} para empezar")
+            }
+            (BarZero, Es) => "los compases se cuentan desde 1".into(),
+            (UnclosedBracket { open }, Es) => format!("este {open} nunca se cierra"),
+            (UnexpectedChar { ch }, Es) => format!("`{ch}` no significa nada aquí"),
+            (UnknownNote { text }, Es) => format!(
+                "`{text}` no es una nota: las notas son do re mi fa sol la si, o c d e f g a b, con la octava, como do4"
+            ),
+            (GluedNotes { first, second }, Es) => format!(
+                "hay dos notas pegadas en un tiempo; escríbelas entre corchetes: `[{first} {second}]`"
+            ),
+            (UnknownDrum { ch }, Es) => format!(
+                "`{ch}` no es un símbolo de batería: c hi-hat cerrado, o hi-hat abierto, b bombo, s caja, r ride, x crash"
+            ),
+            (UnknownStrum { ch }, Es) => format!(
+                "`{ch}` no es un símbolo de rasgueo: d hacia abajo, u hacia arriba, m apagado, - la mano pasa, _ deja sonar"
+            ),
+            (UnknownChord { text }, Es) => format!("no conozco el acorde `{text}`"),
+            (UnknownMark { word }, Es) => format!(
+                "`{word}:` no es una dinámica (ppp pp p mp mf f ff fff sfz fp) ni una señal (segno: fine: coda:)"
+            ),
+            (ChanceRange { percent }, Es) => {
+                format!("una probabilidad de {percent}% no está entre 0% y 100%")
+            }
+            (DynamicBeforeNothing, Es) => "la dinámica va justo antes de una nota".into(),
+            (EmptyBrackets, Es) => "estos corchetes están vacíos".into(),
+            (EmptyChoice, Es) => "una de las opciones entre { } está vacía".into(),
+            (MisplacedMarker { marker }, Es) => {
+                format!("`{marker}:` va al principio de un compás")
+            }
+            (MisplacedJump { jump }, Es) => {
+                format!("`{jump}` va al final de un compás, justo antes de la barra")
+            }
+            (MisplacedRepeatCount, Es) => {
+                "el número de veces, como `x4`, va justo después de :|".into()
+            }
+            (EmptyBar, Es) => "este compás está vacío; escribe silencios, como `- - - -`".into(),
+            (BarRepeatNotAlone, Es) => {
+                "`%` vale un compás entero y va solo entre las barras".into()
+            }
+            (NothingToRepeat, Es) => "no hay un compás antes de este `%` para repetir".into(),
+            (HoldWithNothing, Es) => "este `_` no tiene una nota antes para sostener".into(),
+            (NoOctave { note }, Es) => format!(
+                "`{note}` no tiene octava y ninguna nota anterior le da una, así que vale {note}4"
+            ),
+            (
+                BeatCount {
+                    line,
+                    bar,
+                    found,
+                    expected: _,
+                    meter,
+                },
+                Es,
+            ) => format!(
+                "el compás {bar} de `{line}` tiene {}, pero la indicación de compás es {meter}",
+                beats_es(*found)
+            ),
+            (
+                PickupBeats {
+                    line,
+                    found,
+                    expected,
+                },
+                Es,
+            ) => format!(
+                "la anacrusa de `{line}` tiene {}, pero el pickup deja lugar para {}",
+                beats_es(*found),
+                beats_es(*expected)
+            ),
+            (
+                ChordsOffBeat {
+                    line,
+                    bar,
+                    chords,
+                    beats,
+                },
+                Es,
+            ) => format!(
+                "el compás {bar} de `{line}` reparte {} entre {chords} acordes, y eso no cae en los tiempos; usa _ para decir cuánto dura cada uno, como `Am _ F _`",
+                beats_es(*beats)
+            ),
+            (
+                JumpWithoutMarker {
+                    line,
+                    jump,
+                    bar,
+                    marker,
+                },
+                Es,
+            ) => format!(
+                "hay un {jump} en el compás {bar} de `{line}`, pero ningún {marker} para él"
+            ),
+            (RepeatsNeverEnd { line }, Es) => {
+                format!("las repeticiones y saltos de `{line}` nunca terminan")
+            }
+            (StrumWithoutChords { part }, Es) => format!(
+                "el rasgueo de `{part}` no tiene acordes para tocar; agrega una línea `chords = | Am | F |`"
+            ),
+            (UnknownPattern { name }, Es) => format!("no existe un patrón llamado `{name}`"),
+            (UnknownTarget { name }, Es) => {
+                format!("no existe una parte, línea o patrón llamado `{name}`")
+            }
+            (UnknownSection { name }, Es) => format!("no existe una sección llamada `{name}`"),
+            (UnknownParam { name }, Es) => {
+                format!("todavía no conozco el parámetro `{name}`, así que no tiene perilla")
+            }
+            (BadUnit { unit, name }, Es) => format!("`{name}` no se mide en {unit}"),
+            (
+                ParamOutOfRange {
+                    name,
+                    value,
+                    min,
+                    max,
+                },
+                Es,
+            ) => format!("{value} está fuera del rango de `{name}`, de {min} a {max}"),
+            (HairpinWithoutTarget { line }, Es) => format!(
+                "el regulador de `{line}` no tiene una dinámica después a la que llegar, así que avanza un escalón"
+            ),
+            (DuplicateLine { name }, Es) => format!("`{name}` aparece dos veces; vale la última"),
+            (SameBarChange { bar, what }, Es) => format!(
+                "dos cambios de {} en el compás {bar}; vale el último",
+                what.words(Es)
+            ),
             (SameBarChange { bar, what }, Pt) => {
                 format!(
                     "duas mudanças de {} no compasso {bar}; vale a última",

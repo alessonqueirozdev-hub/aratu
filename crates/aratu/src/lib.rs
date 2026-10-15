@@ -8,6 +8,7 @@
 pub mod ast;
 pub mod diag;
 pub mod dynamics;
+pub mod exercise;
 pub mod lex;
 pub mod model;
 pub mod music;

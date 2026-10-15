@@ -384,7 +384,7 @@ unsafe fn read_text(ptr: *const u8, len: usize) -> String {
     String::from_utf8_lossy(bytes).into_owned()
 }
 
-/// Compiles a piece (`lang` 0 Portuguese, 1 English); the JSON answer is in
+/// Compiles a piece (`lang` 0 Portuguese, 1 English, 2 Spanish); the JSON answer is in
 /// the output buffer. Returns the program's handle.
 ///
 /// # Safety
@@ -393,7 +393,11 @@ unsafe fn read_text(ptr: *const u8, len: usize) -> String {
 pub unsafe extern "C" fn aratu_compile(ptr: *const u8, len: usize, lang: u32) -> u32 {
     // SAFETY: forwarded from the caller.
     let src = unsafe { read_text(ptr, len) };
-    let lang = if lang == 1 { Lang::En } else { Lang::Pt };
+    let lang = match lang {
+        1 => Lang::En,
+        2 => Lang::Es,
+        _ => Lang::Pt,
+    };
     let (handle, text) = compile_json(&src, lang);
     set_out(text);
     handle
@@ -429,6 +433,67 @@ pub unsafe extern "C" fn aratu_render(
     set_out(text);
 }
 
+/// Checks an exercise: the student's text against the answer's, by what
+/// they play. `bars` 0 compares one time round of the answer; `flags`
+/// bit 0 also compares dynamics, bit 1 leaves lengths out.
+pub fn check_json(student: &str, answer: &str, bars: i64, flags: u32, lang: Lang) -> String {
+    use aratu::exercise::{CheckOptions, check};
+    let s = compile(student);
+    let a = compile(answer);
+    let mut j = Json::new();
+    j.open_obj();
+    j.key("compiles").bool(!s.has_errors());
+    let problems: Vec<String> = if s.has_errors() || a.has_errors() {
+        Vec::new()
+    } else {
+        let opts = CheckOptions {
+            bars: (bars > 0).then_some(bars),
+            lengths: flags & 2 == 0,
+            dynamics: flags & 1 != 0,
+        };
+        check(&s.piece, &a.piece, opts)
+            .iter()
+            .map(|p| p.text(lang))
+            .collect()
+    };
+    j.key("ok")
+        .bool(!s.has_errors() && !a.has_errors() && problems.is_empty());
+    j.key("problems").open_arr();
+    for p in &problems {
+        j.str(p);
+    }
+    j.close_arr();
+    j.close_obj();
+    j.finish()
+}
+
+/// Checks an exercise (see [`check_json`]); the JSON answer is in the
+/// output buffer. `lang` as for [`aratu_compile`].
+///
+/// # Safety
+/// Both ranges must be readable UTF-8 text.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn aratu_check(
+    student_ptr: *const u8,
+    student_len: usize,
+    answer_ptr: *const u8,
+    answer_len: usize,
+    bars: i32,
+    flags: u32,
+    lang: u32,
+) {
+    // SAFETY: forwarded from the caller.
+    let student = unsafe { read_text(student_ptr, student_len) };
+    // SAFETY: forwarded from the caller.
+    let answer = unsafe { read_text(answer_ptr, answer_len) };
+    let lang = match lang {
+        1 => Lang::En,
+        2 => Lang::Es,
+        _ => Lang::Pt,
+    };
+    set_out(check_json(&student, &answer, bars as i64, flags, lang));
+}
+
 /// Forgets a program.
 #[unsafe(no_mangle)]
 pub extern "C" fn aratu_release(handle: u32) {
@@ -448,6 +513,28 @@ pub extern "C" fn aratu_out_len() -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn exercises_are_checked_by_what_they_play() {
+        let ok = check_json(
+            "m = | dó4 ré4 mi4 fá4 |",
+            "m = | c4 d e f |",
+            0,
+            0,
+            Lang::Pt,
+        );
+        assert_eq!(ok, r#"{"compiles":true,"ok":true,"problems":[]}"#);
+        let wrong = check_json("m = | c4 d e e |", "m = | c4 d e f |", 0, 0, Lang::Es);
+        assert!(
+            wrong.contains("En el compás 1, tiempo 4: falta fa4."),
+            "{wrong}"
+        );
+        let broken = check_json("m = | c4 d e |", "m = | c4 d e f |", 0, 0, Lang::Pt);
+        assert!(
+            broken.starts_with(r#"{"compiles":false,"ok":false"#),
+            "{broken}"
+        );
+    }
 
     #[test]
     fn positions_are_utf16() {

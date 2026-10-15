@@ -857,6 +857,10 @@ mod tests {
             d[0].text(Lang::En),
             "bar 2 of `bass` has 5 beats, but the meter is 4/4"
         );
+        assert_eq!(
+            d[0].text(Lang::Es),
+            "el compás 2 de `bass` tiene 5 tiempos, pero la indicación de compás es 4/4"
+        );
     }
 
     #[test]
