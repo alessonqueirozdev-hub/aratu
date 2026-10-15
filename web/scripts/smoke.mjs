@@ -57,6 +57,14 @@ assert.deepEqual(
 );
 x.aratu_release(hl);
 
+// `once`: the fill sounds in bar 2 only, and the loop of `a` goes on.
+const fill = call(live.replace("now: play b", "now: play b once"), (p, n) => x.aratu_compile(p, n, 1));
+assert.equal(out().ok, true);
+call("1\tplay a\n2\tnow: play b once\n", (p, n) => x.aratu_render(fill, 1, 0, 4, 1, 0, p, n));
+const drums = out().events.map((e) => `${e.bar}${e.drum[0]}`);
+assert.deepEqual([...new Set(drums)], ["1c", "2s", "3c"]);
+x.aratu_release(fill);
+
 call("bass = | c2 _ _ _ _ |", (p, n) => x.aratu_compile(p, n, 0));
 assert.match(out().diagnostics[0].message, /tem 5 tempos, mas a fórmula de compasso é 4\/4/);
 call("bass = | c2 _ _ _ _ |", (p, n) => x.aratu_compile(p, n, 1));

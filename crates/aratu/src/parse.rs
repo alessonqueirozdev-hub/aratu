@@ -298,13 +298,18 @@ impl Parser {
                             break;
                         }
                     }
+                    let once = c.keyword("once");
                     self.end(c)?;
-                    return Ok(StmtKind::Play(entries));
+                    return Ok(StmtKind::Play { entries, once });
                 }
                 "add" => {
                     let (n, s) = c.name().ok_or_else(|| expected(c, Thing::Name, "add"))?;
+                    let once = c.keyword("once");
                     self.end(c)?;
-                    return Ok(StmtKind::Add(name(n, s)));
+                    return Ok(StmtKind::Add {
+                        pattern: name(n, s),
+                        once,
+                    });
                 }
                 "tempo" => {
                     if c.keyword("primo") {
@@ -804,9 +809,18 @@ mod tests {
                 ..
             }
         ));
-        let StmtKind::Play(p) = one("play groove x3, fill").kind else {
+        let StmtKind::Play { entries: p, once } = one("play groove x3, fill").kind else {
             panic!()
         };
+        assert!(!once);
+        assert!(matches!(
+            one("now: play fill once").kind,
+            StmtKind::Play { once: true, .. }
+        ));
+        assert!(matches!(
+            one("add crash once").kind,
+            StmtKind::Add { once: true, .. }
+        ));
         assert_eq!((p[0].pattern.text.as_str(), p[0].times), ("groove", 3));
         assert_eq!((p[1].pattern.text.as_str(), p[1].times), ("fill", 1));
         assert!(matches!(one("now: play fill").when, When::Now));

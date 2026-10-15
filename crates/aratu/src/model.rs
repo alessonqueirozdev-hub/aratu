@@ -121,9 +121,17 @@ pub enum Action {
     Tempo(TempoChange),
     Meter(Meter),
     Key(Key),
-    /// Patterns by index into `patterns`, with how many times each.
-    Play(Vec<(usize, u32)>),
-    Add(usize),
+    /// Patterns by index into `patterns`, with how many times each; with
+    /// `once`, the list is played through once instead of looped.
+    Play {
+        list: Vec<(usize, u32)>,
+        once: bool,
+    },
+    /// A pattern by index, on top; with `once`, for its own length only.
+    Add {
+        pattern: usize,
+        once: bool,
+    },
     Level {
         target: String,
         to: LevelTarget,
@@ -462,7 +470,7 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
             StmtKind::TempoChange(t) => Action::Tempo(*t),
             StmtKind::MeterChange(m) => Action::Meter(*m),
             StmtKind::KeyChange(k) => Action::Key(*k),
-            StmtKind::Play(entries) => {
+            StmtKind::Play { entries, once } => {
                 let mut list = Vec::new();
                 for e in entries {
                     match piece.patterns.iter().position(|g| g.name == e.pattern.text) {
@@ -478,20 +486,25 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
                 if list.is_empty() {
                     continue;
                 }
-                Action::Play(list)
+                Action::Play { list, once: *once }
             }
-            StmtKind::Add(n) => match piece.patterns.iter().position(|g| g.name == n.text) {
-                Some(i) => Action::Add(i),
-                None => {
-                    diags.push(Diagnostic::error(
-                        n.span,
-                        Message::UnknownPattern {
-                            name: n.text.clone(),
-                        },
-                    ));
-                    continue;
+            StmtKind::Add { pattern: n, once } => {
+                match piece.patterns.iter().position(|g| g.name == n.text) {
+                    Some(i) => Action::Add {
+                        pattern: i,
+                        once: *once,
+                    },
+                    None => {
+                        diags.push(Diagnostic::error(
+                            n.span,
+                            Message::UnknownPattern {
+                                name: n.text.clone(),
+                            },
+                        ));
+                        continue;
+                    }
                 }
-            },
+            }
             StmtKind::Level { target, dynamic } => {
                 check_target(&piece, target, diags);
                 Action::Level {
@@ -931,7 +944,9 @@ mod tests {
         assert_eq!(p.patterns[0].parts[0].lines[0].label, "groove.drums.hh");
         assert_eq!(p.parts[0].name, "chords");
         assert_eq!(p.parts[0].lines.len(), 2);
-        assert!(matches!(p.commands[0].action, Action::Play(ref v) if v == &[(0, 1)]));
+        assert!(
+            matches!(p.commands[0].action, Action::Play { ref list, once: false } if list == &[(0, 1)])
+        );
     }
 
     #[test]

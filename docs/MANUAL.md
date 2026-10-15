@@ -389,6 +389,19 @@ fill in the fourth bar of every four, in place of the groove; `add` plays a
 pattern on top of the one that is sounding, so `every 8 bars, first: add
 crash` puts a crash on the first beat of every eight bars.
 
+A `play` stays until another one: `at bar 8: play fill` plays the fill from
+bar 8 on. `once` plays it through one time and goes back:
+
+```
+at bar 8: play fill once     // the fill in bar 8, the groove again in bar 9
+now: play fill once          // a fill now, then the groove where it would be
+now: add crash once          // a crash on top, once
+```
+
+The pattern that was playing keeps counting its bars meanwhile, so `play
+groove x3, fill` does not lose its place in the phrase. With `every`, a
+pattern already plays once each time round.
+
 *Provisional:* the syntax of `section` and the word `add`.
 
 ## 10. Playing live
@@ -401,9 +414,10 @@ While a piece plays, you change it, you do not rewrite it.
 - **A change is one line.** `hh = cc cc oc cc` replaces the hi-hat and
   nothing else; the other parts keep playing.
 - **Changes land on the beat.** An edit takes effect at the next bar line.
-  `now:` makes it take effect at the next beat instead: `now: play fill`
-  written during the second beat brings the fill in on the third, and the
-  fill counts its bars from the bar it came in.
+  `now:` makes it take effect at the next beat instead: `now: play fill
+  once` written during the second beat brings the fill in on the third, for
+  the rest of that bar, and the groove comes back at the bar line where it
+  would have been. The fill counts its bars from the bar it came in.
 - **Prepare ahead.** `at bar 17: play fill` schedules a change.
 - **Out and in.** `guitar: out` silences a part from the next bar line and
   `guitar: in` brings it back, as on a mixer; `all: out` stops everything.
@@ -555,6 +569,7 @@ Instruments made with Parabolic can be used as sounds.
 | `D.C.`, `D.S. al fine`, `D.S. al coda`, `to coda` | jumps |
 | `section name { }`, `form: intro verse x2 chorus` | sections and the form |
 | `every 4 bars: play fill` | a variation inside a loop |
+| `play fill once`, `add crash once` | a pattern once, then back |
 | `at bar 30:` | a scheduled change |
 | `now:` | a change at the next beat |
 | `guitar: out`, `guitar: in` | silence a part, bring it back |

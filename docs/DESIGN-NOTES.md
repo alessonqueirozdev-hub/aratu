@@ -420,6 +420,23 @@ Smaller choices made along the way:
   with `at bar` and `every`. (Also proposed: the score's `tacet` and
   `tutti`, and no new words at all.)
 
+## Playing a pattern once
+
+**Decided (15 October 2026), chosen by the user from three proposals:**
+
+- `play fill once` plays the pattern (or the phrase, `play fill x2, break
+  once`) through one time, then the `play` before it goes on where it would
+  have been: it kept counting its bars meanwhile, so a four-bar phrase does
+  not lose its place. `add crash once` puts a pattern on top for its own
+  length. It works with `now:` and `at bar`; with `every` a pattern already
+  plays once each time round. Without `once`, `play` stays until another
+  `play`, with or without `now:`. (Also proposed: leaving `play` as it was,
+  so a single fill needs `now: play fill, groove x3` or deleting the line,
+  which moves the phrase; and making every `now:` line a one-time gesture,
+  which leaves no way to change the groove now and keep it.)
+- The word is English like the other keywords; `uma vez` comes with the
+  Portuguese keywords.
+
 ## What building it showed (15 October 2026)
 
 Notes from implementing the language crate and the web editor, for

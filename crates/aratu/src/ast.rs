@@ -94,10 +94,18 @@ pub enum StmtKind {
         feel: Feel,
     },
 
-    /// `play groove x3, fill`
-    Play(Vec<PlayEntry>),
-    /// `add crash`: a pattern played on top of the current one.
-    Add(Name),
+    /// `play groove x3, fill`; with `once`, played through once and then
+    /// the pattern that was playing goes on where it would be.
+    Play {
+        entries: Vec<PlayEntry>,
+        once: bool,
+    },
+    /// `add crash`: a pattern played on top of the current one; with
+    /// `once`, only for its own length.
+    Add {
+        pattern: Name,
+        once: bool,
+    },
 
     /// `tempo 130`, `rit to 80 over 2 bars`, `a tempo`, `tempo primo`
     TempoChange(TempoChange),
