@@ -32,6 +32,8 @@ Note names in Portuguese (`dó ré mi`) work as well as letters.
 
 ## Documents
 
+- [docs/DESIGN-NOTES.md](docs/DESIGN-NOTES.md): syntax discussion and recommendations
+  (no program ceremony, one pattern line per bar, numbers as controls).
 - [docs/VISION.md](docs/VISION.md): the problem with time in today's
   live-coding languages, the principles, the language sketch, how it would
   run on Manguebyte, and what the first version contains.
