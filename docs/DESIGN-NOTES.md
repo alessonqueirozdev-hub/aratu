@@ -53,7 +53,7 @@ number.
 
 **1. No program ceremony.** `fn`, `void`, `main`, `const`, `let mut` and `::`
 are words for programmers. A musician reading `fn void main()` learns nothing
-about the music, and the phrase is not valid in Rust or C. MusiMangue is
+about the music, and the phrase is not valid in Rust or C. Aratu is
 written *in* Rust; it does not have to look like Rust. The file is the piece,
 and its first lines set the frame:
 
@@ -245,16 +245,17 @@ control.
 
 ## A shorter name
 
-"MusiMangue" is long to remember. Candidates tied to manguebeat and
+**Decided (15 October 2026): Aratu.** The first name, MusiMangue, was long to
+remember. Candidates tied to manguebeat and
 maracatu, checked free as crate names on crates.io and unused by any
 live-coding project on GitHub (15 October 2026):
 
 | Name | What it is | Why it fits |
 |---|---|---|
-| **Baque** (recommended) | the beat of maracatu (*baque virado*, *baque solto*) | it means "the beat": a rhythm language called Baque, short and easy in any language |
+| **Baque** | the beat of maracatu (*baque virado*, *baque solto*) | it means "the beat": a rhythm language called Baque, short and easy in any language |
 | **Gonguê** | maracatu's iron bell, which keeps time for everyone | that is the language's job; the accent becomes `gongue` in code and URLs |
 | **Alfaia** | maracatu's bass drum | strong and recognisable |
-| **Aratu** | a mangrove crab | echoes Manguebyte's crab, less tied to rhythm |
+| **Aratu** (chosen) | a mangrove crab | echoes Manguebyte's crab and the mangue itself |
 | **Frevo** | Recife's rhythm | Recife in general rather than manguebeat |
 
 A trademark search (INPI) is needed before a name is final.

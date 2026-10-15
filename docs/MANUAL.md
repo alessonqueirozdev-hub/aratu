@@ -1,12 +1,12 @@
-# The MusiMangue manual
+# The Aratu manual
 
-*Draft, October 2026. MusiMangue is not built yet: this manual describes the
+*Draft, October 2026. Aratu is not built yet: this manual describes the
 language as it has been designed so far, so that the design can be read,
 tried on paper and argued about. Points still open are marked **Open**.*
 
-MusiMangue is written the way a musician thinks: in measures, beats, note
+Aratu is written the way a musician thinks: in measures, beats, note
 values, chords and score words. If you can read a lead sheet and count a bar,
-you can read a MusiMangue piece.
+you can read a Aratu piece.
 
 ## Contents
 
@@ -56,7 +56,7 @@ plays, and no word that exists only for the computer.
 Three rules describe every rhythm in a bar.
 
 **Rule 1. A space separates beats.** A line in 4/4 has four groups. If a bar
-has the wrong number of beats, MusiMangue tells you in those words: *"this bar
+has the wrong number of beats, Aratu tells you in those words: *"this bar
 has 5 beats, but the meter is 4/4"*.
 
 **Rule 2. Symbols written together share their beat equally.**

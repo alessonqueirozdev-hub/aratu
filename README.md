@@ -1,8 +1,12 @@
-# MusiMangue
+# Aratu
 
 **A live-coding language that reads like music.**
 
-MusiMangue is a live-coding language and environment for people who know
+*Aratu is a crab of the mangrove, the mangue of Recife that gave
+manguebeat, and Manguebyte, their names. The project was first called
+MusiMangue.*
+
+Aratu is a live-coding language and environment for people who know
 music: measures, time signatures, note values and tempo come first, so that
 what you type is laid out in time the way a musician already thinks about
 it. It is built on [Manguebyte](https://github.com/alessonqueirozdev-hub/manguebyte),

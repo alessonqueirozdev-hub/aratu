@@ -1,4 +1,4 @@
-# MusiMangue: vision
+# Aratu: vision
 
 *Draft, October 2026. Everything here is open to change; nothing is built.*
 
@@ -21,7 +21,7 @@ are for writing scores, not for changing music while it plays.
 
 ## The landscape
 
-| Language | In common with MusiMangue | What it lacks for this purpose |
+| Language | In common with Aratu | What it lacks for this purpose |
 |---|---|---|
 | TidalCycles, Strudel | compact pattern notation; Strudel has sliders in the code | time is the cycle, not the measure; no lead-sheet chords, score dynamics or rubato |
 | ixi lang (Thor Magnusson) | patterns that look like a score, very simple | no longer developed, tied to SuperCollider, no harmony or expression |
@@ -37,7 +37,7 @@ rubato, controls bound to the engine's parameters, and running inside a DAW
 in step with its transport, in Portuguese and English.
 
 **Where the users are.** Today's live coders are invested in Tidal and
-Strudel and many prefer cycles and generative patterns, so MusiMangue is
+Strudel and many prefer cycles and generative patterns, so Aratu is
 unlikely to win them over quickly. The larger audience is musicians who do
 not live code yet: band musicians, music teachers and students, producers who
 live in a DAW, and Brazilian music education in particular, where there is
@@ -74,7 +74,7 @@ and the language simplified wherever they get stuck. The number of symbols
 4. **Change while it plays, on the beat.** An edit takes effect at the next
    bar, or another boundary the player chooses, never in the middle of a
    note.
-5. **Inside the DAW.** MusiMangue also runs as a plugin following the host's
+5. **Inside the DAW.** Aratu also runs as a plugin following the host's
    tempo, meter and position, sending MIDI to other tracks or playing its
    own sounds.
 6. **Readable by people who did not write it.** A piece is a score others can
@@ -105,7 +105,7 @@ melody plays with piano, chords with pad, bass with pluck
 
 ## How it would run on Manguebyte
 
-| MusiMangue needs | Manguebyte provides |
+| Aratu needs | Manguebyte provides |
 |---|---|
 | Sample-accurate scheduling of notes and changes | the timestamped event stream and transport |
 | MIDI in and out, MIDI files | `manguebyte-midi`, `manguebyte-devices` |
@@ -118,17 +118,17 @@ The language itself (parser, checker, scheduler with a tempo map and a meter
 map) is new work in this repository.
 
 **Where the sound comes from.** Manguebyte is a library, not a separate
-program: MusiMangue depends on its crates, and they are compiled into
-MusiMangue's executable, or into its WebAssembly module in a browser. All
+program: Aratu depends on its crates, and they are compiled into
+Aratu's executable, or into its WebAssembly module in a browser. All
 real-time synthesis (oscillators, the polyphonic synth, filters, envelopes,
 effects, the audio graph) comes from there.
 
 Parabolic is not embedded. Its licence (PolyForm Noncommercial plus a
-commercial licence) would otherwise reach MusiMangue, which stays MIT OR
-Apache-2.0. Parabolic's instruments reach MusiMangue in two ways instead:
+commercial licence) would otherwise reach Aratu, which stays MIT OR
+Apache-2.0. Parabolic's instruments reach Aratu in two ways instead:
 
 - **On a desktop, as plugins.** Manguebyte hosts CLAP and VST 3 plugins
-  (`manguebyte-host`), so MusiMangue plays an instrument made with Parabolic
+  (`manguebyte-host`), so Aratu plays an instrument made with Parabolic
   the way it plays any plugin, from any vendor.
 - **Anywhere, including a browser, as data.** A browser cannot run native
   plugins, so Parabolic exports SFZ (WAV files and a mapping), and an open
@@ -137,7 +137,7 @@ Apache-2.0. Parabolic's instruments reach MusiMangue in two ways instead:
 | Layer | Licence | Role |
 |---|---|---|
 | Manguebyte | MIT OR Apache-2.0 | audio engine, synthesis, SFZ sampler, plugin hosting |
-| MusiMangue | MIT OR Apache-2.0 | language, scheduling, editor; its sound is Manguebyte |
+| Aratu | MIT OR Apache-2.0 | language, scheduling, editor; its sound is Manguebyte |
 | Parabolic | PolyForm Noncommercial + commercial | authoring: guided capture, harmonic modelling, panel design, plugin export |
 
 ## The first version
@@ -161,7 +161,7 @@ collaborative sessions, a browser version (WebAssembly), microtonality.
 
 ## Relationship to the other projects
 
-- **Manguebyte** is the foundation; anything MusiMangue needs from it is built
+- **Manguebyte** is the foundation; anything Aratu needs from it is built
   there first.
-- **Parabolic** instruments can be MusiMangue's sounds.
+- **Parabolic** instruments can be Aratu's sounds.
 - Both tools will be presented on Manguebyte's website.
