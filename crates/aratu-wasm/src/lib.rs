@@ -121,6 +121,15 @@ fn describe(handle: u32, program: &Program, src: &str, lang: Lang) -> String {
     j.key("tempo").num(piece.tempo);
     j.key("meter").str(&piece.meter.to_string());
     j.key("pickup").num(piece.pickup.to_f64());
+    // One time round: the longest line, for the book's rhythm grid.
+    let length = piece
+        .all_parts()
+        .flat_map(|p| p.lines.iter())
+        .map(|l| l.order.len())
+        .max()
+        .unwrap_or(1)
+        .max(1);
+    j.key("length").num(length as f64);
 
     // Every part, from the piece, its patterns and its sections, once.
     let mut seen = Vec::new();
@@ -306,6 +315,7 @@ pub fn render_json(
             j.key("time").num(e.time);
             j.key("dur").num(e.duration);
             j.key("part").str(&e.part);
+            j.key("line").str(&e.line);
             j.key("vel").num(e.velocity as f64);
             match &e.kind {
                 EventKind::Note(n) => {

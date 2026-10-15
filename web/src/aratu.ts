@@ -51,6 +51,8 @@ export interface Program {
   tempo: number;
   meter: string;
   pickup: number;
+  /** Bars in one time round of the longest line. */
+  length: number;
   parts: PartInfo[];
   params: ParamValue[];
   controls: Control[];
@@ -63,6 +65,8 @@ export interface AratuEvent {
   time: number;
   dur: number;
   part: string;
+  /** The line that played it: `bass`, `drums.hh`. */
+  line: string;
   vel: number;
   note?: number;
   drum?: string;
@@ -88,6 +92,18 @@ export interface Rendered {
   bars: BarInfo[];
 }
 
+/** The answer of a check: whether the student's piece reads, and what
+ * differs from the answer, in words. */
+export interface Checked {
+  compiles: boolean;
+  ok: boolean;
+  problems: string[];
+}
+
+export type Lang = "pt" | "es" | "en";
+
+const LANG_CODE: Record<Lang, number> = { pt: 0, en: 1, es: 2 };
+
 interface Exports {
   memory: WebAssembly.Memory;
   aratu_alloc(len: number): number;
@@ -102,6 +118,15 @@ interface Exports {
     seed: number,
     anchorsPtr: number,
     anchorsLen: number,
+  ): void;
+  aratu_check(
+    studentPtr: number,
+    studentLen: number,
+    answerPtr: number,
+    answerLen: number,
+    bars: number,
+    flags: number,
+    lang: number,
   ): void;
   aratu_release(handle: number): void;
   aratu_out_ptr(): number;
@@ -137,8 +162,8 @@ export class Aratu {
     return decoder.decode(bytes);
   }
 
-  compile(src: string, lang: "pt" | "en"): Program {
-    this.withText(src, (p, n) => this.x.aratu_compile(p, n, lang === "en" ? 1 : 0));
+  compile(src: string, lang: Lang): Program {
+    this.withText(src, (p, n) => this.x.aratu_compile(p, n, LANG_CODE[lang]));
     return JSON.parse(this.output()) as Program;
   }
 
@@ -155,6 +180,16 @@ export class Aratu {
     for (const [key, bar] of anchors) text += `${bar}\t${key}\n`;
     this.withText(text, (p, n) => this.x.aratu_render(handle, from, fromBeat, to, 1, seed >>> 0, p, n));
     return JSON.parse(this.output()) as Rendered;
+  }
+
+  /** Compares a student's piece with the answer by what they play. `bars`
+   * 0 compares one time round of the answer. */
+  check(student: string, answer: string, lang: Lang, bars = 0, dynamics = false, lengths = true): Checked {
+    const flags = (dynamics ? 1 : 0) | (lengths ? 0 : 2);
+    this.withText(student, (sp, sn) =>
+      this.withText(answer, (ap, an) => this.x.aratu_check(sp, sn, ap, an, bars, flags, LANG_CODE[lang])),
+    );
+    return JSON.parse(this.output()) as Checked;
   }
 
   release(handle: number): void {

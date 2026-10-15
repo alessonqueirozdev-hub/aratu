@@ -261,10 +261,10 @@ fn where_(bar: i64, beat: Ratio, lang: Lang) -> String {
     let frac = beat - Ratio::int(beat.floor());
     let b = match lang {
         Lang::Pt if frac.is_zero() => format!("tempo {n}"),
-        Lang::Pt if frac == Ratio::new(1, 2) => format!("metade do tempo {n}"),
+        Lang::Pt if frac == Ratio::new(1, 2) => format!("segunda metade do tempo {n}"),
         Lang::Pt => format!("tempo {n} + {frac}"),
         Lang::Es if frac.is_zero() => format!("tiempo {n}"),
-        Lang::Es if frac == Ratio::new(1, 2) => format!("mitad del tiempo {n}"),
+        Lang::Es if frac == Ratio::new(1, 2) => format!("segunda mitad del tiempo {n}"),
         Lang::Es => format!("tiempo {n} + {frac}"),
         Lang::En if frac.is_zero() => format!("beat {n}"),
         Lang::En if frac == Ratio::new(1, 2) => format!("the \"and\" of beat {n}"),
@@ -426,7 +426,7 @@ mod tests {
         let p = check_src("hh = c c c c", "hh = cc c c c", CheckOptions::default());
         assert_eq!(
             p[0].text(Lang::Pt),
-            "No compasso 1, metade do tempo 1: faltou o chimbal fechado."
+            "No compasso 1, segunda metade do tempo 1: faltou o chimbal fechado."
         );
         let p = check_src(
             "m = | c4 _ d4 e4 |",

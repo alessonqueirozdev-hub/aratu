@@ -3,6 +3,7 @@ import * as esbuild from "esbuild";
 import { cpSync, mkdirSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { buildBook } from "./book.mjs";
 import { buildWasm } from "./build-wasm.mjs";
 
 const web = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -23,6 +24,7 @@ export function copyStatic() {
   cpSync(join(web, "public"), dist, { recursive: true });
   cpSync(join(web, "index.html"), join(dist, "index.html"));
   cpSync(join(web, "src", "style.css"), join(dist, "style.css"));
+  buildBook(dist);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

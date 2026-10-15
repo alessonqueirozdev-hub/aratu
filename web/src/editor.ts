@@ -115,21 +115,26 @@ export interface EditorHooks {
   stop(): void;
 }
 
-export function createEditor(parent: HTMLElement, doc: string, hooks: EditorHooks, extra: Extension[] = []): EditorView {
+export function createEditor(
+  parent: HTMLElement,
+  doc: string,
+  hooks: EditorHooks,
+  extra: Extension[] = [],
+  compact = false,
+): EditorView {
   return new EditorView({
     parent,
     state: EditorState.create({
       doc,
       extensions: [
-        lineNumbers(),
-        highlightActiveLineGutter(),
+        compact ? [] : [lineNumbers(), highlightActiveLineGutter()],
         history(),
         drawSelection(),
         highlightActiveLine(),
         bracketMatching(),
         aratuLanguage,
         syntaxHighlighting(style),
-        lintGutter(),
+        compact ? [] : lintGutter(),
         playingField,
         keymap.of([
           { key: "Mod-Enter", run: () => (hooks.run(), true) },

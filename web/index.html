@@ -1,48 +1,83 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="light">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Aratu</title>
-    <meta name="description" content="Aratu: a live-coding language that reads like music. Part of the Manguebyte ecosystem." />
+    <meta
+      name="description"
+      content="Aratu: a live-coding language that reads like music, with a course and a manual in Portuguese, Spanish and English. Part of the Manguebyte ecosystem."
+    />
     <link rel="icon" href="mascot.png" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <header class="top">
-      <a class="brand" href="https://github.com/alessonqueirozdev-hub/aratu" target="_blank" rel="noopener">
-        <img src="mascot.png" alt="" width="40" height="40" />
-        <span class="name">Aratu</span>
-        <span class="tagline" data-word="tagline"></span>
+      <a class="brand" href="#/aprender">
+        <img src="mascot.png" alt="" width="44" height="44" />
+        <span class="brand-text">
+          <span class="name">Aratu</span>
+          <span class="tagline" data-word="tagline"></span>
+        </span>
       </a>
-      <div class="controls">
-        <button id="play" class="play" data-word="play"></button>
-        <button id="stop" class="stop" data-word="stop"></button>
+      <nav class="tabs" aria-label="Aratu">
+        <a href="#/tocar" id="tab-play" data-word="navPlay"></a>
+        <a href="#/aprender" id="tab-learn" data-word="navLearn"></a>
+        <a href="#/manual" id="tab-manual" data-word="navManual"></a>
+      </nav>
+      <div class="prefs">
+        <div class="lang" role="group" aria-label="Idioma / Idioma / Language">
+          <button id="lang-pt">PT</button><button id="lang-es">ES</button><button id="lang-en">EN</button>
+        </div>
+        <button id="theme" class="theme" aria-label="theme">☾</button>
+      </div>
+    </header>
+
+    <main id="view-play" class="view play-view" hidden>
+      <div class="toolbar">
+        <button id="play" class="btn btn-play big">▶ <span data-word="play"></span></button>
+        <button id="stop" class="btn big">■ <span data-word="stop"></span></button>
         <label class="examples">
           <span data-word="examples"></span>
           <select id="examples"></select>
         </label>
-        <div class="lang" role="group" aria-label="Idioma / Language">
-          <button id="lang-pt">PT</button><button id="lang-en">EN</button>
+        <div class="status" id="status" aria-live="polite">
+          <span><b data-word="bar"></b> <span id="bar">–</span></span>
+          <span><b data-word="tempo"></b> <span id="bpm">–</span></span>
+          <span><b data-word="meter"></b> <span id="meter">–</span></span>
+          <span id="beat" class="beat"></span>
         </div>
       </div>
-      <div class="status" id="status" aria-live="polite">
-        <span><b data-word="bar"></b> <span id="bar">–</span></span>
-        <span><b data-word="tempo"></b> <span id="bpm">–</span></span>
-        <span><b data-word="meter"></b> <span id="meter">–</span></span>
-        <span id="beat" class="beat"></span>
+      <div class="work">
+        <section class="editor sheet" id="editor"></section>
+        <aside class="side">
+          <h2 data-word="messages"></h2>
+          <ul id="messages" class="messages"></ul>
+          <p class="note" id="note"></p>
+          <div class="side-grid" id="play-grid"></div>
+        </aside>
       </div>
-    </header>
-    <main class="work">
-      <section class="editor" id="editor"></section>
-      <aside class="side">
-        <h2 data-word="messages"></h2>
-        <ul id="messages" class="messages"></ul>
-        <p class="note" id="note"></p>
-      </aside>
+      <p class="hint" data-word="hint"></p>
     </main>
+
+    <main id="view-learn" class="view book-view" hidden>
+      <aside class="toc">
+        <h2 data-word="lessons"></h2>
+        <p class="progress" id="learn-progress"></p>
+        <ol id="learn-toc"></ol>
+      </aside>
+      <article class="page" id="learn-page"></article>
+    </main>
+
+    <main id="view-manual" class="view book-view" hidden>
+      <aside class="toc">
+        <h2 data-word="chapters"></h2>
+        <ol id="manual-toc"></ol>
+      </aside>
+      <article class="page" id="manual-page"></article>
+    </main>
+
     <footer class="bottom">
-      <span class="hint" data-word="hint"></span>
       <span class="links">
         <span data-word="ecosystem"></span>
         <a href="https://github.com/alessonqueirozdev-hub/manguebyte" target="_blank" rel="noopener">Manguebyte</a>

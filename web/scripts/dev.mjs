@@ -17,9 +17,17 @@ buildWasm();
 copyStatic();
 const ctx = await esbuild.context(options);
 await ctx.watch();
+const rebuild = () => {
+  try {
+    copyStatic();
+  } catch (e) {
+    console.error(e.message);
+  }
+};
 for (const f of ["index.html", join("src", "style.css")]) {
-  watch(join(web, f), () => copyStatic());
+  watch(join(web, f), rebuild);
 }
+watch(join(web, "..", "book"), { recursive: true }, rebuild);
 
 const types = {
   ".html": "text/html; charset=utf-8",
@@ -29,6 +37,7 @@ const types = {
   ".png": "image/png",
   ".svg": "image/svg+xml",
   ".map": "application/json",
+  ".json": "application/json; charset=utf-8",
 };
 
 createServer((req, res) => {

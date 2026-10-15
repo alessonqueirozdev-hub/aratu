@@ -1,13 +1,11 @@
-// The Aratu editor: write, hear, change while it plays.
+// Aratu in the browser: play, learn, look things up.
 
-import { ChangeSet } from "@codemirror/state";
 import { Aratu, type Program } from "./aratu";
 import { Engine } from "./audio";
-import { createEditor, showDiagnostics, showPlaying } from "./editor";
+import { drawGrid, mountBlocks } from "./blocks";
 import { examples } from "./examples";
-import { knobs, showKnobs } from "./knobs";
-import { type Lang, isWord, tr } from "./i18n";
-import { Player, type Scheduled } from "./player";
+import { LANGS, type Lang, isWord, tr } from "./i18n";
+import { Session } from "./session";
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -23,20 +21,47 @@ function save(key: string, value: string): void {
   try {
     localStorage.setItem(key, value);
   } catch {
-    // Private windows may refuse storage; the editor works without it.
+    // Private windows may refuse storage; everything works without it.
   }
 }
 
+interface Page {
+  id: string;
+  title: string;
+  html: string;
+}
+
+interface Book {
+  lang: Lang;
+  manual: Page[];
+  learn: Page[];
+}
+
+function firstLang(): Lang {
+  const saved = load("aratu.lang");
+  if (saved && (LANGS as string[]).includes(saved)) return saved as Lang;
+  const nav = navigator.language.toLowerCase();
+  return nav.startsWith("pt") ? "pt" : nav.startsWith("es") ? "es" : "en";
+}
+
 async function main(): Promise<void> {
-  let lang: Lang = (load("aratu.lang") as Lang | null) ?? (navigator.language.startsWith("pt") ? "pt" : "en");
+  let lang: Lang = firstLang();
+  let theme = load("aratu.theme") === "dark" ? "dark" : "light";
+
+  const applyTheme = () => {
+    document.documentElement.dataset.theme = theme;
+    const t = $("theme");
+    t.textContent = theme === "dark" ? "☀" : "☾";
+    t.title = tr(theme === "dark" ? "themeLight" : "themeDark", lang);
+  };
+
   const applyWords = () => {
-    document.documentElement.lang = lang === "pt" ? "pt-BR" : "en";
+    document.documentElement.lang = lang === "pt" ? "pt-BR" : lang;
     for (const el of document.querySelectorAll<HTMLElement>("[data-word]")) {
       const w = el.dataset.word ?? "";
       if (isWord(w)) el.textContent = tr(w, lang);
     }
-    $("lang-pt").classList.toggle("on", lang === "pt");
-    $("lang-en").classList.toggle("on", lang === "en");
+    for (const l of LANGS) $(`lang-${l}`).classList.toggle("on", l === lang);
     const select = $<HTMLSelectElement>("examples");
     const chosen = select.value;
     select.innerHTML = "";
@@ -47,23 +72,23 @@ async function main(): Promise<void> {
       select.append(o);
     }
     select.value = chosen || examples[0].id;
+    applyTheme();
   };
   applyWords();
-  $("note").textContent = tr("loading", lang);
 
   const aratu = await Aratu.load("aratu.wasm");
   let engine: Engine | null = null;
-  let player: Player | null = null;
+  const getEngine = () => (engine ??= new Engine());
 
-  /** For each program, the edits made since it was compiled, so that the
-   * positions of its events can be followed into the current text. */
-  const editsSince = new Map<number, ChangeSet>();
-  /** The last program without errors that is not yet with the player. */
-  let ready: Program | null = null;
-  /** The last program with errors, released when the next one comes. */
-  let broken: Program | null = null;
-  let scheduled: Scheduled[] = [];
+  // Exercises solved, kept in this browser.
+  const done = new Set<string>(JSON.parse(load("aratu.done") ?? "[]") as string[]);
+  const markDone = (id: string) => {
+    done.add(id);
+    save("aratu.done", JSON.stringify([...done]));
+    renderLearnToc();
+  };
 
+  // The playground.
   const messages = (p: Program) => {
     const ul = $("messages");
     ul.innerHTML = "";
@@ -80,158 +105,185 @@ async function main(): Promise<void> {
       small.textContent = `${tr(d.severity, lang)} · ${tr("line", lang)} ${d.line}`;
       li.append(small, document.createTextNode(d.message));
       li.onclick = () => {
-        view.dispatch({ selection: { anchor: d.from, head: d.to }, scrollIntoView: true });
-        view.focus();
+        playground.view.dispatch({ selection: { anchor: d.from, head: d.to }, scrollIntoView: true });
+        playground.view.focus();
       };
       ul.append(li);
     }
-    const playing = player?.playing ?? false;
-    $("note").textContent = p.ok ? "" : playing ? tr("keepsPlaying", lang) : tr("fixFirst", lang);
+    $("note").textContent = p.ok ? "" : playground?.playing ? tr("keepsPlaying", lang) : tr("fixFirst", lang);
+    if (p.ok) drawGrid($("play-grid"), aratu, p, playground?.text ?? "");
   };
 
-  const compile = (): Program => {
-    const p = aratu.compile(view.state.doc.toString(), lang);
-    editsSince.set(p.handle, ChangeSet.empty(view.state.doc.length));
-    // Only the last few programs can still have events on the way.
-    for (const h of editsSince.keys()) {
-      if (editsSince.size <= 8) break;
-      editsSince.delete(h);
-    }
-    if (broken) aratu.release(broken.handle);
-    broken = null;
-    showDiagnostics(view, p.diagnostics);
-    showKnobs(view, p.controls, (control, value) => {
-      // Parameters set at a bar, and the tempo, come in with the text.
-      if (control.timed || control.id === "tempo") return;
-      engine?.setNow(control.part, control.id, value);
-    });
-    messages(p);
-    if (!p.ok) {
-      broken = p;
-      return p;
-    }
-    if (player?.playing) {
-      player.update(p);
-    } else {
-      if (ready) aratu.release(ready.handle);
-      ready = p;
-    }
-    return p;
-  };
-
-  let timer: number | undefined;
-  const view = createEditor($("editor"), load("aratu.text") ?? examples[0].text, {
-    change(text, changes) {
-      for (const [h, cs] of editsSince) editsSince.set(h, cs.compose(changes));
-      for (const s of scheduled) {
-        s.event.from = changes.mapPos(s.event.from, 1);
-        s.event.to = changes.mapPos(s.event.to, -1);
+  const playground: Session = new Session({
+    parent: $("editor"),
+    text: load("aratu.text") ?? examples[0].text,
+    aratu,
+    engine: getEngine,
+    lang: () => lang,
+    onCompile: messages,
+    onChange: (t) => save("aratu.text", t),
+    onBar: (info, at) => {
+      const ctx = getEngine().ctx;
+      const delay = Math.max(0, (at - ctx.currentTime) * 1000);
+      window.setTimeout(() => {
+        $("bar").textContent = String(info.bar);
+        $("bpm").textContent = String(Math.round(info.bpm));
+        $("meter").textContent = info.meter;
+      }, delay);
+      const beatLen = (info.end - info.start) / Math.max(info.beats, 1);
+      for (let b = 0; b < info.beats; b++) {
+        window.setTimeout(() => {
+          const dot = $("beat");
+          dot.classList.add("on");
+          window.setTimeout(() => dot.classList.remove("on"), 90);
+        }, delay + b * beatLen * 1000);
       }
-      save("aratu.text", text);
-      window.clearTimeout(timer);
-      timer = window.setTimeout(compile, 250);
     },
-    run: () => void play(),
-    stop: () => stop(),
-  }, knobs);
+    onSwap: (bar, beat) => {
+      const at = beat > 0 ? `${bar}, ${tr("beat", lang)} ${beat + 1}` : String(bar);
+      $("note").textContent = `${tr("next", lang)} ${at}.`;
+      window.setTimeout(() => ($("note").textContent = ""), 3000);
+    },
+    onPlaying: (on) => $("play").classList.toggle("on", on),
+  });
+  $("play").onclick = () => void playground.play();
+  $("stop").onclick = () => playground.stop();
+  $<HTMLSelectElement>("examples").onchange = (e) => {
+    const ex = examples.find((x) => x.id === (e.target as HTMLSelectElement).value);
+    if (ex) playground.text = ex.text;
+  };
 
-  const play = async () => {
-    window.clearTimeout(timer);
-    const p = compile();
-    if (player?.playing) return;
-    if (!p.ok) return;
-    if (!engine) engine = new Engine();
-    if (!player) {
-      player = new Player(aratu, engine, {
-        bar(info, at) {
-          const ctx = engine!.ctx;
-          const delay = Math.max(0, (at - ctx.currentTime) * 1000);
-          window.setTimeout(() => {
-            $("bar").textContent = String(info.bar);
-            $("bpm").textContent = String(Math.round(info.bpm));
-            $("meter").textContent = info.meter;
-          }, delay);
-          const beatLen = (info.end - info.start) / Math.max(info.beats, 1);
-          for (let b = 0; b < info.beats; b++) {
-            window.setTimeout(() => {
-              const dot = $("beat");
-              dot.classList.add("on");
-              window.setTimeout(() => dot.classList.remove("on"), 90);
-            }, delay + b * beatLen * 1000);
-          }
-        },
-        events(list) {
-          for (const s of list) {
-            const cs = editsSince.get(s.handle);
-            if (cs && !cs.empty) {
-              s.event.from = cs.mapPos(s.event.from, 1);
-              s.event.to = cs.mapPos(s.event.to, -1);
-            }
-          }
-          scheduled.push(...list);
-        },
-        cut(bar, beat) {
-          scheduled = scheduled.filter((s) => s.event.bar < bar || (s.event.bar === bar && s.event.beat < beat));
-        },
-        swapped(_program, bar, beat) {
-          const at = beat > 0 ? `${bar}, ${tr("beat", lang)} ${beat + 1}` : String(bar);
-          $("note").textContent = `${tr("next", lang)} ${at}.`;
-          window.setTimeout(() => ($("note").textContent = ""), 3000);
-        },
-      });
+  // The book: the course and the manual.
+  let book: Book | null = null;
+  const loadBook = async () => {
+    const res = await fetch(`book-${lang}.json`);
+    book = (await res.json()) as Book;
+  };
+  let pageSessions: Session[] = [];
+  const blockContext = {
+    aratu,
+    engine: getEngine,
+    lang: () => lang,
+    isDone: (id: string) => done.has(id),
+    markDone,
+    openInPlay: (text: string) => {
+      playground.text = text;
+      location.hash = "#/tocar";
+    },
+  };
+
+  const exerciseIds = (html: string) => [...html.matchAll(/data-kind="exercise" data-id="([^"]+)"/g)].map((m) => m[1]);
+
+  function renderLearnToc(current?: string): void {
+    if (!book) return;
+    const ol = $("learn-toc");
+    ol.innerHTML = "";
+    let total = 0;
+    let solved = 0;
+    for (const p of book.learn) {
+      const ids = exerciseIds(p.html);
+      total += ids.length;
+      const n = ids.filter((id) => done.has(id)).length;
+      solved += n;
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.href = `#/aprender/${p.id}`;
+      a.textContent = p.title;
+      if (p.id === (current ?? currentLearn)) a.classList.add("here");
+      li.append(a);
+      if (ids.length > 0 && n === ids.length) li.classList.add("done");
+      ol.append(li);
     }
-    ready = null;
-    await player.play(p);
-    $("play").classList.add("on");
-  };
+    $("learn-progress").textContent = total > 0 ? `${solved} / ${total} ${tr("doneCount", lang)}` : "";
+  }
 
-  const stop = () => {
-    player?.stop();
-    scheduled = [];
-    showPlaying(view, []);
-    $("play").classList.remove("on");
-    $("beat").classList.remove("on");
-  };
+  let currentLearn = load("aratu.lesson") ?? "";
 
-  // Light up what is sounding.
-  let shown = "";
-  const frame = () => {
-    if (engine && player?.playing) {
-      const now = engine.ctx.currentTime;
-      scheduled = scheduled.filter((s) => s.at + Math.max(s.event.dur, 0.12) > now - 0.05);
-      const spans = scheduled
-        .filter((s) => s.at <= now)
-        .map((s) => ({ from: s.event.from, to: s.event.to }));
-      const key = spans.map((s) => `${s.from}:${s.to}`).join(",");
-      if (key !== shown) {
-        shown = key;
-        showPlaying(view, spans);
+  function showPage(kind: "learn" | "manual", id: string | undefined): void {
+    if (!book) return;
+    const pages = kind === "learn" ? book.learn : book.manual;
+    if (pages.length === 0) return;
+    const index = Math.max(0, pages.findIndex((p) => p.id === id));
+    const page = pages[index];
+    for (const s of pageSessions) s.destroy();
+    const article = $(kind === "learn" ? "learn-page" : "manual-page");
+    article.innerHTML = page.html;
+    pageSessions = mountBlocks(article, blockContext);
+
+    const nav = document.createElement("nav");
+    nav.className = "page-nav";
+    const base = kind === "learn" ? "#/aprender/" : "#/manual/";
+    if (index > 0) {
+      const a = document.createElement("a");
+      a.href = base + pages[index - 1].id;
+      a.textContent = `← ${pages[index - 1].title}`;
+      nav.append(a);
+    }
+    if (index < pages.length - 1) {
+      const a = document.createElement("a");
+      a.href = base + pages[index + 1].id;
+      a.className = "next";
+      a.textContent = `${pages[index + 1].title} →`;
+      nav.append(a);
+    }
+    article.append(nav);
+    article.scrollTop = 0;
+    window.scrollTo(0, 0);
+
+    if (kind === "learn") {
+      currentLearn = page.id;
+      save("aratu.lesson", page.id);
+      renderLearnToc(page.id);
+    } else {
+      const ol = $("manual-toc");
+      ol.innerHTML = "";
+      for (const p of pages) {
+        const li = document.createElement("li");
+        const a = document.createElement("a");
+        a.href = `#/manual/${p.id}`;
+        a.textContent = p.title;
+        if (p.id === page.id) a.classList.add("here");
+        li.append(a);
+        ol.append(li);
       }
     }
-    requestAnimationFrame(frame);
-  };
-  requestAnimationFrame(frame);
+  }
 
-  $("play").onclick = () => void play();
-  $("stop").onclick = stop;
-  $<HTMLSelectElement>("examples").onchange = (e) => {
-    const id = (e.target as HTMLSelectElement).value;
-    const ex = examples.find((x) => x.id === id);
-    if (!ex) return;
-    view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: ex.text } });
-    window.clearTimeout(timer);
-    compile();
+  const route = () => {
+    const [, view = "aprender", id] = location.hash.replace(/^#/, "").split("/");
+    const which = view === "tocar" ? "play" : view === "manual" ? "manual" : "learn";
+    for (const v of ["play", "learn", "manual"]) {
+      $(`view-${v}`).hidden = v !== which;
+      $(`tab-${v}`).classList.toggle("here", v === which);
+    }
+    if (which !== "play") {
+      Session.active?.stop();
+      showPage(which, id ?? (which === "learn" ? currentLearn : undefined));
+    } else {
+      for (const s of pageSessions) s.stop();
+      playground.view.requestMeasure();
+    }
   };
-  const setLang = (l: Lang) => {
+
+  const setLang = async (l: Lang) => {
     lang = l;
     save("aratu.lang", l);
     applyWords();
-    compile();
+    playground.compile();
+    await loadBook();
+    route();
   };
-  $("lang-pt").onclick = () => setLang("pt");
-  $("lang-en").onclick = () => setLang("en");
+  for (const l of LANGS) $(`lang-${l}`).onclick = () => void setLang(l);
+  $("theme").onclick = () => {
+    theme = theme === "dark" ? "light" : "dark";
+    save("aratu.theme", theme);
+    applyTheme();
+  };
 
-  compile();
+  playground.compile();
+  await loadBook();
+  window.addEventListener("hashchange", route);
+  route();
 }
 
 void main();
