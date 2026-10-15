@@ -81,7 +81,7 @@ impl Line {
         match (&self.bars[i].content, self.kind) {
             (_, LineKind::Chords) => meter.beats(),
             (BarContent::Beats(b), _) => Ratio::int(b.len() as i64),
-            (BarContent::Simile(_), _) => meter.beats(),
+            (BarContent::Simile(_) | BarContent::Rest(_), _) => meter.beats(),
         }
     }
 }
@@ -121,6 +121,11 @@ pub enum Action {
         target: String,
         to: LevelTarget,
         bars: i64,
+    },
+    /// `guitar: out` or `guitar: in`.
+    Mute {
+        target: String,
+        muted: bool,
     },
     Feel {
         target: Option<String>,
@@ -469,6 +474,13 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
                     target: target.text.clone(),
                     to: LevelTarget::Dynamic(*dynamic),
                     bars: 0,
+                }
+            }
+            StmtKind::Mute { target, muted } => {
+                check_target(&piece, target, diags);
+                Action::Mute {
+                    target: target.text.clone(),
+                    muted: *muted,
                 }
             }
             StmtKind::LevelRamp { target, to, bars } => {

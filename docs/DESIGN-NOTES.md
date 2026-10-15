@@ -405,3 +405,17 @@ Smaller choices made along the way:
 - Brazilian *cifra* spellings are read: `C7M`, `Bº`, `G7(b9)`, `Dm7(9)`.
 - Keywords are English for now. **Open:** Portuguese keywords (`compasso:`,
   `andamento:`) beside the English ones.
+
+## Long rests and silencing a part
+
+**Decided (15 October 2026), chosen by the user from three proposals each:**
+
+- `| - |`, a rest alone between bar lines, is a whole bar of rest in any
+  meter, like the score's whole rest; `| - x8 |` is eight bars of rest, the
+  multi-measure rest. The `x` already means "times" in `:| x4`, `verse x2`
+  and `play groove x3`. (Also proposed: `| -8 |`, which reads as "minus
+  eight", and a word, `| rest 8 |`.)
+- `guitar: out` silences a part from the next bar line and `guitar: in`
+  brings it back, as on a mixer; `all: out` silences everything. Both work
+  with `at bar` and `every`. (Also proposed: the score's `tacet` and
+  `tutti`, and no new words at all.)

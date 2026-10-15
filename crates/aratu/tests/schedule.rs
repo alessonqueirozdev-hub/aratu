@@ -453,3 +453,43 @@ fn every_example_in_the_manual_schedules() {
         }
     }
 }
+
+#[test]
+fn whole_bar_and_long_rests() {
+    // `| - |` is a whole bar of rest in any meter; `- x8` is eight bars.
+    let src = "tempo: 60\nmeter: 3/4\nmelody = | - x2 | c4 _ _ | - | d4 _ _ |";
+    let c = compile(src);
+    assert!(c.diagnostics.is_empty(), "{:?}", c.diagnostics);
+    let line = &c.piece.parts[0].lines[0];
+    assert_eq!(line.order.len(), 5);
+    let ev = render(&c.piece, &Options::default(), 1, 6).events;
+    assert_eq!(notes(&ev), [60, 62]);
+    assert_eq!(ev[0].bar, 3);
+    close(ev[0].time, 6.0);
+    assert_eq!(ev[1].bar, 5);
+    // A rest cuts a note held into it.
+    let ev = events("tempo: 60\nm = | c4 _ _ _ | - | _ _ _ _ |", 1, 4);
+    assert_eq!(ev.len(), 1);
+    close(ev[0].duration, 4.0);
+}
+
+#[test]
+fn parts_go_out_and_come_back_in() {
+    let src =
+        "drums { hh = c c c c }\nbass = | c2 _ _ _ |\nat bar 2: drums: out\nat bar 4: drums: in";
+    let ev = events(src, 1, 6);
+    let hat_bars: std::collections::BTreeSet<i64> = ev
+        .iter()
+        .filter(|e| matches!(e.kind, EventKind::Drum(_)))
+        .map(|e| e.bar)
+        .collect();
+    assert_eq!(hat_bars.into_iter().collect::<Vec<_>>(), [1, 4, 5]);
+    assert_eq!(notes(&ev).len(), 5, "the bass keeps playing");
+
+    let ev = events("bass = | c2 _ _ _ |\nevery 4 bars, first: bass: out", 1, 9);
+    let bars: Vec<i64> = ev.iter().map(|e| e.bar).collect();
+    assert_eq!(bars, [2, 3, 4, 6, 7, 8]);
+
+    let ev = events("bass = | c2 _ _ _ |\nhh = c c c c\nall: out", 1, 3);
+    assert!(ev.is_empty());
+}

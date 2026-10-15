@@ -77,6 +77,11 @@ pub enum StmtKind {
         target: Name,
         dynamic: Dyn,
     },
+    /// `guitar: out` (silent from then on) or `guitar: in` (back).
+    Mute {
+        target: Name,
+        muted: bool,
+    },
     /// `piano: cresc to ff over 4 bars`, `all: fade out over 8 bars`
     LevelRamp {
         target: Name,
@@ -219,6 +224,8 @@ pub enum BarContent {
     Beats(Vec<Beat>),
     /// `%` (1) or `%%` (2): repeat the previous bar or two.
     Simile(u8),
+    /// `| - |`: a whole bar of rest in any meter; `| - x8 |`: eight bars.
+    Rest(u32),
 }
 
 /// What sounds in one beat (or, in a chord line, one equal share of the bar).

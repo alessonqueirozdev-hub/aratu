@@ -83,6 +83,22 @@ has 5 beats, but the meter is 4/4"*.
 A `_` on its own is a whole beat held, so `c _` is a half note and `c _ _ _`
 a whole note. A `_` at the start of a bar ties across the bar line.
 
+**Rests** use the same rules: `-` takes one part, as a note would.
+
+| Rest | Written in 4/4 |
+|---|---|
+| a whole bar, in any meter | `\| - \|` |
+| eight bars | `\| - x8 \|` |
+| half | `- -` |
+| quarter | `-` as a beat |
+| eighth | `-c` or `c-` |
+| sixteenth | `-ccc`, `c-cc` |
+| dotted eighth, then a sixteenth | `-__c`, or `-.c` |
+
+A `-` alone between bar lines is a whole bar of rest, like the score's whole
+rest, and `| - x8 |` counts as eight bars of rest (the `x` means "times", as
+in `:| x4`). A `_` after a rest lengthens the silence.
+
 **Compound meters.** In 6/8 the beat is a dotted quarter, so `ccc ccc` is one
 bar of eighths, counted in two, as a musician counts it.
 
@@ -387,6 +403,9 @@ While a piece plays, you change it, you do not rewrite it.
 - **Changes land on the beat.** An edit takes effect at the next bar line.
   `now:` makes it take effect at the next beat instead.
 - **Prepare ahead.** `at bar 17: play fill` schedules a change.
+- **Out and in.** `guitar: out` silences a part from the next bar line and
+  `guitar: in` brings it back, as on a mixer; `all: out` stops everything.
+  They work with `at bar 17:` and `every 8 bars, first:` too.
 - **Nothing restarts.** Parts keep their place in the bar when another part
   changes.
 
@@ -480,6 +499,7 @@ Instruments made with Parabolic can be used as sounds.
 | `cc`, `cccc`, `ccc` | eighths, sixteenths, a triplet in one beat |
 | `_` | hold |
 | `-` | rest |
+| `\| - \|`, `\| - x8 \|` | a whole bar of rest, eight bars of rest |
 | `c.c` | dotted eighth and sixteenth |
 | upper case | accent |
 | `c4'` | staccato |
@@ -510,5 +530,6 @@ Instruments made with Parabolic can be used as sounds.
 | `every 4 bars: play fill` | a variation inside a loop |
 | `at bar 30:` | a scheduled change |
 | `now:` | a change at the next beat |
+| `guitar: out`, `guitar: in` | silence a part, bring it back |
 | `->` | signal flow |
 | `part.param = value` | a parameter, drawn as a knob |

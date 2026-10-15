@@ -443,6 +443,12 @@ impl Parser {
                     return Ok(StmtKind::Level { target, dynamic: d });
                 }
             }
+            if (w == "out" || w == "in") && c.at_end() {
+                return Ok(StmtKind::Mute {
+                    target,
+                    muted: w == "out",
+                });
+            }
             match w.as_str() {
                 "cresc" | "crescendo" | "dim" | "decresc" | "diminuendo" => {
                     if !c.keyword("to") {

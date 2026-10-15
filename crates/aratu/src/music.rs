@@ -339,6 +339,19 @@ fn read_bar(
         words.remove(p);
     }
 
+    // A rest alone is a whole bar of rest; `- x8` is eight bars.
+    match words.as_slice() {
+        [("-", _)] => {
+            bar.content = BarContent::Rest(1);
+            return bar;
+        }
+        [("-", _), (w, _)] if repeat_count(w).is_some() => {
+            bar.content = BarContent::Rest(repeat_count(w).unwrap());
+            return bar;
+        }
+        _ => {}
+    }
+
     let beats = words
         .iter()
         .map(|&(w, s)| {
@@ -851,7 +864,7 @@ mod tests {
     fn beats(bar: &Bar) -> &[Beat] {
         match &bar.content {
             BarContent::Beats(b) => b,
-            BarContent::Simile(_) => panic!("simile"),
+            c => panic!("not beats: {c:?}"),
         }
     }
 

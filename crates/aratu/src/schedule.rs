@@ -293,7 +293,8 @@ impl<'p> Scheduler<'p> {
                     self.tempo.change(t, start_beat, len);
                 }
             }
-            let instances = self.instances(g);
+            let mut instances = self.instances(g);
+            instances.retain(|i| !self.muted(&i.part.name, g));
             let mut fermatas = Vec::new();
             let mut laid: Vec<(Instance<'p>, Vec<Proto<'p>>)> = Vec::new();
             for inst in instances {
@@ -832,6 +833,33 @@ impl<'p> Scheduler<'p> {
 
     /// The live level of a part at an offset of bar `g`, as a factor of the
     /// written dynamics (1 at mf).
+    fn muted(&self, part: &str, g: i64) -> bool {
+        let applies = |t: &str| t == part || t == "all";
+        let mut muted = false;
+        for (b, c) in &self.timed {
+            if *b > g {
+                break;
+            }
+            if let Action::Mute { target, muted: m } = &c.action {
+                if applies(target) {
+                    muted = *m;
+                }
+            }
+        }
+        for c in &self.every {
+            let (At::Every { bars, first }, Action::Mute { target, muted: m }) = (c.at, &c.action)
+            else {
+                continue;
+            };
+            let pos = (g - 1).rem_euclid(bars);
+            let hit = if first { pos == 0 } else { pos == bars - 1 };
+            if hit && applies(target) {
+                muted = *m;
+            }
+        }
+        muted
+    }
+
     fn level(&self, part: &str, g: i64, frac: f64) -> f64 {
         let mut total = 1.0;
         for target in ["all", part] {

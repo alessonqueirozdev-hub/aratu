@@ -14,42 +14,52 @@ use std::collections::{HashMap, HashSet};
 /// The longest a line may unroll to before it is taken as endless.
 pub const MAX_BARS: usize = 4096;
 
-/// Writes out `%` and `%%`: each becomes a copy of the bar (or two bars)
-/// before it, keeping its own repeat signs, markers and jump.
+/// Writes out `%` and `%%` (each becomes a copy of the bar, or two bars,
+/// before it) and `| - x8 |` (eight bars of rest). The written bar's repeat
+/// signs and markers go on the first bar written out, its `:|` and jump on
+/// the last.
 pub fn expand_similes(bars: &[Bar], diags: &mut Vec<Diagnostic>) -> Vec<Bar> {
     let mut out: Vec<Bar> = Vec::with_capacity(bars.len());
     for bar in bars {
-        match bar.content {
+        let contents: Vec<BarContent> = match bar.content {
             BarContent::Simile(n) => {
                 let n = n as usize;
                 if out.len() < n {
                     diags.push(Diagnostic::error(bar.span, Message::NothingToRepeat));
                     continue;
                 }
-                let copies: Vec<Bar> = out[out.len() - n..].to_vec();
-                for (k, src) in copies.into_iter().enumerate() {
-                    let mut b = Bar {
-                        span: bar.span,
-                        content: src.content,
-                        repeat_start: false,
-                        ending: None,
-                        repeat_end: None,
-                        markers: Vec::new(),
-                        jump: None,
-                    };
-                    if k == 0 {
-                        b.repeat_start = bar.repeat_start;
-                        b.ending = bar.ending;
-                        b.markers = bar.markers.clone();
-                    }
-                    if k == n - 1 {
-                        b.repeat_end = bar.repeat_end;
-                        b.jump = bar.jump;
-                    }
-                    out.push(b);
-                }
+                out[out.len() - n..]
+                    .iter()
+                    .map(|b| b.content.clone())
+                    .collect()
             }
-            BarContent::Beats(_) => out.push(bar.clone()),
+            BarContent::Rest(n) if n > 1 => vec![BarContent::Rest(1); n as usize],
+            _ => {
+                out.push(bar.clone());
+                continue;
+            }
+        };
+        let n = contents.len();
+        for (k, content) in contents.into_iter().enumerate() {
+            let mut b = Bar {
+                span: bar.span,
+                content,
+                repeat_start: false,
+                ending: None,
+                repeat_end: None,
+                markers: Vec::new(),
+                jump: None,
+            };
+            if k == 0 {
+                b.repeat_start = bar.repeat_start;
+                b.ending = bar.ending;
+                b.markers = bar.markers.clone();
+            }
+            if k == n - 1 {
+                b.repeat_end = bar.repeat_end;
+                b.jump = bar.jump;
+            }
+            out.push(b);
         }
     }
     out
