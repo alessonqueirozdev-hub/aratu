@@ -90,7 +90,12 @@ bar of eighths, counted in two, as a musician counts it.
 beat one.
 
 **Bar lines.** `|` is a bar line, as in a score. A line can hold several bars:
-`| cc cc | co cc |`.
+`| cc cc | co cc |`. A line with no bar line is one bar.
+
+**Groups.** Square brackets make a group that shares one part, and spaces
+are allowed inside them: `c[cc]` is an eighth and two sixteenths, the same
+as `cc_c` read the other way round. The `.` shorthand stands for `__`, so
+`c.c` is `c__c`.
 
 ## 3. Drums
 
@@ -106,8 +111,13 @@ drums {
 }
 ```
 
-**Open:** the full table of drum names and symbols, and how a user maps them
-to their own samples.
+The symbol decides the sound, whatever the line is called: `x` is a crash in
+any drum line. Every line inside `drums { }` is a drum line, and so is a line
+called `hh`, `bd`, `sd`, `cr`, `rd`, `kick`, `snare`, `hat`, `ride` or
+`crash` anywhere in the piece.
+
+*Provisional:* the symbol table above. **Open:** more drums and symbols, and
+how a user maps them to their own samples.
 
 ## 4. Melodies
 
@@ -122,18 +132,19 @@ melody = | c4 e4 g4 _ | a4 g4 e4 c4 |
 ```
 
 The octave carries over until it changes, so `| c4 e g c5 |` is C4, E4, G4,
-C5.
+C5. A note written before any octave is taken as octave 4, and Aratu says so.
 
-Several notes in one beat follow rule 2: written together, they share the
-beat. Square brackets group them explicitly when letters alone would be
-ambiguous: `[d e]` is two eighths, `[b b]` two B eighths, `[eb g]` E-flat
-then G.
+Several notes in one beat follow rule 2 inside square brackets: `[d e]` is
+two eighths, `[b b]` two B eighths, `[eb g]` E-flat then G, `[c4 _ _ d]` a
+dotted eighth and a sixteenth. Rests and holds can sit next to a note
+without brackets (`-e4` is a rest, then an eighth), but two notes cannot:
+`eb` would read as E-flat, so for two notes Aratu asks for the brackets.
 
 Notes sounding together are joined with `+`: `c4+e4+g4` is a C major chord
 on one beat.
 
-**Open:** whether gluing note names without brackets (`de` for two eighths)
-is allowed, given flats written with `b`.
+*Provisional (15 October 2026):* brackets are required for two or more
+notes in one beat.
 
 ## 5. Chords and strumming
 
@@ -145,8 +156,12 @@ chords = | Am | F | C G | G |      // C and G take half a bar each
 chords = | Am _ _ F |              // Am for three beats, F for one
 ```
 
+The shares must fall on the beats. In 4/4, `| C G |` gives two beats to
+each chord, but three chords would split the bar between beats, so Aratu asks
+how long each lasts: `| Am _ F G |`.
+
 Chord symbols keep their usual spelling: `Am`, `F`, `G7`, `Cmaj7`, `Dm7b5`,
-`E/G#`.
+`E/G#`, and the spellings of a Brazilian *cifra* too: `C7M`, `Bº`, `G7(b9)`.
 
 **Strumming.** A strum pattern uses the rhythm rules with guitar symbols:
 
@@ -166,7 +181,8 @@ guitar {
 }
 ```
 
-The strum repeats over every chord, and the chords change on their own at
+The strum repeats over every chord (a pattern loops over its own length, so
+a one-bar strum repeats every bar), and the chords change on their own at
 the right bar. A down strum sounds the strings from low to high a few
 milliseconds apart, an up strum from high to low; accents strum harder and
 faster.
@@ -201,8 +217,13 @@ drums: dim to p over 2 bars
 all: fade out over 8 bars
 ```
 
+A live mark sets the level of the whole part around the marks written in its
+lines: at `mf` they sound as written, at `ff` everything is louder by the
+same proportion, and `fade out` takes the part to silence.
+
 Each mark stands for a fixed velocity: ppp 16, pp 33, p 49, mp 64, mf 80,
-f 96, ff 112, fff 127. An accent adds to the current one.
+f 96, ff 112, fff 127. An accent adds to the current one. A hairpin with no
+mark after it moves one step (from `mf` to `f`, say) by the end of the line.
 
 ## 7. Tempo and time
 
@@ -213,18 +234,28 @@ rit to 80 over 2 bars             // ritardando (rall works too)
 accel to 140 over 4 bars          // accelerando
 a tempo                           // back to the tempo before the rit
 tempo primo                       // back to the first tempo
+tempo 120 -> 140 over 4 bars      // a ramp between two tempos
 ```
 
-**Fermata.** `^` on a note holds it: `g4^` lasts twice its value by default;
-`fermata 3 beats` sets the length.
+**When a change happens.** A change with `at bar N:` happens at that bar. A
+change written on its own happens where the piece starts or, while you play,
+at the next bar line after you write it. So in a composition, say where:
+`at bar 28: rit to 80 over 2 bars`.
+
+**Fermata.** `^` on a note holds it: `g4^` lasts twice its value, and every
+part waits for it. **Open:** how to write a fermata of a given length
+(`fermata 3 beats`).
 
 **Pickup (anacrusis).** `pickup: beat 4` starts the piece on the fourth beat
-of an incomplete first bar.
+of an incomplete first bar. The pickup is bar 0, so bar 1 is the first full
+bar, as musicians number them. A line whose first bar is as long as the
+pickup starts in the pickup; the others start at bar 1.
 
 **Meter changes.** `at bar 17: meter 7/8`.
 
 During a ritardando or accelerando every note still lands on its exact
-sample: the engine integrates the tempo curve instead of stepping it.
+sample: the tempo changes evenly beat by beat, as the score reads, and the
+engine integrates that curve instead of stepping it.
 
 ## 8. Feel: rubato, swing and humanize
 
@@ -305,28 +336,52 @@ on the timeline. A jump without its marker is an error stated plainly:
 Sections are named parts of a piece, and a form line orders them:
 
 ```
-section verse  { ... }
-section chorus { ... }
+section intro  { bass = | a2 _ _ _ | e2 _ _ _ | }
+section verse  {
+  bass = | a2 _ e2 _ | f2 _ c3 _ |
+  drums { hh = cc cc co cc; bd = b - b - }
+}
+section chorus {
+  guitar { chords = | Am | F | C | G |; strum = D du -u du }
+}
+section outro  { bass = | a2 _ _ _ | }
 
 form: intro verse x2 chorus verse chorus x2 outro
 ```
+
+A section holds parts and lines the way the whole piece does, and lasts as
+long as its longest line. The form plays the sections in order (`x2` plays one
+twice) and then starts again. A block can sit on one line, with `;` between
+its lines.
 
 ### Varying a loop while playing
 
 Patterns loop by themselves, so playing live needs a way to say when to vary:
 
 ```
-every 4 bars: drums fill          // the fourth bar of every four
-every 8 bars, first: crash        // the first bar of every eight
+pattern groove { hh = cc cc co cc; bd = b - b -; sd = - s - s }
+pattern fill   { hh = cc cc cc cc; sd = ss ss SS SS }
+pattern crash  { cr = x - - - }
+
 play groove x3, fill              // a four-bar phrase, looped
+every 8 bars, first: add crash    // the first bar of every eight
 ```
 
-**Open:** the exact syntax of `section`.
+`play` chooses the pattern that sounds; `play groove x3, fill` plays a
+phrase of patterns in turn and loops it. `every 4 bars: play fill` plays the
+fill in the fourth bar of every four, in place of the groove; `add` plays a
+pattern on top of the one that is sounding, so `every 8 bars, first: add
+crash` puts a crash on the first beat of every eight bars.
+
+*Provisional:* the syntax of `section` and the word `add`.
 
 ## 10. Playing live
 
 While a piece plays, you change it, you do not rewrite it.
 
+- **Everything loops.** Each line plays over and over, each over its own
+  length: a one-bar hi-hat, a two-bar bass and a four-bar progression line up
+  as a band's parts do.
 - **A change is one line.** `hh = cc cc oc cc` replaces the hi-hat and
   nothing else; the other parts keep playing.
 - **Changes land on the beat.** An edit takes effect at the next bar line.
@@ -434,7 +489,7 @@ Instruments made with Parabolic can be used as sounds.
 | `\|` | bar line |
 | `c4 e g` | notes, octave carried over |
 | `f#4`, `eb4`, `dó4` | accidentals, solfège |
-| `[d e]` | notes grouped in one beat |
+| `[d e]` | notes grouped in one beat (needed for two or more notes) |
 | `c4+e4+g4` | notes together |
 | `\| Am \| F \| C G \|` | chords, shared bars divide equally |
 | `d u m` | strum down, up, muted |
@@ -442,16 +497,17 @@ Instruments made with Parabolic can be used as sounds.
 | `<`, `>` | crescendo, diminuendo |
 | `cresc to ff over 4 bars` | a live dynamic change |
 | `rit`, `accel`, `a tempo`, `tempo primo` | tempo changes |
-| `g4^`, `fermata 3 beats` | fermata |
+| `tempo 120 -> 140 over 4 bars` | a tempo ramp |
+| `g4^` | fermata |
 | `pickup: beat 4` | anacrusis |
 | `rubato 10%`, `swing 60%`, `humanize` | feel |
-| `pattern name { }`, `play name` | named patterns |
+| `pattern name { }`, `play name`, `add name` | named patterns, played in turn or on top |
 | `\|: :\|`, `:\| x4`, `\|1 \|2` | repeat, count, endings |
 | `%`, `%%` | repeat the previous bar, two bars |
 | `segno:`, `coda:`, `fine:` | markers |
 | `D.C.`, `D.S. al fine`, `D.S. al coda`, `to coda` | jumps |
-| `form: intro verse x2 chorus` | the form |
-| `every 4 bars: drums fill` | a variation inside a loop |
+| `section name { }`, `form: intro verse x2 chorus` | sections and the form |
+| `every 4 bars: play fill` | a variation inside a loop |
 | `at bar 30:` | a scheduled change |
 | `now:` | a change at the next beat |
 | `->` | signal flow |

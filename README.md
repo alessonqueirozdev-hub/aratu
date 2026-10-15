@@ -18,26 +18,36 @@ it. It is built on [Manguebyte](https://github.com/alessonqueirozdev-hub/mangueb
 the open-source audio framework for Rust, and runs on its own or inside a
 DAW, in step with the host's transport.
 
-> **Status: idea.** Nothing here is built yet. This repository holds the
-> vision so that it is not lost while Manguebyte reaches and then passes
-> JUCE. See [docs/VISION.md](docs/VISION.md).
+> **Status: in development.** The language crate (`crates/aratu`) reads
+> every example in the manual; the checker, the scheduler and the web editor
+> are being built now. See [docs/VISION.md](docs/VISION.md) for where it is
+> going.
 
 ## A taste
 
-The syntax below is a sketch, not a decision:
-
 ```
-measure 4/4, tempo 96
+meter: 4/4
+tempo: 96
+key: A minor
 
-piano: | C4 q   E4 q   G4 h   | A3 q.  B3 e  C4 h |
-bass:  | C2 w                 | A1 w              |
-drums: every bar  "kick . snare . kick kick snare ."
+drums {
+  hh = cc cc co cc
+  bd = b - b -
+  sd = - s - s
+}
+
+bass = | a2 _ e2 _ | f2 _ c3 _ |
+
+guitar {
+  chords = | Am | F | C G | G |
+  strum  = D du -u du
+}
 ```
 
-Notes have values (`w` whole, `h` half, `q` quarter, `e` eighth, dots and
-tuplets), measures are checked, and patterns in the cycle style of
-TidalCycles and Strudel are available where they fit, such as the drum line.
-Note names in Portuguese (`dó ré mi`) work as well as letters.
+A space separates beats, symbols written together share their beat (`cc`
+is two eighths), `_` holds and `-` rests. Chords are written as a lead
+sheet, strums with `d` and `u`, dynamics and repeats with the score's own
+signs, and note names in solfège (`dó4 ré4 mi4`) work as well as letters.
 
 ## The Manguebyte ecosystem
 

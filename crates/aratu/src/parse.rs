@@ -1,0 +1,930 @@
+//! Reading statements: the frame of the piece, lines, parameters, scheduled
+//! changes and live commands.
+
+use crate::ast::*;
+use crate::diag::{Diagnostic, Message, Thing};
+use crate::lex::{Block, Cursor, Line, Node, layout};
+use crate::music::parse_music;
+use crate::span::Span;
+use crate::theory::{Dyn, Key, Meter};
+
+/// Line names read as drum lines wherever they are written.
+pub const DRUM_LINES: &[&str] = &[
+    "hh", "oh", "bd", "sd", "rd", "cr", "cy", "rim", "cp", "tom", "perc", "kick", "snare", "hat",
+    "hihat", "ride", "crash", "clap",
+];
+
+/// Parts whose lines are all drum lines.
+pub const DRUM_PARTS: &[&str] = &["drums", "drum", "kit"];
+
+/// Reads a whole piece.
+pub fn parse(src: &str) -> (Ast, Vec<Diagnostic>) {
+    let mut diags = Vec::new();
+    let nodes = layout(src, &mut diags);
+    let mut p = Parser {
+        stmts: Vec::new(),
+        diags,
+    };
+    p.nodes(&nodes, &Scope::Top, None);
+    (Ast { stmts: p.stmts }, p.diags)
+}
+
+struct Parser {
+    stmts: Vec<Stmt>,
+    diags: Vec<Diagnostic>,
+}
+
+/// What a parse step can fail with: a message at a place.
+type Fail = (Span, Message);
+
+fn expected(c: &mut Cursor, what: Thing, after: &str) -> Fail {
+    let at = c.offset();
+    let rest = c.rest();
+    let span = if rest.text.is_empty() {
+        Span::new(at.saturating_sub(1), at)
+    } else {
+        rest.span
+    };
+    (
+        span,
+        Message::Expected {
+            what,
+            after: after.to_string(),
+        },
+    )
+}
+
+fn name(text: &str, span: Span) -> Name {
+    Name {
+        text: text.to_string(),
+        span,
+    }
+}
+
+impl Parser {
+    fn nodes(&mut self, nodes: &[Node], scope: &Scope, part: Option<&Name>) {
+        for node in nodes {
+            match node {
+                Node::Line(l) => self.line(*l, scope, part),
+                Node::Block(b) => self.block(b, scope, part),
+            }
+        }
+    }
+
+    fn block(&mut self, b: &Block, scope: &Scope, part: Option<&Name>) {
+        let mut c = Cursor::new(b.header);
+        let (first, fspan) = c.name().expect("block headers are names");
+        let second = c.name();
+        match (first.to_lowercase().as_str(), second) {
+            ("pattern", Some((n, _))) => self.nodes(&b.body, &Scope::Pattern(n.to_string()), None),
+            ("section", Some((n, _))) => self.nodes(&b.body, &Scope::Section(n.to_string()), None),
+            (_, None) => {
+                if part.is_some() {
+                    // A block inside a part block: read its lines as part of it.
+                    self.nodes(&b.body, scope, part);
+                } else {
+                    self.nodes(&b.body, scope, Some(&name(first, fspan)));
+                }
+            }
+            (_, Some(_)) => {
+                self.diags
+                    .push(Diagnostic::error(b.header.span, Message::UnknownLine));
+            }
+        }
+    }
+
+    fn line(&mut self, line: Line, scope: &Scope, part: Option<&Name>) {
+        let mut c = Cursor::new(line);
+        match self.statement(&mut c, scope, part) {
+            Ok((when, kind)) => self.stmts.push(Stmt {
+                scope: scope.clone(),
+                part: part.cloned(),
+                when,
+                kind,
+                span: line.span,
+            }),
+            Err((span, msg)) => self.diags.push(Diagnostic::error(span, msg)),
+        }
+    }
+
+    fn statement(
+        &mut self,
+        c: &mut Cursor,
+        scope: &Scope,
+        part: Option<&Name>,
+    ) -> Result<(When, StmtKind), Fail> {
+        // When.
+        let start = c.offset();
+        if c.keyword("at") {
+            if !c.keyword("bar") {
+                return Err(expected(c, Thing::BarNumber, "at"));
+            }
+            let (n, ns) = c
+                .integer()
+                .ok_or_else(|| expected(c, Thing::BarNumber, "at bar"))?;
+            if n == 0 {
+                return Err((ns, Message::BarZero));
+            }
+            if !c.eat(":") {
+                return Err(expected(c, Thing::Colon, &format!("at bar {n}")));
+            }
+            let kind = self.action(c, scope, part)?;
+            return Ok((When::AtBar(n, c.span_from(start)), kind));
+        }
+        if c.keyword("every") {
+            let (n, ns) = c
+                .integer()
+                .ok_or_else(|| expected(c, Thing::Number, "every"))?;
+            if n == 0 {
+                return Err((ns, Message::BarZero));
+            }
+            if !(c.keyword("bars") || c.keyword("bar")) {
+                return Err(expected(c, Thing::Bars, &format!("every {n}")));
+            }
+            let mut first = false;
+            if c.eat(",") {
+                if c.keyword("first") {
+                    first = true;
+                } else if !c.keyword("last") {
+                    let r = c.rest();
+                    return Err((
+                        r.span,
+                        Message::Unexpected {
+                            text: r.text.to_string(),
+                        },
+                    ));
+                }
+            }
+            if !c.eat(":") {
+                return Err(expected(c, Thing::Colon, &format!("every {n} bars")));
+            }
+            let span = c.span_from(start);
+            let kind = self.action(c, scope, part)?;
+            return Ok((
+                When::Every {
+                    bars: n,
+                    first,
+                    span,
+                },
+                kind,
+            ));
+        }
+        {
+            let save = c.clone();
+            if c.keyword("now") && c.eat(":") {
+                let kind = self.action(c, scope, part)?;
+                return Ok((When::Now, kind));
+            }
+            *c = save;
+        }
+
+        // The frame of the piece.
+        if let Some(kind) = self.header(c)? {
+            return Ok((When::Bare, kind));
+        }
+        Ok((When::Bare, self.action(c, scope, part)?))
+    }
+
+    /// `meter: 4/4`, `tempo: 96`, `key: A minor`, `pickup: beat 4`,
+    /// `seed 7`, `form: intro verse x2`.
+    fn header(&mut self, c: &mut Cursor) -> Result<Option<StmtKind>, Fail> {
+        let save = c.clone();
+        let Some((word, _)) = c.name() else {
+            return Ok(None);
+        };
+        let word = word.to_lowercase();
+        if word == "seed" {
+            c.eat(":");
+            if c.keyword("random") {
+                return Ok(Some(StmtKind::Seed(Seed::Random)));
+            }
+            let (n, _) = c
+                .integer()
+                .ok_or_else(|| expected(c, Thing::Number, "seed"))?;
+            self.end(c)?;
+            return Ok(Some(StmtKind::Seed(Seed::Fixed(n as u64))));
+        }
+        if !c.eat(":") {
+            *c = save;
+            return Ok(None);
+        }
+        let kind = match word.as_str() {
+            "meter" => StmtKind::Meter(meter(c)?),
+            "tempo" => StmtKind::Tempo(tempo(c, "tempo:")?),
+            "key" => StmtKind::Key(key(c)?),
+            "pickup" => {
+                if !c.keyword("beat") {
+                    return Err(expected(c, Thing::Beat, "pickup:"));
+                }
+                let (n, ns) = c
+                    .integer()
+                    .ok_or_else(|| expected(c, Thing::Beat, "pickup:"))?;
+                if n == 0 {
+                    return Err((ns, Message::BadPickup { beat: 0, beats: 4 }));
+                }
+                StmtKind::Pickup(n)
+            }
+            "form" => {
+                let mut entries = Vec::new();
+                while let Some((n, s)) = c.name() {
+                    let mut times = 1;
+                    if let Some(t) = times_suffix(c) {
+                        times = t;
+                    }
+                    entries.push(FormEntry {
+                        section: name(n, s),
+                        times,
+                    });
+                }
+                if entries.is_empty() {
+                    return Err(expected(c, Thing::Name, "form:"));
+                }
+                StmtKind::Form(entries)
+            }
+            _ => {
+                *c = save;
+                return Ok(None);
+            }
+        };
+        self.end(c)?;
+        Ok(Some(kind))
+    }
+
+    fn end(&mut self, c: &mut Cursor) -> Result<(), Fail> {
+        if c.at_end() {
+            Ok(())
+        } else {
+            let r = c.rest();
+            Err((
+                r.span,
+                Message::Unexpected {
+                    text: r.text.to_string(),
+                },
+            ))
+        }
+    }
+
+    /// Everything that can also follow `at bar N:`.
+    fn action(
+        &mut self,
+        c: &mut Cursor,
+        scope: &Scope,
+        part: Option<&Name>,
+    ) -> Result<StmtKind, Fail> {
+        let save = c.clone();
+        let Some((words, pspan)) = c.path() else {
+            let r = c.rest();
+            return Err((r.span, Message::UnknownLine));
+        };
+        let first = words[0].to_lowercase();
+
+        // `name = music` or `path = value`.
+        if c.eat("=") {
+            return self.assignment(c, &words, pspan, scope, part);
+        }
+
+        if words.len() == 1 {
+            match first.as_str() {
+                "play" => {
+                    let mut entries = Vec::new();
+                    loop {
+                        let (n, s) = c.name().ok_or_else(|| expected(c, Thing::Name, "play"))?;
+                        let times = times_suffix(c).unwrap_or(1);
+                        entries.push(PlayEntry {
+                            pattern: name(n, s),
+                            times,
+                        });
+                        if !c.eat(",") {
+                            break;
+                        }
+                    }
+                    self.end(c)?;
+                    return Ok(StmtKind::Play(entries));
+                }
+                "add" => {
+                    let (n, s) = c.name().ok_or_else(|| expected(c, Thing::Name, "add"))?;
+                    self.end(c)?;
+                    return Ok(StmtKind::Add(name(n, s)));
+                }
+                "tempo" => {
+                    if c.keyword("primo") {
+                        self.end(c)?;
+                        return Ok(StmtKind::TempoChange(TempoChange::Primo));
+                    }
+                    let from = tempo(c, "tempo")?;
+                    if c.eat("->") {
+                        let to = tempo(c, "->")?;
+                        let bars = over_bars(c)?;
+                        self.end(c)?;
+                        return Ok(StmtKind::TempoChange(TempoChange::Ramp {
+                            from: Some(from),
+                            to,
+                            bars,
+                        }));
+                    }
+                    self.end(c)?;
+                    return Ok(StmtKind::TempoChange(TempoChange::Set(from)));
+                }
+                "rit" | "rall" | "accel" | "ritardando" | "rallentando" | "accelerando" => {
+                    if !c.keyword("to") {
+                        return Err(expected(c, Thing::Number, &first));
+                    }
+                    let to = tempo(c, "to")?;
+                    let bars = over_bars(c)?;
+                    self.end(c)?;
+                    return Ok(StmtKind::TempoChange(TempoChange::Ramp {
+                        from: None,
+                        to,
+                        bars,
+                    }));
+                }
+                "a" if c.keyword("tempo") => {
+                    self.end(c)?;
+                    return Ok(StmtKind::TempoChange(TempoChange::ATempo));
+                }
+                "meter" => {
+                    let m = meter(c)?;
+                    self.end(c)?;
+                    return Ok(StmtKind::MeterChange(m));
+                }
+                "key" => {
+                    let k = key(c)?;
+                    self.end(c)?;
+                    return Ok(StmtKind::KeyChange(k));
+                }
+                "swing" | "rubato" | "humanize" => {
+                    *c = save;
+                    let feel = feel(c)?;
+                    self.end(c)?;
+                    return Ok(StmtKind::Feel { target: None, feel });
+                }
+                _ => {}
+            }
+        }
+
+        // `bass: ...` commands addressed to a part.
+        if words.len() == 1 && c.eat(":") {
+            let target = name(words[0], pspan);
+            return self.part_command(c, target);
+        }
+
+        // `hh.rotate 1`
+        if words.len() >= 2 {
+            let verb = words.last().unwrap().to_lowercase();
+            if let Some(t) = self.transform(c, &verb)? {
+                let tspan = Span::new(
+                    pspan.start,
+                    pspan.start + words[..words.len() - 1].join(".").len(),
+                );
+                self.end(c)?;
+                return Ok(StmtKind::Transform {
+                    target: name(&words[..words.len() - 1].join("."), tspan),
+                    transform: t,
+                });
+            }
+        }
+
+        // A signal chain inside a part block: `synth.saw -> lowpass`.
+        *c = save;
+        if c.clone().rest().text.contains("->") {
+            let units = chain(c)?;
+            return Ok(StmtKind::Chain {
+                target: part.cloned(),
+                units,
+            });
+        }
+
+        let r = c.rest();
+        Err((r.span, Message::UnknownLine))
+    }
+
+    fn assignment(
+        &mut self,
+        c: &mut Cursor,
+        words: &[&str],
+        pspan: Span,
+        scope: &Scope,
+        part: Option<&Name>,
+    ) -> Result<StmtKind, Fail> {
+        let is_number = matches!(c.peek(), Some(ch) if ch.is_ascii_digit() || ch == '+' || ch == '-' && c.clone().number().is_some());
+        if words.len() > 1 || is_number {
+            let value = value(c).ok_or_else(|| expected(c, Thing::Value, &words.join(".")))?;
+            self.end(c)?;
+            let mut off = pspan.start;
+            let path = words
+                .iter()
+                .map(|w| {
+                    let n = name(w, Span::new(off, off + w.len()));
+                    off += w.len() + 1;
+                    n
+                })
+                .collect();
+            return Ok(StmtKind::Param { path, value });
+        }
+        let line_name = words[0];
+        let kind = line_kind(line_name, part.map(|p| p.text.as_str()));
+        let music = c.rest();
+        let bars = parse_music(music.text, music.span.start, kind, &mut self.diags);
+        let _ = scope;
+        Ok(StmtKind::Line(LineDef {
+            name: name(line_name, pspan),
+            kind,
+            bars,
+            music_span: music.span,
+        }))
+    }
+
+    fn part_command(&mut self, c: &mut Cursor, target: Name) -> Result<StmtKind, Fail> {
+        let save = c.clone();
+        if let Some((w, _)) = c.name() {
+            let w = w.to_lowercase();
+            if let Some(d) = Dyn::parse(&w) {
+                if c.at_end() {
+                    return Ok(StmtKind::Level { target, dynamic: d });
+                }
+            }
+            match w.as_str() {
+                "cresc" | "crescendo" | "dim" | "decresc" | "diminuendo" => {
+                    if !c.keyword("to") {
+                        return Err(expected(c, Thing::Dynamic, &w));
+                    }
+                    let (dw, ds) = c.name().ok_or_else(|| expected(c, Thing::Dynamic, "to"))?;
+                    let d = Dyn::parse(dw).ok_or((
+                        ds,
+                        Message::Expected {
+                            what: Thing::Dynamic,
+                            after: "to".into(),
+                        },
+                    ))?;
+                    let bars = over_bars(c)?;
+                    self.end(c)?;
+                    return Ok(StmtKind::LevelRamp {
+                        target,
+                        to: LevelTarget::Dynamic(d),
+                        bars,
+                    });
+                }
+                "fade" => {
+                    let to = if c.keyword("out") {
+                        LevelTarget::Silence
+                    } else if c.keyword("in") {
+                        LevelTarget::Dynamic(Dyn::Mf)
+                    } else {
+                        return Err(expected(c, Thing::Bars, "fade"));
+                    };
+                    let bars = over_bars(c)?;
+                    self.end(c)?;
+                    return Ok(StmtKind::LevelRamp { target, to, bars });
+                }
+                "swing" | "rubato" | "humanize" => {
+                    *c = save;
+                    let feel = feel(c)?;
+                    self.end(c)?;
+                    return Ok(StmtKind::Feel {
+                        target: Some(target),
+                        feel,
+                    });
+                }
+                _ => {}
+            }
+        }
+        *c = save;
+        let units = chain(c)?;
+        Ok(StmtKind::Chain {
+            target: Some(target),
+            units,
+        })
+    }
+
+    fn transform(&mut self, c: &mut Cursor, verb: &str) -> Result<Option<Transform>, Fail> {
+        let num = |c: &mut Cursor, what: &str| -> Result<f64, Fail> {
+            c.number()
+                .map(|(v, _)| v)
+                .ok_or_else(|| expected(c, Thing::Number, what))
+        };
+        Ok(Some(match verb {
+            "rotate" => Transform::Rotate(num(c, verb)? as i64),
+            "density" => {
+                let v = num(c, verb)?;
+                c.eat("%");
+                Transform::Density(v)
+            }
+            "velocity" => Transform::Velocity(num(c, verb)?),
+            "transpose" => Transform::Transpose(num(c, verb)? as i64),
+            "invert" => Transform::Invert,
+            "retrograde" => Transform::Retrograde,
+            "augment" => Transform::Augment,
+            "diminish" => Transform::Diminish,
+            _ => return Ok(None),
+        }))
+    }
+}
+
+/// How the line's symbols are read, from its name and the part it is in.
+pub fn line_kind(line: &str, part: Option<&str>) -> LineKind {
+    let l = line.to_lowercase();
+    if l == "chords" {
+        return LineKind::Chords;
+    }
+    if l == "strum" {
+        return LineKind::Strum;
+    }
+    let in_drums = part.is_some_and(|p| DRUM_PARTS.contains(&p.to_lowercase().as_str()));
+    if in_drums || DRUM_LINES.contains(&l.as_str()) {
+        return LineKind::Drums;
+    }
+    LineKind::Pitched
+}
+
+fn meter(c: &mut Cursor) -> Result<Meter, Fail> {
+    let r = c.clone().rest();
+    let text: String = r.text.split_whitespace().next().unwrap_or("").to_string();
+    if text.is_empty() {
+        return Err(expected(c, Thing::Meter, "meter"));
+    }
+    let m = Meter::parse(&text).ok_or((
+        Span::new(r.span.start, r.span.start + text.len()),
+        Message::BadMeter { text: text.clone() },
+    ))?;
+    // Consume the meter's characters.
+    let skip = text.len();
+    let rest = c.rest();
+    *c = Cursor::from_str(&rest.text[skip..], rest.span.start + skip);
+    Ok(m)
+}
+
+fn tempo(c: &mut Cursor, after: &str) -> Result<f64, Fail> {
+    let (v, s) = c
+        .number()
+        .ok_or_else(|| expected(c, Thing::Number, after))?;
+    c.keyword("bpm");
+    if !(10.0..=400.0).contains(&v) {
+        return Err((s, Message::TempoOutOfRange { bpm: v }));
+    }
+    Ok(v)
+}
+
+fn key(c: &mut Cursor) -> Result<Key, Fail> {
+    let r = c.rest();
+    Key::parse(r.text).ok_or((
+        r.span,
+        Message::UnknownKey {
+            text: r.text.to_string(),
+        },
+    ))
+}
+
+/// `over 4 bars`
+fn over_bars(c: &mut Cursor) -> Result<i64, Fail> {
+    if !c.keyword("over") {
+        return Err(expected(c, Thing::Bars, "to"));
+    }
+    let (n, ns) = c
+        .integer()
+        .ok_or_else(|| expected(c, Thing::Bars, "over"))?;
+    if n == 0 {
+        return Err((ns, Message::BarZero));
+    }
+    if !(c.keyword("bars") || c.keyword("bar")) {
+        return Err(expected(c, Thing::Bars, &format!("over {n}")));
+    }
+    Ok(n)
+}
+
+/// `x3` after a name.
+fn times_suffix(c: &mut Cursor) -> Option<u32> {
+    let save = c.clone();
+    if let Some((w, _)) = c.name() {
+        if let Some(n) = w.strip_prefix('x').and_then(|n| n.parse::<u32>().ok()) {
+            return Some(n.max(1));
+        }
+    }
+    *c = save;
+    None
+}
+
+fn feel(c: &mut Cursor) -> Result<Feel, Fail> {
+    let (w, _) = c.name().expect("called on a feel word");
+    let w = w.to_lowercase();
+    match w.as_str() {
+        "swing" | "rubato" => {
+            let (v, _) = c.number().ok_or_else(|| expected(c, Thing::Number, &w))?;
+            c.eat("%");
+            Ok(if w == "swing" {
+                Feel::Swing(v)
+            } else {
+                Feel::Rubato(v)
+            })
+        }
+        _ => {
+            let ms = match c.number() {
+                Some((v, _)) => {
+                    c.keyword("ms");
+                    v
+                }
+                None => 10.0,
+            };
+            Ok(Feel::Humanize(ms))
+        }
+    }
+}
+
+/// `synth.saw -> lowpass -> reverb`
+fn chain(c: &mut Cursor) -> Result<Vec<Name>, Fail> {
+    let mut units = Vec::new();
+    loop {
+        let (p, s) = c.path().ok_or_else(|| expected(c, Thing::Name, "->"))?;
+        units.push(name(&p.join("."), s));
+        if !c.eat("->") {
+            break;
+        }
+    }
+    if !c.at_end() {
+        let r = c.rest();
+        return Err((
+            r.span,
+            Message::Unexpected {
+                text: r.text.to_string(),
+            },
+        ));
+    }
+    Ok(units)
+}
+
+/// A number with an optional unit.
+fn value(c: &mut Cursor) -> Option<Value> {
+    let (number, number_span) = c.number()?;
+    let mut span = number_span;
+    let mut unit = None;
+    if c.eat("%") {
+        unit = Some("%".to_string());
+        span = c.span_from(number_span.start);
+    } else {
+        let save = c.clone();
+        if let Some((u, us)) = c.name() {
+            unit = Some(u.to_string());
+            span = span.join(us);
+        } else {
+            *c = save;
+        }
+    }
+    Some(Value {
+        number,
+        unit,
+        number_span,
+        span,
+    })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn one(src: &str) -> Stmt {
+        let (ast, d) = parse(src);
+        assert!(d.is_empty(), "{src}: {d:?}");
+        assert_eq!(ast.stmts.len(), 1, "{src}");
+        ast.stmts.into_iter().next().unwrap()
+    }
+
+    fn fails(src: &str) -> Message {
+        let (_, d) = parse(src);
+        assert!(!d.is_empty(), "{src} should fail");
+        d[0].message.clone()
+    }
+
+    #[test]
+    fn the_frame_of_the_piece() {
+        assert_eq!(one("meter: 4/4").kind, StmtKind::Meter(Meter::COMMON));
+        assert_eq!(one("tempo: 96").kind, StmtKind::Tempo(96.0));
+        assert_eq!(
+            one("key: A minor").kind,
+            StmtKind::Key(Key {
+                tonic: 9,
+                minor: true
+            })
+        );
+        assert_eq!(one("pickup: beat 4").kind, StmtKind::Pickup(4));
+        assert_eq!(one("seed 7").kind, StmtKind::Seed(Seed::Fixed(7)));
+        assert_eq!(one("seed: 7").kind, StmtKind::Seed(Seed::Fixed(7)));
+        assert_eq!(one("seed random").kind, StmtKind::Seed(Seed::Random));
+        let StmtKind::Form(f) = one("form: intro verse x2 chorus").kind else {
+            panic!()
+        };
+        assert_eq!(f.len(), 3);
+        assert_eq!(f[1].times, 2);
+        assert_eq!(
+            fails("meter: 4/5"),
+            Message::BadMeter { text: "4/5".into() }
+        );
+        assert_eq!(fails("tempo: 900"), Message::TempoOutOfRange { bpm: 900.0 });
+    }
+
+    #[test]
+    fn lines_by_name_and_part() {
+        let s = one("bass = | a2 _ e2 _ | f2 _ c3 _ |");
+        let StmtKind::Line(l) = s.kind else { panic!() };
+        assert_eq!(l.kind, LineKind::Pitched);
+        assert_eq!(l.bars.len(), 2);
+
+        let (ast, d) = parse("drums {\n  hh = cc cc co cc\n  kick = b - b -\n}");
+        assert!(d.is_empty());
+        assert_eq!(ast.stmts[1].part.as_ref().unwrap().text, "drums");
+        let StmtKind::Line(l) = &ast.stmts[1].kind else {
+            panic!()
+        };
+        assert_eq!(l.kind, LineKind::Drums);
+
+        let (ast, d) = parse("guitar {\n chords = | Am | F |\n strum = D du -u du\n}");
+        assert!(d.is_empty());
+        let StmtKind::Line(l) = &ast.stmts[0].kind else {
+            panic!()
+        };
+        assert_eq!(l.kind, LineKind::Chords);
+        let StmtKind::Line(l) = &ast.stmts[1].kind else {
+            panic!()
+        };
+        assert_eq!(l.kind, LineKind::Strum);
+    }
+
+    #[test]
+    fn scheduled_changes() {
+        let s = one("at bar 30: tempo 130");
+        assert!(matches!(s.when, When::AtBar(30, _)));
+        assert_eq!(s.kind, StmtKind::TempoChange(TempoChange::Set(130.0)));
+        assert_eq!(
+            one("rit to 80 over 2 bars").kind,
+            StmtKind::TempoChange(TempoChange::Ramp {
+                from: None,
+                to: 80.0,
+                bars: 2
+            })
+        );
+        assert_eq!(
+            one("tempo 120 -> 140 over 4 bars").kind,
+            StmtKind::TempoChange(TempoChange::Ramp {
+                from: Some(120.0),
+                to: 140.0,
+                bars: 4
+            })
+        );
+        assert_eq!(
+            one("a tempo").kind,
+            StmtKind::TempoChange(TempoChange::ATempo)
+        );
+        assert_eq!(
+            one("tempo primo").kind,
+            StmtKind::TempoChange(TempoChange::Primo)
+        );
+        assert_eq!(
+            one("at bar 17: meter 7/8").kind,
+            StmtKind::MeterChange(Meter { num: 7, den: 8 })
+        );
+        let s = one("every 8 bars, first: add crash");
+        assert!(matches!(
+            s.when,
+            When::Every {
+                bars: 8,
+                first: true,
+                ..
+            }
+        ));
+        let s = one("every 4 bars: play fill");
+        assert!(matches!(
+            s.when,
+            When::Every {
+                bars: 4,
+                first: false,
+                ..
+            }
+        ));
+        let StmtKind::Play(p) = one("play groove x3, fill").kind else {
+            panic!()
+        };
+        assert_eq!((p[0].pattern.text.as_str(), p[0].times), ("groove", 3));
+        assert_eq!((p[1].pattern.text.as_str(), p[1].times), ("fill", 1));
+        assert!(matches!(one("now: play fill").when, When::Now));
+        assert_eq!(fails("at bar 0: play fill"), Message::BarZero);
+    }
+
+    #[test]
+    fn parameters_chains_and_part_commands() {
+        let StmtKind::Param { path, value } = one("bass.reverb.mix = 0.42").kind else {
+            panic!()
+        };
+        assert_eq!(path.len(), 3);
+        assert_eq!(value.number, 0.42);
+        let src = "lowpass.cutoff = 800 Hz";
+        let StmtKind::Param { value, .. } = one(src).kind else {
+            panic!()
+        };
+        assert_eq!(value.unit.as_deref(), Some("Hz"));
+        assert_eq!(&src[value.number_span.start..value.number_span.end], "800");
+
+        let StmtKind::Chain { target, units } = one("bass: synth.saw -> lowpass -> reverb").kind
+        else {
+            panic!()
+        };
+        assert_eq!(target.unwrap().text, "bass");
+        assert_eq!(units.len(), 3);
+        assert_eq!(units[0].text, "synth.saw");
+
+        assert!(matches!(
+            one("piano: mf").kind,
+            StmtKind::Level {
+                dynamic: Dyn::Mf,
+                ..
+            }
+        ));
+        assert!(matches!(
+            one("piano: cresc to ff over 4 bars").kind,
+            StmtKind::LevelRamp {
+                to: LevelTarget::Dynamic(Dyn::Ff),
+                bars: 4,
+                ..
+            }
+        ));
+        assert!(matches!(
+            one("all: fade out over 8 bars").kind,
+            StmtKind::LevelRamp {
+                to: LevelTarget::Silence,
+                bars: 8,
+                ..
+            }
+        ));
+        assert!(matches!(
+            one("piano: rubato 10%").kind,
+            StmtKind::Feel {
+                feel: Feel::Rubato(10.0),
+                ..
+            }
+        ));
+        assert!(matches!(
+            one("swing 60%").kind,
+            StmtKind::Feel {
+                feel: Feel::Swing(60.0),
+                ..
+            }
+        ));
+        assert!(matches!(
+            one("humanize").kind,
+            StmtKind::Feel {
+                feel: Feel::Humanize(_),
+                ..
+            }
+        ));
+        assert!(matches!(
+            one("humanize 5 ms").kind,
+            StmtKind::Feel {
+                feel: Feel::Humanize(5.0),
+                ..
+            }
+        ));
+    }
+
+    #[test]
+    fn transformations() {
+        let StmtKind::Transform { target, transform } = one("hh.rotate 1").kind else {
+            panic!()
+        };
+        assert_eq!(target.text, "hh");
+        assert_eq!(transform, Transform::Rotate(1));
+        assert!(matches!(
+            one("bass.transpose +12").kind,
+            StmtKind::Transform {
+                transform: Transform::Transpose(12),
+                ..
+            }
+        ));
+        assert!(matches!(
+            one("hh.density 50%").kind,
+            StmtKind::Transform {
+                transform: Transform::Density(50.0),
+                ..
+            }
+        ));
+        assert!(matches!(
+            one("melody.retrograde").kind,
+            StmtKind::Transform {
+                transform: Transform::Retrograde,
+                ..
+            }
+        ));
+    }
+
+    #[test]
+    fn patterns_and_sections() {
+        let (ast, d) = parse("pattern groove {\n  hh = cc cc co cc\n}\nplay groove");
+        assert!(d.is_empty());
+        assert_eq!(ast.stmts[0].scope, Scope::Pattern("groove".into()));
+        let (ast, d) = parse("section verse { bass = | a2 _ e2 _ | }");
+        assert!(d.is_empty());
+        assert_eq!(ast.stmts[0].scope, Scope::Section("verse".into()));
+    }
+
+    #[test]
+    fn unknown_lines() {
+        assert_eq!(fails("hello world"), Message::UnknownLine);
+        assert_eq!(fails("123"), Message::UnknownLine);
+    }
+}

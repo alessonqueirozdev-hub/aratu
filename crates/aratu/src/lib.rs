@@ -5,10 +5,14 @@
 
 #![forbid(unsafe_code)]
 
+pub mod ast;
 pub mod diag;
 pub mod lex;
+pub mod music;
+pub mod parse;
 pub mod ratio;
 pub mod span;
+pub mod theory;
 
 pub use diag::{Diagnostic, Lang, Message, Severity};
 pub use ratio::Ratio;

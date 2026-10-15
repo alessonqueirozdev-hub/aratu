@@ -175,6 +175,7 @@ pub enum Message {
         jump: String,
     },
     MisplacedRepeatCount,
+    EmptyBar,
     BarRepeatNotAlone,
     NothingToRepeat,
     HoldWithNothing,
@@ -381,6 +382,8 @@ impl Message {
             (MisplacedRepeatCount, Pt) => {
                 "o número de vezes, como `x4`, vai logo depois de :|".into()
             }
+            (EmptyBar, En) => "this bar is empty; write rests in it, like `- - - -`".into(),
+            (EmptyBar, Pt) => "este compasso está vazio; escreva pausas, como `- - - -`".into(),
             (BarRepeatNotAlone, En) => {
                 "`%` stands for a whole bar and goes alone between bar lines".into()
             }

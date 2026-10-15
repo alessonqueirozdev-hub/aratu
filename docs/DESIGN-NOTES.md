@@ -335,6 +335,9 @@ prefix: `8va: c4 e g`.
 
 **Decided (15 October 2026):** staccato is `c4'`.
 
+**Decided (15 October 2026):** see "Provisional decisions" below for the
+choices made while implementing.
+
 **Decided (15 October 2026):** chance uses the symbols (`?`, `{a|b}`); the
 manual explains it in its own chapter. Background:
 since chance is used constantly when playing live and `?` reads as
@@ -345,3 +348,60 @@ loop varies by itself the way a drummer never plays a bar quite the same:
 `c?30%` three times in ten, and `bass = | {c2|g1} _ c2 _ |` starts each
 repeat on either C or G.
 
+
+## Provisional decisions (15 October 2026)
+
+Implementing the language needed answers the manual left open. The user
+approved these as provisional; each can be reopened, and the manual marks
+them *Provisional*.
+
+1. **Two notes in one beat need brackets.** `[d e]`, never `de`, because
+   `eb` reads as E-flat. Rests and holds may sit next to a note (`-e4`,
+   `c4_`). The checker answers `de` with "put them in brackets: `[d e]`".
+2. **Everything loops over its own length.** A one-bar hi-hat, a two-bar bass
+   and a four-bar progression loop independently, as a band's parts line up.
+   With a pickup, the pickup is bar 0 and plays once; bar 1 is the first full
+   bar. A line whose first bar is as long as the pickup starts in it; the
+   other lines start at bar 1.
+3. **A change written without `at bar` happens where the piece starts, or,
+   while playing live, at the next bar line after it is written.** (First
+   proposed as "only with `at bar` in a file"; changed because the editor
+   evaluates the whole text on every edit, so a bare line has to mean "from
+   when it appeared". The editor remembers when each such line first
+   appeared.)
+4. **A tempo ramp is linear in score beats**, as notation programs do it, so
+   the position of every beat has a closed form (a logarithm) and notes land
+   on their exact sample.
+5. **`play` chooses, `add` layers.** `every 4 bars: play fill` replaces the
+   current pattern in the fourth bar of every four; `every 8 bars, first: add
+   crash` plays a pattern on top. This replaces `every 4 bars: drums fill` and
+   `every 8 bars, first: crash`, which named a part and a sound where every
+   other statement names a pattern.
+6. **Chords sharing a bar must fall on the beats.** `| C G |` in 4/4 is two
+   beats each; three chords in 4/4 are an error that asks for holds,
+   `| Am _ F G |`.
+7. **The drum symbol decides the sound**, whatever the line is called: c
+   closed hi-hat, o open hi-hat, b bass drum, s snare, r ride, x crash. Lines
+   inside `drums { }` and lines with drum names (`hh`, `bd`, `sd`, `cr`, `rd`,
+   `kick`, `snare`, `hat`, `ride`, `crash` and a few more) are drum lines.
+8. **A fermata is `^`, twice the value, and every part waits for it.** How to
+   give it another length (`fermata 3 beats`) stays open.
+9. **`seed 7` and `seed: 7` both work.**
+
+Smaller choices made along the way:
+
+- `.` inside a beat stands for `__`, so `c.c` is `c__c` and `[c4. d]` is
+  `[c4 _ _ d]`.
+- Inside brackets, glued symbols and spaces are the same level: `[-c4 d4]`
+  has three parts. Brackets nest: `c[cc]`.
+- A note before any octave is taken as octave 4, with a warning.
+- A live level (`piano: ff`, `cresc to ff over 4 bars`, `fade out`) scales
+  the part's written dynamics: at `mf` they sound as written.
+- A hairpin with no later mark moves one step (mf to f) by the end of the
+  line, with a warning.
+- `section` holds parts and lines like the top of the piece and lasts as long
+  as its longest line; the form loops. A block may sit on one line with `;`
+  between statements: `pattern crash { cr = x - - - }`.
+- Brazilian *cifra* spellings are read: `C7M`, `Bº`, `G7(b9)`, `Dm7(9)`.
+- Keywords are English for now. **Open:** Portuguese keywords (`compasso:`,
+  `andamento:`) beside the English ones.
