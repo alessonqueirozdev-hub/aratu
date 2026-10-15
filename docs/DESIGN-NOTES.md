@@ -111,6 +111,45 @@ The question was raised by a first proposal that used `|` inside a beat
 (`cc|c` for sixteenth, sixteenth, eighth); the rules above give each of its
 cases a single reading.
 
+**2c. Accents.** An upper-case step is accented: `cC cc` accents the "and"
+of the first beat. Pitched lines are written in lower case, as LilyPond does
+(`c4 e4 g4`), so that `C4` can mean an accented C4. Chord symbols keep their
+usual spelling (`Am`, `F`, `G7`).
+
+**2d. Chords as a lead sheet.** A chord progression is written the way a
+lead sheet (a *cifra*) writes it, and the beat rule applies one level up:
+what shares a bar divides it equally.
+
+```
+chords = | Am | F | C G | G |      // C and G take half a bar each
+chords = | Am _ _ F |              // Am for three beats, F for one
+```
+
+This replaces an earlier sketch, `chord(Am(1/2), F(1/2), C, G).measure(1)`,
+where unmarked chords last the default length and marked ones a fraction of
+a bar: the bar lines say the same with no parameters.
+
+**2e. Strumming.** A strum pattern uses the beat rules with its own symbols:
+`d` down, `u` up, `m` muted (a chuck), `-` the hand passes without striking,
+`_` hold, and upper case for an accent.
+
+```
+guitar {
+  chords = | Am | F | C G | G |
+  strum  = D du -u du             // the common pop strum
+}
+```
+
+The pattern repeats over every chord, so a live change of strum is one line
+and the chords change on their own at the right bar. Under the hood a down
+strum sounds the chord's strings low to high a few milliseconds apart and an
+up strum high to low, the spread set by tempo and accent; this needs a table
+of chord shapes on the fretboard (Am = x02210 and so on). The sound can come
+from guitar samples made with Parabolic or from Manguebyte's plucked-string
+model. An earlier sketch applied the strum with an arrow
+(`guitar.chord(Am, F, C, G).measure(1) -> d d u d`); the arrow is kept for
+signal flow (recommendation 5), so the strum is an assignment.
+
 **3. Simple words for time.** `pickup: beat 4` instead of
 `Meter.anacrusis(4/4::4)`; `at bar 30: tempo 130`; a ramp as
 `tempo 120 -> 140 over 4 bars`.
