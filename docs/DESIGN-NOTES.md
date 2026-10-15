@@ -243,10 +243,9 @@ the status bar names the language "Rust", which tells a user they are writing
 Rust. The knobs on the panel and in the code would be one and the same
 control.
 
-## A shorter name
+## The name
 
-**Decided (15 October 2026): Aratu.** The first name, MusiMangue, was long to
-remember. Candidates tied to manguebeat and
+**Decided (15 October 2026): Aratu.** Candidates tied to manguebeat and
 maracatu, checked free as crate names on crates.io and unused by any
 live-coding project on GitHub (15 October 2026):
 

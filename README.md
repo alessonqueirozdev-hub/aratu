@@ -9,8 +9,7 @@
 [Manguebyte](https://github.com/alessonqueirozdev-hub/manguebyte) ecosystem.
 
 *Aratu is a crab of the mangrove, the mangue of Recife that gave
-manguebeat, and Manguebyte, their names. The project was first called
-MusiMangue.*
+manguebeat, and Manguebyte, their names.*
 
 Aratu is a live-coding language and environment for people who know
 music: measures, time signatures, note values and tempo come first, so that
