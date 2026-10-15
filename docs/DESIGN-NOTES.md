@@ -287,3 +287,53 @@ In order of how often musicians need them:
 **Open:** how staccato is written: a mark after the note (`c4'`, close to a
 score) or a word (`stacc c4 e4`, easier to remember).
 
+## Proposal for what is still missing
+
+One principle: **what is used often gets one character; what is rare gets a
+word.** Each kind of line (drums, strum, pedal) keeps its own symbols, as the
+strum already does with `d u m`.
+
+**Articulations, frequent ones, one character after the note:**
+
+| Score | Aratu | Why |
+|---|---|---|
+| staccato | `c4'` | the apostrophe recalls the dot |
+| marcato | `c4!` | stronger than an upper-case accent |
+| tenuto | `c4=` | the score's dash |
+| slur (legato) | `c4~d4~e4` | the tilde joins the notes |
+| ghost note (drums) | `(s)` | exactly as in drum notation |
+| grace note, flam, drag | `` `d4 c4 ``, `` `s ``, ``` ``s ``` | the backtick is the small note before |
+| roll, tremolo | `s*` | |
+| fermata | `g4^` | already decided |
+
+**Rare techniques, a word after a colon** (the colon already attaches marks):
+`c4:trill`, `g4:vib`, `c4:gliss g4`, `e4:bend+2`, `Am:arp` (rolled chord).
+
+**Harmony by function.** Roman numerals in a progression,
+`chords = | I | vi | IV | V |`, relative to `key:`, with secondary dominants
+(`V7/V`) and borrowed chords (`bVII`). Arpeggios assigned like a strum, with
+chord-tone numbers (1 root, 3 third, 5 fifth, 7 seventh, 8 octave) and the
+beat rules: `arp = 13 58 13 58`. Modulation: `at bar 17: key D major`.
+Voicing: `piano.voicing = drop2`.
+
+**Meter.** Additive meters `meter: 7/8 = 2+2+3`, written `cc cc ccc`.
+Tuplets across beats: a number before brackets gives the beats they span,
+`2[c d e]` (a half-note triplet). Polyrhythm follows from the same rule:
+`bell = 4[c c c]` is three notes over four beats against drums in four.
+Polymeter: `bell { meter: 3/4 }` inside a 4/4 piece. Metric modulation:
+`at bar 9: tempo q = q.`.
+
+**Brazilian feel.** `feel samba`, `feel maracatu`, `feel frevo`,
+`feel baiao`, beside `feel swing 60%`; each feel is a map of micro-timing
+offsets by position in the beat, and users can define their own.
+
+**Voices and techniques.** `piano.right` and `piano.left`, as a pianist
+thinks; `voice 1`, `voice 2` for other instruments. Pedal with the score's
+signs: `pedal = | P _ _ * |`. Breath `,`, caesura `//`, octave shift as a
+prefix: `8va: c4 e g`.
+
+**Chance.** `s?` sometimes (half the time), `s?30%`, `{a|b}` one of two.
+
+**Open:** staccato as `c4'` (recommended) or as a word; chance with the live
+coders' symbols (`?`, `{a|b}`) or musicians' words (`maybe`, `ad lib`).
+
