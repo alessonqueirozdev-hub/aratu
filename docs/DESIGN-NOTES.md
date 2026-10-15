@@ -460,3 +460,50 @@ decisions still to make.
 - **Open:** keywords in Portuguese; the full drum table; a fermata of a
   given length; tuplets across beats and additive meters (proposed above);
   how rubato chooses its phrase (today it bends inside each bar).
+
+## Proposed: synthesizers, and a drawing for each effect (15 October 2026)
+
+**Open, asked for by the user; the syntax is to be confirmed with them before
+it is built.** In their words: the drums are there, but how do you make
+synthesizers in Aratu? And besides the knobs, an equalizer should appear when
+you call `equalizer`, and each effect called should be drawn in its own way.
+
+**1. An electronic-music kit, and synthesizers the musician defines.** A
+starting point that follows the rules already decided (numbers become knobs,
+`->` is the signal flow):
+
+```
+synth lead {
+  osc    = saw x3 detune 12 cents      // three detuned saws (unison)
+  filter = lowpass 1200 Hz, res 0.3, env 0.6
+  amp    = adsr 5 ms, 200 ms, 0.7, 300 ms
+  lfo    = sine 5 Hz -> pitch 10 cents
+}
+lead  = | c4 e g c5 |
+bass: acid                              // presets: acid (303-like), sub, reese, pad, pluck, stab, supersaw
+drums: kit 808                          // kits: 808, 909, and our own
+lead -> delay 3/16 -> reverb
+```
+
+The effects Manguebyte's engine has or is finishing: filters (low-pass,
+high-pass, band-pass, a Moog-style ladder), delay, chorus, flanger, phaser,
+distortion and saturation, compressor, gate, expander, limiter, reverb,
+convolution, and sidechain ducking (the kick pushing the pad down, the pumping
+of electronic music).
+
+**2. A drawing for each effect, besides the knobs.** Writing `equalizer` (or
+`eq`) draws the equalizer's curve with bands that can be dragged, and dragging
+rewrites the numbers in the text, as the knobs do. Each effect has its own
+drawing: a filter its response curve, an ADSR envelope its shape, an LFO its
+wave, a compressor its transfer curve with the gain reduction live, a delay
+its repeats in time, a reverb its decay, and level and spectrum meters where
+they help.
+
+From Manguebyte's side, the web engine will publish, with the parameters in
+JSON, a description of each effect with a drawing kind (eq and its bands,
+filter, adsr, lfo, compressor, delay, reverb) and what is needed to draw the
+right curve (for example the frequency response computed by the engine
+itself, so the drawing matches the sound). This comes with the sound-design
+step, right after the web engine; Manguebyte will say when the format is
+ready. Until then the editor can draw the curves from its own formulas and
+switch later.
