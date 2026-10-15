@@ -1,6 +1,12 @@
 # Aratu
 
-**A live-coding language that reads like music.**
+<p align="center">
+  <img src="docs/images/aratu-mascot.png" width="320"
+       alt="Aratu, an orange mangrove crab wearing headphones, coding music on a laptop">
+</p>
+
+**A live-coding language that reads like music.** Part of the
+[Manguebyte](https://github.com/alessonqueirozdev-hub/manguebyte) ecosystem.
 
 *Aratu is a crab of the mangrove, the mangue of Recife that gave
 manguebeat, and Manguebyte, their names. The project was first called
@@ -33,6 +39,19 @@ Notes have values (`w` whole, `h` half, `q` quarter, `e` eighth, dots and
 tuplets), measures are checked, and patterns in the cycle style of
 TidalCycles and Strudel are available where they fit, such as the drum line.
 Note names in Portuguese (`dó ré mi`) work as well as letters.
+
+## The Manguebyte ecosystem
+
+Aratu is one of three projects that grow from the same mangue:
+
+| Project | What it is | How it meets Aratu |
+|---|---|---|
+| [Manguebyte](https://github.com/alessonqueirozdev-hub/manguebyte) | the open-source audio framework for Rust (MIT OR Apache-2.0) | Aratu's sound engine: synthesis, effects, the SFZ sampler, plugin hosting and the DAW wrappers |
+| **Aratu** | this language and its editor | |
+| Parabolic | a plugin and sampler generator for musicians | its instruments play in Aratu as plugins on a desktop or as SFZ in a browser |
+
+Manguebyte's website (being built) will present all three together, each
+linking to the others.
 
 ## Documents
 
