@@ -117,6 +117,29 @@ melody plays with piano, chords with pad, bass with pluck
 The language itself (parser, checker, scheduler with a tempo map and a meter
 map) is new work in this repository.
 
+**Where the sound comes from.** Manguebyte is a library, not a separate
+program: MusiMangue depends on its crates, and they are compiled into
+MusiMangue's executable, or into its WebAssembly module in a browser. All
+real-time synthesis (oscillators, the polyphonic synth, filters, envelopes,
+effects, the audio graph) comes from there.
+
+Parabolic is not embedded. Its licence (PolyForm Noncommercial plus a
+commercial licence) would otherwise reach MusiMangue, which stays MIT OR
+Apache-2.0. Parabolic's instruments reach MusiMangue in two ways instead:
+
+- **On a desktop, as plugins.** Manguebyte hosts CLAP and VST 3 plugins
+  (`manguebyte-host`), so MusiMangue plays an instrument made with Parabolic
+  the way it plays any plugin, from any vendor.
+- **Anywhere, including a browser, as data.** A browser cannot run native
+  plugins, so Parabolic exports SFZ (WAV files and a mapping), and an open
+  SFZ player in Manguebyte plays them.
+
+| Layer | Licence | Role |
+|---|---|---|
+| Manguebyte | MIT OR Apache-2.0 | audio engine, synthesis, SFZ sampler, plugin hosting |
+| MusiMangue | MIT OR Apache-2.0 | language, scheduling, editor; its sound is Manguebyte |
+| Parabolic | PolyForm Noncommercial + commercial | authoring: guided capture, harmonic modelling, panel design, plugin export |
+
 ## The first version
 
 In: measures, time signatures, note values, ties, tuplets, tempo, parts
