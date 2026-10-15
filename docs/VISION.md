@@ -19,6 +19,39 @@ rhythm, a tie across a bar line or a change of meter is hard in all of them.
 Languages that do read like music, such as Alda, LilyPond and ABC notation,
 are for writing scores, not for changing music while it plays.
 
+## The landscape
+
+| Language | In common with MusiMangue | What it lacks for this purpose |
+|---|---|---|
+| TidalCycles, Strudel | compact pattern notation; Strudel has sliders in the code | time is the cycle, not the measure; no lead-sheet chords, score dynamics or rubato |
+| ixi lang (Thor Magnusson) | patterns that look like a score, very simple | no longer developed, tied to SuperCollider, no harmony or expression |
+| Mercury (Timo Hoogland) | designed to be readable and beginner friendly | still oriented to programmers rather than music theory |
+| FoxDot, Renardo | durations in beats | Python, with Python's ceremony |
+| Sonic Pi | excellent for teaching | time by `sleep`, arithmetic where music should be |
+| Glicol | written in Rust, runs in a browser | oriented to the audio graph, not to musical phrases |
+| Alda, LilyPond, ABC | music notation as text | made to write scores, not to play live |
+
+No language combines the measure and the beat as units, subdivision by
+symbols sharing a beat, lead-sheet chords, strum patterns, score dynamics and
+rubato, controls bound to the engine's parameters, and running inside a DAW
+in step with its transport, in Portuguese and English.
+
+**Where the users are.** Today's live coders are invested in Tidal and
+Strudel and many prefer cycles and generative patterns, so MusiMangue is
+unlikely to win them over quickly. The larger audience is musicians who do
+not live code yet: band musicians, music teachers and students, producers who
+live in a DAW, and Brazilian music education in particular, where there is
+almost nothing in Portuguese.
+
+**What decides adoption**, judging by the tools that succeeded: running in a
+browser with nothing to install (the main reason for Strudel's reach); good
+sounds on the first `play`; short examples and videos of performances; and
+talking to the existing tools (MIDI and OSC out to Strudel and Tidal), so
+they are partners rather than rivals. The design must also be tested on
+people early: five musicians who have never programmed, three exercises,
+and the language simplified wherever they get stuck. The number of symbols
+(`_ - . : < > ^ + [ ] |`) is the first thing to test.
+
 ## Who it is for
 
 - Musicians who read music or think in measures and note values, and want to
