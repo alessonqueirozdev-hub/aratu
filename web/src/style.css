@@ -1450,3 +1450,23 @@ body.stage .stage-msg:not([hidden]) {
     margin-left: 0;
   }
 }
+
+/* Which engine plays a voice. */
+
+.sound-engine {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-top: 10px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.sound-mb {
+  flex: none;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--mangue) 22%, transparent);
+  color: var(--text);
+  font-size: 11px;
+}

@@ -621,8 +621,16 @@ tubulares, saxo tenor, armónica, flauta dulce y la batería acústica) son
 grabaciones de la Versilian Community Sample Library, de dominio público
 (CC0), descargadas la primera vez que una pieza las usa. Mientras llegan,
 suena en su lugar un sonido sintetizado parecido. Los demás se sintetizan
-en el navegador. Todos son provisionales: el motor de Manguebyte los va a
-asumir, con los mismos códigos.
+en el navegador.
+
+**El motor de Manguebyte.** Los sonidos grabados y la batería analógica
+(`drums.kit`) suenan con el motor de Manguebyte, el motor de audio del
+ecosistema, que funciona en el navegador; en el panel Sonidos llevan el
+sello **Manguebyte**. Los demás suenan con un motor provisional, hecho con el
+Web Audio del navegador, hasta que Manguebyte los tenga, siempre con los
+mismos códigos. Los efectos (`lowpass`, `highpass`, `delay`, `reverb`), el
+volumen y el pan valen para todos. Si algo sale mal en una presentación, el
+interruptor del panel Sonidos apaga Manguebyte y todo pasa al provisional.
 
 Los parámetros pueden cambiar por compás como todo lo demás: `at bar 16:
 bajo.reverb.mix = 0.65`.

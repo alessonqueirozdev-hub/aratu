@@ -617,3 +617,21 @@ current signature stays as a wrapper. New messages in pt/es/en: unknown
 row, list index out of range, motif loop, motif with bar lines, row
 repeating a pitch class. Tests, a manual section and a lesson in the three
 languages.
+
+## Manguebyte's engine plays samples and drum kits (16 October 2026)
+
+At the user's request, part by part: Manguebyte's web engine (wave 5b,
+commit 29000fd, built by `web/scripts/manguebyte.mjs` into
+`web/public/manguebyte/`) plays the sampled voices (sampler parts loading
+our `voice.sfz`), the acoustic kit (a sampler kit, whose missing keys such
+as the golpe's 88 play Manguebyte's synthesized drums) and the analogue kit
+`drums.kit` (its synthesized kit). Every other voice stays in the Web Audio
+stand-in until Manguebyte has it. Each such part gets its own engine (one
+AudioWorkletNode), whose output goes into the part's Web Audio chain, so
+high-pass, low-pass, delay, reverb sends, volume and pan still apply while
+Manguebyte's own effects (wave 5c) are not in. Events go as note on (with
+the accent flag) and note off; a mid-bar swap sends Manguebyte's cancel,
+and stop sends cancel and all notes off. Levels were measured in the
+browser against the stand-in's. A switch in the Sounds panel turns
+Manguebyte off (kept in the browser), and a browser that cannot run it
+falls back to the stand-in by itself.

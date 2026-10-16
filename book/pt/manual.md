@@ -608,8 +608,16 @@ marimba, vibrafone, xilofone, glockenspiel, kalimba, sinos tubulares, sax
 tenor, gaita, flauta doce e a bateria acústica) são gravações da Versilian
 Community Sample Library, em domínio público (CC0), baixadas na primeira vez
 que uma peça as usa. Enquanto chegam, um som sintetizado parecido toca no
-lugar. Os outros são sintetizados no navegador. Todos são provisórios: o
-motor do Manguebyte vai assumi-los, com os mesmos códigos.
+lugar.
+
+**O motor do Manguebyte.** Os sons gravados e a bateria analógica
+(`drums.kit`) tocam pelo motor do Manguebyte, o motor de áudio do
+ecossistema, que roda no navegador; no painel Sons eles levam o selo
+**Manguebyte**. Os outros sons tocam num motor provisório, feito com o Web
+Audio do navegador, até o Manguebyte tê-los, sempre com os mesmos códigos.
+Os efeitos (`lowpass`, `highpass`, `delay`, `reverb`), o volume e o pan
+valem para todos. Se algo der errado numa apresentação, o interruptor do
+painel Sons desliga o Manguebyte e tudo passa a tocar no provisório.
 
 Os parâmetros podem mudar por compasso como tudo mais: `at bar 16:
 baixo.reverb.mix = 0.65`.

@@ -2,7 +2,7 @@
 // A click on a code writes it into the piece; ▶ plays a bar of it.
 
 import type { Aratu, VoiceCatalogue, VoiceInfo } from "./aratu";
-import type { Engine } from "./audio";
+import { Engine } from "./audio";
 import { type Lang, tr } from "./i18n";
 
 export interface SoundsOptions {
@@ -44,8 +44,24 @@ export class SoundsPanel {
       this.list(list);
     };
     const help = el("p", "sound-help", tr("soundsHelp", lang));
+    // Which engine plays samples and drum kits: Manguebyte, or (switched
+    // off, a way out on stage) the stand-in for everything.
+    const engineRow = el("label", "sound-engine");
+    const box = el("input");
+    box.type = "checkbox";
+    box.checked = Engine.manguebyteWanted();
+    box.onchange = () => {
+      try {
+        localStorage.setItem("aratu.manguebyte", box.checked ? "on" : "off");
+      } catch {
+        // Without storage the switch cannot be kept.
+      }
+      location.reload();
+    };
+    engineRow.append(box, el("span", "", tr("mbSwitch", lang)));
+    const engineHelp = el("p", "sound-help", tr("mbHelp", lang));
     const list = el("div", "sound-list");
-    this.box.append(search, help, list);
+    this.box.append(search, help, engineRow, engineHelp, list);
     this.list(list);
   }
 
@@ -97,6 +113,9 @@ export class SoundsPanel {
     code.onclick = () => this.o.insert(v.code);
     const name = el("span", "sound-name", v.name);
     row.append(play, code, name);
+    if ((v.sampled || v.code === "drums.kit") && Engine.manguebyteWanted()) {
+      row.append(el("span", "sound-mb", "Manguebyte"));
+    }
     if (v.sampled) {
       const state = el("span", "sound-state");
       const s = this.o.engine().sampleState(v.code);

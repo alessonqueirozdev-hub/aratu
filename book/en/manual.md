@@ -601,8 +601,16 @@ marimba, vibraphone, xylophone, glockenspiel, kalimba, tubular bells, tenor
 sax, harmonica, recorder and the acoustic kit) are recordings from the
 Versilian Community Sample Library, in the public domain (CC0), fetched the
 first time a piece uses them. While they arrive, a similar synthesized sound
-plays instead. The others are synthesized in the browser. All of them stand
-in for now: Manguebyte's engine will take them over, with the same codes.
+plays instead.
+
+**Manguebyte's engine.** The recorded sounds and the analogue kit
+(`drums.kit`) play through Manguebyte's engine, the ecosystem's audio
+engine, running in the browser; in the Sounds panel they carry the
+**Manguebyte** badge. The other sounds play in a stand-in made with the
+browser's Web Audio until Manguebyte has them, always under the same codes.
+The effects (`lowpass`, `highpass`, `delay`, `reverb`), volume and pan apply
+to all of them. If something goes wrong in a performance, the switch in the
+Sounds panel turns Manguebyte off and everything plays in the stand-in.
 
 Parameters can change by bar like anything else: `at bar 16:
 bass.reverb.mix = 0.65`.

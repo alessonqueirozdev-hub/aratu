@@ -74,6 +74,16 @@ const words = {
   soundSampled: { pt: "gravado", es: "grabado", en: "recorded" },
   soundLoading: { pt: "baixando…", es: "descargando…", en: "loading…" },
   soundReady: { pt: "pronto", es: "listo", en: "ready" },
+  mbSwitch: {
+    pt: "Tocar amostras e baterias pelo motor do Manguebyte",
+    es: "Tocar muestras y baterías con el motor de Manguebyte",
+    en: "Play samples and drum kits with Manguebyte's engine",
+  },
+  mbHelp: {
+    pt: "As vozes marcadas Manguebyte tocam pelo motor do Manguebyte; as outras, pelo motor provisório do navegador, até o Manguebyte tê-las. Desligado, tudo toca no provisório. A página recarrega ao trocar.",
+    es: "Las voces marcadas Manguebyte suenan con el motor de Manguebyte; las demás, con el motor provisional del navegador, hasta que Manguebyte las tenga. Apagado, todo suena con el provisional. La página se recarga al cambiar.",
+    en: "Voices marked Manguebyte play through Manguebyte's engine; the others through the browser's stand-in until Manguebyte has them. Off, everything plays in the stand-in. The page reloads when it changes.",
+  },
   soundFailed: { pt: "não baixou", es: "no se descargó", en: "did not load" },
 
   // Twelve-tone rows and melody lists.
