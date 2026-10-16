@@ -567,3 +567,48 @@ copied by `%` and bars written out from `- x8`. **Open:** dragging a note
 up and down to change its pitch; moving a note over a bar line (today it is
 cut at the bar's end); keeping the octave of the bar after an edited one when
 it was carried over.
+
+## Planned next: repetition, motifs, transformations, rows and lists (16 October 2026)
+
+Agreed with the user, not built yet. Resume here.
+
+1. **Repeat a beat inside a bar**: `| [mi3 ré3 dó3 ré3]x4 |` is the group
+   four times, each taking its own beat. `x` glued to `]` (or `}`, or to a
+   motif name), never spaced: spaced `| - x8 |` already means eight bars of
+   rest, and in drum lines `x` is the crash. Overflowing the bar gives the
+   usual beat-count error.
+2. **Motifs**: `motif riff = [mi3 ré3 dó3 ré3]` (beats, no bar lines; for
+   several bars use a list). Used as a beat word: `| riff riff+1 riff+2
+   riff+3 |`. `+n`/`-n` moves it n degrees in the key (`key:`, C major
+   when none), a note outside the scale keeping its offset; `+nst` moves
+   semitones. `riffx4` repeats it. A motif may use another, with a depth
+   limit and an error on a loop. Spans point at the definition, so the
+   editor lights the motif while it plays. Definitions may come anywhere:
+   a pre-pass over the layout collects motifs, rows, lists and the first
+   key before lines are parsed.
+3. **Transformations on a motif**: `riff.inv` (chromatic inversion around
+   its first note), `riff.retro` (its pitches in reverse order, same
+   rhythm, as serial practice treats rows), `riff.ri` (retrograde
+   inversion); they combine with transposition: `riff.ri+2`.
+4. **Twelve-tone rows as vectors**: `row serie = 0 11 3 4 8 7 9 5 6 1 2 10`
+   (pitch classes, or note names with or without octaves). Forms `P n`,
+   `I n`, `R n`, `RI n`, relative: `P0` is the row as written, `Pn` n
+   semitones up. A row gives pitches; a rhythm gives their places:
+   `melodia = | o o [o o] o | o _ [o o] o | from serie.P0 octave 4`, each
+   `o` taking the next pitch (cycling, as in isorhythm). `from [0 11 3 …]`
+   takes an inline vector. A twelve-note row that repeats a pitch class
+   gets a warning naming it. Later: the 12×12 matrix in the editor.
+5. **Melody lists**: `list temas { … }`, one melody (with bar lines) per
+   line; `melodia = temas.2` picks one by its number, counted from 1;
+   `temas.all` plays them in order. Changing the index while playing
+   comes in at the next bar, like any edit. Later: `temas.next` and
+   `temas.random` with `every`, and keys 1–9 choosing the index in stage
+   mode.
+
+Implementation notes: a new module (context with motifs, rows, lists and
+key; degree shift with the major or natural-minor scale; row forms;
+placeholder `o` filled after parsing) threaded into `parse_music`, whose
+current signature stays as a wrapper. New messages in pt/es/en: unknown
+row, list index out of range, motif loop, motif with bar lines, row
+repeating a pitch class. Tests, a manual section and a lesson in the three
+languages.
