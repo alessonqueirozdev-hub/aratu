@@ -1,0 +1,20 @@
+// Made by Aratu's web/scripts/samples.mjs from VCSL (CC0).
+<control> default_path=./
+<global> ampeg_release=0.12
+<region> sample=35.wav pitch_keycenter=35 lokey=0 hikey=36
+<region> sample=38.wav pitch_keycenter=38 lokey=37 hikey=39
+<region> sample=41.wav pitch_keycenter=41 lokey=40 hikey=43
+<region> sample=45.wav pitch_keycenter=45 lokey=44 hikey=48
+<region> sample=52.wav pitch_keycenter=52 lokey=49 hikey=53
+<region> sample=55.wav pitch_keycenter=55 lokey=54 hikey=57
+<region> sample=59.wav pitch_keycenter=59 lokey=58 hikey=60
+<region> sample=62.wav pitch_keycenter=62 lokey=61 hikey=63
+<region> sample=65.wav pitch_keycenter=65 lokey=64 hikey=67
+<region> sample=69.wav pitch_keycenter=69 lokey=68 hikey=70
+<region> sample=72.wav pitch_keycenter=72 lokey=71 hikey=74
+<region> sample=76.wav pitch_keycenter=76 lokey=75 hikey=77
+<region> sample=79.wav pitch_keycenter=79 lokey=78 hikey=81
+<region> sample=83.wav pitch_keycenter=83 lokey=82 hikey=84
+<region> sample=86.wav pitch_keycenter=86 lokey=85 hikey=87
+<region> sample=89.wav pitch_keycenter=89 lokey=88 hikey=91
+<region> sample=93.wav pitch_keycenter=93 lokey=92 hikey=127

@@ -266,6 +266,11 @@ pub enum Message {
     UnknownParam {
         name: String,
     },
+    /// A chain names a voice or an effect that does not exist.
+    UnknownSound {
+        name: String,
+        closest: Option<String>,
+    },
     ParamOutOfRange {
         name: String,
         value: f64,
@@ -575,6 +580,22 @@ impl Message {
             }
             (UnknownSection { name }, En) => format!("there is no section called `{name}`"),
             (UnknownSection { name }, Pt) => format!("não existe seção chamada `{name}`"),
+            (UnknownSound { name, closest }, En) => match closest {
+                Some(c) => format!(
+                    "there is no voice or effect called `{name}`; did you mean `{c}`? The Sounds panel lists them all"
+                ),
+                None => format!(
+                    "there is no voice or effect called `{name}`; the Sounds panel lists them all"
+                ),
+            },
+            (UnknownSound { name, closest }, Pt) => match closest {
+                Some(c) => format!(
+                    "não existe som ou efeito chamado `{name}`; seria `{c}`? O painel Sons mostra todos"
+                ),
+                None => {
+                    format!("não existe som ou efeito chamado `{name}`; o painel Sons mostra todos")
+                }
+            },
             (UnknownParam { name }, En) => {
                 format!("`{name}` is not a parameter I know yet, so it gets no knob")
             }
@@ -750,6 +771,14 @@ impl Message {
                 format!("no existe una parte, línea o patrón llamado `{name}`")
             }
             (UnknownSection { name }, Es) => format!("no existe una sección llamada `{name}`"),
+            (UnknownSound { name, closest }, Es) => match closest {
+                Some(c) => format!(
+                    "no existe un sonido o efecto llamado `{name}`; ¿quisiste decir `{c}`? El panel Sonidos los muestra todos"
+                ),
+                None => format!(
+                    "no existe un sonido o efecto llamado `{name}`; el panel Sonidos los muestra todos"
+                ),
+            },
             (UnknownParam { name }, Es) => {
                 format!("todavía no conozco el parámetro `{name}`, así que no tiene perilla")
             }

@@ -445,6 +445,51 @@ pub extern "C" fn aratu_grid(handle: u32, max_bars: u32) {
     set_out(grid_json(handle, max_bars as usize));
 }
 
+/// Every voice a part can play, by family, named in `lang`, with an example
+/// to hear it: `{"families":[{"code","name","voices":[{"code","name",
+/// "sampled","demo"}]}],"aliases":{...}}`.
+pub fn voices_json(lang: Lang) -> String {
+    use aratu::voices::{ALIASES, Family, Source, VOICES};
+    let mut j = Json::new();
+    j.open_obj();
+    j.key("families").open_arr();
+    for f in Family::ALL {
+        j.open_obj();
+        j.key("code").str(f.code());
+        j.key("name").str(f.name(lang));
+        j.key("voices").open_arr();
+        for v in VOICES.iter().filter(|v| v.family == f) {
+            j.open_obj();
+            j.key("code").str(v.code);
+            j.key("name").str(v.name(lang));
+            j.key("sampled").bool(v.source == Source::Sampled);
+            j.key("demo").str(v.demo);
+            j.close_obj();
+        }
+        j.close_arr();
+        j.close_obj();
+    }
+    j.close_arr();
+    j.key("aliases").open_obj();
+    for (alias, to) in ALIASES {
+        j.key(alias).str(to);
+    }
+    j.close_obj();
+    j.close_obj();
+    j.finish()
+}
+
+/// The voice catalogue (see [`voices_json`]) in the output buffer.
+#[unsafe(no_mangle)]
+pub extern "C" fn aratu_voices(lang: u32) {
+    let lang = match lang {
+        1 => Lang::En,
+        2 => Lang::Es,
+        _ => Lang::Pt,
+    };
+    set_out(voices_json(lang));
+}
+
 pub fn release(handle: u32) {
     PROGRAMS.with(|p| p.borrow_mut().remove(&handle));
 }

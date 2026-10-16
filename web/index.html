@@ -54,9 +54,15 @@
       <div class="work">
         <section class="editor sheet" id="editor"></section>
         <aside class="side">
-          <h2 data-word="messages"></h2>
-          <ul id="messages" class="messages"></ul>
-          <p class="note" id="note"></p>
+          <div class="side-tabs" role="tablist">
+            <button id="tab-messages" class="on" role="tab" data-word="messages"></button>
+            <button id="tab-sounds" role="tab" data-word="sounds"></button>
+          </div>
+          <div id="side-messages">
+            <ul id="messages" class="messages"></ul>
+            <p class="note" id="note"></p>
+          </div>
+          <div id="side-sounds" class="sounds" hidden></div>
         </aside>
       </div>
       <section class="rhythm sheet">

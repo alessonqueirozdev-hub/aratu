@@ -1,0 +1,13 @@
+// Made by Aratu's web/scripts/samples.mjs from VCSL (CC0).
+<control> default_path=./
+<group> loop_mode=one_shot
+<region> sample=kick.wav key=36
+<region> sample=snare.wav key=38
+<region> sample=closed-hat.wav key=42 group=2
+<region> sample=open-hat.wav key=46 group=1 off_by=2
+<region> sample=ride.wav key=51
+<region> sample=crash.wav key=49
+<region> sample=high-tom.wav key=50
+<region> sample=mid-tom.wav key=47
+<region> sample=floor-tom.wav key=43
+<region> sample=side-stick.wav key=37

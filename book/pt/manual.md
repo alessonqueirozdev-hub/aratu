@@ -518,10 +518,26 @@ quilohertz, `40%` em porcentagem.
 | `delay.time` | 10 a 2000 ms |
 | `delay.feedback`, `delay.mix` | 0 a 0,95, 0 a 1 |
 
-Os sons são `synth.saw`, `synth.square`, `synth.sine`, `synth.triangle` e
-`synth.pluck`; a bateria, as batidas e as cifras escolhem sozinhas uma
-bateria, uma corda dedilhada e um teclado. São sons simples, embutidos no
-navegador, até o motor do Manguebyte substituí-los.
+**Os sons.** Cada som tem um código, escrito no começo da cadeia:
+`baixo: bass.slap -> reverb`, `drums: drums.808`, `piano: piano.grand`. O
+painel **Sons**, ao lado das mensagens em Tocar, lista todos por família
+(baterias, teclados, teclados de percussão e sinos, cordas dedilhadas,
+baixos, sopros, sintetizadores), toca um compasso de cada um e põe o código
+no texto com um clique. Um código que não existe é avisado, com o mais
+parecido: *"seria `bass.slap`?"*. Sem código, a bateria, o violão e as
+cifras escolhem sozinhos.
+
+Alguns sons tocam com o acento: no `bass.slap` a nota normal é o polegar e
+a maiúscula é o *pop*, a corda puxada (`| mi2 Mi3 mi2 Mi3 |`); no
+`bass.acid` a maiúscula abre o filtro, como o accent da TB-303.
+
+Os sons marcados como **gravados** (pianos, cravo, órgão de tubos, harpa,
+marimba, vibrafone, xilofone, glockenspiel, kalimba, sinos tubulares, sax
+tenor, gaita, flauta doce e a bateria acústica) são gravações da Versilian
+Community Sample Library, em domínio público (CC0), baixadas na primeira vez
+que uma peça as usa. Enquanto chegam, um som sintetizado parecido toca no
+lugar. Os outros são sintetizados no navegador. Todos são provisórios: o
+motor do Manguebyte vai assumi-los, com os mesmos códigos.
 
 Os parâmetros podem mudar por compasso como tudo mais: `at bar 16:
 baixo.reverb.mix = 0.65`.

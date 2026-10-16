@@ -9,9 +9,19 @@ bass: synth.saw -> lowpass -> reverb
 bass = | c2 _ c2 eb2 | f2 _ g2 bb1 |
 ```
 
-The sounds today are `synth.saw`, `synth.square`, `synth.sine`,
-`synth.triangle` and `synth.pluck`. Drums, guitar and chords pick their own
-sound.
+The sound is the code at the head of the chain. There are dozens: open the
+**Sounds** panel, beside the messages in Play, to hear each one and put its
+code in the text with a click. Change `synth.saw` to `bass.slap`,
+`bass.808` or `piano.grand` and listen:
+
+```aratu
+tempo: 100
+bass: bass.slap
+bass = | e2 E3 e2 E3 | a2 A3 a2 A3 |
+```
+
+> In `bass.slap`, an upper-case note is a *pop*: the string pulled so it
+> snaps.
 
 ## Numbers become knobs
 

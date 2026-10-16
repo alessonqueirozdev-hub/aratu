@@ -9,9 +9,19 @@ bajo: synth.saw -> lowpass -> reverb
 bajo = | do2 _ do2 mib2 | fa2 _ sol2 sib1 |
 ```
 
-Los sonidos de ahora son `synth.saw`, `synth.square`, `synth.sine`,
-`synth.triangle` y `synth.pluck`. La batería, la guitarra y los acordes
-eligen su sonido solos.
+El sonido es el código al principio de la cadena. Hay decenas: abre el
+panel **Sonidos**, junto a los mensajes en Tocar, para escuchar cada uno y
+poner el código en el texto con un clic. Cambia `synth.saw` por
+`bass.slap`, `bass.808` o `piano.grand` y escucha:
+
+```aratu
+tempo: 100
+bajo: bass.slap
+bajo = | mi2 Mi3 mi2 Mi3 | la2 La3 la2 La3 |
+```
+
+> En `bass.slap`, la nota en mayúscula es el *pop*: la cuerda tirada, que
+> chasquea.
 
 ## Los números se vuelven perillas
 

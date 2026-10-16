@@ -7,6 +7,7 @@ import { RhythmMap } from "./rhythm";
 import { examples } from "./examples";
 import { LANGS, type Lang, isWord, tr } from "./i18n";
 import { Session } from "./session";
+import { SoundsPanel } from "./sounds";
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -79,7 +80,13 @@ async function main(): Promise<void> {
 
   const aratu = await Aratu.load("aratu.wasm");
   let engine: Engine | null = null;
-  const getEngine = () => (engine ??= new Engine());
+  const getEngine = (): Engine => {
+    if (!engine) {
+      engine = new Engine(aratu.voices("en"));
+      engine.onSample = (code, state) => sounds.mark(code, state);
+    }
+    return engine;
+  };
 
   // Exercises solved, kept in this browser.
   const done = new Set<string>(JSON.parse(load("aratu.done") ?? "[]") as string[]);
@@ -186,6 +193,30 @@ async function main(): Promise<void> {
       else map.stop();
     },
   });
+  // The Sounds panel, beside the messages.
+  const sounds = new SoundsPanel($("side-sounds"), {
+    aratu,
+    engine: getEngine,
+    lang: () => lang,
+    insert: (code) => {
+      const view = playground.view;
+      const { from, to } = view.state.selection.main;
+      view.dispatch({ changes: { from, to, insert: code }, selection: { anchor: from + code.length } });
+      view.focus();
+    },
+  });
+  const sideTab = (which: "messages" | "sounds") => {
+    $("side-messages").hidden = which !== "messages";
+    $("side-sounds").hidden = which !== "sounds";
+    $("tab-messages").classList.toggle("on", which === "messages");
+    $("tab-sounds").classList.toggle("on", which === "sounds");
+    if (which === "sounds") sounds.render();
+    save("aratu.side", which);
+  };
+  $("tab-messages").onclick = () => sideTab("messages");
+  $("tab-sounds").onclick = () => sideTab("sounds");
+  if (load("aratu.side") === "sounds") sideTab("sounds");
+
   $("play").onclick = () => void playground.play();
   $("stop").onclick = () => playground.stop();
   // The stage: only the code, full screen and big enough for a projector,
@@ -379,6 +410,7 @@ async function main(): Promise<void> {
     save("aratu.lang", l);
     applyWords();
     playground.compile();
+    if (!$("side-sounds").hidden) sounds.render();
     await loadBook();
     route();
   };

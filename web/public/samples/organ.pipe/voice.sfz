@@ -1,0 +1,24 @@
+// Made by Aratu's web/scripts/samples.mjs from VCSL (CC0).
+<control> default_path=./
+<global> ampeg_release=0.12
+<region> sample=24.wav pitch_keycenter=24 lokey=0 hikey=25 loop_mode=loop_continuous loop_start=21000 loop_end=54000
+<region> sample=27.wav pitch_keycenter=27 lokey=26 hikey=28 loop_mode=loop_continuous loop_start=21000 loop_end=54000
+<region> sample=30.wav pitch_keycenter=30 lokey=29 hikey=31 loop_mode=loop_continuous loop_start=21000 loop_end=54000
+<region> sample=33.wav pitch_keycenter=33 lokey=32 hikey=34 loop_mode=loop_continuous loop_start=21000 loop_end=54000
+<region> sample=36.wav pitch_keycenter=36 lokey=35 hikey=37 loop_mode=loop_continuous loop_start=21000 loop_end=54000
+<region> sample=39.wav pitch_keycenter=39 lokey=38 hikey=40 loop_mode=loop_continuous loop_start=21000 loop_end=54000
+<region> sample=42.wav pitch_keycenter=42 lokey=41 hikey=43 loop_mode=loop_continuous loop_start=21000 loop_end=54000
+<region> sample=45.wav pitch_keycenter=45 lokey=44 hikey=46 loop_mode=loop_continuous loop_start=21000 loop_end=54000
+<region> sample=48.wav pitch_keycenter=48 lokey=47 hikey=49 loop_mode=loop_continuous loop_start=21000 loop_end=54000
+<region> sample=51.wav pitch_keycenter=51 lokey=50 hikey=52 loop_mode=loop_continuous loop_start=21000 loop_end=54000
+<region> sample=54.wav pitch_keycenter=54 lokey=53 hikey=55 loop_mode=loop_continuous loop_start=21000 loop_end=54000
+<region> sample=57.wav pitch_keycenter=57 lokey=56 hikey=58 loop_mode=loop_continuous loop_start=21000 loop_end=54000
+<region> sample=60.wav pitch_keycenter=60 lokey=59 hikey=61 loop_mode=loop_continuous loop_start=21000 loop_end=54000
+<region> sample=63.wav pitch_keycenter=63 lokey=62 hikey=64 loop_mode=loop_continuous loop_start=21000 loop_end=54000
+<region> sample=66.wav pitch_keycenter=66 lokey=65 hikey=67 loop_mode=loop_continuous loop_start=21000 loop_end=54000
+<region> sample=69.wav pitch_keycenter=69 lokey=68 hikey=70 loop_mode=loop_continuous loop_start=21000 loop_end=54000
+<region> sample=72.wav pitch_keycenter=72 lokey=71 hikey=73 loop_mode=loop_continuous loop_start=21000 loop_end=54000
+<region> sample=75.wav pitch_keycenter=75 lokey=74 hikey=76 loop_mode=loop_continuous loop_start=21000 loop_end=54000
+<region> sample=78.wav pitch_keycenter=78 lokey=77 hikey=79 loop_mode=loop_continuous loop_start=21000 loop_end=54000
+<region> sample=81.wav pitch_keycenter=81 lokey=80 hikey=82 loop_mode=loop_continuous loop_start=21000 loop_end=54000
+<region> sample=84.wav pitch_keycenter=84 lokey=83 hikey=127 loop_mode=loop_continuous loop_start=21000 loop_end=54000

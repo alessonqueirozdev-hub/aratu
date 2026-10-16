@@ -512,10 +512,27 @@ kilohertz, `40%` in percent.
 | `delay.time` | 10 to 2000 ms |
 | `delay.feedback`, `delay.mix` | 0 to 0.95, 0 to 1 |
 
-The sounds are `synth.saw`, `synth.square`, `synth.sine`, `synth.triangle`
-and `synth.pluck`; drums, strums and chords pick a drum kit, a plucked
-string and a keyboard by themselves. They are simple sounds built into the
-browser, until Manguebyte's engine replaces them.
+**Sounds.** Each sound has a code, written at the head of the chain:
+`bass: bass.slap -> reverb`, `drums: drums.808`, `piano: piano.grand`. The
+**Sounds** panel, beside the messages in Play, lists them all by family
+(drum kits, keyboards, mallets and bells, plucked strings, basses, winds,
+synthesizers), plays a bar of each and puts the code in the text with a
+click. A code that does not exist is reported, with the closest one: *"did
+you mean `bass.slap`?"*. Without a code, drums, guitar and chords pick
+their own.
+
+Some sounds play the accent their own way: in `bass.slap` a plain note is
+the thumb and an upper-case one is a *pop*, the string pulled
+(`| e2 E3 e2 E3 |`); in `bass.acid` upper case opens the filter, like the
+TB-303's accent.
+
+The sounds marked **recorded** (pianos, harpsichord, pipe organ, harp,
+marimba, vibraphone, xylophone, glockenspiel, kalimba, tubular bells, tenor
+sax, harmonica, recorder and the acoustic kit) are recordings from the
+Versilian Community Sample Library, in the public domain (CC0), fetched the
+first time a piece uses them. While they arrive, a similar synthesized sound
+plays instead. The others are synthesized in the browser. All of them stand
+in for now: Manguebyte's engine will take them over, with the same codes.
 
 Parameters can change by bar like anything else: `at bar 16:
 bass.reverb.mix = 0.65`.

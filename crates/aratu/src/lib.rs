@@ -21,6 +21,7 @@ pub mod span;
 pub mod theory;
 pub mod time;
 pub mod unroll;
+pub mod voices;
 
 pub use diag::{Diagnostic, Lang, Message, Severity};
 pub use model::Piece;

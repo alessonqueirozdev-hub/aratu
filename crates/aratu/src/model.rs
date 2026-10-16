@@ -401,6 +401,21 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
                 None => global_params.push((path.clone(), value.clone(), s.span)),
             },
             (StmtKind::Chain { target, units }, _) => {
+                // The first unit may be a voice; every unit must be one or
+                // an effect.
+                for (i, u) in units.iter().enumerate() {
+                    let known = crate::voices::EFFECTS.contains(&u.text.as_str())
+                        || (i == 0 && crate::voices::find(&u.text).is_some());
+                    if !known {
+                        diags.push(Diagnostic::warning(
+                            u.span,
+                            Message::UnknownSound {
+                                name: u.text.clone(),
+                                closest: crate::voices::closest(&u.text).map(String::from),
+                            },
+                        ));
+                    }
+                }
                 let target = target.as_ref().or(s.part.as_ref());
                 if let Some(t) = target {
                     list.get(&t.text, t.span).chain =

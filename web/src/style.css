@@ -1053,6 +1053,125 @@ select:hover {
   background: var(--paper);
 }
 
+/* The side panel's tabs and the Sounds panel. */
+
+.side-tabs {
+  display: flex;
+  gap: 4px;
+  margin: -4px 0 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.side-tabs button {
+  padding: 6px 12px 8px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.side-tabs button.on {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+
+.sound-search {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--code-bg);
+  color: var(--text);
+  font: inherit;
+}
+
+.sound-help {
+  margin: 8px 0 4px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.sound-family {
+  margin: 14px 0 4px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sound-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+}
+
+.sound-play {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--accent);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.sound-play.on {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.sound-code {
+  flex: none;
+  padding: 2px 6px;
+  border: 0;
+  border-radius: 5px;
+  background: var(--code-bg);
+  color: var(--text);
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 13px;
+  cursor: copy;
+}
+
+.sound-code:hover {
+  outline: 1px solid var(--accent);
+}
+
+.sound-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sound-state {
+  flex: none;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent-2) 22%, transparent);
+  color: var(--text);
+  font-size: 11px;
+}
+
+.sound-state[data-state="ready"] {
+  background: color-mix(in srgb, var(--mangue) 30%, transparent);
+}
+
+.sound-state[data-state="failed"] {
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
 /* The stage: only the code, full screen, for playing live. */
 
 .stage-bar,

@@ -529,10 +529,27 @@ conserva: `1.2 kHz` gira en kilohercios, `40%` en porcentaje.
 | `delay.time` | 10 a 2000 ms |
 | `delay.feedback`, `delay.mix` | 0 a 0,95, 0 a 1 |
 
-Los sonidos son `synth.saw`, `synth.square`, `synth.sine`, `synth.triangle`
-y `synth.pluck`; la batería, los rasgueos y los acordes eligen solos una
-batería, una cuerda pulsada y un teclado. Son sonidos sencillos,
-incorporados al navegador, hasta que el motor de Manguebyte los reemplace.
+**Los sonidos.** Cada sonido tiene un código, escrito al principio de la
+cadena: `bajo: bass.slap -> reverb`, `drums: drums.808`, `piano:
+piano.grand`. El panel **Sonidos**, junto a los mensajes en Tocar, los
+muestra todos por familia (baterías, teclados, láminas y campanas, cuerdas
+pulsadas, bajos, vientos, sintetizadores), toca un compás de cada uno y pone
+el código en el texto con un clic. Un código que no existe se avisa, con el
+más parecido: *"¿quisiste decir `bass.slap`?"*. Sin código, la batería, la
+guitarra y los acordes eligen solos.
+
+Algunos sonidos tocan con el acento: en `bass.slap` la nota normal es el
+pulgar y la mayúscula es el *pop*, la cuerda tirada (`| mi2 Mi3 mi2 Mi3 |`);
+en `bass.acid` la mayúscula abre el filtro, como el accent de la TB-303.
+
+Los sonidos marcados como **grabados** (pianos, clave, órgano de tubos,
+arpa, marimba, vibráfono, xilófono, glockenspiel, kalimba, campanas
+tubulares, saxo tenor, armónica, flauta dulce y la batería acústica) son
+grabaciones de la Versilian Community Sample Library, de dominio público
+(CC0), descargadas la primera vez que una pieza las usa. Mientras llegan,
+suena en su lugar un sonido sintetizado parecido. Los demás se sintetizan
+en el navegador. Todos son provisionales: el motor de Manguebyte los va a
+asumir, con los mismos códigos.
 
 Los parámetros pueden cambiar por compás como todo lo demás: `at bar 16:
 bajo.reverb.mix = 0.65`.

@@ -60,6 +60,22 @@ const words = {
   source: { pt: "Código-fonte", es: "Código fuente", en: "Source code" },
   loading: { pt: "Carregando…", es: "Cargando…", en: "Loading…" },
 
+  // The Sounds panel.
+  sounds: { pt: "Sons", es: "Sonidos", en: "Sounds" },
+  soundsHelp: {
+    pt: "Cada som tem um código. Escreva-o depois do nome da parte, como em baixo: bass.slap, ou clique no código para colocá-lo onde está o cursor. ▶ toca um compasso dele.",
+    es: "Cada sonido tiene un código. Escríbelo después del nombre de la parte, como en bajo: bass.slap, o haz clic en el código para ponerlo donde está el cursor. ▶ toca un compás.",
+    en: "Each sound has a code. Write it after the part's name, as in bass: bass.slap, or click the code to put it where the cursor is. ▶ plays a bar of it.",
+  },
+  soundSearch: { pt: "Buscar um som", es: "Buscar un sonido", en: "Find a sound" },
+  soundNone: { pt: "Nenhum som com esse nome.", es: "Ningún sonido con ese nombre.", en: "No sound by that name." },
+  soundHear: { pt: "Ouvir", es: "Escuchar", en: "Listen" },
+  soundUse: { pt: "Usar este som", es: "Usar este sonido", en: "Use this sound" },
+  soundSampled: { pt: "gravado", es: "grabado", en: "recorded" },
+  soundLoading: { pt: "baixando…", es: "descargando…", en: "loading…" },
+  soundReady: { pt: "pronto", es: "listo", en: "ready" },
+  soundFailed: { pt: "não baixou", es: "no se descargó", en: "did not load" },
+
   // Lessons and the manual.
   listen: { pt: "Ouvir", es: "Escuchar", en: "Listen" },
   listenAnswer: { pt: "Ouvir como deve soar", es: "Escuchar cómo debe sonar", en: "Hear how it should sound" },

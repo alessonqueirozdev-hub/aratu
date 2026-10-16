@@ -395,6 +395,13 @@ them *Provisional*.
 
 Smaller choices made along the way:
 
+- **Voices by code** (15 October 2026): `bass: bass.slap -> reverb`. The
+  catalogue lives in `crates/aratu/src/voices.rs`; the checker warns about an
+  unknown code and names the closest one, and the editor's Sounds panel lists
+  them all. Sampled voices are VCSL recordings (CC0) prepared by
+  `web/scripts/samples.mjs`, with an SFZ file each for Manguebyte's sampler.
+  The browser sounds stand in until Manguebyte's engine plays the same codes;
+  the user prefers every voice and effect to come from Manguebyte.
 - `~` after a symbol is a roll (a tremolo on a note): strokes of an eighth of
   a beat through the hit's length, the hands alternating, growing into the
   next mark under a hairpin (15 October 2026, at the user's request).

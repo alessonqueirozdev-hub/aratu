@@ -155,6 +155,7 @@ interface Exports {
     lang: number,
   ): void;
   aratu_grid(handle: number, maxBars: number): void;
+  aratu_voices(lang: number): void;
   aratu_release(handle: number): void;
   aratu_out_ptr(): number;
   aratu_out_len(): number;
@@ -225,7 +226,28 @@ export class Aratu {
     return JSON.parse(this.output()) as { lines: GridLine[] };
   }
 
+  /** Every voice a part can play, by family, named in `lang`. */
+  voices(lang: Lang): VoiceCatalogue {
+    this.x.aratu_voices(LANG_CODE[lang]);
+    return JSON.parse(this.output()) as VoiceCatalogue;
+  }
+
   release(handle: number): void {
     this.x.aratu_release(handle);
   }
+}
+
+export interface VoiceInfo {
+  code: string;
+  name: string;
+  /** Recorded (fetched the first time it is used), not synthesized. */
+  sampled: boolean;
+  /** One bar to hear it. */
+  demo: string;
+}
+
+export interface VoiceCatalogue {
+  families: { code: string; name: string; voices: VoiceInfo[] }[];
+  /** Short names kept from before the catalogue, and what they play. */
+  aliases: Record<string, string>;
 }

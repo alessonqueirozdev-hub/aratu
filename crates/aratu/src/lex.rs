@@ -286,13 +286,20 @@ impl<'a> Cursor<'a> {
         Some((parts, span))
     }
 
-    /// A name starting exactly at the current position (no spaces skipped).
+    /// A part of a path after its dot, starting exactly here: letters,
+    /// digits and `_`, so a voice code may end in a number (`drums.808`).
     fn name_here(&mut self) -> Option<(&'a str, Span)> {
         let rest = &self.text[self.pos..];
-        if !rest.chars().next().is_some_and(is_name_start) {
+        let end = rest
+            .char_indices()
+            .find(|&(_, c)| !is_name_char(c))
+            .map_or(rest.len(), |(i, _)| i);
+        if end == 0 {
             return None;
         }
-        self.name()
+        let start = self.offset();
+        self.pos += end;
+        Some((&rest[..end], Span::new(start, start + end)))
     }
 
     /// A number: an optional sign, digits, an optional decimal part.

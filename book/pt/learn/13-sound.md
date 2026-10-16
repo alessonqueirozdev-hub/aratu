@@ -9,9 +9,18 @@ baixo: synth.saw -> lowpass -> reverb
 baixo = | dó2 _ dó2 mib2 | fá2 _ sol2 sib1 |
 ```
 
-Os sons de agora são `synth.saw`, `synth.square`, `synth.sine`,
-`synth.triangle` e `synth.pluck`. A bateria, o violão e as cifras escolhem
-o seu som sozinhos.
+O som é o código no começo da cadeia. Há dezenas: abra o painel **Sons**,
+ao lado das mensagens em Tocar, para ouvir cada um e pôr o código no texto
+com um clique. Troque `synth.saw` por `bass.slap`, `bass.808` ou
+`piano.grand` e ouça:
+
+```aratu
+tempo: 100
+baixo: bass.slap
+baixo = | mi2 Mi3 mi2 Mi3 | lá2 Lá3 lá2 Lá3 |
+```
+
+> No `bass.slap`, a nota em maiúscula é o *pop*: a corda puxada, que estala.
 
 ## Os números viram botões
 

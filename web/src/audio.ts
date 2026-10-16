@@ -1,14 +1,60 @@
-// Simple built-in sounds on the Web Audio API, until Manguebyte runs in the
-// browser: synthesized drums, a subtractive synth, a keyboard and a plucked
-// string (Karplus-Strong, rendered once per note into a buffer). Each part
+// Built-in sounds on the Web Audio API, standing in until Manguebyte runs
+// in the browser: synthesized drum kits, synths, keyboards and plucked
+// strings (Karplus-Strong, rendered once per note into a buffer), and
+// sampled voices (VCSL, CC0) fetched when a piece first uses them. Each part
 // has its own chain: high-pass, low-pass, volume, pan, and sends to a delay
-// and a reverb.
+// and a reverb. A part's voice is the code at the head of its chain
+// (`bass: bass.slap -> reverb`), from the catalogue in the crate.
 
-import type { AratuEvent, ParamValue, PartInfo, Program } from "./aratu";
+import type { AratuEvent, ParamValue, PartInfo, Program, VoiceCatalogue } from "./aratu";
+import { type Loaded, Sampler } from "./sampler";
 
 const mtof = (n: number) => 440 * Math.pow(2, (n - 69) / 12);
 
-type Wave = OscillatorType | "pluck" | "keys";
+/** Each voice's level, measured in the browser so that one line of any
+ * voice peaks near the same height (about 0.3 at mf). */
+const VOICE_GAIN: Record<string, number> = {
+  "bass.slap": 0.3,
+  "bass.808": 0.5,
+  "bass.finger": 0.85,
+  "bass.synth": 1.4,
+  "mallets.vibraphone": 2,
+  "piano.upright": 1.6,
+  "organ.pipe": 1.8,
+  "sax.tenor": 1.7,
+  harp: 1.4,
+  "bells.tubular": 1.2,
+  "recorder.alto": 1.3,
+  "keys.harpsichord": 1.3,
+  "keys.organ": 1.6,
+  "keys.bell": 1.3,
+  "synth.brass": 3.5,
+  "synth.saw": 2,
+  "synth.square": 2,
+  "synth.strings": 2.5,
+  "synth.supersaw": 2.7,
+  "synth.pad": 2,
+  "synth.lead": 1.8,
+};
+
+/** What a sampled voice plays while its recordings are on their way. */
+const STAND_IN: Record<string, string> = {
+  "drums.acoustic": "drums.kit",
+  "piano.grand": "keys.epiano",
+  "piano.upright": "keys.epiano",
+  "keys.harpsichord": "guitar.steel",
+  "organ.pipe": "keys.organ",
+  harp: "guitar.nylon",
+  "mallets.marimba": "keys.bell",
+  "mallets.vibraphone": "keys.bell",
+  "mallets.xylophone": "keys.bell",
+  "mallets.glockenspiel": "keys.bell",
+  "mallets.kalimba": "keys.bell",
+  "bells.tubular": "keys.bell",
+  "sax.tenor": "synth.brass",
+  harmonica: "synth.lead",
+  "recorder.alto": "synth.sine",
+};
 
 /** One sounding source and the gain that shapes it. */
 export interface Voice {
@@ -27,7 +73,8 @@ interface Chain {
   feedback: GainNode;
   reverbSend: GainNode;
   instrument: string;
-  wave: Wave;
+  /** The voice's code: `bass.slap`, `piano.grand`. */
+  voice: string;
   attack: number;
   release: number;
 }
@@ -42,12 +89,20 @@ export class Engine {
   private readonly voices = new Set<Voice>();
   /** The open hi-hat ringing in each part, for a closed one to choke. */
   private readonly openHats = new Map<Chain, Voice>();
+  private readonly sampler: Sampler;
+  private readonly sampled: Set<string>;
+  private readonly aliases: Record<string, string>;
   /** The voices made by the event being played, for `play` to return. */
   private made: Voice[] = [];
 
-  constructor() {
+  constructor(catalogue?: VoiceCatalogue) {
     this.ctx = new AudioContext({ latencyHint: "interactive" });
     const ctx = this.ctx;
+    this.sampler = new Sampler(ctx);
+    this.aliases = catalogue?.aliases ?? {};
+    this.sampled = new Set(
+      (catalogue?.families ?? []).flatMap((f) => f.voices.filter((v) => v.sampled).map((v) => v.code)),
+    );
     // The master: a gentle compressor glues the parts, then a little gain.
     // It is slow and light enough to let an accent through.
     const comp = ctx.createDynamicsCompressor();
@@ -140,7 +195,7 @@ export class Engine {
       feedback,
       reverbSend,
       instrument: "synth",
-      wave: "triangle",
+      voice: "synth.triangle",
       attack: 0.005,
       release: 0.15,
     };
@@ -156,22 +211,23 @@ export class Engine {
   private configurePart(part: PartInfo, globals: ParamValue[]): void {
     const c = this.chain(part.name);
     c.instrument = part.instrument;
-    const head = part.chain[0] ?? "";
-    const named: Record<string, Wave> = {
-      "synth.saw": "sawtooth",
-      "synth.sawtooth": "sawtooth",
-      "synth.square": "square",
-      "synth.sine": "sine",
-      "synth.triangle": "triangle",
-      "synth.pluck": "pluck",
-      pluck: "pluck",
-      keys: "keys",
-      piano: "keys",
-    };
-    const isBass = /bass|baixo/i.test(part.name);
-    c.wave =
-      named[head] ??
-      (part.instrument === "guitar" ? "pluck" : part.instrument === "keys" ? "keys" : isBass ? "sawtooth" : "triangle");
+    const written = part.chain[0] ?? "";
+    const head = this.aliases[written] ?? written;
+    const isBass = /bass|baixo|bajo/i.test(part.name);
+    const known = head.includes(".") || head === "harp" || head === "harmonica";
+    c.voice = known
+      ? head
+      : part.instrument === "drums"
+        ? "drums.kit"
+        : part.instrument === "guitar"
+          ? "guitar.nylon"
+          : part.instrument === "keys"
+            ? "keys.epiano"
+            : isBass
+              ? "bass.synth"
+              : "synth.triangle";
+    // A sampled voice starts on its way now, so it is ready sooner.
+    if (this.sampled.has(c.voice)) void this.sampler.load(c.voice);
     // Defaults from the chain, then the numbers written in the piece.
     const now = this.ctx.currentTime;
     const defaults: ParamValue[] = [
@@ -243,8 +299,28 @@ export class Engine {
     // accent is heard; mf itself stays where it was.
     const g = Math.pow(e.vel / 127, 2) * 0.72;
     if (e.drum) this.drum(c, e.drum, when, g);
-    else if (e.note !== undefined) this.note(c, e.note, when, Math.max(e.dur, 0.02), g);
+    else if (e.note !== undefined) this.note(c, e.note, when, Math.max(e.dur, 0.02), g, e.acc === 1);
     return this.made;
+  }
+
+  /** Where a sampled voice stands: not asked for, coming, ready, failed. */
+  sampleState(code: string): "idle" | "loading" | "ready" | "failed" {
+    return this.sampler.state(code);
+  }
+
+  /** Tells the Sounds panel when a sampled voice arrives. */
+  set onSample(f: (code: string, state: "loading" | "ready" | "failed") => void) {
+    this.sampler.onChange = f;
+  }
+
+  /** The voice that sounds now for a chain: a sampled one still on its way
+   * plays its stand-in. */
+  private sounding(c: Chain): { voice: string; loaded?: Loaded } {
+    if (!this.sampled.has(c.voice)) return { voice: c.voice };
+    const loaded = this.sampler.get(c.voice);
+    if (loaded) return { voice: c.voice, loaded };
+    void this.sampler.load(c.voice);
+    return { voice: STAND_IN[c.voice] ?? "synth.triangle" };
   }
 
   /** Silences voices scheduled but not yet sounding, as when a version of
@@ -363,7 +439,107 @@ export class Engine {
     this.noiseHit(c.input, when, "bandpass", freq * 8, 1, g * 0.3, 0.012);
   }
 
+  /** A recorded drum hit; a closed hat chokes an open one. */
+  private hit(c: Chain, name: string, buffer: AudioBuffer, when: number, g: number): void {
+    const ctx = this.ctx;
+    if (name === "closed-hat") this.chokeOpenHat(c, when);
+    const src = ctx.createBufferSource();
+    src.buffer = buffer;
+    const gain = ctx.createGain();
+    const level: Record<string, number> = { kick: 1.6, snare: 1.3, "closed-hat": 0.7, "open-hat": 0.7, ride: 0.6, crash: 0.8 };
+    gain.gain.value = g * (level[name] ?? 1.2);
+    // Softer hits are darker as well as quieter.
+    const lp = ctx.createBiquadFilter();
+    lp.type = "lowpass";
+    lp.frequency.value = 3000 + 17000 * Math.min(g / 0.6, 1);
+    src.connect(lp).connect(gain).connect(c.input);
+    src.start(when);
+    this.track(src, gain);
+    if (name === "open-hat") this.openHats.set(c, { src, gain });
+  }
+
+  private chokeOpenHat(c: Chain, when: number): void {
+    const open = this.openHats.get(c);
+    if (open) {
+      open.gain.gain.cancelScheduledValues(when);
+      open.gain.gain.setTargetAtTime(0.0001, when, 0.006);
+      this.openHats.delete(c);
+    }
+  }
+
+  /** A kit after the Roland TR-808: sine kick and toms, metallic hats. */
+  private drum808(c: Chain, name: string, when: number, g: number): void {
+    const ctx = this.ctx;
+    const boom = (from: number, to: number, decay: number, level: number) => {
+      const gain = ctx.createGain();
+      gain.connect(c.input);
+      const o = ctx.createOscillator();
+      o.frequency.setValueAtTime(from, when);
+      o.frequency.exponentialRampToValueAtTime(to, when + 0.06);
+      o.connect(gain);
+      gain.gain.setValueAtTime(0.0001, when);
+      gain.gain.linearRampToValueAtTime(g * level, when + 0.002);
+      gain.gain.setTargetAtTime(0.0001, when + 0.01, decay);
+      o.start(when);
+      o.stop(when + decay * 6 + 0.05);
+      this.track(o, gain);
+    };
+    switch (name) {
+      case "kick":
+        boom(130, 48, 0.35, 2.2);
+        this.noiseHit(c.input, when, "highpass", 2500, 0.7, g * 0.25, 0.003);
+        return;
+      case "snare":
+        boom(330, 180, 0.05, 0.6);
+        this.noiseHit(c.input, when, "highpass", 1800, 0.7, g * 0.9, 0.09);
+        return;
+      case "closed-hat":
+        this.chokeOpenHat(c, when);
+        this.metal(c.input, when, g * 0.35, 0.025, 8000);
+        return;
+      case "open-hat": {
+        const before = this.made.length;
+        this.metal(c.input, when, g * 0.3, 0.22, 7500);
+        const v = this.made[before];
+        if (v) this.openHats.set(c, v);
+        return;
+      }
+      case "ride":
+        this.metal(c.input, when, g * 0.18, 0.7, 5000);
+        return;
+      case "crash":
+        this.metal(c.input, when, g * 0.2, 1.1, 4000);
+        this.noiseHit(c.input, when, "highpass", 5000, 0.7, g * 0.3, 0.6);
+        return;
+      case "high-tom":
+        boom(240, 190, 0.22, 1.4);
+        return;
+      case "mid-tom":
+        boom(180, 140, 0.28, 1.4);
+        return;
+      case "floor-tom":
+        boom(120, 92, 0.38, 1.5);
+        return;
+      default:
+        // The rim and anything else: the analogue kit's own.
+        this.analogue(c, name, when, g);
+    }
+  }
+
   private drum(c: Chain, name: string, when: number, g: number): void {
+    if (name !== "guitar-tap") {
+      const { voice, loaded } = this.sounding(c);
+      if (loaded?.kind === "kit") {
+        const buffer = loaded.hits.get(name);
+        if (buffer) return this.hit(c, name, buffer, when, g);
+      }
+      if (voice === "drums.808") return this.drum808(c, name, when, g);
+    }
+    this.analogue(c, name, when, g);
+  }
+
+  /** The analogue kit, `drums.kit`. */
+  private analogue(c: Chain, name: string, when: number, g: number): void {
     const ctx = this.ctx;
     // Harder hits are brighter, not only louder.
     const bright = 0.6 + 0.8 * Math.min(g / 0.6, 1);
@@ -408,12 +584,7 @@ export class Engine {
       }
       case "closed-hat": {
         // A closed hat chokes an open one still ringing.
-        const open = this.openHats.get(c);
-        if (open) {
-          open.gain.gain.cancelScheduledValues(when);
-          open.gain.gain.setTargetAtTime(0.0001, when, 0.006);
-          this.openHats.delete(c);
-        }
+        this.chokeOpenHat(c, when);
         this.noiseHit(c.input, when, "highpass", 7500 * Math.min(bright, 1.1), 0.8, g * 0.42, 0.018);
         this.noiseHit(c.input, when, "bandpass", 10000, 1.5, g * 0.25, 0.012);
         return;
@@ -488,10 +659,11 @@ export class Engine {
     }
   }
 
-  /** A plucked string (Karplus-Strong), brighter when plucked harder. */
-  private pluckBuffer(note: number, bright: number): AudioBuffer {
+  /** A plucked string (Karplus-Strong), brighter when plucked harder.
+   * `kind`: 0 nylon, 1 steel, 2 finger bass, 3 slap bass. */
+  private pluckBuffer(note: number, bright: number, kind = 0): AudioBuffer {
     const level = Math.round(Math.min(Math.max(bright, 0), 1) * 3);
-    const key = note * 4 + level;
+    const key = (note * 4 + level) * 4 + kind;
     const cached = this.plucks.get(key);
     if (cached) return cached;
     const rate = this.ctx.sampleRate;
@@ -501,13 +673,14 @@ export class Engine {
     const period = Math.max(2, Math.round(rate / mtof(note)));
     const ring = new Float32Array(period);
     // A softer pluck starts from smoother noise.
-    const smooth = [0.25, 0.45, 0.7, 0.95][level];
+    const smooth = Math.min(0.99, [0.25, 0.45, 0.7, 0.95][level] + [0, 0.15, -0.1, 0.3][kind]);
     let s = 0;
     for (let i = 0; i < period; i++) {
       s += smooth * (Math.random() * 2 - 1 - s);
       ring[i] = s;
     }
-    const loss = 0.9965 + Math.min(0.003, period / 500000);
+    const loss = [0.9965 + Math.min(0.003, period / 500000), 0.9982, 0.9978, 0.997][kind];
+    const tone = [0.55, 0.8, 0.3, 0.85][kind];
     let idx = 0;
     let body = 0;
     for (let i = 0; i < len; i++) {
@@ -515,7 +688,7 @@ export class Engine {
       const v = ring[idx];
       ring[idx] = loss * (0.5 * v + 0.5 * ring[next]);
       // A gentle body low-pass.
-      body += 0.55 * (v - body);
+      body += tone * (v - body);
       d[i] = body * 1.4;
       idx = next;
     }
@@ -523,83 +696,410 @@ export class Engine {
     return buf;
   }
 
-  private note(c: Chain, note: number, when: number, dur: number, g: number): void {
+  private note(c: Chain, note: number, when: number, dur: number, g: number, accent = false): void {
+    const { voice, loaded } = this.sounding(c);
+    const bright = Math.min(g / 0.6, 1);
+    g *= VOICE_GAIN[voice] ?? 1;
+    if (loaded?.kind === "pitched") return this.sample(c, loaded, note, when, dur, g);
+    switch (voice) {
+      case "guitar.nylon":
+      case "synth.pluck":
+        return this.pluck(c, note, when, dur, g * 1.3, bright, 0);
+      case "guitar.steel":
+        return this.pluck(c, note, when, dur, g * 1.2, bright, 1);
+      case "keys.epiano":
+        return this.epiano(c, note, when, dur, g, bright);
+      case "keys.organ":
+        return this.organ(c, note, when, dur, g);
+      case "keys.bell":
+        return this.bell(c, note, when, dur, g, bright);
+      case "bass.finger":
+        this.pluck(c, note, when, dur, g * 1.5, bright * 0.6, 2);
+        return this.sine(c, note - 12, when, dur, g * 0.35, 0.01, 0.08);
+      case "bass.slap":
+        return this.slap(c, note, when, dur, g, accent);
+      case "bass.808":
+        return this.bass808(c, note, when, dur, g);
+      case "bass.acid":
+        return this.acid(c, note, when, dur, g, accent);
+      case "bass.synth":
+        return this.subtractive(c, note, when, dur, g, bright, { wave: "sawtooth", detune: [-7, 0, 7], sub: true });
+      case "synth.saw":
+        return this.subtractive(c, note, when, dur, g, bright, { wave: "sawtooth", detune: [-7, 0, 7] });
+      case "synth.square":
+        return this.subtractive(c, note, when, dur, g, bright, { wave: "square", detune: [-7, 0, 7] });
+      case "synth.sine":
+        return this.subtractive(c, note, when, dur, g, bright, { wave: "sine", detune: [0] });
+      case "synth.supersaw":
+        return this.subtractive(c, note, when, dur, g * 0.8, bright, {
+          wave: "sawtooth",
+          detune: [-28, -17, -8, 0, 8, 17, 28],
+          spread: true,
+        });
+      case "synth.pad":
+        return this.subtractive(c, note, when, dur, g, bright * 0.5, {
+          wave: "sawtooth",
+          detune: [-12, -4, 4, 12],
+          attack: 0.6,
+          release: 1.2,
+          cutoff: 3,
+          spread: true,
+        });
+      case "synth.strings":
+        return this.subtractive(c, note, when, dur, g, bright * 0.7, {
+          wave: "sawtooth",
+          detune: [-9, 0, 9],
+          attack: 0.25,
+          release: 0.6,
+          cutoff: 5,
+          vibrato: 0.004,
+          spread: true,
+        });
+      case "synth.brass":
+        return this.subtractive(c, note, when, dur, g, bright, {
+          wave: "sawtooth",
+          detune: [-5, 5],
+          attack: 0.07,
+          release: 0.15,
+          swell: true,
+        });
+      case "synth.lead":
+        return this.subtractive(c, note, when, dur, g, bright, {
+          wave: "square",
+          detune: [0, 6],
+          vibrato: 0.006,
+          release: 0.1,
+        });
+      default:
+        return this.subtractive(c, note, when, dur, g, bright, { wave: "triangle", detune: [-7, 0, 7] });
+    }
+  }
+
+  /** A recorded note: the nearest recording, retuned; a held one loops. */
+  private sample(c: Chain, v: Loaded, note: number, when: number, dur: number, g: number): void {
+    const z = Sampler.zoneFor(v, note);
+    if (!z) return;
+    const ctx = this.ctx;
+    const src = ctx.createBufferSource();
+    src.buffer = z.zone.buffer;
+    src.playbackRate.value = z.rate;
+    const held = !!z.zone.loop;
+    if (z.zone.loop) {
+      src.loop = true;
+      src.loopStart = z.zone.loop[0];
+      src.loopEnd = z.zone.loop[1];
+    }
+    // Harder playing is brighter as well as louder.
+    const lp = ctx.createBiquadFilter();
+    lp.type = "lowpass";
+    lp.frequency.value = 2500 + 16000 * Math.min(g / 0.6, 1);
+    const gain = ctx.createGain();
+    src.connect(lp).connect(gain).connect(c.input);
+    const end = when + dur;
+    const level = g * 1.5;
+    if (held) {
+      gain.gain.setValueAtTime(0.0001, when);
+      gain.gain.linearRampToValueAtTime(level, when + 0.02);
+    } else {
+      gain.gain.setValueAtTime(level, when);
+    }
+    // A key let go: the damper stops the string; a held sound fades out.
+    const release = held ? Math.max(c.release, 0.08) : 0.12;
+    gain.gain.setTargetAtTime(0.0001, end, release / 3);
+    const ring = held ? Infinity : (z.zone.buffer.duration - 0.01) / z.rate;
+    src.start(when);
+    src.stop(Math.min(end + release * 3, when + ring));
+    this.track(src, gain);
+  }
+
+  private pluck(c: Chain, note: number, when: number, dur: number, level: number, bright: number, kind: number): void {
+    const ctx = this.ctx;
+    const end = when + dur;
+    const gain = ctx.createGain();
+    gain.connect(c.input);
+    const src = ctx.createBufferSource();
+    src.buffer = this.pluckBuffer(note, bright, kind);
+    gain.gain.setValueAtTime(level, when);
+    gain.gain.setTargetAtTime(0.0001, end, 0.06);
+    src.connect(gain);
+    src.start(when);
+    src.stop(end + 0.4);
+    this.track(src, gain);
+  }
+
+  /** A slap bass: the thumb on the string, or (accented) a pop, the string
+   * pulled and let snap on the frets. */
+  private slap(c: Chain, note: number, when: number, dur: number, g: number, pop: boolean): void {
+    this.pluck(c, note, when, dur, g * (pop ? 1.9 : 1.5), pop ? 1 : 0.8, 3);
+    this.sine(c, note - 12, when, dur, g * 0.3, 0.005, 0.06);
+    if (pop) {
+      this.noiseHit(c.input, when, "bandpass", 2800, 1.5, g * 0.9, 0.012);
+      this.noiseHit(c.input, when, "highpass", 6000, 0.7, g * 0.4, 0.006);
+    } else {
+      // The thumb's thud on the string.
+      this.noiseHit(c.input, when, "bandpass", 900, 1.2, g * 0.6, 0.015);
+    }
+  }
+
+  private sine(c: Chain, note: number, when: number, dur: number, level: number, attack: number, release: number): void {
+    const ctx = this.ctx;
+    const gain = ctx.createGain();
+    gain.connect(c.input);
+    const o = ctx.createOscillator();
+    o.frequency.value = mtof(note);
+    o.connect(gain);
+    gain.gain.setValueAtTime(0.0001, when);
+    gain.gain.linearRampToValueAtTime(level, when + attack);
+    gain.gain.setTargetAtTime(0.0001, when + dur, release / 3);
+    o.start(when);
+    o.stop(when + dur + release * 3 + 0.05);
+    this.track(o, gain);
+  }
+
+  /** An electric piano: a sine, its octave fading fast, and a tine. */
+  private epiano(c: Chain, note: number, when: number, dur: number, g: number, bright: number): void {
     const ctx = this.ctx;
     const end = when + dur;
     const freq = mtof(note);
-    const bright = Math.min(g / 0.6, 1);
     const gain = ctx.createGain();
     gain.connect(c.input);
-
-    if (c.wave === "pluck") {
-      const src = ctx.createBufferSource();
-      src.buffer = this.pluckBuffer(note, bright);
-      gain.gain.setValueAtTime(g * 1.3, when);
-      gain.gain.setTargetAtTime(0.0001, end, 0.06);
-      src.connect(gain);
-      src.start(when);
-      src.stop(end + 0.4);
-      this.track(src, gain);
-      return;
-    }
-
-    if (c.wave === "keys") {
-      // An electric piano: a sine, its octave fading fast, and a tine.
-      const parts: [number, number, number][] = [
-        [1, 1, 1.2],
-        [2, 0.35 * (0.4 + bright), 0.35],
-        [4, 0.12 * bright, 0.05],
-      ];
-      gain.gain.setValueAtTime(0.0001, when);
-      gain.gain.linearRampToValueAtTime(g * 0.9, when + 0.004);
-      gain.gain.setTargetAtTime(g * 0.35, when + 0.004, 0.6);
-      gain.gain.setTargetAtTime(0.0001, end, 0.12);
-      for (const [mult, level, decay] of parts) {
-        const o = ctx.createOscillator();
-        o.frequency.value = freq * mult;
-        const og = ctx.createGain();
-        og.gain.setValueAtTime(level, when);
-        og.gain.setTargetAtTime(level * 0.1, when, decay);
-        o.connect(og).connect(gain);
-        o.start(when);
-        o.stop(end + 0.8);
-        this.track(o, gain);
-      }
-      return;
-    }
-
-    // A subtractive synth: detuned oscillators into a filter with its own
-    // envelope, opening on the attack and closing over the decay.
-    const filter = ctx.createBiquadFilter();
-    filter.type = "lowpass";
-    filter.Q.value = 2;
-    const base = Math.min(freq * 2, 18000);
-    const peak = Math.min(freq * (3 + 10 * bright), 18000);
-    filter.frequency.setValueAtTime(base, when);
-    filter.frequency.linearRampToValueAtTime(peak, when + Math.max(c.attack, 0.01));
-    filter.frequency.setTargetAtTime(Math.min(freq * (2 + 4 * bright), 18000), when + c.attack, 0.25);
-    filter.connect(gain);
-    const level = c.wave === "sine" || c.wave === "triangle" ? g : g * 0.42;
+    const parts: [number, number, number][] = [
+      [1, 1, 1.2],
+      [2, 0.35 * (0.4 + bright), 0.35],
+      [4, 0.12 * bright, 0.05],
+    ];
     gain.gain.setValueAtTime(0.0001, when);
-    gain.gain.linearRampToValueAtTime(level, when + c.attack);
-    gain.gain.setTargetAtTime(level * 0.75, when + c.attack, 0.15);
-    gain.gain.setTargetAtTime(0.0001, end, Math.max(c.release / 3, 0.01));
-    const stop = end + c.release * 2 + 0.05;
-    const voices = c.wave === "sine" ? [0] : [-7, 0, 7];
-    for (const cents of voices) {
+    gain.gain.linearRampToValueAtTime(g * 0.9, when + 0.004);
+    gain.gain.setTargetAtTime(g * 0.35, when + 0.004, 0.6);
+    gain.gain.setTargetAtTime(0.0001, end, 0.12);
+    for (const [mult, level, decay] of parts) {
       const o = ctx.createOscillator();
-      o.type = c.wave as OscillatorType;
-      o.frequency.value = freq;
-      o.detune.value = cents;
+      o.frequency.value = freq * mult;
       const og = ctx.createGain();
-      og.gain.value = 1 / voices.length;
-      o.connect(og).connect(filter);
+      og.gain.setValueAtTime(level, when);
+      og.gain.setTargetAtTime(level * 0.1, when, decay);
+      o.connect(og).connect(gain);
+      o.start(when);
+      o.stop(end + 0.8);
+      this.track(o, gain);
+    }
+  }
+
+  /** A drawbar organ: sines at the drawbars' footages, a slow vibrato. */
+  private organ(c: Chain, note: number, when: number, dur: number, g: number): void {
+    const ctx = this.ctx;
+    const end = when + dur;
+    const freq = mtof(note);
+    const gain = ctx.createGain();
+    gain.connect(c.input);
+    gain.gain.setValueAtTime(0.0001, when);
+    gain.gain.linearRampToValueAtTime(g * 0.5, when + 0.01);
+    gain.gain.setTargetAtTime(0.0001, end, 0.03);
+    const lfo = ctx.createOscillator();
+    lfo.frequency.value = 6.2;
+    const depth = ctx.createGain();
+    depth.gain.value = 4;
+    lfo.connect(depth);
+    lfo.start(when);
+    lfo.stop(end + 0.2);
+    // 16', 8', 4', 2 2/3', 2' at 8 8 6 4 4 of 8.
+    for (const [mult, level] of [
+      [0.5, 0.8],
+      [1, 1],
+      [2, 0.6],
+      [3, 0.35],
+      [4, 0.35],
+    ]) {
+      const o = ctx.createOscillator();
+      o.frequency.value = freq * mult;
+      depth.connect(o.detune);
+      const og = ctx.createGain();
+      og.gain.value = level / 3;
+      o.connect(og).connect(gain);
+      o.start(when);
+      o.stop(end + 0.2);
+      this.track(o, gain);
+    }
+    this.track(lfo, gain);
+    // The key click.
+    this.noiseHit(c.input, when, "bandpass", 3000, 1, g * 0.15, 0.004);
+  }
+
+  /** An FM bell: a sine carrier, its modulator at 3.5 times the note, the
+   * brightness fading first. */
+  private bell(c: Chain, note: number, when: number, dur: number, g: number, bright: number): void {
+    const ctx = this.ctx;
+    const freq = mtof(note);
+    const decay = 1.2;
+    const gain = ctx.createGain();
+    gain.connect(c.input);
+    gain.gain.setValueAtTime(0.0001, when);
+    gain.gain.linearRampToValueAtTime(g * 0.8, when + 0.003);
+    gain.gain.setTargetAtTime(0.0001, when + 0.003, decay * 0.5);
+    gain.gain.setTargetAtTime(0.0001, when + dur, 0.3);
+    const carrier = ctx.createOscillator();
+    carrier.frequency.value = freq;
+    const mod = ctx.createOscillator();
+    mod.frequency.value = freq * 3.5;
+    const index = ctx.createGain();
+    index.gain.setValueAtTime(freq * (1.5 + 3 * bright), when);
+    index.gain.setTargetAtTime(freq * 0.2, when, 0.25);
+    mod.connect(index).connect(carrier.frequency);
+    carrier.connect(gain);
+    const stop = when + Math.max(dur, decay * 3) + 0.5;
+    for (const o of [carrier, mod]) {
       o.start(when);
       o.stop(stop);
       this.track(o, gain);
     }
+  }
+
+  /** An 808 bass: a sine that drops onto its note and rings. */
+  private bass808(c: Chain, note: number, when: number, dur: number, g: number): void {
+    const ctx = this.ctx;
+    const freq = mtof(note);
+    const gain = ctx.createGain();
+    const shape = ctx.createWaveShaper();
+    shape.curve = this.softClip();
+    gain.connect(shape).connect(c.input);
+    const o = ctx.createOscillator();
+    o.frequency.setValueAtTime(freq * 2.2, when);
+    o.frequency.exponentialRampToValueAtTime(freq, when + 0.05);
+    o.connect(gain);
+    gain.gain.setValueAtTime(0.0001, when);
+    gain.gain.linearRampToValueAtTime(g * 1.6, when + 0.003);
+    gain.gain.setTargetAtTime(g * 0.9, when + 0.01, 0.4);
+    gain.gain.setTargetAtTime(0.0001, when + dur, 0.08);
+    o.start(when);
+    o.stop(when + dur + 0.5);
+    this.track(o, gain);
+  }
+
+  private clip: Float32Array<ArrayBuffer> | null = null;
+  private softClip(): Float32Array<ArrayBuffer> {
+    if (!this.clip) {
+      const n = 1024;
+      this.clip = new Float32Array(new ArrayBuffer(n * 4));
+      for (let i = 0; i < n; i++) {
+        const x = (i / (n - 1)) * 2 - 1;
+        this.clip[i] = Math.tanh(1.8 * x) / Math.tanh(1.8);
+      }
+    }
+    return this.clip;
+  }
+
+  /** An acid bass, after the TB-303: a saw through a resonant filter that
+   * snaps shut; an accent opens it wider and louder. */
+  private acid(c: Chain, note: number, when: number, dur: number, g: number, accent: boolean): void {
+    const ctx = this.ctx;
+    const freq = mtof(note);
+    const end = when + dur;
+    const filter = ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.Q.value = accent ? 16 : 11;
+    const top = Math.min(freq * (accent ? 24 : 12), 12000);
+    filter.frequency.setValueAtTime(top, when);
+    filter.frequency.setTargetAtTime(freq * 1.5, when, accent ? 0.12 : 0.08);
+    const gain = ctx.createGain();
+    filter.connect(gain).connect(c.input);
+    const level = g * (accent ? 0.75 : 0.5);
+    gain.gain.setValueAtTime(0.0001, when);
+    gain.gain.linearRampToValueAtTime(level, when + 0.003);
+    gain.gain.setTargetAtTime(0.0001, end, 0.02);
+    const o = ctx.createOscillator();
+    o.type = "sawtooth";
+    o.frequency.value = freq;
+    o.connect(filter);
+    o.start(when);
+    o.stop(end + 0.15);
+    this.track(o, gain);
+  }
+
+  /** A subtractive synth: detuned oscillators into a filter with its own
+   * envelope, opening on the attack and closing over the decay. */
+  private subtractive(
+    c: Chain,
+    note: number,
+    when: number,
+    dur: number,
+    g: number,
+    bright: number,
+    o: {
+      wave: OscillatorType;
+      detune: number[];
+      sub?: boolean;
+      attack?: number;
+      release?: number;
+      /** The filter's resting cutoff, as a multiple of the note. */
+      cutoff?: number;
+      vibrato?: number;
+      /** Brass: the filter swells open over the attack. */
+      swell?: boolean;
+      /** Spread the detuned oscillators across the stereo field. */
+      spread?: boolean;
+    },
+  ): void {
+    const ctx = this.ctx;
+    const end = when + dur;
+    const freq = mtof(note);
+    const attack = Math.max(o.attack ?? c.attack, 0.002);
+    const release = o.release ?? c.release;
+    const gain = ctx.createGain();
+    gain.connect(c.input);
+    const filter = ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.Q.value = 2;
+    const rest = Math.min(freq * (o.cutoff ?? 2 + 4 * bright), 18000);
+    const peak = Math.min(freq * (3 + 10 * bright), 18000);
+    if (o.swell) {
+      filter.frequency.setValueAtTime(freq, when);
+      filter.frequency.linearRampToValueAtTime(peak, when + attack * 2);
+      filter.frequency.setTargetAtTime(rest * 1.5, when + attack * 2, 0.3);
+    } else {
+      filter.frequency.setValueAtTime(Math.min(freq * 2, 18000), when);
+      filter.frequency.linearRampToValueAtTime(peak, when + Math.max(attack, 0.01));
+      filter.frequency.setTargetAtTime(rest, when + attack, 0.25);
+    }
+    filter.connect(gain);
+    const level = o.wave === "sine" || o.wave === "triangle" ? g : g * 0.42;
+    gain.gain.setValueAtTime(0.0001, when);
+    gain.gain.linearRampToValueAtTime(level, when + attack);
+    gain.gain.setTargetAtTime(level * 0.75, when + attack, 0.15);
+    gain.gain.setTargetAtTime(0.0001, end, Math.max(release / 3, 0.01));
+    const stop = end + release * 2 + 0.05;
+    let lfoGain: GainNode | null = null;
+    if (o.vibrato) {
+      const lfo = ctx.createOscillator();
+      lfo.frequency.value = 5.5;
+      lfoGain = ctx.createGain();
+      lfoGain.gain.setValueAtTime(0, when);
+      lfoGain.gain.linearRampToValueAtTime(o.vibrato * 1200, when + 0.3);
+      lfo.connect(lfoGain);
+      lfo.start(when);
+      lfo.stop(stop);
+      this.track(lfo, gain);
+    }
+    o.detune.forEach((cents, i) => {
+      const osc = ctx.createOscillator();
+      osc.type = o.wave;
+      osc.frequency.value = freq;
+      osc.detune.value = cents;
+      if (lfoGain) lfoGain.connect(osc.detune);
+      const og = ctx.createGain();
+      og.gain.value = 1 / o.detune.length;
+      if (o.spread && o.detune.length > 1) {
+        const pan = ctx.createStereoPanner();
+        pan.pan.value = (i / (o.detune.length - 1)) * 1.4 - 0.7;
+        osc.connect(og).connect(pan).connect(filter);
+      } else {
+        osc.connect(og).connect(filter);
+      }
+      osc.start(when);
+      osc.stop(stop);
+      this.track(osc, gain);
+    });
     // Basses get a sine an octave below for weight.
-    if (note < 52) {
+    if (o.sub ?? note < 52) {
       const sub = ctx.createOscillator();
       sub.frequency.value = freq / 2;
       const sg = ctx.createGain();
@@ -610,6 +1110,7 @@ export class Engine {
       this.track(sub, gain);
     }
   }
+
   /** Silences everything that sounds or is scheduled. */
   allOff(): void {
     const now = this.ctx.currentTime;
