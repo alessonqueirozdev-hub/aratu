@@ -1047,13 +1047,16 @@ select:hover {
 }
 
 @media (max-width: 900px) {
+  /* minmax(0, ...) lets a column be narrower than its widest content, so
+     the lesson list scrolls on its own instead of widening the page. */
   .work {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .book-view {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .toc {
+    min-width: 0;
     position: static;
     max-height: none;
     border-right: 0;
