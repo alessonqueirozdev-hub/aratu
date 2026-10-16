@@ -15,7 +15,9 @@ aprende música.
   cambiar cuanto quieras. Si lo desordenas, presiona **Empezar de nuevo**.
 - Debajo de cada ejemplo aparece una **cuadrícula**: los compases, los
   tiempos numerados y cada símbolo en el lugar donde suena, como lo
-  dibujaría un profesor en el pizarrón.
+  dibujaría un profesor en el pizarrón. Se puede tocar: arrastra un símbolo
+  a otro lugar, haz clic en un espacio vacío para agregar y en un símbolo
+  para quitarlo, y el texto cambia con él.
 - Los **ejercicios** te piden escribir algo. **Escuchar cómo debe sonar**
   toca el objetivo; **Comprobar** compara lo que escribiste con el objetivo
   por el sonido y dice, compás por compás, dónde está la diferencia.

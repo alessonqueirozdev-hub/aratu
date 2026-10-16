@@ -15,7 +15,9 @@ aprende música aqui.
   mudar à vontade. Se bagunçar, aperte **Recomeçar**.
 - Embaixo de cada exemplo aparece uma **grade**: os compassos, os tempos
   numerados e cada símbolo no lugar onde soa, como um professor desenharia
-  no quadro.
+  no quadro. Dá para mexer nela: arraste um símbolo para outro lugar, clique
+  num espaço vazio para acrescentar e num símbolo para tirar, e o texto muda
+  junto.
 - Os **exercícios** pedem que você escreva algo. **Ouvir como deve soar**
   toca o objetivo; **Conferir** compara o que você escreveu com o objetivo
   pelo som e diz, compasso por compasso, onde está a diferença.

@@ -29,6 +29,8 @@
   --good: #2e8b57;
   --playing: rgba(217, 84, 30, 0.28);
   --code-bg: #fffdf8;
+  --beatline: rgba(122, 102, 80, 0.45);
+  --stepline: rgba(122, 102, 80, 0.16);
   --shadow: 0 1px 2px rgba(60, 40, 20, 0.08), 0 4px 14px rgba(60, 40, 20, 0.06);
   color-scheme: light;
 }
@@ -60,6 +62,8 @@
   --good: #59d18a;
   --playing: rgba(255, 106, 26, 0.4);
   --code-bg: #120d0b;
+  --beatline: rgba(201, 164, 138, 0.4);
+  --stepline: rgba(201, 164, 138, 0.13);
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
   color-scheme: dark;
 }
@@ -831,35 +835,98 @@ select:hover {
 
 .grid-bar {
   position: relative;
-  display: grid;
-  grid-template-columns: repeat(var(--beats), 1fr);
   height: 30px;
   border-left: 2px solid var(--barline);
   border-right: 2px solid var(--barline);
-  background: var(--panel);
   border-radius: 3px;
+  background-color: var(--panel);
+  background-image:
+    linear-gradient(to right, var(--beatline) 0 2px, transparent 2px),
+    linear-gradient(to right, var(--stepline) 0 1px, transparent 1px);
+  background-size:
+    calc(100% / var(--beats)) 100%,
+    calc(100% / var(--steps)) 100%;
+  cursor: copy;
+  touch-action: none;
 }
 
-.grid-head .grid-bar {
-  height: 18px;
-  background: none;
-  border-color: transparent;
+.grid-bar.repeat .grid-hit:not(.on) {
+  opacity: 0.45;
 }
 
-.grid-beat {
+.grid-empty {
+  height: 30px;
+}
+
+.grid-bar.locked {
+  cursor: default;
+  background-color: transparent;
+  opacity: 0.75;
+}
+
+.grid-num {
+  position: absolute;
+  top: -17px;
   font-size: 11px;
   color: var(--muted);
   padding-left: 3px;
   font-variant-numeric: tabular-nums;
+  pointer-events: none;
 }
 
-.grid-tick {
-  border-left: 1px solid var(--line);
+.grid-hit.long {
+  text-align: left;
+  border-radius: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.grid-tick:first-child {
-  border-left: 0;
+.grid-tie {
+  background: color-mix(in srgb, var(--accent) 35%, transparent);
+  min-width: 0;
+  border-radius: 0 6px 6px 0;
 }
+
+.grid-hit:not(.grid-tie) {
+  cursor: grab;
+}
+
+.grid-bar.locked .grid-hit {
+  cursor: default;
+}
+
+.grid-hit.dragging {
+  cursor: grabbing;
+  opacity: 0.85;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  z-index: 2;
+}
+
+.grid {
+  padding-top: 16px;
+}
+
+.quantum {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.quantum-label {
+  color: var(--muted);
+  font-size: 13px;
+  margin-right: 8px;
+}
+
+.quantum button {
+  font-size: 13px;
+  padding: 4px 9px;
+}
+
+.quantum button:nth-child(2) {
+  border-radius: 8px 0 0 8px;
+}
+
 
 .grid-hit {
   position: absolute;

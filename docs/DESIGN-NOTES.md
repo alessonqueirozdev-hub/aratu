@@ -524,3 +524,22 @@ itself, so the drawing matches the sound). This comes with the sound-design
 step, right after the web engine; Manguebyte will say when the format is
 ready. Until then the editor can draw the curves from its own formulas and
 switch later.
+
+## The rhythm map (15 October 2026)
+
+At the user's request the rhythm map is quantized and editable. Each bar is
+drawn as a grid of equal steps, as fine as its rhythm needs (eighths,
+sixteenths, triplets, up to 48 steps a beat), with thin stripes for the
+steps and stronger ones for the beats; a choice of grid (auto, eighths,
+sixteenths, triplets) refines it. Dragging a symbol moves it, clicking an
+empty place adds one, clicking a symbol removes it, and the bar is written
+back with the beat rules: each beat in as few parts as it needs, two notes
+in a beat in brackets, a drum hit followed by a rest written as the hit
+alone (a drum does not sustain). Notes moved get explicit octaves, so the
+octave carried from the note before cannot change their pitch.
+
+Not editable from the map: bars with a choice `{a|b}`, chord shares, bars
+copied by `%` and bars written out from `- x8`. **Open:** dragging a note
+up and down to change its pitch; moving a note over a bar line (today it is
+cut at the bar's end); keeping the octave of the bar after an edited one when
+it was carried over.

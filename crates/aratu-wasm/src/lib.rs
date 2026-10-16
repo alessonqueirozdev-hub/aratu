@@ -22,6 +22,8 @@ use json::Json;
 /// A compiled piece kept for rendering.
 pub struct Program {
     pub compiled: Compiled,
+    /// The source, for the rhythm map.
+    pub src: String,
     /// For each byte offset of the source, its UTF-16 offset.
     utf16: Vec<u32>,
 }
@@ -71,6 +73,7 @@ pub fn compile_json(src: &str, lang: Lang) -> (u32, String) {
     let program = Program {
         utf16: utf16_table(src),
         compiled,
+        src: src.to_string(),
     };
     let handle = NEXT.with(|n| {
         let mut n = n.borrow_mut();
@@ -358,6 +361,87 @@ pub fn render_json(
     })
 }
 
+/// The rhythm map of a kept program, in JSON: every line's bars as steps.
+/// A step is 0 (rest), 1 (the sound goes on) or `[from, to, len, text]`
+/// for a sound starting there (`text` only for notes).
+pub fn grid_json(handle: u32, max_bars: usize) -> String {
+    use aratu::ast::LineKind;
+    use aratu::grid::{Step, grid};
+    PROGRAMS.with(|p| {
+        let p = p.borrow();
+        let Some(program) = p.get(&handle) else {
+            return "{\"lines\":[]}".to_string();
+        };
+        let lines = grid(&program.compiled.piece, &program.src, max_bars);
+        let mut j = Json::new();
+        j.open_obj();
+        j.key("lines").open_arr();
+        for line in &lines {
+            j.open_obj();
+            j.key("label").str(&line.label);
+            j.key("kind").str(match line.kind {
+                LineKind::Drums => "drums",
+                LineKind::Strum => "strum",
+                LineKind::Pitched => "pitched",
+                LineKind::Chords => "chords",
+            });
+            j.key("bars").open_arr();
+            for bar in &line.bars {
+                j.open_obj();
+                j.key("pos").num(bar.position as f64);
+                match bar.span {
+                    Some(s) => {
+                        j.key("from").num(program.pos(s.start) as f64);
+                        j.key("to").num(program.pos(s.end) as f64);
+                    }
+                    None => {
+                        j.key("from").num(-1.0);
+                        j.key("to").num(-1.0);
+                    }
+                }
+                j.key("beats").num(bar.beats as f64);
+                j.key("res").num(bar.res as f64);
+                j.key("editable").bool(bar.editable);
+                j.key("steps").open_arr();
+                for s in &bar.steps {
+                    match s {
+                        Step::Rest => {
+                            j.num(0.0);
+                        }
+                        Step::Hold => {
+                            j.num(1.0);
+                        }
+                        Step::Start { span, len, text } => {
+                            j.open_arr();
+                            j.num(program.pos(span.start) as f64);
+                            j.num(program.pos(span.end) as f64);
+                            j.num(*len as f64);
+                            if let Some(t) = text {
+                                j.str(t);
+                            }
+                            j.close_arr();
+                        }
+                    }
+                }
+                j.close_arr();
+                j.close_obj();
+            }
+            j.close_arr();
+            j.close_obj();
+        }
+        j.close_arr();
+        j.close_obj();
+        j.finish()
+    })
+}
+
+/// The rhythm map of a kept program (see [`grid_json`]); the JSON answer is
+/// in the output buffer.
+#[unsafe(no_mangle)]
+pub extern "C" fn aratu_grid(handle: u32, max_bars: u32) {
+    set_out(grid_json(handle, max_bars as usize));
+}
+
 pub fn release(handle: u32) {
     PROGRAMS.with(|p| p.borrow_mut().remove(&handle));
 }
@@ -544,6 +628,19 @@ mod tests {
             broken.starts_with(r#"{"compiles":false,"ok":false"#),
             "{broken}"
         );
+    }
+
+    #[test]
+    fn the_rhythm_map_answers_in_json() {
+        let (h, _) = compile_json("hh = c.c c c -c\nm = | c4 e _ g |", Lang::En);
+        let g = grid_json(h, 8);
+        assert!(
+            g.contains("\"label\":\"drums.hh\",\"kind\":\"drums\""),
+            "{g}"
+        );
+        assert!(g.contains("\"res\":4"), "{g}");
+        assert!(g.contains("\"e4\""), "{g}");
+        release(h);
     }
 
     #[test]

@@ -19,10 +19,15 @@ const words = {
   theme: { pt: "Aparência", es: "Apariencia", en: "Appearance" },
   rhythmMap: { pt: "Mapa do ritmo", es: "Mapa del ritmo", en: "Rhythm map" },
   rhythmHelp: {
-    pt: "Cada linha é uma parte da música, cada caixa é um compasso e os números são os tempos. As bolinhas mostram onde cada símbolo soa; tocando, a agulha mostra onde a música está.",
-    es: "Cada fila es una parte de la música, cada caja es un compás y los números son los tiempos. Los círculos muestran dónde suena cada símbolo; al tocar, la aguja muestra dónde va la música.",
-    en: "Each row is a part of the music, each box is a bar and the numbers are the beats. The dots show where each symbol sounds; while it plays, the needle shows where the music is.",
+    pt: "Cada linha é uma parte, cada caixa um compasso, os números são os tempos e as listras finas as subdivisões. Arraste uma batida para movê-la, clique num espaço vazio para acrescentar, clique numa batida para tirar: o código muda junto.",
+    es: "Cada fila es una parte, cada caja un compás, los números son los tiempos y las rayas finas las subdivisiones. Arrastra un golpe para moverlo, haz clic en un espacio vacío para agregar, haz clic en un golpe para quitarlo: el código cambia con él.",
+    en: "Each row is a part, each box a bar, the numbers are the beats and the thin stripes the subdivisions. Drag a hit to move it, click an empty place to add one, click a hit to take it away: the code changes with it.",
   },
+  grid: { pt: "Grade", es: "Cuadrícula", en: "Grid" },
+  gridAuto: { pt: "auto", es: "auto", en: "auto" },
+  eighths: { pt: "colcheias", es: "corcheas", en: "eighths" },
+  sixteenths: { pt: "semicolcheias", es: "semicorcheas", en: "sixteenths" },
+  triplets: { pt: "tercinas", es: "tresillos", en: "triplets" },
 
   // The playground.
   play: { pt: "Tocar", es: "Tocar", en: "Play" },

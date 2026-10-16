@@ -15,7 +15,9 @@ here too.
   as much as you like. If you make a mess, press **Start over**.
 - Under each example there is a **grid**: the bars, the numbered beats and
   each symbol where it sounds, the way a teacher would draw it on the
-  board.
+  board. You can work on it: drag a symbol to another place, click an empty
+  place to add one and a symbol to take it away, and the text changes with
+  it.
 - The **exercises** ask you to write something. **Hear how it should
   sound** plays the goal; **Check** compares what you wrote with the goal
   by its sound and says, bar by bar, where they differ.

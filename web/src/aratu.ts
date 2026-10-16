@@ -102,6 +102,30 @@ export interface Checked {
 
 export type Lang = "pt" | "es" | "en";
 
+/** A step of the rhythm map: 0 rest, 1 the sound goes on, or a sound that
+ * starts here: where it is written, how many steps it lasts, and for notes
+ * the text with explicit octaves. */
+export type GridStep = 0 | 1 | [number, number, number] | [number, number, number, string];
+
+export interface GridBar {
+  /** Place in one time round: 0 the pickup, then 1, 2... */
+  pos: number;
+  /** The written beats of the bar, to rewrite (-1 when it cannot be). */
+  from: number;
+  to: number;
+  beats: number;
+  /** Steps per beat. */
+  res: number;
+  editable: boolean;
+  steps: GridStep[];
+}
+
+export interface GridLine {
+  label: string;
+  kind: "drums" | "strum" | "pitched" | "chords";
+  bars: GridBar[];
+}
+
 const LANG_CODE: Record<Lang, number> = { pt: 0, en: 1, es: 2 };
 
 interface Exports {
@@ -128,6 +152,7 @@ interface Exports {
     flags: number,
     lang: number,
   ): void;
+  aratu_grid(handle: number, maxBars: number): void;
   aratu_release(handle: number): void;
   aratu_out_ptr(): number;
   aratu_out_len(): number;
@@ -190,6 +215,12 @@ export class Aratu {
       this.withText(answer, (ap, an) => this.x.aratu_check(sp, sn, ap, an, bars, flags, LANG_CODE[lang])),
     );
     return JSON.parse(this.output()) as Checked;
+  }
+
+  /** The rhythm map of a program: every line's bars as steps. */
+  grid(handle: number, maxBars: number): { lines: GridLine[] } {
+    this.x.aratu_grid(handle, maxBars);
+    return JSON.parse(this.output()) as { lines: GridLine[] };
   }
 
   release(handle: number): void {

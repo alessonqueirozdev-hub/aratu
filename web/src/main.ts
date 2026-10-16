@@ -2,7 +2,8 @@
 
 import { Aratu, type Program } from "./aratu";
 import { Engine } from "./audio";
-import { Needle, drawGrid, mountBlocks } from "./blocks";
+import { mountBlocks } from "./blocks";
+import { RhythmMap } from "./rhythm";
 import { examples } from "./examples";
 import { LANGS, type Lang, isWord, tr } from "./i18n";
 import { Session } from "./session";
@@ -89,7 +90,29 @@ async function main(): Promise<void> {
   };
 
   // The playground.
-  const needle = new Needle($("play-grid"), getEngine);
+  let quantum = Number(load("aratu.quantum") ?? 1) || 1;
+  const map = new RhythmMap($("play-grid"), {
+    aratu,
+    engine: getEngine,
+    view: () => playground?.view ?? null,
+    edited: () => playground.compile(),
+    quantum: () => quantum,
+    maxBars: 8,
+  });
+  const showQuantum = () => {
+    for (const b of document.querySelectorAll<HTMLElement>("#quantum button")) {
+      b.classList.toggle("on", Number(b.dataset.q) === quantum);
+    }
+  };
+  for (const b of document.querySelectorAll<HTMLElement>("#quantum button")) {
+    b.onclick = () => {
+      quantum = Number(b.dataset.q);
+      save("aratu.quantum", String(quantum));
+      showQuantum();
+      if (playground.latest) map.draw(playground.latest, playground.text);
+    };
+  }
+  showQuantum();
   const messages = (p: Program) => {
     const ul = $("messages");
     ul.innerHTML = "";
@@ -112,7 +135,7 @@ async function main(): Promise<void> {
       ul.append(li);
     }
     $("note").textContent = p.ok ? "" : playground?.playing ? tr("keepsPlaying", lang) : tr("fixFirst", lang);
-    if (p.ok) drawGrid($("play-grid"), aratu, p, playground?.text ?? "");
+    if (p.ok) map.draw(p, playground?.text ?? "");
   };
 
   const playground: Session = new Session({
@@ -124,7 +147,7 @@ async function main(): Promise<void> {
     onCompile: messages,
     onChange: (t) => save("aratu.text", t),
     onBar: (info, at) => {
-      needle.bar(info, at);
+      map.bar(info, at);
       const ctx = getEngine().ctx;
       const delay = Math.max(0, (at - ctx.currentTime) * 1000);
       window.setTimeout(() => {
@@ -148,8 +171,8 @@ async function main(): Promise<void> {
     },
     onPlaying: (on) => {
       $("play").classList.toggle("on", on);
-      if (on) needle.start();
-      else needle.stop();
+      if (on) map.start();
+      else map.stop();
     },
   });
   $("play").onclick = () => void playground.play();
@@ -172,6 +195,8 @@ async function main(): Promise<void> {
     lang: () => lang,
     isDone: (id: string) => done.has(id),
     markDone,
+    // Lessons start from eighths, so a beat can be built by clicking.
+    quantum: () => (quantum === 1 ? 2 : quantum),
     openInPlay: (text: string) => {
       playground.text = text;
       location.hash = "#/tocar";
