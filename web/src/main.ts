@@ -185,7 +185,9 @@ async function main(): Promise<void> {
   // The book: the course and the manual.
   let book: Book | null = null;
   const loadBook = async () => {
-    const res = await fetch(`book-${lang}.json`);
+    // Ask the server each time: a cached copy of an older book would send
+    // links to pages it does not have.
+    const res = await fetch(`book-${lang}.json`, { cache: "no-cache" });
     book = (await res.json()) as Book;
   };
   let pageSessions: Session[] = [];
