@@ -75,7 +75,7 @@ shapes (what is between `⟨ ⟩` is a place to fill):
 | `pattern ⟨name⟩ { … }`, `section ⟨name⟩ { … }` | `pattern fill { sd = ss ss SS SS }` | a named group of lines |
 | `play …`, `add …`, `form: …` | `play groove x3, fill` | what plays, and in what order |
 | `motif`, `row`, `list` | `motif riff = [e4 d]` | definitions other lines use |
-| `⟨when⟩: ⟨statement⟩` | `at bar 9: play fill`, `every 4 bars: …`, `now: …` | the same statement, at a moment |
+| `⟨when⟩: ⟨statement⟩` | `at bar 9: play fill`, `at bar 9 beat 3: …`, `from bar 9 to 16: …`, `every 4 bars: …`, `now: …` | the same statement, at a moment or for a stretch |
 
 The `⟨when⟩` goes in front of almost any statement. Without it, the
 statement holds from the start of the piece or, if the music is playing,
@@ -130,6 +130,8 @@ at bar 9: bass: out
 To know the state at bar 12, Aratu gathers the rules of every bar up to
 there: the reverb is at 0.6 (since bar 5) and the bass is out (since bar 9).
 In programming, that is a **fold** of the changes, in time order.
+`from bar 9 to 16:` is a rule with a start and an end: outside its stretch
+it stays out of the fold, and what came before holds again.
 
 `every`, on the other hand, is the nearest thing to an `if` on the bar
 number:

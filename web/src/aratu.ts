@@ -84,6 +84,9 @@ export interface AratuEvent {
   /** For a parameter that moves: seconds to glide to `value` from the
    * point before. */
   glide?: number;
+  /** 1 when `from bar 9 to 16` is over and the parameter goes back to the
+   * value its part is set up with. */
+  reset?: number;
   from: number;
   to: number;
   /** For a strum: where the chord it plays is written. */

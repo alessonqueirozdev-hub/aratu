@@ -113,6 +113,22 @@ drums {
 }
 ```
 
+## Nombres en español y palmas
+
+Las líneas también pueden llamarse en español: `charles`, `bombo`,
+`caja`, `platillo`, `aro`, `palmas`; y el bloque puede llamarse
+`batería`. La `p` son las palmas:
+
+```aratu
+tempo: 100
+
+batería {
+  charles = cc cc cc cc
+  bombo   = b - b -
+  palmas  = - p - p
+}
+```
+
 ## Redoble
 
 Una tilde, `~`, después del símbolo hace un **redoble**: el golpe se vuelve

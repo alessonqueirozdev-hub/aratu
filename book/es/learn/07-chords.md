@@ -22,7 +22,12 @@ chords = | C G | Am _ _ F | C |
 En el segundo compás, Am dura tres tiempos y F uno.
 
 Los acordes se escriben como siempre: `Am`, `G7`, `Cmaj7` (o `C7M`),
-`Dm7`, `Bº`, `E/G#`, `G7(b9)`.
+`Dm7`, `Bº`, `E/G#`, `G7(b9)`. También con do-re-mi, y un compás sin acorde
+es `N.C.`:
+
+```aratu
+chords = | Lam | Fa | Do Sol | N.C. |
+```
 
 ## El rasgueo de la guitarra
 

@@ -30,6 +30,10 @@ pub enum When {
     Bare,
     /// `at bar 30:`
     AtBar(i64, Span),
+    /// `at bar 9 beat 3:`, or `beat 2.5` between the beats.
+    AtBeat { bar: i64, beat: f64, span: Span },
+    /// `from bar 9 to 16:`: for those bars, then back to what was before.
+    Range { from: i64, to: i64, span: Span },
     /// `every 4 bars:` (the last bar of each group) or `every 8 bars, first:`.
     Every { bars: i64, first: bool, span: Span },
     /// `now:` at the next beat when playing live.

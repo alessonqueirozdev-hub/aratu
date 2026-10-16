@@ -115,6 +115,9 @@ pub enum EventKind {
         /// For a parameter that moves: the seconds since its last point,
         /// over which the sound goes smoothly to this value. 0 sets it.
         glide: f64,
+        /// `from bar 9 to 16` is over and nothing written comes back: the
+        /// parameter returns to the value its part is set up with.
+        reset: bool,
     },
 }
 
@@ -405,23 +408,60 @@ impl<'p> Scheduler<'p> {
                         }
                         _ => Ratio::ZERO,
                     };
-                    self.tempo.change(t, start_beat, len);
+                    self.tempo.change(t, start_beat + c.beat, len);
                 }
             }
-            let mut instances = self.instances(g);
-            instances.retain(|i| !self.muted(&i.part.name, g));
-            let mut fermatas = Vec::new();
+            // A change at a beat (`at bar 9 beat 3: play fill`) cuts the
+            // bar: each stretch is laid out as things stand where it starts.
+            let mut cuts: Vec<Ratio> = self
+                .timed
+                .iter()
+                .filter(|(b, c)| {
+                    *b == g
+                        && c.beat > Ratio::ZERO
+                        && matches!(
+                            c.action,
+                            Action::Play { .. }
+                                | Action::Add { .. }
+                                | Action::Mute { .. }
+                                | Action::Transform { .. }
+                        )
+                })
+                .map(|(_, c)| c.beat)
+                .collect();
+            cuts.sort();
+            cuts.dedup();
+            let starts: Vec<Ratio> = std::iter::once(Ratio::ZERO)
+                .chain(cuts.iter().copied())
+                .collect();
             let mut laid: Vec<(Instance<'p>, Vec<Proto<'p>>)> = Vec::new();
-            for inst in instances {
-                let protos = self.lay_out(inst, g, beats);
-                for p in &protos {
+            for (k, &x) in starts.iter().enumerate() {
+                let end = starts.get(k + 1).copied();
+                let mut instances = self.instances(g, x);
+                instances.retain(|i| !self.muted(&i.part.name, g, x));
+                for inst in instances {
+                    let mut protos = self.lay_out(inst, g, beats, x);
+                    if !cuts.is_empty() {
+                        protos.retain(|p| p.start >= x && end.is_none_or(|e| p.start < e));
+                    }
+                    match laid.iter_mut().find(|(i, _)| same_instance(i, &inst)) {
+                        Some((_, ps)) => ps.extend(protos),
+                        None => laid.push((inst, protos)),
+                    }
+                }
+            }
+            let mut fermatas = Vec::new();
+            for (_, protos) in &mut laid {
+                if !cuts.is_empty() {
+                    protos.sort_by_key(|p| p.start);
+                }
+                for p in protos.iter() {
                     if let Some(h) = p.hit {
                         if h.fermata {
                             fermatas.push((p.start, p.start + p.len));
                         }
                     }
                 }
-                laid.push((inst, protos));
             }
             let clock = BarClock::new(
                 g,
@@ -481,41 +521,53 @@ impl<'p> Scheduler<'p> {
                 let s = self.open.remove(&k).unwrap();
                 self.done.push(s);
             }
+            let mut sets: Vec<(Ratio, &'p Command, f64, bool)> = Vec::new();
             for (b, c) in &self.timed {
-                if *b != g {
+                let Action::Param { value, motion, .. } = &c.action else {
                     continue;
+                };
+                if *b == g && motion.is_none() {
+                    let beat = if g == from {
+                        from_beat.max(c.beat)
+                    } else {
+                        c.beat
+                    };
+                    sets.push((beat, c, *value, false));
                 }
-                if let Action::Param {
-                    part,
-                    id,
-                    value,
-                    motion: None,
-                    ..
-                } = &c.action
-                {
-                    let clock = self.clocks.last().unwrap();
-                    let beat = if g == from { from_beat } else { Ratio::ZERO };
-                    self.params.push((
-                        g,
-                        Event {
-                            bar: g,
-                            beat,
-                            time: clock.time(beat),
-                            duration: 0.0,
-                            part: part.clone().unwrap_or_else(|| "all".into()),
-                            line: String::new(),
-                            kind: EventKind::Param {
-                                id: id.clone(),
-                                value: *value,
-                                glide: 0.0,
-                            },
-                            velocity: 0,
-                            accent: false,
-                            also: None,
-                            span: c.span,
+                // `from bar 9 to 16` is over: what was in force comes back.
+                if c.until == Some(g) {
+                    if let Some((v, reset)) = self.restored(c, g) {
+                        let beat = if g == from { from_beat } else { Ratio::ZERO };
+                        sets.push((beat, c, v, reset));
+                    }
+                }
+            }
+            for (beat, c, value, reset) in sets {
+                let Action::Param { part, id, .. } = &c.action else {
+                    continue;
+                };
+                let clock = self.clocks.last().unwrap();
+                self.params.push((
+                    g,
+                    Event {
+                        bar: g,
+                        beat,
+                        time: clock.time(beat),
+                        duration: 0.0,
+                        part: part.clone().unwrap_or_else(|| "all".into()),
+                        line: String::new(),
+                        kind: EventKind::Param {
+                            id: id.clone(),
+                            value,
+                            glide: 0.0,
+                            reset,
                         },
-                    ));
-                }
+                        velocity: 0,
+                        accent: false,
+                        also: None,
+                        span: c.span,
+                    },
+                ));
             }
             self.motions(g, from, from_beat);
             g += 1;
@@ -611,7 +663,7 @@ impl<'p> Scheduler<'p> {
         }
         let mut moving: Vec<Moving<'p>> = Vec::new();
         for (b, c) in &self.timed {
-            if *b <= g {
+            if c.in_bar(*b, g) {
                 moving.push((*b, None, *c));
             }
         }
@@ -643,15 +695,18 @@ impl<'p> Scheduler<'p> {
             else {
                 continue;
             };
-            // A later change of the same parameter takes over.
-            let taken = self.timed.iter().any(|(b, other)| {
-                *b > a
-                    && *b <= g
-                    && matches!(&other.action, Action::Param { part: p2, id: i2, .. } if p2 == part && i2 == id)
-            });
-            if taken {
-                continue;
-            }
+            // A later change of the same parameter takes over while it is in
+            // force; this one goes on after it, from where it would be.
+            let rivals: Vec<(i64, &'p Command)> = self
+                .timed
+                .iter()
+                .filter(|(b, other)| {
+                    (*b, other.beat) > (a, c.beat)
+                        && !std::ptr::eq(*other, c)
+                        && matches!(&other.action, Action::Param { part: p2, id: i2, .. } if p2 == part && i2 == id)
+                })
+                .map(|(b, other)| (*b, *other))
+                .collect();
             let Some(first_beat) = self.clocks.get(a.max(0) as usize).map(|k| k.start_beat) else {
                 continue;
             };
@@ -664,6 +719,7 @@ impl<'p> Scheduler<'p> {
             }
             // Where it starts, in beats from the start of the piece.
             let start = match stretch {
+                None => first_beat.to_f64() + c.beat.to_f64(),
                 Some((e, false)) => {
                     let len = (a..e)
                         .map(|x| self.bar_beats(x))
@@ -704,6 +760,10 @@ impl<'p> Scheduler<'p> {
             for x in at {
                 let p = p0 + x.to_f64();
                 if p < -1e-9 {
+                    continue;
+                }
+                if rivals.iter().any(|(b, o)| o.in_force(*b, g, x)) {
+                    self.last_point.remove(&key);
                     continue;
                 }
                 // Its stretch is over: only the point on its last bar line.
@@ -750,6 +810,7 @@ impl<'p> Scheduler<'p> {
                                 id: id.clone(),
                                 value: v,
                                 glide,
+                                reset: false,
                             },
                             velocity: 0,
                             accent: false,
@@ -762,19 +823,51 @@ impl<'p> Scheduler<'p> {
         }
     }
 
+    /// What a parameter set `from bar 9 to 16` goes back to at its end: an
+    /// earlier value written at a bar, or, with `true`, the value its part
+    /// is set up with. Nothing when an earlier motion takes it on.
+    fn restored(&self, c: &Command, g: i64) -> Option<(f64, bool)> {
+        let Action::Param { part, id, .. } = &c.action else {
+            return None;
+        };
+        // The latest earlier change of the same parameter still in force.
+        let mut last = None;
+        for (b, o) in &self.timed {
+            let Action::Param {
+                part: p2, id: i2, ..
+            } = &o.action
+            else {
+                continue;
+            };
+            if !std::ptr::eq(*o, c) && p2 == part && i2 == id && o.in_force(*b, g, Ratio::ZERO) {
+                last = Some(&o.action);
+            }
+        }
+        match last {
+            None => Some((0.0, true)),
+            Some(Action::Param {
+                value,
+                motion: None,
+                ..
+            }) => Some((*value, false)),
+            Some(_) => None,
+        }
+    }
+
     /// Every line sounding at bar `g`.
-    fn instances(&self, g: i64) -> Vec<Instance<'p>> {
+    fn instances(&self, g: i64, x: Ratio) -> Vec<Instance<'p>> {
         let piece = self.piece;
         let mut out = Vec::new();
         for part in &piece.parts {
             for line in &part.lines {
                 // Of a line written `at bar n:` too, the version that has
                 // begun last sounds, counting its bars from where it began.
+                let sounding = |o: &Line| o.from <= g.max(1) && o.until.is_none_or(|u| g < u);
                 let later = part
                     .lines
                     .iter()
-                    .any(|o| o.name == line.name && o.from > line.from && o.from <= g);
-                if later || line.from > g.max(1) {
+                    .any(|o| o.name == line.name && o.from > line.from && sounding(o));
+                if later || !sounding(line) {
                     continue;
                 }
                 if g == 0 {
@@ -836,6 +929,9 @@ impl<'p> Scheduler<'p> {
             if *b > g {
                 break;
             }
+            if !c.in_force(*b, g, x) {
+                continue;
+            }
             if let Action::Play { list, once } = &c.action {
                 let lens: Vec<i64> = list
                     .iter()
@@ -884,6 +980,9 @@ impl<'p> Scheduler<'p> {
             if *b > g {
                 break;
             }
+            if !c.in_force(*b, g, x) {
+                continue;
+            }
             if let Action::Add { pattern: i, once } = c.action {
                 let len = group_len(&piece.patterns[i].parts);
                 if once && g - b >= len {
@@ -905,11 +1004,11 @@ impl<'p> Scheduler<'p> {
         out
     }
 
-    /// The transformations in force for an instance at bar `g`.
-    fn transforms(&self, inst: &Instance, g: i64) -> Vec<Transform> {
+    /// The transformations in force for an instance at beat `x` of bar `g`.
+    fn transforms(&self, inst: &Instance, g: i64, x: Ratio) -> Vec<Transform> {
         self.timed
             .iter()
-            .filter(|(b, _)| *b <= g)
+            .filter(|(b, c)| c.in_force(*b, g, x))
             .filter_map(|(_, c)| match &c.action {
                 Action::Transform { target, transform } => {
                     let t = target.as_str();
@@ -927,9 +1026,9 @@ impl<'p> Scheduler<'p> {
 
     /// Lays out the bar of a line that sounds at `g`: choices made, chance
     /// drawn, holds joined, transformations applied.
-    fn lay_out(&self, inst: Instance<'p>, g: i64, beats: Ratio) -> Vec<Proto<'p>> {
+    fn lay_out(&self, inst: Instance<'p>, g: i64, beats: Ratio, x: Ratio) -> Vec<Proto<'p>> {
         let line = inst.line;
-        let transforms = self.transforms(&inst, g);
+        let transforms = self.transforms(&inst, g, x);
         let len = line.order.len() as i64;
         if len == 0 && inst.local.is_some() {
             return Vec::new();
@@ -1156,12 +1255,15 @@ impl<'p> Scheduler<'p> {
 
     /// The live level of a part at an offset of bar `g`, as a factor of the
     /// written dynamics (1 at mf).
-    fn muted(&self, part: &str, g: i64) -> bool {
+    fn muted(&self, part: &str, g: i64, x: Ratio) -> bool {
         let applies = |t: &str| t == part || t == "all";
         let mut muted = false;
         for (b, c) in &self.timed {
             if *b > g {
                 break;
+            }
+            if !c.in_force(*b, g, x) {
+                continue;
             }
             if let Action::Mute { target, muted: m } = &c.action {
                 if applies(target) {
@@ -1204,7 +1306,12 @@ impl<'p> Scheduler<'p> {
                 else {
                     continue;
                 };
-                if t != target {
+                if t != target || c.until.is_some_and(|u| g >= u) {
+                    continue;
+                }
+                // At a beat: from there on, counting from there.
+                let off = c.beat.to_f64() / self.bar_beats(*b).to_f64().max(1e-9);
+                if *b == g && frac < off {
                     continue;
                 }
                 let goal = match to {
@@ -1217,7 +1324,7 @@ impl<'p> Scheduler<'p> {
                 if bars <= 0.0 {
                     level = goal;
                 } else {
-                    let progress = ((g - b) as f64 + frac) / bars;
+                    let progress = ((g - b) as f64 + frac - off) / bars;
                     level = if progress >= 1.0 {
                         goal
                     } else {
@@ -1241,6 +1348,9 @@ impl<'p> Scheduler<'p> {
                 let Action::Feel { target, feel } = &c.action else {
                     continue;
                 };
+                if !c.in_bar(*b, g) {
+                    continue;
+                }
                 let applies = match (pass, target.as_deref()) {
                     (None, None) | (None, Some("all")) => true,
                     (Some(p), Some(t)) => p == t,
@@ -1309,7 +1419,6 @@ impl<'p> Scheduler<'p> {
         chords: &[Region<'p>],
     ) {
         let key = mix(inst.line.seed_key ^ mix(inst.origin));
-        let transforms = self.transforms(&inst, g);
         let part = inst.part.name.as_str();
         let (_, _, human) = self.feel(part, g);
         let first_pitch = first_pitch(inst.line);
@@ -1350,7 +1459,7 @@ impl<'p> Scheduler<'p> {
             }
             let mut transpose = 0;
             let mut invert = false;
-            for t in &transforms {
+            for t in &self.transforms(&inst, g, p.start) {
                 match t {
                     Transform::Velocity(x) => velocity *= x,
                     Transform::Transpose(n) => transpose += *n as i32,
@@ -1521,6 +1630,14 @@ fn group_len(parts: &[Part]) -> i64 {
         .max()
         .unwrap_or(1)
         .max(1)
+}
+
+/// The same line from the same place, laid out in two stretches of a bar.
+fn same_instance(a: &Instance, b: &Instance) -> bool {
+    std::ptr::eq(a.line, b.line)
+        && std::ptr::eq(a.part, b.part)
+        && a.origin == b.origin
+        && a.local == b.local
 }
 
 fn push_group<'p>(

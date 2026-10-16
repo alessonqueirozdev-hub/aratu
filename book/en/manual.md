@@ -112,6 +112,7 @@ decides the sound, whatever the line is called:
 | `m` | mid tom |
 | `f` | floor tom |
 | `k` | side stick (the stick across the snare's rim) |
+| `p` | hand clap |
 
 ```aratu
 drums {
@@ -123,7 +124,10 @@ drums {
 
 Every line inside `drums { }` is a drum line, and so is a line called `hh`,
 `bd`, `sd`, `cr`, `rd`, `ht`, `mt`, `ft`, `toms`, `rim`, `kick`, `snare`,
-`hat`, `ride` or `crash` anywhere in the piece. An apostrophe makes a hit short: `c'` is a tight hi-hat. A
+`hat`, `ride` or `crash` anywhere in the piece, and by their Portuguese and
+Spanish names too: `chimbal`, `bumbo`, `caixa`, `prato`, `surdo`, `palmas`,
+`charles`, `bombo`, `caja`, `platillo`; the block may also be called
+`bateria`. An apostrophe makes a hit short: `c'` is a tight hi-hat. A
 closed hi-hat cuts an open one that is still ringing.
 
 **Rolls.** A tilde after the symbol makes a roll, like the tremolo strokes in
@@ -180,6 +184,8 @@ beats, so Aratu asks how long each lasts.
 
 Chord symbols keep their usual spelling: `Am`, `F`, `G7`, `Cmaj7`, `Dm7b5`,
 `E/G#`, and the spellings of a Brazilian *cifra* too: `C7M`, `Bº`, `G7(b9)`.
+`C6/9`, `E7alt` and solfège roots work as well: `Lám`, `Sol7`, `Fa#m7`,
+`Dó/Mi`. `N.C.` (or `-`) is a bar with no chord.
 
 **Strumming.** A line called `strum` uses the rhythm rules with guitar
 symbols:
@@ -494,7 +500,15 @@ While a piece plays, you change it; you do not rewrite it.
   `now:` makes it take effect at the next beat instead: `now: play fill
   once` brings a fill in on the next beat, and the groove comes back at the
   bar line where it would have been.
-- **Prepare ahead.** `at bar 17: play fill` schedules a change.
+- **Prepare ahead.** `at bar 17: play fill` schedules a change;
+  `at bar 17 beat 3:` brings it in on the third beat (`beat 2.5` falls
+  between 2 and 3), and `from bar 17 to 24:` makes it hold for those bars
+  only: at bar 25 what held before comes back. A line can change at a bar
+  too: `at bar 9: melody = | … |` plays the new melody from bar 9, from its
+  start. `play groove 3x` is the same as `x3`.
+- **Lengths.** `over` takes `bars`, `beats`, `eighths` and `sixteenths` in
+  `cresc`, `fade`, `rit`, `accel`, tempo ramps and parameters:
+  `piano: cresc to ff over 6 beats`.
 - **Out and in.** `guitar: out` silences a part from the next bar line and
   `guitar: in` brings it back; `all: out` stops everything. They work with
   `at bar` and `every` too.
@@ -524,8 +538,13 @@ Short verbs change a part, a line or a pattern without rewriting it:
 | `bass.transpose +12` | an octave up |
 | `melody.invert` | turns the intervals upside down |
 | `melody.retrograde` | plays it backwards |
+| `melody.ri` | the inversion backwards |
 | `melody.augment` | doubles the note values |
 | `melody.diminish` | halves the note values |
+
+The names are the ones motifs and rows take: `.inv` or `.invert`,
+`.retro` or `.retrograde`, `.ri`. `transpose` counts semitones and may say
+so with `3st`, as motifs do.
 
 ```aratu
 melody = | c4 d e g | a g e d |
@@ -701,6 +720,10 @@ written value.
 | `play fill once`, `add crash once` | a pattern once, then back |
 | `at bar 30:` | a scheduled change |
 | `now:` | a change at the next beat |
+| `at bar 30 beat 3:` | a change on a beat of the bar |
+| `from bar 9 to 16:` | for those bars only; then what held comes back |
+| `at bar 9: melody = …` | the line changes from bar 9 |
+| `over 6 beats`, `over 8 eighths` | lengths in beats, eighths, sixteenths |
 | `guitar: out`, `guitar: in` | silence a part, bring it back |
 | `->` | signal flow |
 | `part.param = value` | a parameter, drawn as a knob |

@@ -299,11 +299,64 @@ impl Parser {
             if n == 0 {
                 return Err((ns, Message::BarZero));
             }
+            let mut said = format!("at bar {n}");
+            let mut beat = None;
+            if c.keyword("beat") {
+                match c.number() {
+                    Some((b, _)) if b >= 1.0 => {
+                        said = format!("{said} beat {b}");
+                        beat = Some(b);
+                    }
+                    _ => return Err(expected(c, Thing::Beat, &said)),
+                }
+            }
             if !c.eat(":") {
-                return Err(expected(c, Thing::Colon, &format!("at bar {n}")));
+                return Err(expected(c, Thing::Colon, &said));
             }
             let kind = self.action(c, scope, part)?;
-            return Ok((When::AtBar(n, c.span_from(start)), kind));
+            let span = c.span_from(start);
+            return Ok((
+                match beat {
+                    Some(beat) => When::AtBeat { bar: n, beat, span },
+                    None => When::AtBar(n, span),
+                },
+                kind,
+            ));
+        }
+        // `from bar 9 to 16:`
+        {
+            let save = c.clone();
+            if c.keyword("from") && c.keyword("bar") {
+                let (a, as_) = c
+                    .integer()
+                    .ok_or_else(|| expected(c, Thing::BarNumber, "from bar"))?;
+                if a == 0 {
+                    return Err((as_, Message::BarZero));
+                }
+                if !c.keyword("to") {
+                    return Err(expected(c, Thing::RangeEnd, &format!("from bar {a}")));
+                }
+                c.keyword("bar");
+                let (z, zs) = c
+                    .integer()
+                    .ok_or_else(|| expected(c, Thing::RangeEnd, &format!("from bar {a}")))?;
+                if z < a {
+                    return Err((zs, Message::BadRange { from: a, to: z }));
+                }
+                if !c.eat(":") {
+                    return Err(expected(c, Thing::Colon, &format!("from bar {a} to {z}")));
+                }
+                let kind = self.action(c, scope, part)?;
+                return Ok((
+                    When::Range {
+                        from: a,
+                        to: z,
+                        span: c.span_from(start),
+                    },
+                    kind,
+                ));
+            }
+            *c = save;
         }
         if c.keyword("every") {
             let (n, ns) = c

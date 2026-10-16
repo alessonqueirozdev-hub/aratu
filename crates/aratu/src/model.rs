@@ -110,6 +110,9 @@ pub struct Line {
     /// written `at bar n: name = …`, which starts there from its own first
     /// bar and takes the place of the one before.
     pub from: i64,
+    /// `from bar 9 to 16: name = …`: the bar it stops at, 17, where the
+    /// version before it comes back.
+    pub until: Option<i64>,
 }
 
 impl Line {
@@ -127,11 +130,30 @@ impl Line {
 #[derive(Clone, Debug)]
 pub struct Command {
     pub at: At,
+    /// Where in its bar it takes effect, in beats from the bar line:
+    /// `at bar 9 beat 3` is 2.
+    pub beat: Ratio,
+    /// `from bar 9 to 16`: the bar it stops at, 17, where what was in force
+    /// before comes back.
+    pub until: Option<i64>,
     pub action: Action,
     pub span: Span,
     /// The statement's text with spaces collapsed: while playing live, the
     /// editor remembers from which bar each such line has been sounding.
     pub key: String,
+}
+
+impl Command {
+    /// Whether it is in force at beat `x` of bar `g`, taking effect at
+    /// bar `b` (its own, or where it came in while playing live).
+    pub fn in_force(&self, b: i64, g: i64, x: Ratio) -> bool {
+        (b < g || (b == g && self.beat <= x)) && self.until.is_none_or(|u| g < u)
+    }
+
+    /// Whether it is in force at some time in bar `g`.
+    pub fn in_bar(&self, b: i64, g: i64) -> bool {
+        b <= g && self.until.is_none_or(|u| g < u)
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -389,9 +411,10 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
         };
         match (&s.kind, &s.when) {
             (StmtKind::Line(l), when) => {
-                let from = match (when, &s.scope) {
-                    (When::AtBar(n, _), Scope::Top) => *n,
-                    (When::Bare | When::Now, _) => 1,
+                let (from, until) = match (when, &s.scope) {
+                    (When::AtBar(n, _), Scope::Top) => (*n, None),
+                    (When::Range { from, to, .. }, Scope::Top) => (*from, Some(to + 1)),
+                    (When::Bare | When::Now, _) => (1, None),
                     (_, _) => {
                         diags.push(Diagnostic::error(s.span, Message::LineChangeOnlyAtBar));
                         continue;
@@ -416,6 +439,7 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
                     variants: l.variants.clone(),
                     rounds: Vec::new(),
                     from,
+                    until,
                 };
                 if let Some(i) = part
                     .lines
@@ -533,12 +557,33 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
 
     // Timed and live commands.
     for s in &ast.stmts {
-        let at = match s.when {
-            When::Bare => At::Live,
-            When::AtBar(b, _) => At::Bar(b),
-            When::Every { bars, first, .. } => At::Every { bars, first },
-            When::Now => At::Now,
+        let (at, beat, until) = match s.when {
+            When::Bare => (At::Live, Ratio::ZERO, None),
+            When::AtBar(b, _) => (At::Bar(b), Ratio::ZERO, None),
+            When::AtBeat { bar, beat, .. } => (
+                At::Bar(bar),
+                Ratio::new(((beat - 1.0) * 1920.0).round() as i64, 1920),
+                None,
+            ),
+            When::Range { from, to, .. } => (At::Bar(from), Ratio::ZERO, Some(to + 1)),
+            When::Every { bars, first, .. } => (At::Every { bars, first }, Ratio::ZERO, None),
+            When::Now => (At::Now, Ratio::ZERO, None),
         };
+        // Tempo, meter and key hold until the next change; meter and key
+        // change at a bar line.
+        let frame = matches!(
+            s.kind,
+            StmtKind::TempoChange(_) | StmtKind::MeterChange(_) | StmtKind::KeyChange(_)
+        );
+        if frame && until.is_some() {
+            diags.push(Diagnostic::error(s.span, Message::FrameInRange));
+            continue;
+        }
+        if matches!(s.kind, StmtKind::MeterChange(_) | StmtKind::KeyChange(_)) && beat > Ratio::ZERO
+        {
+            diags.push(Diagnostic::error(s.span, Message::FrameAtBeat));
+            continue;
+        }
         let action = match &s.kind {
             StmtKind::TempoChange(t) => Action::Tempo(*t),
             StmtKind::MeterChange(m) => Action::Meter(*m),
@@ -692,11 +737,36 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
         };
         piece.commands.push(Command {
             at,
+            beat,
+            until,
             action,
             span: s.span,
             key,
         });
     }
+
+    // A beat the bar does not have.
+    let meters = piece.meter_map();
+    for c in &piece.commands {
+        let At::Bar(bar) = c.at else {
+            continue;
+        };
+        let beats = meters.at(bar).beats();
+        if c.beat >= beats {
+            diags.push(Diagnostic::error(
+                c.span,
+                Message::BeatOutOfBar {
+                    bar,
+                    beat: c.beat.to_f64() + 1.0,
+                    beats,
+                },
+            ));
+        }
+    }
+    piece.commands.retain(|c| match c.at {
+        At::Bar(bar) => c.beat < meters.at(bar).beats(),
+        _ => true,
+    });
 
     // Two changes of the same kind at one bar.
     let mut at_bar: HashMap<(i64, u8), Span> = HashMap::new();

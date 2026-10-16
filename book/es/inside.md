@@ -78,7 +78,7 @@ estas formas (lo que va entre `⟨ ⟩` es un lugar para completar):
 | `pattern ⟨nombre⟩ { … }`, `section ⟨nombre⟩ { … }` | `pattern fill { sd = ss ss SS SS }` | un grupo de líneas con nombre |
 | `play …`, `add …`, `form: …` | `play groove x3, fill` | qué suena, y en qué orden |
 | `motif`, `row`, `list` | `motif riff = [mi4 re]` | definiciones que usan otras líneas |
-| `⟨cuándo⟩: ⟨sentencia⟩` | `at bar 9: play fill`, `every 4 bars: …`, `now: …` | la misma sentencia, en un momento |
+| `⟨cuándo⟩: ⟨sentencia⟩` | `at bar 9: play fill`, `at bar 9 beat 3: …`, `from bar 9 to 16: …`, `every 4 bars: …`, `now: …` | la misma sentencia, en un momento o en un tramo |
 
 El `⟨cuándo⟩` va delante de casi cualquier sentencia. Sin él, vale desde el
 principio de la pieza o, si la música ya suena, desde el compás siguiente.
@@ -132,7 +132,8 @@ at bar 9: bajo: out
 Para saber el estado en el compás 12, Aratu junta las reglas de todos los
 compases hasta ahí: el reverb está en 0.6 (desde el 5) y el bajo está fuera
 (desde el 9). En programación, eso es un **pliegue** (*fold*) de los cambios,
-en orden de tiempo.
+en orden de tiempo. `from bar 9 to 16:` es una regla con principio y fin:
+fuera del tramo no entra en el pliegue, y vuelve a valer lo que venía antes.
 
 El `every`, en cambio, es lo más parecido a un `if` con el número del compás:
 

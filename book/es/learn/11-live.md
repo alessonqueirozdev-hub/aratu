@@ -60,6 +60,21 @@ sonando, en el compás siguiente. Escrita con `now:` delante
 (`now: play fill once`), el redoble suena una vez y el groove vuelve solo,
 en el lugar donde estaría.
 
+`at bar 4 beat 3:` entra en el tercer tiempo del compás 4, y
+`from bar 5 to 6:` vale solo en esos compases; en el 7 vuelve lo que valía
+antes. Una línea también puede cambiar en un compás, desde su principio:
+
+```aratu
+tempo: 110
+pattern groove { hh = cc cc cc cc; bd = b - b -; sd = - s - s }
+pattern fill   { sd = ss ss SS SS }
+bajo = | do2 _ sol1 _ |
+play groove
+at bar 4 beat 3: play fill once
+from bar 5 to 6: drums: out
+at bar 7: bajo = | fa2 _ do2 _ |
+```
+
 ## Sacar y traer una parte
 
 `bateria: out` silencia una parte a partir del compás siguiente, y

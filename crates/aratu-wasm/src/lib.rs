@@ -383,11 +383,19 @@ pub fn render_json(
                 EventKind::Drum(d) => {
                     j.key("drum").str(d.name());
                 }
-                EventKind::Param { id, value, glide } => {
+                EventKind::Param {
+                    id,
+                    value,
+                    glide,
+                    reset,
+                } => {
                     j.key("param").str(id);
                     j.key("value").num(*value);
                     if *glide > 0.0 {
                         j.key("glide").num(*glide);
+                    }
+                    if *reset {
+                        j.key("reset").num(1.0);
                     }
                 }
             }

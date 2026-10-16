@@ -721,3 +721,21 @@ between fragments longer than a beat.
 **To call the syntax finished:** a formal grammar (EBNF) as the single
 reference, tests that cover each rule, and the editor's highlighting taken
 from the same word lists.
+
+**Done the same day, the first two groups of the review:** Portuguese and
+Spanish drum names and `bateria`; `p` for a hand clap (played by the
+stand-in until Manguebyte has one); "did you mean" for headers said in
+Portuguese or Spanish or misspelt, keywords, parameters, motif forms and
+list picks, and a part told nothing it understands; `at bar 9: melody = …`
+changes the line from bar 9 from its own start, and `from bar 9 to 16:`
+for those bars only; one set of names for inversion and retrograde on
+motifs, rows and lines (`inv`/`invert`/`I`, `retro`/`retrograde`/`R`,
+`ri`/`RI`), with `ri` and `transpose 3st` on lines; `3x` in `play` and
+`form`; beats, eighths, sixteenths and fractions of bars for every `over`;
+solfège chord roots, `N.C.`, `6/9` and `alt`; `at bar 9 beat 3:` for any
+command but meter and key (the bar is laid out in stretches cut at such
+beats, and a sudden tempo change is a step at its beat), and
+`from bar 9 to 16:` for any command but tempo, meter and key, after which
+what held before comes back (a parameter goes back to an earlier value
+written at a bar, or to the value its part is set up with). Keywords stay
+English; the open question of Portuguese synonyms is still open.

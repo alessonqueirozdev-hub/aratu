@@ -22,7 +22,12 @@ chords = | C G | Am _ _ F | C |
 No segundo compasso, Am dura três tempos e F um.
 
 As cifras são escritas do jeito de sempre, incluindo o jeito brasileiro:
-`Am`, `G7`, `C7M`, `Dm7`, `Bº`, `E/G#`, `G7(b9)`.
+`Am`, `G7`, `C7M`, `Dm7`, `Bº`, `E/G#`, `G7(b9)`. Também com dó-ré-mi, e
+um compasso sem acorde é `N.C.`:
+
+```aratu
+chords = | Lám | Fá | Dó Sol | N.C. |
+```
 
 ## A batida do violão
 

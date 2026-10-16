@@ -112,6 +112,22 @@ drums {
 }
 ```
 
+## Nomes em português e palmas
+
+As linhas também podem ter nome em português: `chimbal`, `bumbo`,
+`caixa`, `prato`, `condução`, `aro`, `surdo`, `palmas`; e o bloco
+pode se chamar `bateria`. O `p` é a palma:
+
+```aratu
+tempo: 100
+
+bateria {
+  chimbal = cc cc cc cc
+  bumbo   = b - b -
+  palmas  = - p - p
+}
+```
+
 ## Rufo
 
 Um til, `~`, depois do símbolo faz um **rufo**: a batida vira golpes bem

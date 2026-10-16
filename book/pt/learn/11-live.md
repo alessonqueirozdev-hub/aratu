@@ -60,6 +60,21 @@ música tocando, no próximo compasso. Escrita com `now:` na frente
 (`now: play fill once`), a virada toca uma vez e o groove volta sozinho, no
 lugar em que estaria.
 
+`at bar 4 beat 3:` entra no terceiro tempo do compasso 4, e
+`from bar 5 to 6:` vale só nesses compassos; no 7 volta o que valia antes.
+Uma linha também pode mudar num compasso, a partir do começo dela:
+
+```aratu
+tempo: 110
+pattern groove { hh = cc cc cc cc; bd = b - b -; sd = - s - s }
+pattern fill   { sd = ss ss SS SS }
+baixo = | dó2 _ sol1 _ |
+play groove
+at bar 4 beat 3: play fill once
+from bar 5 to 6: drums: out
+at bar 7: baixo = | fá2 _ dó2 _ |
+```
+
 ## Tirar e trazer uma parte
 
 `bateria: out` silencia uma parte a partir do próximo compasso, e

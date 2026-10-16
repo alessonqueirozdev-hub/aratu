@@ -22,7 +22,12 @@ chords = | C G | Am _ _ F | C |
 In the second bar, Am lasts three beats and F one.
 
 Chord symbols keep their usual spelling: `Am`, `G7`, `Cmaj7`, `Dm7`,
-`Bdim`, `E/G#`, `G7(b9)`.
+`Bdim`, `E/G#`, `G7(b9)`. Solfège roots work too, as many Brazilian and
+Spanish lead sheets write them, and a bar with no chord is `N.C.`:
+
+```aratu
+chords = | Lam | Fa | Do Sol | N.C. |
+```
 
 ## The strum
 

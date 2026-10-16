@@ -74,6 +74,8 @@ pub enum Thing {
     Length,
     /// The word `bars` after `every 4`.
     BarsWord,
+    /// `to 16` after `from bar 9`.
+    RangeEnd,
 }
 
 impl Thing {
@@ -104,6 +106,9 @@ impl Thing {
             (BarsWord, En) => "`bars` (every counts whole bars)",
             (BarsWord, Pt) => "`bars` (o every conta compassos inteiros)",
             (BarsWord, Es) => "`bars` (every cuenta compases enteros)",
+            (RangeEnd, En) => "`to` and the last bar, such as `to 16`",
+            (RangeEnd, Pt) => "`to` e o último compasso, como `to 16`",
+            (RangeEnd, Es) => "`to` y el último compás, como `to 16`",
             (Length, En) => {
                 "a length such as `over 4 bars`, `over 2 beats`, `over 8 eighths` or `over 16 sixteenths`"
             }
@@ -369,6 +374,22 @@ pub enum Message {
     /// `every 4 bars: melody = …`, or `at bar` before a line inside a
     /// pattern or section.
     LineChangeOnlyAtBar,
+    /// `from bar 16 to 9:`
+    BadRange {
+        from: i64,
+        to: i64,
+    },
+    /// `from bar 9 to 16: tempo 140`: tempo, meter and key hold until the
+    /// next change.
+    FrameInRange,
+    /// `at bar 9 beat 3: meter 3/4`
+    FrameAtBeat,
+    /// `at bar 9 beat 5:` in a bar of four beats.
+    BeatOutOfBar {
+        bar: i64,
+        beat: f64,
+        beats: Ratio,
+    },
 }
 
 fn beats_en(n: Ratio) -> String {
@@ -736,6 +757,18 @@ impl Message {
             (UnknownMotifForm { name, form }, Es) => format!(
                 "`{name}` es un motivo, pero `.{form}` no es una de sus formas: `.inv`, `.retro`, `.ri`, `+2` (grados), `+3st` (semitonos)"
             ),
+            (BadRange { from, to }, En) => format!("the range ends before it starts: write `from bar {to} to {from}`"),
+            (BadRange { from, to }, Pt) => format!("o trecho termina antes de começar: escreva `from bar {to} to {from}`"),
+            (BadRange { from, to }, Es) => format!("el tramo termina antes de empezar: escribe `from bar {to} to {from}`"),
+            (FrameInRange, En) => "a change of tempo, meter or key holds until the next one: write it with `at bar`, and another where it should go back".into(),
+            (FrameInRange, Pt) => "uma mudança de andamento, fórmula ou tom vale até a próxima: escreva com `at bar`, e outra onde ela deve voltar".into(),
+            (FrameInRange, Es) => "un cambio de tempo, compás o tonalidad vale hasta el siguiente: escríbelo con `at bar`, y otro donde deba volver".into(),
+            (FrameAtBeat, En) => "meter and key change at a bar line: write `at bar 9:` without `beat`".into(),
+            (FrameAtBeat, Pt) => "fórmula e tom mudam na barra de compasso: escreva `at bar 9:` sem `beat`".into(),
+            (FrameAtBeat, Es) => "el compás y la tonalidad cambian en la barra: escribe `at bar 9:` sin `beat`".into(),
+            (BeatOutOfBar { bar, beat, beats }, En) => format!("bar {bar} has {}, so there is no beat {beat}", beats_en(*beats)),
+            (BeatOutOfBar { bar, beat, beats }, Pt) => format!("o compasso {bar} tem {}, então não existe o tempo {beat}", beats_pt(*beats)),
+            (BeatOutOfBar { bar, beat, beats }, Es) => format!("el compás {bar} tiene {}, así que no existe el tiempo {beat}", beats_es(*beats)),
             (LineChangeOnlyAtBar, En) => "a line can change at a bar (`at bar 9: melody = …`) outside patterns and sections, but not with `every` or inside a pattern; to vary it every few bars, use a pattern with `every`".into(),
             (LineChangeOnlyAtBar, Pt) => "uma linha pode mudar num compasso (`at bar 9: melodia = …`) fora de padrões e seções, mas não com `every` nem dentro de um padrão; para variar de tantos em tantos compassos, use um padrão com `every`".into(),
             (LineChangeOnlyAtBar, Es) => "una línea puede cambiar en un compás (`at bar 9: melodia = …`) fuera de patrones y secciones, pero no con `every` ni dentro de un patrón; para variarla cada tantos compases, usa un patrón con `every`".into(),

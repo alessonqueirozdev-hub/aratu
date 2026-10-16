@@ -111,6 +111,22 @@ drums {
 }
 ```
 
+## Claps, and names in other languages
+
+`p` is a hand clap. The lines may also have their Portuguese or Spanish
+names (`chimbal`, `bumbo`, `caixa`, `charles`, `bombo`, `caja`,
+`palmas`), and the block may be called `bateria`:
+
+```aratu
+tempo: 100
+
+drums {
+  hh   = cc cc cc cc
+  bd   = b - b -
+  clap = - p - p
+}
+```
+
 ## Rolls
 
 A tilde, `~`, after the symbol makes a **roll**: the hit becomes very fast

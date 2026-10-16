@@ -116,6 +116,7 @@ O símbolo decide o som, seja qual for o nome da linha:
 | `m` | tom médio |
 | `f` | surdo |
 | `k` | aro (baqueta atravessada na caixa) |
+| `p` | palma |
 
 ```aratu
 drums {
@@ -127,7 +128,10 @@ drums {
 
 Toda linha dentro de `drums { }` é de bateria, assim como uma linha chamada
 `hh`, `bd`, `sd`, `cr`, `rd`, `ht`, `mt`, `ft`, `toms`, `rim`, `kick`,
-`snare`, `hat`, `ride` ou `crash` em qualquer lugar da peça. Um apóstrofo deixa a batida curta: `c'` é um chimbal
+`snare`, `hat`, `ride` ou `crash` em qualquer lugar da peça, e também pelos
+nomes em português e espanhol: `chimbal`, `bumbo`, `caixa`, `prato`,
+`condução`, `ataque`, `aro`, `surdo`, `tons`, `palmas`, `charles`, `bombo`,
+`caja`, `platillo`; o bloco também pode se chamar `bateria`. Um apóstrofo deixa a batida curta: `c'` é um chimbal
 seco. O chimbal fechado corta o aberto que ainda está soando.
 
 **Rufo.** Um til depois do símbolo faz um rufo, como os tracinhos de trêmulo
@@ -185,7 +189,9 @@ compasso entre os tempos, então o Aratu pede que você diga quanto dura cada
 um.
 
 As cifras mantêm a escrita de sempre: `Am`, `F`, `G7`, `Cmaj7`, `Dm7b5`,
-`E/G#`, e também a escrita brasileira: `C7M`, `Bº`, `G7(b9)`.
+`E/G#`, e também a escrita brasileira: `C7M`, `Bº`, `G7(b9)`. Valem ainda
+`C6/9`, `E7alt` e a cifra com dó-ré-mi: `Lám`, `Sol7`, `Fá#m7`, `Dó/Mi`.
+`N.C.` (ou `-`) é um compasso sem acorde.
 
 **A batida.** Uma linha chamada `strum` usa as regras de ritmo com símbolos
 de violão:
@@ -502,7 +508,15 @@ Enquanto a peça toca, você a muda; você não a reescreve.
 - **As mudanças caem no tempo.** Uma edição entra no compasso seguinte;
   `now:` a faz entrar no tempo seguinte: `now: play fill once` traz uma
   virada no próximo tempo, e o groove volta na barra em que estaria.
-- **Prepare antes.** `at bar 17: play fill` programa uma mudança.
+- **Prepare antes.** `at bar 17: play fill` programa uma mudança;
+  `at bar 17 beat 3:` a faz entrar no terceiro tempo (`beat 2.5` cai entre o
+  2 e o 3), e `from bar 17 to 24:` a faz valer só nesses compassos: no 25
+  volta o que valia antes. Uma linha também muda num compasso:
+  `at bar 9: melodia = | … |` toca a melodia nova a partir do 9, desde o
+  começo dela. `play groove 3x` é o mesmo que `x3`.
+- **Durações.** `over` aceita `bars`, `beats`, `eighths` e `sixteenths`
+  em `cresc`, `fade`, `rit`, `accel`, rampas de andamento e parâmetros:
+  `piano: cresc to ff over 6 beats`.
 - **Sair e voltar.** `violão: out` silencia uma parte a partir do compasso
   seguinte e `violão: in` a traz de volta; `all: out` para tudo. Funcionam
   com `at bar` e `every` também.
@@ -531,6 +545,7 @@ Verbos curtos mudam uma parte, uma linha ou um padrão sem reescrevê-lo:
 | `baixo.transpose +12` | uma oitava acima |
 | `melodia.invert` | inverte os intervalos |
 | `melodia.retrograde` | toca de trás para frente |
+| `melodia.ri` | retrógrado da inversão |
 | `melodia.augment` | dobra as figuras |
 | `melodia.diminish` | divide as figuras pela metade |
 
@@ -538,6 +553,10 @@ Verbos curtos mudam uma parte, uma linha ou um padrão sem reescrevê-lo:
 melodia = | dó4 ré mi sol | lá sol mi ré |
 melodia.transpose +7
 ```
+
+Os nomes são os mesmos dos motivos e das séries: `.inv` ou `.invert`,
+`.retro` ou `.retrograde`, `.ri`. `transpose` conta semitons e aceita
+escrever `3st`, como nos motivos.
 
 ## 12. Acaso
 
@@ -708,6 +727,10 @@ escrito.
 | `play fill once`, `add crash once` | um padrão uma vez, depois volta |
 | `at bar 30:` | mudança programada |
 | `now:` | mudança no próximo tempo |
+| `at bar 30 beat 3:` | mudança num tempo do compasso |
+| `from bar 9 to 16:` | só nesses compassos; depois volta o que valia |
+| `at bar 9: melodia = …` | a linha muda a partir do compasso 9 |
+| `over 6 beats`, `over 8 eighths` | durações em tempos, colcheias, semicolcheias |
 | `violão: out`, `violão: in` | silencia uma parte, traz de volta |
 | `->` | caminho do sinal |
 | `parte.parâmetro = valor` | um parâmetro, desenhado como knob |

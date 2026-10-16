@@ -50,7 +50,8 @@ impl Tempo {
     /// The tempo at global beat `x`.
     pub fn bpm_at(&self, x: Ratio) -> f64 {
         match self.ramp {
-            Some(r) if x <= r.start => r.from,
+            // Before the change; at a sudden one (a step), already the new tempo.
+            Some(r) if x < r.start => r.from,
             Some(r) if x < r.end => {
                 let t = ((x - r.start) / (r.end - r.start)).to_f64();
                 r.from + (r.to - r.from) * t
@@ -64,15 +65,12 @@ impl Tempo {
     pub fn change(&mut self, change: TempoChange, at: Ratio, length: Ratio) {
         let now = self.bpm_at(at);
         match change {
-            TempoChange::Set(bpm) => {
-                self.bpm = bpm;
-                self.ramp = None;
-            }
+            TempoChange::Set(bpm) => self.step(now, bpm, at),
             TempoChange::Ramp { from, to, .. } => {
                 let from = from.unwrap_or(now);
                 self.before_ramp = match self.ramp {
-                    Some(_) => self.before_ramp,
-                    None => now,
+                    Some(r) if r.end > r.start => self.before_ramp,
+                    _ => now,
                 };
                 if length.is_zero() {
                     self.bpm = to;
@@ -87,15 +85,21 @@ impl Tempo {
                     self.bpm = to;
                 }
             }
-            TempoChange::ATempo => {
-                self.bpm = self.before_ramp;
-                self.ramp = None;
-            }
-            TempoChange::Primo => {
-                self.bpm = self.primo;
-                self.ramp = None;
-            }
+            TempoChange::ATempo => self.step(now, self.before_ramp, at),
+            TempoChange::Primo => self.step(now, self.primo, at),
         }
+    }
+
+    /// A sudden change at `at`, which may be inside a bar (`at bar 9 beat
+    /// 3: tempo 60`): the tempo before it holds up to there.
+    fn step(&mut self, now: f64, bpm: f64, at: Ratio) {
+        self.bpm = bpm;
+        self.ramp = Some(Ramp {
+            start: at,
+            end: at,
+            from: now,
+            to: bpm,
+        });
     }
 
     /// Seconds from global beat `a` to `b` (`a <= b`).

@@ -60,6 +60,21 @@ music plays, at the next bar. Written with `now:` in front
 the end (`now: play fill once`), the fill plays one time and the groove
 comes back by itself, where it would have been.
 
+`at bar 4 beat 3:` comes in on the third beat of bar 4, and
+`from bar 5 to 6:` holds for those bars only; at bar 7 what held before
+comes back. A line can change at a bar too, from its start:
+
+```aratu
+tempo: 110
+pattern groove { hh = cc cc cc cc; bd = b - b -; sd = - s - s }
+pattern fill   { sd = ss ss SS SS }
+bass = | c2 _ g1 _ |
+play groove
+at bar 4 beat 3: play fill once
+from bar 5 to 6: drums: out
+at bar 7: bass = | f2 _ c2 _ |
+```
+
 ## Taking a part out and back in
 
 `drums: out` silences a part from the next bar line, and `drums: in`

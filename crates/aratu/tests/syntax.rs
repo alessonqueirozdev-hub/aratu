@@ -303,3 +303,149 @@ fn chords_in_solfege_no_chord_six_nine_and_altered() {
         assert!(chord(nc).is_empty(), "{nc}");
     }
 }
+
+/// The drums of bars `from` to `to`, as (bar, beat, drum).
+fn hits(src: &str, from: i64, to: i64) -> Vec<(i64, Ratio, Drum)> {
+    events(src, from, to)
+        .iter()
+        .filter_map(|e| match e.kind {
+            EventKind::Drum(d) => Some((e.bar, e.beat, d)),
+            _ => None,
+        })
+        .collect()
+}
+
+fn params(src: &str, from: i64, to: i64) -> Vec<(i64, Ratio, f64, bool)> {
+    events(src, from, to)
+        .iter()
+        .filter_map(|e| match e.kind {
+            EventKind::Param { value, reset, .. } => Some((e.bar, e.beat, value, reset)),
+            _ => None,
+        })
+        .collect()
+}
+
+const GROOVE: &str = "tempo: 120\npattern g { hh = c c c c }\npattern f { sd = s s s s }\nplay g\n";
+
+#[test]
+fn a_change_at_a_beat_cuts_the_bar_there() {
+    // The fill comes in at the third beat of bar 2.
+    let h = hits(&format!("{GROOVE}at bar 2 beat 3: play f"), 2, 3);
+    let kinds: Vec<Drum> = h.iter().map(|x| x.2).collect();
+    assert_eq!(
+        kinds,
+        [Drum::ClosedHat, Drum::ClosedHat, Drum::Snare, Drum::Snare]
+    );
+    assert_eq!(h[2].1, Ratio::int(2));
+    // A part goes out at a beat.
+    let h = hits("hh = c c c c\nat bar 1 beat 3: drums: out", 1, 3);
+    assert_eq!(h.len(), 2);
+    // A transformation from a beat on.
+    let n = notes(
+        "baixo = | c2 c2 c2 c2 |\nat bar 1 beat 3: baixo.transpose 12",
+        1,
+        2,
+    );
+    assert_eq!(n.iter().map(|x| x.1).collect::<Vec<_>>(), [36, 36, 48, 48]);
+    // A parameter at its beat, and between beats with a decimal.
+    let p = params(
+        "bass = | c2 _ _ _ |\nat bar 1 beat 2.5: bass.reverb.mix = 0.5",
+        1,
+        2,
+    );
+    assert_eq!(p[0].1, Ratio::new(3, 2));
+    // The tempo changes there: two beats at 120, two at 60.
+    let e = events("tempo: 120\nhh = c c c c\nat bar 1 beat 3: tempo 60", 1, 2);
+    let t: Vec<f64> = e.iter().map(|x| x.time).collect();
+    assert_eq!(t, [0.0, 0.5, 1.0, 2.0]);
+    // A level from that beat.
+    let v: Vec<u8> = events(
+        "piano = | c4 c c c |\npiano: pp\nat bar 1 beat 3: piano: ff",
+        1,
+        2,
+    )
+    .iter()
+    .map(|x| x.velocity)
+    .collect();
+    assert!(v[1] < v[2], "{v:?}");
+}
+
+#[test]
+fn a_range_holds_for_its_bars_then_what_was_comes_back() {
+    let h = hits("hh = c c c c\nfrom bar 2 to 3: drums: out", 1, 5);
+    let bars: Vec<i64> = h.iter().map(|x| x.0).collect();
+    assert_eq!(bars, [1, 1, 1, 1, 4, 4, 4, 4]);
+    // A pattern for two bars; the one before kept counting meanwhile.
+    let h = hits(&format!("{GROOVE}from bar 2 to 3: play f"), 1, 5);
+    let snares: Vec<i64> = h
+        .iter()
+        .filter(|x| x.2 == Drum::Snare)
+        .map(|x| x.0)
+        .collect();
+    assert_eq!(snares, [2, 2, 2, 2, 3, 3, 3, 3]);
+    assert!(h.iter().any(|x| x.0 == 4 && x.2 == Drum::ClosedHat));
+    // A transformation for one bar.
+    let n = notes(
+        "baixo = | c2 _ _ _ |\nfrom bar 2 to 2: baixo.transpose 12",
+        1,
+        4,
+    );
+    assert_eq!(n, [(1, 36), (2, 48), (3, 36)]);
+    // A line for two bars, then the line as it was, in its place.
+    let n = notes(
+        "melodia = | c4 _ _ _ | d4 _ _ _ |\nfrom bar 2 to 3: melodia = | g4 _ _ _ |",
+        1,
+        6,
+    );
+    assert_eq!(n, [(1, 60), (2, 67), (3, 67), (4, 62), (5, 60)]);
+}
+
+#[test]
+fn a_parameter_for_some_bars_goes_back_to_what_was_set() {
+    // Back to the value written at a bar before.
+    let src = "bass = | c2 _ _ _ |\nat bar 1: bass.reverb.mix = 0.3\nfrom bar 2 to 3: bass.reverb.mix = 0.8";
+    let p = params(src, 1, 5);
+    assert_eq!(
+        p,
+        [
+            (1, Ratio::ZERO, 0.3, false),
+            (2, Ratio::ZERO, 0.8, false),
+            (4, Ratio::ZERO, 0.3, false)
+        ]
+    );
+    // With nothing written at a bar, back to how the part is set up.
+    let src = "bass = | c2 _ _ _ |\nbass.reverb.mix = 0.2\nfrom bar 2 to 3: bass.reverb.mix = 0.8";
+    let p = params(src, 1, 5);
+    assert_eq!(p.last().unwrap(), &(4, Ratio::ZERO, 0.0, true));
+    // A motion for some bars stops, and the value goes back.
+    let src =
+        "bass = | c2 _ _ _ |\nfrom bar 2 to 3: bass.lowpass.cutoff = 300 Hz -> 3000 Hz over 2 bars";
+    let p = params(src, 1, 7);
+    assert!(p.iter().all(|x| x.0 >= 2 && x.0 <= 4), "{:?}", p.last());
+    assert!(p.last().unwrap().3, "reset at bar 4");
+    // A motion taken over for some bars goes on afterwards, from where it
+    // would be by then.
+    let src = "bass = | c2 _ _ _ |\nbass.reverb.mix = 0 <-> 1 over 2 bars\nfrom bar 2 to 2: bass.reverb.mix = 0.5";
+    let p = params(src, 1, 4);
+    let bar2: Vec<_> = p.iter().filter(|x| x.0 == 2).collect();
+    assert_eq!(bar2.len(), 1);
+    assert_eq!(bar2[0].2, 0.5);
+    assert!(
+        p.iter()
+            .any(|x| x.0 == 3 && x.1 == Ratio::ZERO && (x.2 - 1.0).abs() < 1e-9)
+    );
+}
+
+#[test]
+fn times_that_cannot_be_are_told() {
+    assert_eq!(first("from bar 2 to 3: tempo 90"), Message::FrameInRange);
+    assert_eq!(first("at bar 2 beat 3: meter 3/4"), Message::FrameAtBeat);
+    assert!(matches!(
+        first(&format!("{GROOVE}at bar 2 beat 5: play f")),
+        Message::BeatOutOfBar { bar: 2, .. }
+    ));
+    assert_eq!(
+        first(&format!("{GROOVE}from bar 5 to 2: play f")),
+        Message::BadRange { from: 5, to: 2 }
+    );
+}

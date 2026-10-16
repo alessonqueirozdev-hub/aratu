@@ -116,6 +116,9 @@ interface Chain {
   voice: string;
   attack: number;
   release: number;
+  /** The value each parameter is set up with, for `from bar 9 to 16` to
+   * come back to. */
+  configured: Map<string, number>;
   /** Set when Manguebyte's engine plays this part. */
   mb?: MbPart;
 }
@@ -247,6 +250,7 @@ export class Engine {
       voice: "synth.triangle",
       attack: 0.005,
       release: 0.15,
+      configured: new Map(),
     };
     this.chains.set(part, c);
     return c;
@@ -297,6 +301,7 @@ export class Engine {
       { id: "release", value: 150 },
     ];
     for (const p of [...defaults, ...globals, ...part.params]) {
+      c.configured.set(p.id, p.value);
       if (moving.has(`${part.name}	${p.id}`) || moving.has(`all	${p.id}`)) continue;
       this.setParam(c, p.id, p.value, now);
     }
@@ -475,7 +480,11 @@ export class Engine {
     this.made = [];
     if (e.param !== undefined && e.value !== undefined) {
       const targets = e.part === "all" ? [...this.chains.values()] : [this.chain(e.part)];
-      for (const c of targets) this.setParam(c, e.param, e.value, when, e.glide ?? 0);
+      for (const c of targets) {
+        // A range is over: back to how the part is set up.
+        const value = e.reset ? c?.configured.get(e.param) : e.value;
+        if (c && value !== undefined) this.setParam(c, e.param, value, when, e.glide ?? 0);
+      }
       return this.made;
     }
     const c = this.chain(e.part);
