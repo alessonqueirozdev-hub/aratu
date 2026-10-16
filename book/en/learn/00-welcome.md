@@ -72,3 +72,7 @@ sd = s s s s
 
 In the next lesson you will see what a bar is to Aratu, and how to set the
 tempo.
+
+> Do you program, and want to know how Aratu works underneath? The
+> [**Inside**](#/por-dentro) tab gives each thing its technical name: what a
+> line is, a block, an `at bar`.

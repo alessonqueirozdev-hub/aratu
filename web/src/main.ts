@@ -37,6 +37,8 @@ interface Page {
 interface Book {
   lang: Lang;
   manual: Page[];
+  /** For developers: the language's words, grammar and workings. */
+  inside: Page[];
   learn: Page[];
 }
 
@@ -434,7 +436,7 @@ async function main(): Promise<void> {
     if (ex) playground.text = ex.text;
   };
 
-  // The book: the course and the manual.
+  // The book: the course, the manual and the page for developers.
   let book: Book | null = null;
   const loadBook = async () => {
     // Ask the server each time: a cached copy of an older book would send
@@ -484,20 +486,23 @@ async function main(): Promise<void> {
 
   let currentLearn = load("aratu.lesson") ?? "";
 
-  function showPage(kind: "learn" | "manual", id: string | undefined): void {
+  type Kind = "learn" | "manual" | "inside";
+  const routeOf: Record<Kind, string> = { learn: "aprender", manual: "manual", inside: "por-dentro" };
+
+  function showPage(kind: Kind, id: string | undefined): void {
     if (!book) return;
-    const pages = kind === "learn" ? book.learn : book.manual;
+    const pages = book[kind] ?? [];
     if (pages.length === 0) return;
     const index = Math.max(0, pages.findIndex((p) => p.id === id));
     const page = pages[index];
     for (const s of pageSessions) s.destroy();
-    const article = $(kind === "learn" ? "learn-page" : "manual-page");
+    const article = $(`${kind}-page`);
     article.innerHTML = page.html;
     pageSessions = mountBlocks(article, blockContext);
 
     const nav = document.createElement("nav");
     nav.className = "page-nav";
-    const base = kind === "learn" ? "#/aprender/" : "#/manual/";
+    const base = `#/${routeOf[kind]}/`;
     if (index > 0) {
       const a = document.createElement("a");
       a.href = base + pages[index - 1].id;
@@ -520,12 +525,12 @@ async function main(): Promise<void> {
       save("aratu.lesson", page.id);
       renderLearnToc(page.id);
     } else {
-      const ol = $("manual-toc");
+      const ol = $(`${kind}-toc`);
       ol.innerHTML = "";
       for (const p of pages) {
         const li = document.createElement("li");
         const a = document.createElement("a");
-        a.href = `#/manual/${p.id}`;
+        a.href = base + p.id;
         a.textContent = p.title;
         if (p.id === page.id) a.classList.add("here");
         li.append(a);
@@ -536,8 +541,9 @@ async function main(): Promise<void> {
 
   const route = () => {
     const [, view = "aprender", id] = location.hash.replace(/^#/, "").split("/");
-    const which = view === "tocar" ? "play" : view === "manual" ? "manual" : "learn";
-    for (const v of ["play", "learn", "manual"]) {
+    const which =
+      view === "tocar" ? "play" : view === "manual" ? "manual" : view === "por-dentro" ? "inside" : "learn";
+    for (const v of ["play", "learn", "manual", "inside"]) {
       $(`view-${v}`).hidden = v !== which;
       $(`tab-${v}`).classList.toggle("here", v === which);
     }

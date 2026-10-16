@@ -1,5 +1,5 @@
-// Turns the book (book/<lang>/manual.md and book/<lang>/learn/*.md) into
-// one JSON file per language for the editor. Code blocks marked `aratu`
+// Turns the book (book/<lang>/manual.md, book/<lang>/inside.md and
+// book/<lang>/learn/*.md) into one JSON file per language for the editor. Code blocks marked `aratu`
 // become live examples; `aratu exercise` blocks become exercises, with the
 // `aratu answer` block that follows them kept hidden as the answer.
 
@@ -105,15 +105,16 @@ function title(md) {
   return m ? m[1].trim() : "";
 }
 
-/** The manual, one page per `## ` chapter, the text before them first. */
-function manual(lang) {
-  const file = join(root, "book", lang, "manual.md");
+/** The manual, or the page for developers (`inside`), one page per `## `
+ * chapter, the text before them first. */
+function manual(lang, name = "manual") {
+  const file = join(root, "book", lang, `${name}.md`);
   if (!existsSync(file)) return [];
   const md = readFileSync(file, "utf8");
   const parts = md.split(/^(?=## )/m);
   const chapters = [];
   const intro = parts.shift();
-  chapters.push({ id: "intro", title: title(intro), html: page(intro, `manual-${lang}-intro`) });
+  chapters.push({ id: "intro", title: title(intro), html: page(intro, `${name}-${lang}-intro`) });
   for (const part of parts) {
     const heading = part.match(/^##\s+(.+)$/m)[1].trim();
     // The chapter's number names it in every language, so switching
@@ -121,7 +122,7 @@ function manual(lang) {
     const number = heading.match(/^(\d+)\./);
     const id = number ? number[1] : slug(heading);
     const body = part.replace(/^##\s+.+$/m, `# ${heading}`);
-    chapters.push({ id, title: heading, html: page(body, `manual-${lang}-${id}`) });
+    chapters.push({ id, title: heading, html: page(body, `${name}-${lang}-${id}`) });
   }
   return chapters;
 }
@@ -144,7 +145,7 @@ function learn(lang) {
 export function buildBook(outDir) {
   mkdirSync(outDir, { recursive: true });
   for (const lang of LANGS) {
-    const book = { lang, manual: manual(lang), learn: learn(lang) };
+    const book = { lang, manual: manual(lang), inside: manual(lang, "inside"), learn: learn(lang) };
     writeFileSync(join(outDir, `book-${lang}.json`), JSON.stringify(book));
   }
 }

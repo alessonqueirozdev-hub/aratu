@@ -9,6 +9,7 @@ const words = {
   navPlay: { pt: "Tocar", es: "Tocar", en: "Play" },
   navLearn: { pt: "Aprender", es: "Aprender", en: "Learn" },
   navManual: { pt: "Manual", es: "Manual", en: "Manual" },
+  navInside: { pt: "Por dentro", es: "Por dentro", en: "Inside" },
   tagline: {
     pt: "música escrita para tocar e mudar enquanto toca",
     es: "música escrita para tocar y cambiar mientras suena",

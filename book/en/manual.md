@@ -4,7 +4,8 @@ Aratu is written the way a musician thinks: in bars, beats, note values,
 chords and score words. If you can read a lead sheet and count a bar, you
 can read an Aratu piece. This manual describes the whole language; the
 **Learn** course teaches it step by step. Every example here can be heard
-and changed.
+and changed. For people who program, [**Inside**](#/por-dentro) gives each
+thing its technical name and shows what the computer does with the text.
 
 ## 1. A first piece
 

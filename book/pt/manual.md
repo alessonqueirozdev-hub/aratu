@@ -4,7 +4,8 @@ O Aratu se escreve do jeito que um músico pensa: em compassos, tempos,
 figuras, cifras e palavras da partitura. Quem lê uma cifra e conta um
 compasso consegue ler uma peça em Aratu. Este manual descreve a linguagem
 inteira; o curso **Aprender** ensina passo a passo. Todo exemplo aqui pode
-ser ouvido e modificado.
+ser ouvido e modificado. Para quem programa, [**Por dentro**](#/por-dentro)
+dá nome técnico a cada coisa e mostra o que o computador faz com o texto.
 
 ## 1. Uma primeira peça
 
