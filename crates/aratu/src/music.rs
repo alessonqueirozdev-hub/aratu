@@ -881,8 +881,11 @@ fn chord_beat(w: &str, s: Span, diags: &mut Vec<Diagnostic>) -> Vec<Slot> {
             span: s,
             sound: Sound::Chord(chord),
             accent: false,
+            marcato: false,
+            ghost: false,
             staccato,
             fermata,
+            hold: 2,
             roll: false,
             chance,
             hairpin: None,
@@ -1023,7 +1026,33 @@ impl SlotParser<'_, '_> {
                         slots.push(Slot::Choice(options, sp));
                     }
                 }
-                ']' | '}' | '|' => {
+                // `(s)`: a ghost note, as drum notation writes it.
+                '(' => {
+                    self.bump();
+                    match self.hit() {
+                        Some(Slot::Hit(mut h)) => {
+                            if self.peek() == Some(')') {
+                                self.bump();
+                            } else {
+                                self.diags.push(Diagnostic::error(
+                                    self.at(start),
+                                    Message::UnclosedBracket { open: '(' },
+                                ));
+                            }
+                            h.ghost = true;
+                            self.mods(&mut h);
+                            h.span = self.at(start);
+                            slots.push(Slot::Hit(h));
+                        }
+                        other => {
+                            if self.peek() == Some(')') {
+                                self.bump();
+                            }
+                            slots.push(other.unwrap_or(Slot::Rest(self.at(start))));
+                        }
+                    }
+                }
+                ']' | '}' | '|' | ')' => {
                     self.bump();
                     self.diags.push(Diagnostic::error(
                         self.at(start),
@@ -1230,8 +1259,11 @@ impl SlotParser<'_, '_> {
             span: Span::default(),
             sound,
             accent,
+            marcato: false,
+            ghost: false,
             staccato: false,
             fermata: false,
+            hold: 2,
             roll: false,
             chance: None,
             hairpin: None,
@@ -1247,8 +1279,11 @@ impl SlotParser<'_, '_> {
             span: Span::default(),
             sound: Sound::Drum('c'),
             accent: false,
+            marcato: false,
+            ghost: false,
             staccato: false,
             fermata: false,
+            hold: 2,
             roll: false,
             chance: None,
             hairpin: None,
@@ -1262,7 +1297,19 @@ impl SlotParser<'_, '_> {
             let start = self.pos;
             match c {
                 '\'' => hit.staccato = true,
-                '^' => hit.fermata = true,
+                '!' => hit.marcato = true,
+                '^' => {
+                    hit.fermata = true;
+                    // `^3`: held three times as long.
+                    self.bump();
+                    let rest = &self.s[self.pos..];
+                    let n = rest.bytes().take_while(u8::is_ascii_digit).count();
+                    if let Ok(times) = rest[..n].parse::<u8>() {
+                        hit.hold = times.max(1);
+                    }
+                    self.pos += n;
+                    continue;
+                }
                 '~' => hit.roll = true,
                 '<' => hit.hairpin = Some(Hairpin::Crescendo),
                 '>' => hit.hairpin = Some(Hairpin::Diminuendo),

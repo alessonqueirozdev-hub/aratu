@@ -458,7 +458,7 @@ impl<'p> Scheduler<'p> {
                 for p in protos.iter() {
                     if let Some(h) = p.hit {
                         if h.fermata {
-                            fermatas.push((p.start, p.start + p.len));
+                            fermatas.push((p.start, p.start + p.len, f64::from(h.hold)));
                         }
                     }
                 }
@@ -1457,8 +1457,15 @@ impl<'p> Scheduler<'p> {
             }
 
             let mut velocity = p.velocity;
-            if h.accent {
+            if h.accent || h.marcato {
                 velocity += ACCENT as f64;
+            }
+            // Marcato is more than an accent; a ghost note barely sounds.
+            if h.marcato {
+                velocity += ACCENT as f64 * 0.6;
+            }
+            if h.ghost {
+                velocity *= 0.35;
             }
             let mut transpose = 0;
             let mut invert = false;
@@ -1561,7 +1568,7 @@ impl<'p> Scheduler<'p> {
                 written: p.start,
                 kinds,
                 velocity,
-                accent: h.accent,
+                accent: h.accent || h.marcato,
                 staccato: h.staccato,
                 fixed,
                 part: inst.part.name.as_str(),

@@ -318,8 +318,14 @@ pub struct Hit {
     pub span: Span,
     pub sound: Sound,
     pub accent: bool,
+    /// `s!`: marcato, stronger than an accent.
+    pub marcato: bool,
+    /// `(s)`: a ghost note, barely touched.
+    pub ghost: bool,
     pub staccato: bool,
     pub fermata: bool,
+    /// How many times as long a fermata holds: 2, or `^3` for three.
+    pub hold: u8,
     /// `~`: a roll, fast strokes filling the hit's length (a tremolo on a
     /// note).
     pub roll: bool,

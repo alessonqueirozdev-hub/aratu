@@ -146,8 +146,9 @@ pub struct BarClock {
     pub beats: Ratio,
     pub start_time: f64,
     tempo: Tempo,
-    /// Spans held by a fermata, as offsets in the bar: they last twice as long.
-    fermatas: Vec<(Ratio, Ratio)>,
+    /// Spans held by a fermata, as offsets in the bar, with how many times
+    /// as long they last (twice, unless written `^3`).
+    fermatas: Vec<(Ratio, Ratio, f64)>,
 }
 
 impl BarClock {
@@ -157,19 +158,22 @@ impl BarClock {
         beats: Ratio,
         start_time: f64,
         tempo: Tempo,
-        mut fermatas: Vec<(Ratio, Ratio)>,
+        mut fermatas: Vec<(Ratio, Ratio, f64)>,
     ) -> BarClock {
         // Merge overlapping spans so a beat is never stretched twice.
         fermatas.sort_by_key(|f| f.0);
-        let mut merged: Vec<(Ratio, Ratio)> = Vec::new();
-        for (s, e) in fermatas {
+        let mut merged: Vec<(Ratio, Ratio, f64)> = Vec::new();
+        for (s, e, times) in fermatas {
             let (s, e) = (s.max(Ratio::ZERO), e.min(beats));
             if s >= e {
                 continue;
             }
             match merged.last_mut() {
-                Some(last) if s <= last.1 => last.1 = last.1.max(e),
-                _ => merged.push((s, e)),
+                Some(last) if s <= last.1 => {
+                    last.1 = last.1.max(e);
+                    last.2 = last.2.max(times);
+                }
+                _ => merged.push((s, e, times)),
             }
         }
         BarClock {
@@ -188,13 +192,13 @@ impl BarClock {
         let mut t = self.start_time;
         let mut at = Ratio::ZERO;
         let g = |x: Ratio| self.start_beat + x;
-        for &(s, e) in &self.fermatas {
+        for &(s, e, times) in &self.fermatas {
             if s >= offset {
                 break;
             }
             t += self.tempo.seconds(g(at), g(s));
             let e2 = e.min(offset);
-            t += 2.0 * self.tempo.seconds(g(s), g(e2));
+            t += times * self.tempo.seconds(g(s), g(e2));
             at = e2;
         }
         if at < offset {
@@ -303,7 +307,7 @@ mod tests {
             Ratio::int(4),
             10.0,
             t,
-            vec![(Ratio::int(2), Ratio::int(3))],
+            vec![(Ratio::int(2), Ratio::int(3), 2.0)],
         );
         close(c.time(Ratio::int(2)), 12.0);
         close(c.time(r(5, 2)), 13.0);

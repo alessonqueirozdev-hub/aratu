@@ -643,3 +643,20 @@ fn an_additive_meter_groups_its_units() {
         "7/8 = 2+2+3"
     );
 }
+
+#[test]
+fn marcato_ghost_notes_and_a_fermata_s_length() {
+    let v: Vec<u8> = events("sd = s S s! (s)", 1, 2).iter().map(|e| e.velocity).collect();
+    assert!(v[0] < v[1] && v[1] < v[2], "marcato above an accent: {v:?}");
+    assert!(f64::from(v[3]) < f64::from(v[0]) * 0.5, "a ghost note barely sounds: {v:?}");
+    let e = events("sd = s S s! -", 1, 2);
+    assert!(e[2].accent, "marcato tells the engine it is accented");
+    // On notes too.
+    let v: Vec<u8> = events("melodia = | (c4) d e! f |", 1, 2).iter().map(|e| e.velocity).collect();
+    assert!(v[0] < v[1] && v[2] > v[1], "{v:?}");
+    // A fermata holds twice as long, or as many times as written.
+    let t = |src: &str| events(src, 1, 2).iter().map(|e| e.time).collect::<Vec<_>>();
+    assert_eq!(t("tempo: 60\nmelodia = | c4^ d e f |")[1], 2.0);
+    assert_eq!(t("tempo: 60\nmelodia = | c4^3 d e f |")[1], 3.0);
+    assert_eq!(first("sd = (s s - -"), Message::UnclosedBracket { open: '(' });
+}
