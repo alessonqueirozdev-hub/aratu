@@ -164,6 +164,25 @@ fn mix(mut z: u64) -> u64 {
 }
 
 /// A number in `[0, 1)` fixed by its inputs.
+/// For `temas.random`: the place in `order` of a line's bar `n`, one
+/// melody chosen at random (from the seed) each time round.
+fn random_place(line: &Line, seed: u64, n: i64) -> usize {
+    let count = line.rounds.len();
+    let mut at = 0i64;
+    let mut round = 0i64;
+    loop {
+        let pick =
+            ((chance(seed, line.seed_key, round, 0x11575) * count as f64) as usize).min(count - 1);
+        let (start, len) = line.rounds[pick];
+        let len = (len as i64).max(1);
+        if n.max(0) < at + len {
+            return start + (n.max(0) - at) as usize;
+        }
+        at += len;
+        round += 1;
+    }
+}
+
 fn chance(seed: u64, line: u64, bar: i64, what: u64) -> f64 {
     let h = mix(seed ^ mix(line ^ mix((bar as u64) ^ mix(what))));
     (h >> 11) as f64 / (1u64 << 53) as f64
@@ -676,6 +695,9 @@ impl<'p> Scheduler<'p> {
             None => pieces.push((PICKUP, line.pickup.unwrap(), Ratio::ZERO, Ratio::ONE, None)),
             Some(j) => {
                 let pick = |n: i64| -> usize {
+                    if !line.rounds.is_empty() {
+                        return random_place(line, self.seed, n);
+                    }
                     let k = n.rem_euclid(len);
                     (if retro { len - 1 - k } else { k }) as usize
                 };

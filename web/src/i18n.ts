@@ -76,6 +76,28 @@ const words = {
   soundReady: { pt: "pronto", es: "listo", en: "ready" },
   soundFailed: { pt: "não baixou", es: "no se descargó", en: "did not load" },
 
+  // Twelve-tone rows and melody lists.
+  rows: { pt: "Séries", es: "Series", en: "Rows" },
+  rowsHelp: {
+    pt: "A matriz de cada série da peça. Cada linha é uma forma P, lida da esquerda para a direita, ou R, da direita para a esquerda; cada coluna é uma forma I, de cima para baixo, ou RI, de baixo para cima. Clique num nome para escrevê-lo no código.",
+    es: "La matriz de cada serie de la pieza. Cada fila es una forma P, leída de izquierda a derecha, o R, de derecha a izquierda; cada columna es una forma I, de arriba abajo, o RI, de abajo arriba. Haz clic en un nombre para escribirlo en el código.",
+    en: "The matrix of each row in the piece. Each line is a P form, read left to right, or R, right to left; each column is an I form, top to bottom, or RI, bottom to top. Click a name to write it into the code.",
+  },
+  rowsNone: {
+    pt: "Esta peça não tem nenhuma série. Escreva, por exemplo: row serie = 0 11 3 4 8 7 9 5 6 1 2 10",
+    es: "Esta pieza no tiene ninguna serie. Escribe, por ejemplo: row serie = 0 11 3 4 8 7 9 5 6 1 2 10",
+    en: "This piece has no row. Write, for example: row serie = 0 11 3 4 8 7 9 5 6 1 2 10",
+  },
+  rowsNumbers: { pt: "Ver números", es: "Ver números", en: "Show numbers" },
+  rowsNames: { pt: "Ver notas", es: "Ver notas", en: "Show notes" },
+  listAll: { pt: "todas", es: "todas", en: "all" },
+  listRandom: { pt: "sorteio", es: "azar", en: "random" },
+  listHint: {
+    pt: "Alt+1 a Alt+9 escolhem a melodia da lista",
+    es: "Alt+1 a Alt+9 eligen la melodía de la lista",
+    en: "Alt+1 to Alt+9 choose the list's melody",
+  },
+
   // Lessons and the manual.
   listen: { pt: "Ouvir", es: "Escuchar", en: "Listen" },
   listenAnswer: { pt: "Ouvir como deve soar", es: "Escuchar cómo debe sonar", en: "Hear how it should sound" },

@@ -188,3 +188,46 @@ fn a_melody_is_picked_from_a_list_by_number() {
             .any(|d| matches!(d.message, Message::UnknownNote { .. }))
     );
 }
+
+#[test]
+fn a_random_list_chooses_a_whole_melody_each_time_round() {
+    let list = "list temas {\n  | c4 _ _ _ |\n  | e4 _ _ _ | f4 _ _ _ |\n  | g4 _ _ _ |\n}\n";
+    let firsts = |src: &str| -> Vec<u8> {
+        let c = compile(src);
+        assert!(c.diagnostics.is_empty(), "{:?}", c.diagnostics);
+        render(&c.piece, &Options::default(), 1, 41)
+            .events
+            .iter()
+            .filter_map(|e| match e.kind {
+                EventKind::Note(n) => Some(n),
+                _ => None,
+            })
+            .collect()
+    };
+    let a = firsts(&format!("{list}melodia = temas.random"));
+    assert_eq!(a.len(), 40);
+    // Every melody turns up, and the two-bar one always whole.
+    for n in [60, 64, 67] {
+        assert!(a.contains(&n), "{n} in {a:?}");
+    }
+    for (i, n) in a.iter().enumerate() {
+        if *n == 64 && i + 1 < a.len() {
+            assert_eq!(a[i + 1], 65, "E is always followed by F: {a:?}");
+        }
+        if *n == 65 {
+            assert_eq!(a[i - 1], 64, "F only after E: {a:?}");
+        }
+    }
+    // The same seed plays the same order; another seed another.
+    assert_eq!(a, firsts(&format!("{list}melodia = temas.random")));
+    let b = firsts(&format!("seed 9\n{list}melodia = temas.random"));
+    assert_ne!(a, b);
+}
+
+#[test]
+fn a_list_melody_may_use_motifs_and_rows() {
+    let src = "row s = 0 4 7\nmotif m = [c4 d4]\nlist t {\n  | m m m m |\n  | o o o o | from s\n}\nmelodia = t.all";
+    let n = clean(src, 2);
+    assert_eq!(n[..8], [60, 62, 60, 62, 60, 62, 60, 62]);
+    assert_eq!(n[8..], [60, 64, 67, 60]);
+}

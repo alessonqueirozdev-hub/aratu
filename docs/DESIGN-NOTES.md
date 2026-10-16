@@ -568,9 +568,14 @@ up and down to change its pitch; moving a note over a bar line (today it is
 cut at the bar's end); keeping the octave of the bar after an edited one when
 it was carried over.
 
-## Planned next: repetition, motifs, transformations, rows and lists (16 October 2026)
+## Repetition, motifs, transformations, rows and lists (16 October 2026)
 
-Agreed with the user, not built yet. Resume here.
+Agreed with the user and built as described below, with two changes:
+`temas.next` became `temas.all` (the melodies in order) and `temas.random`
+(a whole melody drawn each time round from the seed); on stage, buttons and
+Alt+1…9 change a list reference in the text, and the side panel's Rows tab
+shows each row's 12×12 matrix. Code in `crates/aratu/src/motifs.rs`, tests in
+`crates/aratu/tests/motifs.rs`, lesson `book/*/learn/09b-motifs.md`.
 
 1. **Repeat a beat inside a bar**: `| [mi3 ré3 dó3 ré3]x4 |` is the group
    four times, each taking its own beat. `x` glued to `]` (or `}`, or to a

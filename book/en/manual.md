@@ -404,6 +404,76 @@ The pattern that was playing keeps counting its bars meanwhile, so
 `play groove x3, fill` does not lose its place in the phrase. With
 `every`, a pattern already plays once each time round.
 
+### Repeating a beat
+
+An `x` glued to the bracket repeats that beat, each time in its own beat:
+`| [e4 d c d]x4 |` is the group four times. The `x` is glued to the `]` (or
+to a motif); with a space, `| - x8 |` is still eight bars of rest.
+
+### Motifs
+
+`motif name = …` names a few beats, without bar lines, and the name is used
+in their place. A motif may be defined before or after where it is used, may
+use other motifs, and while it plays the editor lights the notes in its
+definition.
+
+```aratu
+key: C major
+motif riff = [e4 d c d]
+melody = | riff riff+1 riff.inv riff.retro |
+```
+
+| Write | The motif |
+|---|---|
+| `riff+2`, `riff-1` | two degrees up, one down, in the key (`key:`; C major when there is none) |
+| `riff+3st` | three semitones up |
+| `riff.inv` | inverted around its first note |
+| `riff.retro` | its notes backwards, in the same rhythm |
+| `riff.ri` | the retrograde inversion; it combines with `+n`: `riff.ri+2` |
+| `riffx4` | four times |
+
+A note outside the scale, moved by degrees, keeps its distance from the
+scale note below it: C# one degree up is D#.
+
+### Twelve-tone rows
+
+`row name = …` keeps a row: numbers from 0 to 11 (0 is C) or note names,
+with or without octaves. The row gives the pitches and a rhythm written with
+`o` gives their places, before `from`:
+
+```aratu
+row serie = 0 11 3 4 8 7 9 5 6 1 2 10
+melody = | o o [o o] o | o _ [o o] o | O o o o | from serie.RI3 octave 4
+```
+
+Each `o` takes the next note, and the row starts again when it runs out, as
+in isorhythm (`O` is an accented `o`). The forms are `P`, `I`, `R` and
+`RI`, each from 0 to 11 semitones up: `serie.P0` is the row as written, and
+so is `serie` alone. `octave N` puts every note in octave N. After `from`
+a motif works too (its notes, in order), or a vector written there:
+`from [0 4 7]`. A twelve-note row that repeats a note gets a warning, and
+the **Rows** tab, beside the messages in Play, shows each row's 12×12
+matrix, with the forms' names to click.
+
+### Melody lists
+
+`list name { }` keeps melodies, one per line, with bar lines; they may use
+motifs and rows.
+
+```aratu
+list temas {
+  | e4 d c d | e e e _ |
+  | d4 d d _ | e g g _ |
+}
+melody = temas.1
+```
+
+`temas.2` picks the second (counted from 1), `temas.all` plays them all in
+order and `temas.random` draws a whole one each time round, always the same
+order for the same `seed`. Changing the number while it plays changes the
+melody at the next bar. On stage, buttons choose each list's melody, and
+Alt+1 to Alt+9 choose it for the line where the cursor is.
+
 ## 10. Playing live
 
 While a piece plays, you change it; you do not rewrite it.
@@ -571,6 +641,11 @@ bass.reverb.mix = 0.65`.
 | `pattern name { }`, `play name`, `add name` | named patterns, in turn or on top |
 | `\|: :\|`, `:\| x4`, `\|1 \|2` | repeat, count, endings |
 | `%`, `%%` | repeat the bar before, the two before |
+| `[e4 d]x4` | a beat repeated four times |
+| `motif riff = …`, `riff+2`, `riff+3st` | a named motif; two degrees up; three semitones |
+| `riff.inv`, `riff.retro`, `riff.ri` | inversion, retrograde, retrograde inversion |
+| `row serie = 0 11 3 …`, `\| o o o o \| from serie.RI3` | a twelve-tone row; a rhythm taking a form's notes |
+| `list temas { }`, `temas.2`, `temas.all`, `temas.random` | a melody list; one by number, all, at random |
 | `segno:`, `coda:`, `fine:` | markers |
 | `D.C.`, `D.S. al fine`, `D.S. al coda`, `to coda` | jumps |
 | `section name { }`, `form: intro verse x2 chorus` | sections and the form |

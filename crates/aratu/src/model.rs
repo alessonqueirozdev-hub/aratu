@@ -28,6 +28,11 @@ pub struct Piece {
     pub params: Vec<ParamSet>,
     /// Where the number of `tempo:` is written, for its knob.
     pub tempo_span: Option<Span>,
+    /// Melody lists by name, with how many melodies each has, for the
+    /// editor's stage buttons.
+    pub lists: Vec<(String, usize)>,
+    /// Twelve-tone rows by name, for the editor's matrix.
+    pub rows: Vec<(String, Vec<i32>)>,
 }
 
 /// A pattern or a section: parts prepared under a name.
@@ -79,6 +84,11 @@ pub struct Line {
     /// The velocity of every hit, by the bar's place in order (or
     /// [crate::dynamics::PICKUP]) and the hit's source offset.
     pub levels: HashMap<(usize, usize), u8>,
+    /// `temas.random`: how many written bars each melody has.
+    pub variants: Vec<usize>,
+    /// `temas.random`: where each melody starts in `order` and how many
+    /// bars it plays; one is chosen each time round.
+    pub rounds: Vec<(usize, usize)>,
 }
 
 impl Line {
@@ -265,6 +275,8 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
         commands: Vec::new(),
         params: Vec::new(),
         tempo_span: None,
+        lists: ast.lists.clone(),
+        rows: ast.rows.clone(),
     };
 
     // The frame.
@@ -369,6 +381,8 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
                     span: s.span,
                     seed_key: 0,
                     levels: HashMap::new(),
+                    variants: l.variants.clone(),
+                    rounds: Vec::new(),
                 };
                 if let Some(i) = part.lines.iter().position(|x| x.name == line.name) {
                     diags.push(Diagnostic::warning(
@@ -744,14 +758,33 @@ fn prepare_line(
         && line.kind != LineKind::Chords
         && first_beats == pickup
         && line.bars.len() > 1;
+    let has_pickup = has_pickup && line.variants.is_empty();
     let start = usize::from(has_pickup);
     if has_pickup {
         line.pickup = Some(0);
     }
-    line.order = unroll(&line.bars[start..], &line.label, 1, diags)
-        .into_iter()
-        .map(|i| i + start)
-        .collect();
+    if line.variants.is_empty() {
+        line.order = unroll(&line.bars[start..], &line.label, 1, diags)
+            .into_iter()
+            .map(|i| i + start)
+            .collect();
+    } else {
+        // Each melody of the list unrolled on its own, so one can be chosen
+        // each time round.
+        let mut first = 0;
+        line.order.clear();
+        line.rounds.clear();
+        for &n in &line.variants.clone() {
+            let end = (first + n).min(line.bars.len());
+            let order: Vec<usize> = unroll(&line.bars[first..end], &line.label, 1, diags)
+                .into_iter()
+                .map(|i| i + first)
+                .collect();
+            line.rounds.push((line.order.len(), order.len()));
+            line.order.extend(order);
+            first = end;
+        }
+    }
     if line.order.is_empty() {
         return;
     }

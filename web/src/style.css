@@ -1172,6 +1172,103 @@ select:hover {
   background: color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
+/* Melody lists on the stage. */
+
+.stage-lists {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.stage-lists:empty {
+  display: none;
+}
+
+.stage-list {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding-right: 6px;
+  border-right: 1px solid var(--line);
+}
+
+.stage-list-label {
+  margin-right: 4px;
+  color: var(--muted);
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 13px;
+}
+
+.stage-list-choice {
+  min-width: 30px;
+  padding: 4px 8px;
+}
+
+.stage-list-choice.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+/* The twelve-tone matrix. */
+
+.matrix-toggle {
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.matrix {
+  margin-top: 10px;
+  overflow-x: auto;
+}
+
+.matrix-grid {
+  display: grid;
+  grid-template-columns: repeat(calc(var(--n) + 2), minmax(26px, auto));
+  gap: 1px;
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 12px;
+}
+
+.matrix-cell,
+.matrix-form,
+.matrix-corner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 22px;
+  padding: 0 2px;
+}
+
+.matrix-cell {
+  background: var(--code-bg);
+  color: var(--text);
+}
+
+.matrix-cell.prime {
+  background: color-mix(in srgb, var(--accent) 18%, var(--code-bg));
+}
+
+.matrix-form {
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: copy;
+}
+
+.matrix-form:hover {
+  text-decoration: underline;
+}
+
 /* The stage: only the code, full screen, for playing live. */
 
 .stage-bar,

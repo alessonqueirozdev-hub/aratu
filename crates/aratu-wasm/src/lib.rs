@@ -134,6 +134,28 @@ fn describe(handle: u32, program: &Program, src: &str, lang: Lang) -> String {
         .max(1);
     j.key("length").num(length as f64);
 
+    // Melody lists, for the stage's buttons, and rows, for the matrix.
+    j.key("lists").open_arr();
+    for (name, count) in &piece.lists {
+        j.open_obj();
+        j.key("name").str(name);
+        j.key("count").num(*count as f64);
+        j.close_obj();
+    }
+    j.close_arr();
+    j.key("rows").open_arr();
+    for (name, pitches) in &piece.rows {
+        j.open_obj();
+        j.key("name").str(name);
+        j.key("pitches").open_arr();
+        for p in pitches {
+            j.num(*p as f64);
+        }
+        j.close_arr();
+        j.close_obj();
+    }
+    j.close_arr();
+
     // Every part, from the piece, its patterns and its sections, once.
     let mut seen = Vec::new();
     j.key("parts").open_arr();

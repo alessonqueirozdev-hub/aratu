@@ -134,6 +134,18 @@ pub fn explicit_octaves(text: &str, pitches: &[i32]) -> String {
     out
 }
 
+/// A MIDI note in letters with its octave: 61 is `c#4`.
+fn note_with_octave(n: i32) -> String {
+    const NAMES: [&str; 12] = [
+        "c", "c#", "d", "eb", "e", "f", "f#", "g", "ab", "a", "bb", "b",
+    ];
+    format!(
+        "{}{}",
+        NAMES[n.rem_euclid(12) as usize],
+        n.div_euclid(12) - 1
+    )
+}
+
 fn grid_bar(line: &Line, index: usize, position: i64, beats: i64, src: &str) -> GridBar {
     let bar = &line.bars[index];
     let mut parts: Vec<(Ratio, Ratio, Part)> = Vec::new();
@@ -198,8 +210,13 @@ fn grid_bar(line: &Line, index: usize, position: i64, beats: i64, src: &str) -> 
         let (i0, i1) = (at(*s).clamp(0, total), at(*s + *d).clamp(0, total));
         match p {
             Part::Hit(h) => {
+                let written = &src[h.span.start..h.span.end];
                 let text = match &h.sound {
-                    Sound::Notes(n) => Some(explicit_octaves(&src[h.span.start..h.span.end], n)),
+                    // An `o` shows the note the row gave it.
+                    Sound::Notes(n) if n.len() == 1 && written.starts_with(['o', 'O']) => {
+                        Some(note_with_octave(n[0]))
+                    }
+                    Sound::Notes(n) => Some(explicit_octaves(written, n)),
                     _ => None,
                 };
                 if i0 < total {
@@ -338,6 +355,17 @@ mod tests {
         assert_eq!(b.steps.len(), 16, "but they are drawn");
         assert!(!first_bar("motif r = [e3 d3]\nm = | r r r r |").editable);
         assert!(first_bar("m = | [e3 d3] c3 d3 e3 |").editable);
+        // A row's notes are drawn by name, not as `o`.
+        let b = first_bar("row s = 1 4\nm = | o o - - | from s octave 3");
+        let names: Vec<_> = b
+            .steps
+            .iter()
+            .filter_map(|s| match s {
+                Step::Start { text, .. } => text.clone(),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(names, ["c#3", "e3"]);
     }
 
     #[test]

@@ -53,6 +53,10 @@ export interface Program {
   pickup: number;
   /** Bars in one time round of the longest line. */
   length: number;
+  /** Melody lists (`list temas { … }`), with how many melodies each has. */
+  lists: { name: string; count: number }[];
+  /** Twelve-tone rows (`row serie = …`), as MIDI notes. */
+  rows: { name: string; pitches: number[] }[];
   parts: PartInfo[];
   params: ParamValue[];
   controls: Control[];

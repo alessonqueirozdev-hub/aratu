@@ -32,7 +32,28 @@ pub fn parse(src: &str) -> (Ast, Vec<Diagnostic>) {
         lib,
     };
     p.nodes(&nodes, &Scope::Top, None);
-    (Ast { stmts: p.stmts }, p.diags)
+    let mut lists: Vec<(String, usize)> = p
+        .lib
+        .lists
+        .iter()
+        .map(|(n, items)| (n.clone(), items.len()))
+        .collect();
+    lists.sort();
+    let mut rows: Vec<(String, Vec<i32>)> = p
+        .lib
+        .rows
+        .iter()
+        .map(|(n, r)| (n.clone(), r.clone()))
+        .collect();
+    rows.sort();
+    (
+        Ast {
+            stmts: p.stmts,
+            lists,
+            rows,
+        },
+        p.diags,
+    )
 }
 
 /// `motif` and `row` lines, `list` blocks and the first `key:`, wherever
@@ -160,13 +181,12 @@ impl Parser {
                 for node in &b.body {
                     match node {
                         Node::Line(l) => {
-                            parse_music_with(
+                            Self::music_of(
+                                &self.lib,
+                                &mut self.diags,
                                 l.text,
                                 l.span.start,
                                 LineKind::Pitched,
-                                &mut self.diags,
-                                &self.lib,
-                                false,
                             );
                         }
                         Node::Block(inner) => self
@@ -534,30 +554,17 @@ impl Parser {
         let line_name = words[0];
         let kind = line_kind(line_name, part.map(|p| p.text.as_str()));
         let music = c.rest();
-        let bars = if let Some(bars) = self.list_melody(music.text, music.span, kind) {
+        let mut variants = Vec::new();
+        let bars = if let Some((bars, lengths)) = self.list_melody(music.text, music.span, kind) {
+            variants = lengths;
             bars
-        } else if let Some(at) = music
-            .text
-            .find(" from ")
-            .filter(|_| kind == LineKind::Pitched)
-        {
-            let rhythm = &music.text[..at];
-            let source = &music.text[at + 6..];
-            self.rhythm_from_row(
-                rhythm,
-                music.span.start,
-                source,
-                music.span.start + at + 6,
-                kind,
-            )
         } else {
-            parse_music_with(
+            Self::music_of(
+                &self.lib,
+                &mut self.diags,
                 music.text,
                 music.span.start,
                 kind,
-                &mut self.diags,
-                &self.lib,
-                false,
             )
         };
         let _ = scope;
@@ -566,6 +573,7 @@ impl Parser {
             kind,
             bars,
             music_span: music.span,
+            variants,
         }))
     }
 
@@ -637,10 +645,16 @@ impl Parser {
     }
 
     /// `temas.2` or `temas.all` from a list: the melody's bars.
-    fn list_melody(&mut self, text: &str, span: Span, kind: LineKind) -> Option<Vec<Bar>> {
+    fn list_melody(
+        &mut self,
+        text: &str,
+        span: Span,
+        kind: LineKind,
+    ) -> Option<(Vec<Bar>, Vec<usize>)> {
         let (name, which) = text.trim().split_once('.')?;
         let items = self.lib.lists.get(name)?.clone();
-        let chosen: Vec<&Source> = if which == "all" {
+        let random = which == "random";
+        let chosen: Vec<&Source> = if which == "all" || random {
             items.iter().collect()
         } else {
             let index: usize = which.parse().ok()?;
@@ -655,25 +669,27 @@ impl Parser {
                             count: items.len(),
                         },
                     ));
-                    return Some(Vec::new());
+                    return Some((Vec::new(), Vec::new()));
                 }
             }
         };
         // The melodies' own mistakes are told in the list.
         let mut quiet = Vec::new();
         let mut bars = Vec::new();
+        let mut lengths = Vec::new();
         for item in chosen {
-            bars.extend(parse_music_with(
-                &item.text, item.base, kind, &mut quiet, &self.lib, false,
-            ));
+            let these = Self::music_of(&self.lib, &mut quiet, &item.text, item.base, kind);
+            lengths.push(these.len());
+            bars.extend(these);
         }
-        Some(bars)
+        Some((bars, if random { lengths } else { Vec::new() }))
     }
 
     /// `| o o [o o] o | from serie.P0 octave 4`: a rhythm whose `o`s take
     /// their pitches from a row, a motif or a vector `[0 11 3 …]`.
     fn rhythm_from_row(
-        &mut self,
+        lib: &Library,
+        diags: &mut Vec<Diagnostic>,
         rhythm: &str,
         base: usize,
         source: &str,
@@ -689,7 +705,7 @@ impl Parser {
             let close = inner.find(']').unwrap_or(inner.len());
             let (pitches, bad, _) = motifs::read_row(&inner[..close]);
             for (at, len) in bad {
-                self.diags.push(Diagnostic::error(
+                diags.push(Diagnostic::error(
                     src_span(1 + at, len),
                     Message::BadRowNote {
                         text: inner[at..at + len].to_string(),
@@ -702,25 +718,25 @@ impl Parser {
             let word = &trimmed[..end];
             let pitches = match motifs::form_ref(word) {
                 Err(form) => {
-                    self.diags.push(Diagnostic::error(
+                    diags.push(Diagnostic::error(
                         src_span(0, end),
                         Message::BadRowForm { form },
                     ));
                     Vec::new()
                 }
                 Ok((name, form, n)) => {
-                    let row = if let Some(r) = self.lib.rows.get(name) {
+                    let row = if let Some(r) = lib.rows.get(name) {
                         Some(r.clone())
-                    } else if self.lib.motifs.contains_key(name) {
+                    } else if lib.motifs.contains_key(name) {
                         // A motif's notes, in order, as a row.
-                        let src = self.lib.motifs[name].clone();
+                        let src = lib.motifs[name].clone();
                         let mut quiet = Vec::new();
                         let mut bars = parse_music_with(
                             &src.text,
                             src.base,
                             LineKind::Pitched,
                             &mut quiet,
-                            &self.lib,
+                            lib,
                             false,
                         );
                         let mut v = Vec::new();
@@ -732,7 +748,7 @@ impl Parser {
                     match row {
                         Some(r) => motifs::row_form(&r, form, n),
                         None => {
-                            self.diags.push(Diagnostic::error(
+                            diags.push(Diagnostic::error(
                                 src_span(0, name.len()),
                                 Message::UnknownRow {
                                     name: name.to_string(),
@@ -756,14 +772,39 @@ impl Parser {
                 }
             }
         }
-        let mut bars = parse_music_with(rhythm, base, kind, &mut self.diags, &self.lib, true);
+        let mut bars = parse_music_with(rhythm, base, kind, diags, lib, true);
         if motifs::fill(&mut bars, &pitches) == 0 {
-            self.diags.push(Diagnostic::warning(
+            diags.push(Diagnostic::warning(
                 Span::new(base, base + rhythm.trim_end().len()),
                 Message::NoPlaceholders,
             ));
         }
         bars
+    }
+
+    /// The music of a line or of a list's melody: a plain rhythm, or one
+    /// whose `o`s take their notes from a row (`… from serie.P0`).
+    fn music_of(
+        lib: &Library,
+        diags: &mut Vec<Diagnostic>,
+        text: &str,
+        base: usize,
+        kind: LineKind,
+    ) -> Vec<Bar> {
+        if kind == LineKind::Pitched {
+            if let Some(at) = text.find(" from ") {
+                return Self::rhythm_from_row(
+                    lib,
+                    diags,
+                    &text[..at],
+                    base,
+                    &text[at + 6..],
+                    base + at + 6,
+                    kind,
+                );
+            }
+        }
+        parse_music_with(text, base, kind, diags, lib, false)
     }
 
     fn part_command(&mut self, c: &mut Cursor, target: Name) -> Result<StmtKind, Fail> {

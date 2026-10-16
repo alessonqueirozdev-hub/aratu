@@ -8,6 +8,7 @@ import { examples } from "./examples";
 import { LANGS, type Lang, isWord, tr } from "./i18n";
 import { Session } from "./session";
 import { SoundsPanel } from "./sounds";
+import { RowMatrix } from "./matrix";
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -148,6 +149,8 @@ async function main(): Promise<void> {
     msg.hidden = !first;
     msg.textContent = first ? `${tr("line", lang)} ${first.line}: ${first.message}` : "";
     if (p.ok) map.draw(p, playground?.text ?? "");
+    if (!$("side-rows").hidden) matrix.render(p);
+    stageLists();
   };
 
   const playground: Session = new Session({
@@ -193,7 +196,78 @@ async function main(): Promise<void> {
       else map.stop();
     },
   });
+  // Melody lists in the piece: `temas.2`, `temas.all`, `temas.random`,
+  // where the number can be changed by a button or Alt+1…9 while it plays.
+  interface ListRef {
+    from: number;
+    to: number;
+    list: string;
+    count: number;
+    line: string;
+    value: string;
+  }
+  const listRefs = (): ListRef[] => {
+    const p = playground.latest;
+    if (!p?.lists?.length) return [];
+    const counts = new Map(p.lists.map((l) => [l.name, l.count]));
+    const text = playground.text;
+    const out: ListRef[] = [];
+    for (const m of text.matchAll(/([\p{L}_][\p{L}\p{N}_]*)\.(\d+|all|random)(?![\p{L}\p{N}_])/gu)) {
+      const count = counts.get(m[1]);
+      if (count === undefined || m.index === undefined) continue;
+      const lineStart = text.lastIndexOf("\n", m.index) + 1;
+      const head = text.slice(lineStart, m.index);
+      if (!head.includes("=")) continue;
+      const from = m.index + m[1].length + 1;
+      out.push({ from, to: from + m[2].length, list: m[1], count, line: head.split("=")[0].trim(), value: m[2] });
+    }
+    return out;
+  };
+  const setListIndex = (ref: ListRef, value: string) => {
+    playground.view.dispatch({ changes: { from: ref.from, to: ref.to, insert: value } });
+  };
+  const stageLists = () => {
+    const box = $("stage-lists");
+    box.innerHTML = "";
+    const refs = listRefs();
+    box.title = refs.length ? tr("listHint", lang) : "";
+    for (const ref of refs) {
+      const group = document.createElement("span");
+      group.className = "stage-list";
+      const label = document.createElement("span");
+      label.className = "stage-list-label";
+      label.textContent = `${ref.line}: ${ref.list}`;
+      group.append(label);
+      const choices = [
+        ...Array.from({ length: ref.count }, (_, i) => [String(i + 1), String(i + 1)]),
+        ["all", tr("listAll", lang)],
+        ["random", tr("listRandom", lang)],
+      ];
+      for (const [value, text] of choices) {
+        const b = document.createElement("button");
+        b.className = "btn stage-list-choice";
+        b.textContent = text;
+        b.classList.toggle("on", value === ref.value);
+        b.onclick = () => {
+          const fresh = listRefs().find((r) => r.from === ref.from) ?? ref;
+          setListIndex(fresh, value);
+        };
+        group.append(b);
+      }
+      box.append(group);
+    }
+  };
+
   // The Sounds panel, beside the messages.
+  const matrix = new RowMatrix($("side-rows"), {
+    lang: () => lang,
+    insert: (text) => {
+      const view = playground.view;
+      const { from, to } = view.state.selection.main;
+      view.dispatch({ changes: { from, to, insert: text }, selection: { anchor: from + text.length } });
+      view.focus();
+    },
+  });
   const sounds = new SoundsPanel($("side-sounds"), {
     aratu,
     engine: getEngine,
@@ -205,17 +279,20 @@ async function main(): Promise<void> {
       view.focus();
     },
   });
-  const sideTab = (which: "messages" | "sounds") => {
-    $("side-messages").hidden = which !== "messages";
-    $("side-sounds").hidden = which !== "sounds";
-    $("tab-messages").classList.toggle("on", which === "messages");
-    $("tab-sounds").classList.toggle("on", which === "sounds");
+  const sideTab = (which: "messages" | "sounds" | "rows") => {
+    for (const t of ["messages", "sounds", "rows"] as const) {
+      $(`side-${t}`).hidden = which !== t;
+      $(`tab-${t}`).classList.toggle("on", which === t);
+    }
     if (which === "sounds") sounds.render();
+    if (which === "rows") matrix.render(playground.latest ?? null);
     save("aratu.side", which);
   };
   $("tab-messages").onclick = () => sideTab("messages");
   $("tab-sounds").onclick = () => sideTab("sounds");
-  if (load("aratu.side") === "sounds") sideTab("sounds");
+  $("tab-rows").onclick = () => sideTab("rows");
+  const savedSide = load("aratu.side");
+  if (savedSide === "sounds" || savedSide === "rows") sideTab(savedSide);
 
   $("play").onclick = () => void playground.play();
   $("stop").onclick = () => playground.stop();
@@ -272,6 +349,24 @@ async function main(): Promise<void> {
   window.addEventListener(
     "keydown",
     (e) => {
+      const digit = /^Digit([1-9])$/.exec(e.code);
+      if (e.altKey && !e.ctrlKey && !e.metaKey && digit && location.hash.startsWith("#/tocar")) {
+        // Alt+N: melody N of the list on the cursor's line, or of the first.
+        const refs = listRefs();
+        if (refs.length) {
+          const cursor = playground.view.state.selection.main.head;
+          const text = playground.text;
+          const lineStart = text.lastIndexOf("\n", cursor - 1) + 1;
+          const lineEnd = text.indexOf("\n", cursor);
+          const here = refs.find((r) => r.from >= lineStart && (lineEnd < 0 || r.from <= lineEnd)) ?? refs[0];
+          const n = Number(digit[1]);
+          if (n <= here.count) {
+            e.preventDefault();
+            setListIndex(here, String(n));
+          }
+        }
+        return;
+      }
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === "f") {
         e.preventDefault();
         if (onStage()) leaveStage();
@@ -411,6 +506,8 @@ async function main(): Promise<void> {
     applyWords();
     playground.compile();
     if (!$("side-sounds").hidden) sounds.render();
+    if (!$("side-rows").hidden) matrix.render(playground.latest ?? null);
+    stageLists();
     await loadBook();
     route();
   };

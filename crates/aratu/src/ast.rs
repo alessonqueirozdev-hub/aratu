@@ -8,6 +8,10 @@ use crate::theory::{Chord, Dyn, Key, Meter};
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Ast {
     pub stmts: Vec<Stmt>,
+    /// The piece's melody lists, by name, with how many melodies each has.
+    pub lists: Vec<(String, usize)>,
+    /// The piece's twelve-tone rows (and other note vectors), by name.
+    pub rows: Vec<(String, Vec<i32>)>,
 }
 
 /// Where a statement was written.
@@ -211,6 +215,9 @@ pub struct LineDef {
     pub bars: Vec<Bar>,
     /// Where the music after `=` is written.
     pub music_span: Span,
+    /// `temas.random`: the melodies of a list, one chosen each time round;
+    /// how many bars each has, in order. Empty for any other line.
+    pub variants: Vec<usize>,
 }
 
 #[derive(Clone, Debug, PartialEq)]

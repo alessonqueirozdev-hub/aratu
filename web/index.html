@@ -57,12 +57,14 @@
           <div class="side-tabs" role="tablist">
             <button id="tab-messages" class="on" role="tab" data-word="messages"></button>
             <button id="tab-sounds" role="tab" data-word="sounds"></button>
+            <button id="tab-rows" role="tab" data-word="rows"></button>
           </div>
           <div id="side-messages">
             <ul id="messages" class="messages"></ul>
             <p class="note" id="note"></p>
           </div>
           <div id="side-sounds" class="sounds" hidden></div>
+          <div id="side-rows" class="rows" hidden></div>
         </aside>
       </div>
       <section class="rhythm sheet">
@@ -83,6 +85,7 @@
         <span class="stage-count"><span id="stage-bar-n">–</span><span id="stage-beat" class="beat"></span></span>
         <button id="stage-smaller" class="btn">A−</button>
         <button id="stage-bigger" class="btn">A+</button>
+        <span id="stage-lists" class="stage-lists"></span>
         <button id="stage-map" class="btn" data-word="rhythmMap"></button>
         <button id="stage-exit" class="btn">✕ <span data-word="stageExit"></span></button>
       </div>

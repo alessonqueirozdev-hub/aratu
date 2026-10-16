@@ -419,6 +419,79 @@ El patrón que estaba sonando sigue contando sus compases mientras tanto, así
 que `play groove x3, fill` no pierde su lugar en la frase. Con `every`, el
 patrón ya suena una vez en cada vuelta.
 
+### Repetir un tiempo
+
+Una `x` pegada al corchete repite ese tiempo, cada vez en su propio tiempo:
+`| [mi4 re do re]x4 |` es el grupo cuatro veces. La `x` va pegada al `]` (o
+a un motivo); con espacio, `| - x8 |` sigue siendo ocho compases de
+silencio.
+
+### Motivos
+
+`motif nombre = …` da nombre a algunos tiempos, sin barras de compás, y el
+nombre se usa en su lugar. El motivo puede definirse antes o después de
+donde se usa, puede usar otros motivos, y mientras suena el editor enciende
+las notas en la definición.
+
+```aratu
+key: C major
+motif riff = [mi4 re do re]
+melodia = | riff riff+1 riff.inv riff.retro |
+```
+
+| Escribe | El motivo |
+|---|---|
+| `riff+2`, `riff-1` | dos grados arriba, uno abajo, en la tonalidad (`key:`; do mayor si no hay) |
+| `riff+3st` | tres semitonos arriba |
+| `riff.inv` | invertido alrededor de la primera nota |
+| `riff.retro` | las notas de atrás hacia adelante, en el mismo ritmo |
+| `riff.ri` | retrógrado de la inversión; se combina con `+n`: `riff.ri+2` |
+| `riffx4` | cuatro veces |
+
+Una nota fuera de la escala, transpuesta por grados, guarda la distancia a
+la nota de la escala que tiene debajo: do# un grado arriba es re#.
+
+### Series dodecafónicas
+
+`row nombre = …` guarda una serie: números de 0 a 11 (0 es do) o nombres de
+nota, con o sin octava. La serie da las alturas y un ritmo con `o` da los
+lugares, después de `from`:
+
+```aratu
+row serie = 0 11 3 4 8 7 9 5 6 1 2 10
+melodia = | o o [o o] o | o _ [o o] o | O o o o | from serie.RI3 octave 4
+```
+
+Cada `o` toma la nota siguiente, y la serie vuelve a empezar cuando se
+acaba, como en la isorritmia (`O` es una `o` acentuada). Las formas son
+`P`, `I`, `R` y `RI`, cada una de 0 a 11 semitonos arriba: `serie.P0` es
+la serie escrita, y `serie` sola también. `octave N` pone todas las notas
+en la octava N. Después de `from` también vale un motivo (sus notas, en
+orden) o un vector escrito ahí: `from [0 4 7]`. Una serie de doce notas que
+repite alguna recibe un aviso, y la pestaña **Series**, junto a los mensajes
+en Tocar, muestra la matriz 12×12 de cada serie, con los nombres de las
+formas para hacer clic.
+
+### Listas de melodías
+
+`list nombre { }` guarda melodías, una por línea, con barras de compás;
+pueden usar motivos y series.
+
+```aratu
+list temas {
+  | mi4 re do re | mi mi mi _ |
+  | re4 re re _ | mi sol sol _ |
+}
+melodia = temas.1
+```
+
+`temas.2` elige la segunda (se cuenta desde 1), `temas.all` las toca todas
+en orden y `temas.random` sortea una entera en cada vuelta, siempre la misma
+secuencia para la misma `seed`. Cambiar el número mientras suena cambia la
+melodía en el compás siguiente. En el modo escenario, unos botones eligen la
+melodía de cada lista, y Alt+1 a Alt+9 eligen la de la línea donde está el
+cursor.
+
 ## 10. Tocar en vivo
 
 Mientras la pieza suena, la cambias; no la reescribes.
@@ -588,6 +661,11 @@ bajo.reverb.mix = 0.65`.
 | `pattern nombre { }`, `play nombre`, `add nombre` | patrones con nombre, en orden o encima |
 | `\|: :\|`, `:\| x4`, `\|1 \|2` | repetición, veces, casillas |
 | `%`, `%%` | repite el compás anterior, los dos anteriores |
+| `[mi4 re]x4` | un tiempo repetido cuatro veces |
+| `motif riff = …`, `riff+2`, `riff+3st` | motivo con nombre; dos grados arriba; tres semitonos |
+| `riff.inv`, `riff.retro`, `riff.ri` | inversión, retrógrado, retrógrado de la inversión |
+| `row serie = 0 11 3 …`, `\| o o o o \| from serie.RI3` | serie dodecafónica; ritmo que recibe las notas de una forma |
+| `list temas { }`, `temas.2`, `temas.all`, `temas.random` | lista de melodías; una por número, todas, al azar |
 | `segno:`, `coda:`, `fine:` | señales |
 | `D.C.`, `D.S. al fine`, `D.S. al coda`, `to coda` | saltos |
 | `section nombre { }`, `form: intro verso x2 estribillo` | secciones y forma |
