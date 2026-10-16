@@ -29,6 +29,17 @@ um compasso sem acorde é `N.C.`:
 chords = | Lám | Fá | Dó Sol | N.C. |
 ```
 
+## Acordes pelo grau
+
+Quem estuda harmonia escreve os acordes pelo grau, em algarismos romanos.
+O Aratu entende, a partir do tom (`key:`): maiúscula é acorde maior,
+minúscula é menor. E com `:arp` o acorde soa arpejado, de baixo para cima:
+
+```aratu
+key: C major
+chords = | I | vi | IV | V7:arp |
+```
+
 ## A batida do violão
 
 Uma linha chamada `strum` diz como a mão bate nas cordas, com as mesmas

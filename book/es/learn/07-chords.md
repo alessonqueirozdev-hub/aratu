@@ -29,6 +29,18 @@ es `N.C.`:
 chords = | Lam | Fa | Do Sol | N.C. |
 ```
 
+## Acordes por grado
+
+Quien estudia armonía escribe los acordes por grado, en números romanos.
+Aratu los entiende a partir de la tonalidad (`key:`): mayúscula es acorde
+mayor, minúscula es menor. Y con `:arp` el acorde suena arpegiado, de abajo
+hacia arriba:
+
+```aratu
+key: C major
+chords = | I | vi | IV | V7:arp |
+```
+
 ## El rasgueo de la guitarra
 
 Una línea llamada `strum` dice cómo la mano golpea las cuerdas, con las

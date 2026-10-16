@@ -115,8 +115,8 @@ drums {
 ## Nomes em português e palmas
 
 As linhas também podem ter nome em português: `chimbal`, `bumbo`,
-`caixa`, `prato`, `condução`, `aro`, `surdo`, `palmas`; e o bloco
-pode se chamar `bateria`. O `p` é a palma:
+`caixa`, `prato`, `condução`, `aro`, `palmas`; e o bloco pode se
+chamar `bateria`. O `p` é a palma:
 
 ```aratu
 tempo: 100
@@ -127,6 +127,35 @@ bateria {
   palmas  = - p - p
 }
 ```
+
+## Percussão brasileira
+
+Cada instrumento de percussão tem os seus golpes. Uma linha com o nome do
+instrumento lê esses golpes:
+
+| Linha | Golpes |
+|---|---|
+| `pandeiro` | `p` polegar, `d` dedos, `t` tapa, `m` abafado |
+| `zabumba` | `o` aberto, `m` abafado, `b` bacalhau |
+| `triângulo` | `o` aberto, `f` fechado |
+| `agogô` | `a` agudo, `g` grave |
+| `surdo` | `o` aberto, `m` abafado |
+| `tamborim`, `alfaia`, `gonguê` | `o` aberto, `m` abafado |
+| `ganzá` | `s` |
+| `cuíca` | `a` agudo, `g` grave |
+| `cajón` | `b` grave, `t` tapa |
+
+Um baião, com zabumba, triângulo e agogô:
+
+```aratu
+tempo: 110
+zabumba   = | o - -o m | o - b - |
+triângulo = fo fo fo fo
+agogô     = a g ag -
+```
+
+> Uma linha chamada `surdo` é o surdo do samba. Na bateria, o surdo é o
+> `f`, em qualquer linha de bateria.
 
 ## Rufo
 

@@ -45,7 +45,7 @@ a **statement**. Inside braces, `;` separates statements on one line, and
 |---|---|---|
 | name (identifier) | `melody`, `bass`, `riff`, `temas` | letters, digits and `_`, starting with a letter |
 | path | `bass.reverb.mix`, `drums.hh`, `riff.inv` | names joined by dots |
-| keyword | `tempo`, `meter`, `key`, `pattern`, `play`, `at`, `every`, `now`, `over`, `motif`, `row`, `list`, `from` | reserved words, with a fixed meaning |
+| keyword | `tempo`, `meter`, `key`, `pattern`, `play`, `at`, `every`, `now`, `over`, `motif`, `row`, `list`, `from` | reserved words, with a fixed meaning, in English, Portuguese or Spanish (`tempo`, `andamento`, `pulso`) |
 | number | `120`, `0.42`, `-1`, `1.2` | whole numbers and decimals, with a point |
 | unit | `Hz`, `kHz`, `ms`, `s`, `%` | right after a number |
 | operator | `=`, `:`, `->`, `<->`, `.`, `,` | join the parts of a statement |
@@ -79,7 +79,9 @@ shapes (what is between `⟨ ⟩` is a place to fill):
 
 The `⟨when⟩` goes in front of almost any statement. Without it, the
 statement holds from the start of the piece or, if the music is playing,
-from the next bar.
+from the next bar. A line that starts with `|` goes on with the line of
+music above, and a line's name decides how its symbols are read: `chords`
+are chord symbols, `hh` is drums, `pandeiro` is the pandeiro's strokes.
 
 ## 4. Naming things
 

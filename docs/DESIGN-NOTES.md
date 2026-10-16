@@ -739,3 +739,41 @@ beats, and a sudden tempo change is a step at its beat), and
 what held before comes back (a parameter goes back to an earlier value
 written at a bar, or to the value its part is set up with). Keywords stay
 English; the open question of Portuguese synonyms is still open.
+
+## Keywords in three languages, and the third group of the review (16 October 2026)
+
+The user asked for English, Portuguese and Spanish all to be accepted.
+`crates/aratu/src/words.rs` holds, for each keyword, the Portuguese and
+Spanish words that stand for it, folded (lower case, no accents); the
+cursor's `keyword` and every place that compares words ask it. A word may
+stand for different keywords in different places (`compasso:` the meter,
+`no compasso 9` the bar, `tempo 3` after a bar number the beat). Short
+words that are also notes (`do`, `de`, `a`) are only read where nothing
+else could be meant; a row's `from` is `from`, `desde`, `com` or `con`,
+since `de` and `do` are notes. The editor lights the longer words only.
+A test plays one piece written in the three languages and compares every
+event. A drum part answers to its name in any language.
+
+Then the third group, the things that could not be written:
+
+- A line starting with a bar line goes on with the line of music above
+  (not inside a list, where each line is a melody); the two bar lines
+  around the line break are one, and a comment between is left out.
+- A beat may be longer than one: `2[c d e]` (a tuplet across two beats)
+  and additive meters, `meter: 7/8 = 2+2+3`, where a bar is written one
+  word per group or one per unit and the tempo counts units.
+- `s!` marcato, `(s)` ghost notes, `g4^3` a fermata three times as long.
+- Roman numerals in chord lines (`I vi IV V7`, `vii°`, `bVII`, `V7/V`),
+  from the key at the start of the piece; `Am:arp` rolls a chord, as does
+  `c4+e4+g4:arp`.
+- Brazilian percussion lines named after the instrument, each with its
+  strokes (pandeiro, zabumba, triângulo, agogô, surdo, tamborim, alfaia,
+  gonguê, ganzá, cuíca, and the cajón); `surdo` is now the samba surdo,
+  and the kit's floor tom stays `f`. The stand-in synthesizes them;
+  VCSL has agogô, cajón, claps, triangles and shakers, and the user
+  offered to record the rest for Manguebyte.
+
+Still to do from the review: `feel samba`, `feel maracatu`, `feel frevo`
+(they need measured micro-timing, not guesses), techniques by word
+(`:trill`, `:gliss`, `:bend`, which need the engine), hands and pedal, and
+a choice between fragments longer than a beat.

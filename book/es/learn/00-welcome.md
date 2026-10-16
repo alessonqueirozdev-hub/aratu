@@ -74,6 +74,10 @@ sd = s s s s
 En la próxima lección verás qué es un compás para Aratu y cómo elegir el
 tempo.
 
+> Las palabras de Aratu pueden escribirse en inglés, portugués o español:
+> `tempo: 100` o `pulso: 100`, `at bar 9:` o `en el compás 9:`. El manual
+> tiene la tabla completa.
+
 > ¿Programas y quieres saber cómo funciona Aratu por debajo? La pestaña
 > [**Por dentro**](#/por-dentro) da nombre técnico a cada cosa: qué es una
 > línea, un bloque, un `at bar`.

@@ -102,6 +102,26 @@ compás.
 espacios dentro: `c[cc]` es una corchea y dos semicorcheas. El atajo `.`
 vale `__`, así que `c.c` es `c__c`.
 
+**Grupos irregulares de más de un tiempo.** Un número antes de los
+corchetes dice cuántos tiempos ocupa el grupo: `2[do4 re mi]` son tres
+notas en dos tiempos (el tresillo de negras) y `3[c c c c]`, cuatro en tres.
+
+**Compases aditivos.** `meter: 7/8 = 2+2+3` dice cómo se agrupan las
+corcheas. El compás se escribe con una palabra por grupo (`cc cc ccc`) o
+una por corchea (`c c c c c c c`), y el tempo cuenta corcheas.
+
+```aratu
+meter: 7/8 = 2+2+3
+tempo: 240
+hh = cc cc ccc
+bd = b  b  b
+```
+
+**Marcato y notas fantasma.** `s!` es marcato, más fuerte que la mayúscula.
+`(s)` es una nota fantasma, casi sin sonido, como en la partitura de
+batería; vale también para notas: `(do4)`. Un calderón dura el doble
+(`sol4^`) o las veces que se escriban: `sol4^3`.
+
 ## 3. Batería
 
 Cada pieza de la batería tiene una línea, y cada línea sigue las reglas del
@@ -133,8 +153,9 @@ Toda línea dentro de `drums { }` es de batería, igual que una línea llamada
 `hh`, `bd`, `sd`, `cr`, `rd`, `ht`, `mt`, `ft`, `toms`, `rim`, `kick`,
 `snare`, `hat`, `ride` o `crash` en cualquier lugar de la pieza, y también
 con los nombres en español y portugués: `charles`, `bombo`, `caja`,
-`platillo`, `aro`, `palmas`, `chimbal`, `bumbo`, `caixa`, `prato`, `surdo`;
-el bloque también puede llamarse `batería`. Un apóstrofo hace el golpe corto: `c'` es un
+`platillo`, `aro`, `palmas`, `chimbal`, `bumbo`, `caixa`, `prato`; el bloque
+también puede llamarse `batería`. Una línea llamada `surdo` es el surdo de
+samba (ver la percusión más abajo); el tom de piso es la `f`. Un apóstrofo hace el golpe corto: `c'` es un
 hi-hat seco. El hi-hat cerrado corta al abierto que todavía suena.
 
 **Redoble.** Una tilde después del símbolo hace un redoble, como las rayitas
@@ -151,6 +172,34 @@ drums {
 
 Vale para cualquier pieza (`f~` en el tom de piso, `x~` en el platillo) y
 para notas, como trémolo: `do4~ _`.
+
+### Percusión brasileña
+
+Una línea con el nombre de un instrumento lee sus golpes, con las mismas
+reglas de ritmo:
+
+| Línea | Golpes |
+|---|---|
+| `pandeiro` (`pandero`) | `p` pulgar, `d` dedos, `t` palmada, `m` apagado |
+| `zabumba` | `o` abierto, `m` apagado, `b` bacalhau (varilla) |
+| `triángulo` | `o` abierto, `f` cerrado |
+| `agogó` | `a` agudo, `g` grave |
+| `surdo` | `o` abierto, `m` apagado |
+| `tamborim`, `alfaia`, `gonguê` | `o` abierto, `m` apagado |
+| `ganzá` | `s` |
+| `cuíca` | `a` agudo, `g` grave |
+| `cajón` | `b` grave, `t` golpe agudo |
+
+```aratu
+tempo: 120
+pandeiro = pd td pd td
+zabumba  = | o - -o m | o - b - |
+triángulo = fo fo fo fo
+```
+
+La mayúscula acentúa y `(p)` es un golpe fantasma, como en la batería. Por
+ahora estos sonidos se sintetizan en el navegador; las grabaciones vendrán
+con el motor de Manguebyte.
 
 ## 4. Melodías
 
@@ -177,6 +226,14 @@ bemol, así que para dos notas Aratu pide los corchetes.
 Las notas que suenan juntas se unen con `+`: `do4+mi4+sol4` es un acorde de
 do mayor en un tiempo.
 
+**Líneas largas.** Una línea que empieza con `|` sigue la línea de música
+de arriba, así una melodía larga puede ocupar varias líneas:
+
+```aratu
+melodia = | do4 re mi fa | sol la si do5 |
+          | si4 la sol fa | mi re do _ |
+```
+
 ## 5. Acordes y rasgueos
 
 Una secuencia de acordes se escribe como un cifrado, en una línea llamada
@@ -196,6 +253,18 @@ Los acordes se escriben como siempre: `Am`, `F`, `G7`, `Cmaj7`, `Dm7b5`,
 `E/G#`, y también con la escritura brasileña: `C7M`, `Bº`, `G7(b9)`. Valen
 además `C6/9`, `E7alt` y el cifrado con do-re-mi: `Lam`, `Sol7`, `Fa#m7`,
 `Do/Mi`. `N.C.` (o `-`) es un compás sin acorde.
+
+**Acordes por grado.** En números romanos, relativos a la tonalidad del
+principio de la pieza (do mayor si no hay `key:`): mayúscula es mayor,
+minúscula es menor, y la cualidad va después. `bVII` toma prestado de fuera
+de la tonalidad y `V7/V` es la dominante de la dominante. Con `:arp` el
+acorde suena arpegiado, de la nota más grave a la más aguda; en una
+melodía, `do4+mi4+sol4:arp`.
+
+```aratu
+key: C major
+chords = | I | vi | ii7 | V7:arp |
+```
 
 **El rasgueo.** Una línea llamada `strum` usa las reglas del ritmo con
 símbolos de guitarra:
@@ -750,3 +819,47 @@ una versión nueva del texto no lo hace volver al valor escrito.
 | `parte.parámetro = valor` | un parámetro, dibujado como perilla |
 | `parte.lowpass.cutoff = 300 Hz -> 4000 Hz over 4 bars` | un parámetro que se mueve, una vez |
 | `<->`, `back over 2 beats`, `loop` | va y vuelve; otra duración de vuelta; empieza de nuevo |
+| `2[do re mi]` | tres notas en dos tiempos |
+| `meter: 7/8 = 2+2+3` | compás aditivo |
+| `s!`, `(s)`, `sol4^3` | marcato, nota fantasma, calderón tres veces más largo |
+| una línea que empieza con `\|` | sigue la línea de música de arriba |
+| `\| I \| vi \| V7/V \|`, `Am:arp` | acordes por grado; acorde arpegiado |
+| `pandeiro = pd td pd td` | percusión brasileña |
+
+## 15. En español, portugués e inglés
+
+Toda palabra clave de Aratu puede escribirse en inglés, portugués o
+español, con o sin tilde, en mayúsculas o minúsculas. Las tres versiones
+de la misma pieza suenan exactamente igual.
+
+| Inglés | Portugués | Español |
+|---|---|---|
+| `meter:` | `compasso:`, `fórmula:` | `compás:` |
+| `tempo:` | `andamento:`, `pulso:` | `pulso:` |
+| `key:` | `tom:`, `tonalidade:` | `tonalidad:`, `tono:` |
+| `pickup: beat 4` | `anacruse: tempo 4` | `anacrusa: tiempo 4` |
+| `seed` | `semente` | `semilla` |
+| `form:` | `forma:` | `forma:` |
+| `at bar 9:` | `no compasso 9:` | `en el compás 9:` |
+| `at bar 9 beat 3:` | `no compasso 9 tempo 3:` | `en el compás 9, tiempo 3:` |
+| `from bar 9 to 16:` | `do compasso 9 ao 16:` | `desde el compás 9 hasta el 16:` |
+| `every 4 bars, first:` | `a cada 4 compassos, primeiro:` | `cada 4 compases, primero:` |
+| `now:` | `agora:`, `já:` | `ahora:`, `ya:` |
+| `play`, `add`, `once` | `toque`, `adicione`, `uma vez` | `toca`, `añade`, `una vez` |
+| `pattern`, `section` | `padrão`, `seção` | `patrón`, `sección` |
+| `motif`, `row`, `list` | `motivo`, `série`, `lista` | `motivo`, `serie`, `lista` |
+| `temas.all`, `temas.random` | `temas.todas`, `temas.acaso` | `temas.todos`, `temas.azar` |
+| `from serie octave 3` | `com serie oitava 3` | `desde serie octava 3` |
+| `over 4 bars` | `em 4 compassos` | `en 4 compases` |
+| `beats`, `eighths`, `sixteenths` | `tempos`, `colcheias`, `semicolcheias` | `tiempos`, `corcheas`, `semicorcheas` |
+| `cresc to ff` | `cresc até ff` | `cresc hasta ff` |
+| `back over 2 beats`, `loop` | `volta em 2 tempos`, `repete` | `vuelta en 2 tiempos`, `repite` |
+| `all:`, `out`, `in` | `todos:`, `fora`, `dentro` | `todos:`, `fuera`, `dentro` |
+| `chords`, `strum` | `acordes`, `batida` | `acordes`, `rasgueo` |
+| `.transpose`, `.invert` | `.transpor`, `.inverter` | `.transponer`, `.invertir` |
+| `drums` | `bateria` | `batería` |
+
+Los nombres de los matices (`mf`, `cresc`), del tempo (`rit`, `a tempo`) y
+de los signos (`D.S. al coda`) son italianos, como en la partitura, y
+valen en los tres idiomas. Los sonidos y los efectos (`piano.grand`,
+`lowpass.cutoff`) tienen un solo nombre.

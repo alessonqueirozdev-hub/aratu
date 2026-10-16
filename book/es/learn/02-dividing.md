@@ -51,6 +51,16 @@ hh = ccc_ cc_c c_cc c.c
 Un `_` solo en un tiempo sostiene el tiempo entero: `c _` es una blanca y
 `c _ _ _` una redonda.
 
+## Más de un tiempo
+
+Un número antes de los corchetes estira el grupo por más tiempos:
+`2[c c c]` son tres golpes iguales en dos tiempos, el tresillo de negras.
+
+```aratu
+tempo: 80
+hh = 2[c c c] c c
+```
+
 ## Ejercicios
 
 Haz que el hi-hat toque corcheas en todo el compás.

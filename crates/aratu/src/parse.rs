@@ -684,7 +684,12 @@ impl Parser {
         part: Option<&Name>,
     ) -> Result<StmtKind, Fail> {
         let is_number = matches!(c.peek(), Some(ch) if ch.is_ascii_digit() || ch == '+' || ch == '-' && c.clone().number().is_some());
-        if words.len() > 1 || is_number {
+        // `hh = 2[c c c] c c` is music: a group across two beats.
+        let tuplet = {
+            let mut t = c.clone();
+            t.number().is_some() && t.peek() == Some('[')
+        };
+        if words.len() > 1 || (is_number && !tuplet) {
             let value = value(c).ok_or_else(|| expected(c, Thing::Value, &words.join(".")))?;
             let sweep = sweep(c)?;
             self.end(c)?;

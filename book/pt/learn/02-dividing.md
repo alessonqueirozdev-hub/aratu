@@ -49,6 +49,16 @@ hh = ccc_ cc_c c_cc c.c
 Um `_` sozinho num tempo segura o tempo inteiro: `c _` é uma mínima e
 `c _ _ _` uma semibreve.
 
+## Mais de um tempo
+
+Um número antes dos colchetes estica o grupo por mais tempos:
+`2[c c c]` são três batidas iguais em dois tempos, a tercina de semínimas.
+
+```aratu
+tempo: 80
+hh = 2[c c c] c c
+```
+
 ## Exercícios
 
 Faça o chimbal tocar colcheias no compasso inteiro.

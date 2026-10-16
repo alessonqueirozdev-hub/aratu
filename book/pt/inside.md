@@ -47,7 +47,7 @@ da linha.
 |---|---|---|
 | nome (identificador) | `melodia`, `bass`, `riff`, `temas` | letras, números e `_`, começando por letra |
 | caminho | `bass.reverb.mix`, `drums.hh`, `riff.inv` | nomes ligados por pontos |
-| palavra-chave | `tempo`, `meter`, `key`, `pattern`, `play`, `at`, `every`, `now`, `over`, `motif`, `row`, `list`, `from` | palavras reservadas, com sentido fixo |
+| palavra-chave | `tempo`, `meter`, `key`, `pattern`, `play`, `at`, `every`, `now`, `over`, `motif`, `row`, `list`, `from` | palavras reservadas, com sentido fixo, em inglês, português ou espanhol (`tempo`, `andamento`, `pulso`) |
 | número | `120`, `0.42`, `-1`, `1.2` | inteiros e decimais, com ponto |
 | unidade | `Hz`, `kHz`, `ms`, `s`, `%` | logo depois de um número |
 | operador | `=`, `:`, `->`, `<->`, `.`, `,` | ligam as partes de uma declaração |
@@ -80,7 +80,10 @@ formas (o que está entre `⟨ ⟩` é um lugar a preencher):
 | `⟨quando⟩: ⟨declaração⟩` | `at bar 9: play fill`, `at bar 9 beat 3: …`, `from bar 9 to 16: …`, `every 4 bars: …`, `now: …` | a mesma declaração, num momento ou num trecho |
 
 O `⟨quando⟩` vem na frente de quase qualquer declaração. Sem ele, ela vale do
-começo da peça, ou, se a música já está tocando, do próximo compasso.
+começo da peça, ou, se a música já está tocando, do próximo compasso. Uma
+linha que começa com `|` continua a linha de música de cima, e o nome de uma
+linha decide como os seus símbolos são lidos: `chords` são cifras, `hh` é
+bateria, `pandeiro` são os golpes do pandeiro.
 
 ## 4. Dando nome às coisas
 

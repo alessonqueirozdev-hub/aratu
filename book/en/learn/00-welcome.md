@@ -73,6 +73,10 @@ sd = s s s s
 In the next lesson you will see what a bar is to Aratu, and how to set the
 tempo.
 
+> Aratu's words can be written in English, Portuguese or Spanish:
+> `tempo: 100` or `andamento: 100`, `at bar 9:` or `no compasso 9:`. The
+> manual has the whole table.
+
 > Do you program, and want to know how Aratu works underneath? The
 > [**Inside**](#/por-dentro) tab gives each thing its technical name: what a
 > line is, a block, an `at bar`.

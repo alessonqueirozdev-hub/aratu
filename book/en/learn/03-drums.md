@@ -127,6 +127,32 @@ drums {
 }
 ```
 
+## Brazilian percussion
+
+Each percussion instrument has strokes of its own. A line named after the
+instrument reads them:
+
+| Line | Strokes |
+|---|---|
+| `pandeiro` | `p` thumb, `d` fingers, `t` slap, `m` muted |
+| `zabumba` | `o` open, `m` muted, `b` bacalhau (the stick) |
+| `triangle` (`triângulo`) | `o` open, `f` closed |
+| `agogo` (`agogô`) | `a` high, `g` low |
+| `surdo` | `o` open, `m` muted |
+| `tamborim`, `alfaia`, `gongue` | `o` open, `m` muted |
+| `shaker` (`ganzá`) | `s` |
+| `cuica` (`cuíca`) | `a` high, `g` low |
+| `cajon` (`cajón`) | `b` bass, `t` slap |
+
+A baião, with zabumba, triangle and agogô:
+
+```aratu
+tempo: 110
+zabumba  = | o - -o m | o - b - |
+triangle = fo fo fo fo
+agogo    = a g ag -
+```
+
 ## Rolls
 
 A tilde, `~`, after the symbol makes a **roll**: the hit becomes very fast

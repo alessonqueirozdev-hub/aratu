@@ -29,6 +29,17 @@ Spanish lead sheets write them, and a bar with no chord is `N.C.`:
 chords = | Lam | Fa | Do Sol | N.C. |
 ```
 
+## Chords by degree
+
+Harmony students write chords by degree, in Roman numerals. Aratu reads
+them from the key (`key:`): upper case is a major chord, lower case a
+minor one. And with `:arp` the chord is rolled, from the bottom up:
+
+```aratu
+key: C major
+chords = | I | vi | IV | V7:arp |
+```
+
 ## The strum
 
 A line called `strum` says how the hand hits the strings, with the same

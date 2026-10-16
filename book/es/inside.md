@@ -48,7 +48,7 @@ el final de la línea.
 |---|---|---|
 | nombre (identificador) | `melodia`, `bajo`, `riff`, `temas` | letras, números y `_`, empezando por una letra |
 | ruta | `bajo.reverb.mix`, `drums.hh`, `riff.inv` | nombres unidos por puntos |
-| palabra clave | `tempo`, `meter`, `key`, `pattern`, `play`, `at`, `every`, `now`, `over`, `motif`, `row`, `list`, `from` | palabras reservadas, con sentido fijo |
+| palabra clave | `tempo`, `meter`, `key`, `pattern`, `play`, `at`, `every`, `now`, `over`, `motif`, `row`, `list`, `from` | palabras reservadas, con sentido fijo, en inglés, portugués o español (`tempo`, `pulso`) |
 | número | `120`, `0.42`, `-1`, `1.2` | enteros y decimales, con punto |
 | unidad | `Hz`, `kHz`, `ms`, `s`, `%` | justo después de un número |
 | operador | `=`, `:`, `->`, `<->`, `.`, `,` | unen las partes de una sentencia |
@@ -82,6 +82,9 @@ estas formas (lo que va entre `⟨ ⟩` es un lugar para completar):
 
 El `⟨cuándo⟩` va delante de casi cualquier sentencia. Sin él, vale desde el
 principio de la pieza o, si la música ya suena, desde el compás siguiente.
+Una línea que empieza con `|` sigue la línea de música de arriba, y el
+nombre de una línea decide cómo se leen sus símbolos: `chords` son acordes,
+`hh` es batería, `pandeiro` son los golpes del pandeiro.
 
 ## 4. Dar nombre a las cosas
 

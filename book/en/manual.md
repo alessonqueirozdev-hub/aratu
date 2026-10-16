@@ -95,6 +95,26 @@ bars: `| cc cc | co cc |`. A line with no bar line is one bar.
 are allowed inside them: `c[cc]` is an eighth and two sixteenths. The `.`
 shorthand stands for `__`, so `c.c` is `c__c`.
 
+**Tuplets across beats.** A number before the brackets says how many beats
+the group takes: `2[c4 d e]` is three notes in two beats (quarter-note
+triplets) and `3[c c c c]` four in three.
+
+**Additive meters.** `meter: 7/8 = 2+2+3` says how the eighths group. A bar
+is written one word per group (`cc cc ccc`) or one per eighth
+(`c c c c c c c`), and the tempo counts eighths.
+
+```aratu
+meter: 7/8 = 2+2+3
+tempo: 240
+hh = cc cc ccc
+bd = b  b  b
+```
+
+**Marcato and ghost notes.** `s!` is marcato, stronger than upper case.
+`(s)` is a ghost note, barely touched, as drum notation writes it; it works
+on notes too: `(c4)`. A fermata lasts twice as long (`g4^`) or as many
+times as written: `g4^3`.
+
 ## 3. Drums
 
 Each drum has a line, and each line follows the rhythm rules. The symbol
@@ -125,9 +145,10 @@ drums {
 Every line inside `drums { }` is a drum line, and so is a line called `hh`,
 `bd`, `sd`, `cr`, `rd`, `ht`, `mt`, `ft`, `toms`, `rim`, `kick`, `snare`,
 `hat`, `ride` or `crash` anywhere in the piece, and by their Portuguese and
-Spanish names too: `chimbal`, `bumbo`, `caixa`, `prato`, `surdo`, `palmas`,
-`charles`, `bombo`, `caja`, `platillo`; the block may also be called
-`bateria`. An apostrophe makes a hit short: `c'` is a tight hi-hat. A
+Spanish names too: `chimbal`, `bumbo`, `caixa`, `prato`, `palmas`, `charles`,
+`bombo`, `caja`, `platillo`; the block may also be called `bateria`. A line
+called `surdo` is the samba surdo (see the percussion below); the kit's
+floor tom is `f`. An apostrophe makes a hit short: `c'` is a tight hi-hat. A
 closed hi-hat cuts an open one that is still ringing.
 
 **Rolls.** A tilde after the symbol makes a roll, like the tremolo strokes in
@@ -143,6 +164,34 @@ drums {
 
 It works on any drum (`f~` on the floor tom, `x~` on a cymbal) and on
 notes, as a tremolo: `c4~ _`.
+
+### Brazilian percussion
+
+A line named after an instrument reads its strokes, with the same rhythm
+rules:
+
+| Line | Strokes |
+|---|---|
+| `pandeiro` | `p` thumb, `d` fingers, `t` slap, `m` muted |
+| `zabumba` | `o` open, `m` muted, `b` bacalhau (the stick) |
+| `triangle` (`triângulo`) | `o` open, `f` closed |
+| `agogo` (`agogô`) | `a` high, `g` low |
+| `surdo` | `o` open, `m` muted |
+| `tamborim`, `alfaia`, `gongue` | `o` open, `m` muted |
+| `shaker` (`ganzá`) | `s` |
+| `cuica` (`cuíca`) | `a` high, `g` low |
+| `cajon` (`cajón`) | `b` bass, `t` slap |
+
+```aratu
+tempo: 120
+pandeiro = pd td pd td
+zabumba  = | o - -o m | o - b - |
+triangle = fo fo fo fo
+```
+
+Upper case accents and `(p)` is a ghost stroke, as on the drums. For now
+these sounds are drawn in the browser; recordings will come with
+Manguebyte's engine.
 
 ## 4. Melodies
 
@@ -168,6 +217,14 @@ E-flat, so for two notes Aratu asks for the brackets.
 Notes sounding together are joined with `+`: `c4+e4+g4` is a C major chord
 on one beat.
 
+**Long lines.** A line that starts with `|` goes on with the line of music
+above it, so a long melody can take several lines:
+
+```aratu
+melody = | c4 d e f | g a b c5 |
+         | b4 a g f | e d c _ |
+```
+
 ## 5. Chords and strumming
 
 A progression is written as a lead sheet, on a line called `chords`. The
@@ -186,6 +243,17 @@ Chord symbols keep their usual spelling: `Am`, `F`, `G7`, `Cmaj7`, `Dm7b5`,
 `E/G#`, and the spellings of a Brazilian *cifra* too: `C7M`, `Bº`, `G7(b9)`.
 `C6/9`, `E7alt` and solfège roots work as well: `Lám`, `Sol7`, `Fa#m7`,
 `Dó/Mi`. `N.C.` (or `-`) is a bar with no chord.
+
+**Chords by degree.** In Roman numerals, from the key at the start of the
+piece (C major when there is no `key:`): upper case is major, lower case
+minor, and the quality follows. `bVII` borrows from outside the key and
+`V7/V` is the dominant of the dominant. With `:arp` the chord is rolled,
+from its lowest note up; in a melody, `c4+e4+g4:arp`.
+
+```aratu
+key: C major
+chords = | I | vi | ii7 | V7:arp |
+```
 
 **Strumming.** A line called `strum` uses the rhythm rules with guitar
 symbols:
@@ -729,3 +797,47 @@ written value.
 | `part.param = value` | a parameter, drawn as a knob |
 | `part.lowpass.cutoff = 300 Hz -> 4000 Hz over 4 bars` | a parameter that moves, once |
 | `<->`, `back over 2 beats`, `loop` | there and back; another length back; again |
+| `2[c d e]` | three notes in two beats |
+| `meter: 7/8 = 2+2+3` | an additive meter |
+| `s!`, `(s)`, `g4^3` | marcato, ghost note, a fermata three times as long |
+| a line that starts with `\|` | goes on with the line of music above |
+| `\| I \| vi \| V7/V \|`, `Am:arp` | chords by degree; a rolled chord |
+| `pandeiro = pd td pd td` | Brazilian percussion |
+
+## 15. In English, Portuguese and Spanish
+
+Every Aratu keyword can be written in English, Portuguese or Spanish, with
+or without accents, in upper or lower case. The three versions of a piece
+play exactly the same.
+
+| English | Portuguese | Spanish |
+|---|---|---|
+| `meter:` | `compasso:`, `fórmula:` | `compás:` |
+| `tempo:` | `andamento:`, `pulso:` | `pulso:` |
+| `key:` | `tom:`, `tonalidade:` | `tonalidad:`, `tono:` |
+| `pickup: beat 4` | `anacruse: tempo 4` | `anacrusa: tiempo 4` |
+| `seed` | `semente` | `semilla` |
+| `form:` | `forma:` | `forma:` |
+| `at bar 9:` | `no compasso 9:` | `en el compás 9:` |
+| `at bar 9 beat 3:` | `no compasso 9 tempo 3:` | `en el compás 9, tiempo 3:` |
+| `from bar 9 to 16:` | `do compasso 9 ao 16:` | `desde el compás 9 hasta el 16:` |
+| `every 4 bars, first:` | `a cada 4 compassos, primeiro:` | `cada 4 compases, primero:` |
+| `now:` | `agora:`, `já:` | `ahora:`, `ya:` |
+| `play`, `add`, `once` | `toque`, `adicione`, `uma vez` | `toca`, `añade`, `una vez` |
+| `pattern`, `section` | `padrão`, `seção` | `patrón`, `sección` |
+| `motif`, `row`, `list` | `motivo`, `série`, `lista` | `motivo`, `serie`, `lista` |
+| `temas.all`, `temas.random` | `temas.todas`, `temas.acaso` | `temas.todos`, `temas.azar` |
+| `from serie octave 3` | `com serie oitava 3` | `desde serie octava 3` |
+| `over 4 bars` | `em 4 compassos` | `en 4 compases` |
+| `beats`, `eighths`, `sixteenths` | `tempos`, `colcheias`, `semicolcheias` | `tiempos`, `corcheas`, `semicorcheas` |
+| `cresc to ff` | `cresc até ff` | `cresc hasta ff` |
+| `back over 2 beats`, `loop` | `volta em 2 tempos`, `repete` | `vuelta en 2 tiempos`, `repite` |
+| `all:`, `out`, `in` | `todos:`, `fora`, `dentro` | `todos:`, `fuera`, `dentro` |
+| `chords`, `strum` | `acordes`, `batida` | `acordes`, `rasgueo` |
+| `.transpose`, `.invert` | `.transpor`, `.inverter` | `.transponer`, `.invertir` |
+| `drums` | `bateria` | `batería` |
+
+The names of dynamics (`mf`, `cresc`), tempo changes (`rit`, `a tempo`) and
+signs (`D.S. al coda`) are Italian, as in a score, and work in all three
+languages. Sounds and effects (`piano.grand`, `lowpass.cutoff`) have one
+name.
