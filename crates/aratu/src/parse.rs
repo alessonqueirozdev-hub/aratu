@@ -4,7 +4,8 @@
 use crate::ast::*;
 use crate::diag::{Diagnostic, Message, Thing};
 use crate::lex::{Block, Cursor, Line, Node, layout};
-use crate::music::parse_music;
+use crate::motifs::{self, Library, Source};
+use crate::music::parse_music_with;
 use crate::span::Span;
 use crate::theory::{Dyn, Key, Meter};
 
@@ -21,17 +22,93 @@ pub const DRUM_PARTS: &[&str] = &["drums", "drum", "kit"];
 pub fn parse(src: &str) -> (Ast, Vec<Diagnostic>) {
     let mut diags = Vec::new();
     let nodes = layout(src, &mut diags);
+    // Motifs, rows, lists and the key first, so a line may use a motif
+    // defined below it.
+    let mut lib = Library::default();
+    collect(&nodes, &mut lib);
     let mut p = Parser {
         stmts: Vec::new(),
         diags,
+        lib,
     };
     p.nodes(&nodes, &Scope::Top, None);
     (Ast { stmts: p.stmts }, p.diags)
 }
 
+/// `motif` and `row` lines, `list` blocks and the first `key:`, wherever
+/// they are written.
+fn collect(nodes: &[Node], lib: &mut Library) {
+    for node in nodes {
+        match node {
+            Node::Line(l) => {
+                let mut c = Cursor::new(*l);
+                if let Some((kw, name, music)) = definition(&mut c) {
+                    let source = Source {
+                        text: music.text.to_string(),
+                        base: music.span.start,
+                    };
+                    if kw == "motif" {
+                        lib.motifs.entry(name.to_string()).or_insert(source);
+                    } else {
+                        let (pitches, _, _) = motifs::read_row(music.text);
+                        lib.rows.entry(name.to_string()).or_insert(pitches);
+                    }
+                } else if lib.key.is_none() {
+                    let mut c = Cursor::new(*l);
+                    if c.keyword("key") && c.eat(":") {
+                        lib.key = Key::parse(c.rest().text);
+                    }
+                }
+            }
+            Node::Block(b) => {
+                let mut c = Cursor::new(b.header);
+                if c.keyword("list") {
+                    if let Some((n, _)) = c.name() {
+                        let items = b
+                            .body
+                            .iter()
+                            .filter_map(|n| match n {
+                                Node::Line(l) => Some(Source {
+                                    text: l.text.to_string(),
+                                    base: l.span.start,
+                                }),
+                                Node::Block(_) => None,
+                            })
+                            .collect();
+                        lib.lists.entry(n.to_string()).or_insert(items);
+                    }
+                } else {
+                    collect(&b.body, lib);
+                }
+            }
+        }
+    }
+}
+
+/// `motif riff = …` or `row serie = …`: the keyword, the name and what
+/// follows `=`. A line merely called `row` is not one.
+fn definition<'a>(c: &mut Cursor<'a>) -> Option<(&'static str, &'a str, Line<'a>)> {
+    let save = c.clone();
+    let kw = if c.keyword("motif") {
+        "motif"
+    } else if c.keyword("row") {
+        "row"
+    } else {
+        return None;
+    };
+    match c.name() {
+        Some((n, _)) if c.eat("=") => Some((kw, n, c.rest())),
+        _ => {
+            *c = save;
+            None
+        }
+    }
+}
+
 struct Parser {
     stmts: Vec<Stmt>,
     diags: Vec<Diagnostic>,
+    lib: Library,
 }
 
 /// What a parse step can fail with: a message at a place.
@@ -78,6 +155,26 @@ impl Parser {
         match (first.to_lowercase().as_str(), second) {
             ("pattern", Some((n, _))) => self.nodes(&b.body, &Scope::Pattern(n.to_string()), None),
             ("section", Some((n, _))) => self.nodes(&b.body, &Scope::Section(n.to_string()), None),
+            ("list", Some(_)) => {
+                // One melody per line; its mistakes are told here.
+                for node in &b.body {
+                    match node {
+                        Node::Line(l) => {
+                            parse_music_with(
+                                l.text,
+                                l.span.start,
+                                LineKind::Pitched,
+                                &mut self.diags,
+                                &self.lib,
+                                false,
+                            );
+                        }
+                        Node::Block(inner) => self
+                            .diags
+                            .push(Diagnostic::error(inner.header.span, Message::UnknownLine)),
+                    }
+                }
+            }
             (_, None) => {
                 if part.is_some() {
                     // A block inside a part block: read its lines as part of it.
@@ -95,6 +192,14 @@ impl Parser {
 
     fn line(&mut self, line: Line, scope: &Scope, part: Option<&Name>) {
         let mut c = Cursor::new(line);
+        if let Some((kw, _, music)) = definition(&mut c) {
+            if kw == "motif" {
+                self.motif(music);
+            } else {
+                self.row(music);
+            }
+            return;
+        }
         match self.statement(&mut c, scope, part) {
             Ok((when, kind)) => self.stmts.push(Stmt {
                 scope: scope.clone(),
@@ -429,7 +534,32 @@ impl Parser {
         let line_name = words[0];
         let kind = line_kind(line_name, part.map(|p| p.text.as_str()));
         let music = c.rest();
-        let bars = parse_music(music.text, music.span.start, kind, &mut self.diags);
+        let bars = if let Some(bars) = self.list_melody(music.text, music.span, kind) {
+            bars
+        } else if let Some(at) = music
+            .text
+            .find(" from ")
+            .filter(|_| kind == LineKind::Pitched)
+        {
+            let rhythm = &music.text[..at];
+            let source = &music.text[at + 6..];
+            self.rhythm_from_row(
+                rhythm,
+                music.span.start,
+                source,
+                music.span.start + at + 6,
+                kind,
+            )
+        } else {
+            parse_music_with(
+                music.text,
+                music.span.start,
+                kind,
+                &mut self.diags,
+                &self.lib,
+                false,
+            )
+        };
         let _ = scope;
         Ok(StmtKind::Line(LineDef {
             name: name(line_name, pspan),
@@ -437,6 +567,203 @@ impl Parser {
             bars,
             music_span: music.span,
         }))
+    }
+
+    /// Checks a motif where it is written: beats with no bar lines, read as
+    /// notes or, failing that, as drums.
+    fn motif(&mut self, music: Line) {
+        if let Some(i) = music.text.find('|') {
+            let at = music.span.start + i;
+            self.diags.push(Diagnostic::error(
+                Span::new(at, at + 1),
+                Message::MotifWithBars,
+            ));
+            return;
+        }
+        let mut notes = Vec::new();
+        parse_music_with(
+            music.text,
+            music.span.start,
+            LineKind::Pitched,
+            &mut notes,
+            &self.lib,
+            false,
+        );
+        if notes
+            .iter()
+            .any(|d| d.severity == crate::diag::Severity::Error)
+        {
+            let mut drums = Vec::new();
+            parse_music_with(
+                music.text,
+                music.span.start,
+                LineKind::Drums,
+                &mut drums,
+                &self.lib,
+                false,
+            );
+            if !drums
+                .iter()
+                .any(|d| d.severity == crate::diag::Severity::Error)
+            {
+                self.diags.extend(drums);
+                return;
+            }
+        }
+        self.diags.extend(notes);
+    }
+
+    /// Checks a row: every token a note, and a twelve-note row with each
+    /// pitch class once.
+    fn row(&mut self, music: Line) {
+        let (_, bad, repeated) = motifs::read_row(music.text);
+        let base = music.span.start;
+        for (at, len) in bad {
+            self.diags.push(Diagnostic::error(
+                Span::new(base + at, base + at + len),
+                Message::BadRowNote {
+                    text: music.text[at..at + len].to_string(),
+                },
+            ));
+        }
+        if let Some((at, len)) = repeated {
+            self.diags.push(Diagnostic::warning(
+                Span::new(base + at, base + at + len),
+                Message::RowRepeats {
+                    note: music.text[at..at + len].to_string(),
+                },
+            ));
+        }
+    }
+
+    /// `temas.2` or `temas.all` from a list: the melody's bars.
+    fn list_melody(&mut self, text: &str, span: Span, kind: LineKind) -> Option<Vec<Bar>> {
+        let (name, which) = text.trim().split_once('.')?;
+        let items = self.lib.lists.get(name)?.clone();
+        let chosen: Vec<&Source> = if which == "all" {
+            items.iter().collect()
+        } else {
+            let index: usize = which.parse().ok()?;
+            match index.checked_sub(1).and_then(|i| items.get(i)) {
+                Some(item) => vec![item],
+                None => {
+                    self.diags.push(Diagnostic::error(
+                        span,
+                        Message::ListIndex {
+                            name: name.to_string(),
+                            index,
+                            count: items.len(),
+                        },
+                    ));
+                    return Some(Vec::new());
+                }
+            }
+        };
+        // The melodies' own mistakes are told in the list.
+        let mut quiet = Vec::new();
+        let mut bars = Vec::new();
+        for item in chosen {
+            bars.extend(parse_music_with(
+                &item.text, item.base, kind, &mut quiet, &self.lib, false,
+            ));
+        }
+        Some(bars)
+    }
+
+    /// `| o o [o o] o | from serie.P0 octave 4`: a rhythm whose `o`s take
+    /// their pitches from a row, a motif or a vector `[0 11 3 …]`.
+    fn rhythm_from_row(
+        &mut self,
+        rhythm: &str,
+        base: usize,
+        source: &str,
+        source_base: usize,
+        kind: LineKind,
+    ) -> Vec<Bar> {
+        let trimmed = source.trim_start();
+        let lead = source.len() - trimmed.len();
+        let src_span = |from: usize, len: usize| {
+            Span::new(source_base + lead + from, source_base + lead + from + len)
+        };
+        let (mut pitches, rest) = if let Some(inner) = trimmed.strip_prefix('[') {
+            let close = inner.find(']').unwrap_or(inner.len());
+            let (pitches, bad, _) = motifs::read_row(&inner[..close]);
+            for (at, len) in bad {
+                self.diags.push(Diagnostic::error(
+                    src_span(1 + at, len),
+                    Message::BadRowNote {
+                        text: inner[at..at + len].to_string(),
+                    },
+                ));
+            }
+            (pitches, inner.get(close + 1..).unwrap_or(""))
+        } else {
+            let end = trimmed.find(char::is_whitespace).unwrap_or(trimmed.len());
+            let word = &trimmed[..end];
+            let pitches = match motifs::form_ref(word) {
+                Err(form) => {
+                    self.diags.push(Diagnostic::error(
+                        src_span(0, end),
+                        Message::BadRowForm { form },
+                    ));
+                    Vec::new()
+                }
+                Ok((name, form, n)) => {
+                    let row = if let Some(r) = self.lib.rows.get(name) {
+                        Some(r.clone())
+                    } else if self.lib.motifs.contains_key(name) {
+                        // A motif's notes, in order, as a row.
+                        let src = self.lib.motifs[name].clone();
+                        let mut quiet = Vec::new();
+                        let mut bars = parse_music_with(
+                            &src.text,
+                            src.base,
+                            LineKind::Pitched,
+                            &mut quiet,
+                            &self.lib,
+                            false,
+                        );
+                        let mut v = Vec::new();
+                        motifs::each_note_in_bars(&mut bars, &mut |n| v.extend(n.iter().copied()));
+                        Some(v)
+                    } else {
+                        None
+                    };
+                    match row {
+                        Some(r) => motifs::row_form(&r, form, n),
+                        None => {
+                            self.diags.push(Diagnostic::error(
+                                src_span(0, name.len()),
+                                Message::UnknownRow {
+                                    name: name.to_string(),
+                                },
+                            ));
+                            Vec::new()
+                        }
+                    }
+                }
+            };
+            (pitches, &trimmed[end..])
+        };
+        // `octave 3`: every pitch class in that octave.
+        let mut words = rest.split_whitespace();
+        if let (Some(w), Some(n)) = (words.next(), words.next()) {
+            if w.eq_ignore_ascii_case("octave") {
+                if let Ok(o) = n.parse::<i32>() {
+                    for p in &mut pitches {
+                        *p = p.rem_euclid(12) + 12 * (o + 1);
+                    }
+                }
+            }
+        }
+        let mut bars = parse_music_with(rhythm, base, kind, &mut self.diags, &self.lib, true);
+        if motifs::fill(&mut bars, &pitches) == 0 {
+            self.diags.push(Diagnostic::warning(
+                Span::new(base, base + rhythm.trim_end().len()),
+                Message::NoPlaceholders,
+            ));
+        }
+        bars
     }
 
     fn part_command(&mut self, c: &mut Cursor, target: Name) -> Result<StmtKind, Fail> {

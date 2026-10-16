@@ -151,8 +151,14 @@ fn grid_bar(line: &Line, index: usize, position: i64, beats: i64, src: &str) -> 
             }
             if let (Some(first), Some(last)) = (written.first(), written.last()) {
                 let s = first.span.join(last.span);
-                // A bar copied by `%` has its beats written in another bar.
-                if s.start >= bar.span.start && s.end <= bar.span.end {
+                // A bar copied by `%` has its beats written in another bar,
+                // and a motif or a repeat (`[e3 d3]x4`) makes beats that
+                // are written once or elsewhere: none can be redrawn.
+                let own = written.windows(2).all(|w| w[0].span.end <= w[1].span.start)
+                    && written
+                        .iter()
+                        .all(|b| b.span.start >= bar.span.start && b.span.end <= bar.span.end);
+                if own && s.start >= bar.span.start && s.end <= bar.span.end {
                     span = Some(s);
                 }
             }
@@ -323,6 +329,15 @@ mod tests {
         assert_eq!(explicit_octaves("eb'", &[63]), "eb4'");
         assert_eq!(explicit_octaves("c4+e+g", &[60, 64, 67]), "c4+e4+g4");
         assert_eq!(explicit_octaves("b#", &[60]), "b#3");
+    }
+
+    #[test]
+    fn repeats_and_motifs_are_not_editable() {
+        let b = first_bar("m = | [e3 d3 c3 d3]x4 |");
+        assert!(!b.editable);
+        assert_eq!(b.steps.len(), 16, "but they are drawn");
+        assert!(!first_bar("motif r = [e3 d3]\nm = | r r r r |").editable);
+        assert!(first_bar("m = | [e3 d3] c3 d3 e3 |").editable);
     }
 
     #[test]

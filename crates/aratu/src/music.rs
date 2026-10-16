@@ -12,6 +12,7 @@
 
 use crate::ast::*;
 use crate::diag::{Diagnostic, Message};
+use crate::motifs::{self, Library, MAX_DEPTH, PLACEHOLDER};
 use crate::span::Span;
 use crate::theory::{Chord, Dyn, accidentals, note_name};
 
@@ -153,6 +154,43 @@ pub fn parse_music(
     kind: LineKind,
     diags: &mut Vec<Diagnostic>,
 ) -> Vec<Bar> {
+    parse_music_with(text, base, kind, diags, &Library::default(), false)
+}
+
+/// What reading music may draw on: the piece's motifs, and whether an `o`
+/// stands for a note still to come from a row.
+#[derive(Clone, Copy)]
+struct Cx<'l> {
+    lib: &'l Library,
+    placeholders: bool,
+    depth: u8,
+}
+
+/// Reads music that may use the piece's motifs; with `placeholders`, an
+/// `o` is a note whose pitch a row will give (see [`motifs::fill`]).
+pub fn parse_music_with(
+    text: &str,
+    base: usize,
+    kind: LineKind,
+    diags: &mut Vec<Diagnostic>,
+    lib: &Library,
+    placeholders: bool,
+) -> Vec<Bar> {
+    let cx = Cx {
+        lib,
+        placeholders,
+        depth: 0,
+    };
+    parse_in(text, base, kind, diags, cx)
+}
+
+fn parse_in(
+    text: &str,
+    base: usize,
+    kind: LineKind,
+    diags: &mut Vec<Diagnostic>,
+    cx: Cx,
+) -> Vec<Bar> {
     let toks = tokenize(text, base, diags);
     let mut seg = Segments {
         bars: Vec::new(),
@@ -165,12 +203,12 @@ pub fn parse_music(
         match tok {
             Tok::Word(w, s) => words.push((w, s)),
             Tok::Line(bl, s) => {
-                seg.close(&mut words, before, Some((bl, s)), diags);
+                seg.close(&mut words, before, Some((bl, s)), diags, cx);
                 before = Some((bl, s));
             }
         }
     }
-    seg.close(&mut words, before, None, diags);
+    seg.close(&mut words, before, None, diags, cx);
     seg.bars
 }
 
@@ -189,6 +227,7 @@ impl Segments {
         before: Option<(BarLine, Span)>,
         after: Option<(BarLine, Span)>,
         diags: &mut Vec<Diagnostic>,
+        cx: Cx,
     ) {
         // `x4` right after `:|` belongs to the bar before.
         if let Some((BarLine::End | BarLine::EndStart | BarLine::EndEnding(_), _)) = before {
@@ -221,7 +260,7 @@ impl Segments {
             return;
         }
         let span = words.iter().fold(words[0].1, |s, (_, ws)| s.join(*ws));
-        let mut bar = read_bar(words, span, self.kind, &mut self.octave, diags);
+        let mut bar = read_bar(words, span, self.kind, &mut self.octave, diags, cx);
         if let Some((bl, _)) = before {
             match bl {
                 BarLine::Start | BarLine::EndStart => bar.repeat_start = true,
@@ -270,6 +309,7 @@ fn read_bar(
     kind: LineKind,
     octave: &mut Option<i32>,
     diags: &mut Vec<Diagnostic>,
+    cx: Cx,
 ) -> Bar {
     let mut bar = Bar {
         span,
@@ -370,28 +410,109 @@ fn read_bar(
         _ => {}
     }
 
-    let beats = words
-        .iter()
-        .map(|&(w, s)| {
-            let slots = if kind == LineKind::Chords {
-                chord_beat(w, s, diags)
-            } else {
-                let mut p = SlotParser {
-                    s: w,
-                    base: s.start,
-                    pos: 0,
-                    kind,
-                    octave,
-                    diags,
-                    pending: None,
-                };
-                p.seq(None, false)
-            };
-            Beat { slots, span: s }
-        })
-        .collect();
+    let mut beats = Vec::new();
+    for &(w, s) in words.iter() {
+        beats.extend(word_beats(w, s, kind, octave, diags, cx));
+    }
     bar.content = BarContent::Beats(beats);
     bar
+}
+
+/// The beats one word makes: usually one, more for a motif or a repeat
+/// (`[e3 d3 c3 d3]x4`, `riff+2`, `riffx2`).
+fn word_beats(
+    w: &str,
+    s: Span,
+    kind: LineKind,
+    octave: &mut Option<i32>,
+    diags: &mut Vec<Diagnostic>,
+    cx: Cx,
+) -> Vec<Beat> {
+    if kind == LineKind::Chords {
+        return vec![Beat {
+            slots: chord_beat(w, s, diags),
+            span: s,
+        }];
+    }
+    let (core, times) = motifs::split_times(w, cx.lib);
+    let cs = Span::new(s.start, s.start + core.len());
+    let once = match motifs::motif_ref(core, cx.lib) {
+        Some((name, ops)) => motif_beats(name, &ops, cs, kind, diags, cx),
+        None => {
+            let mut p = SlotParser {
+                s: core,
+                base: cs.start,
+                pos: 0,
+                kind,
+                octave,
+                diags,
+                pending: None,
+                placeholders: cx.placeholders,
+            };
+            vec![Beat {
+                slots: p.seq(None, false),
+                span: cs,
+            }]
+        }
+    };
+    let mut beats = Vec::with_capacity(once.len() * times as usize);
+    for _ in 0..times {
+        beats.extend(once.iter().cloned());
+    }
+    beats
+}
+
+/// A motif's beats, moved as asked. Its notes keep the spans of its
+/// definition, so the editor lights the motif where it is written; its
+/// own mistakes are told once, where it is defined.
+fn motif_beats(
+    name: &str,
+    ops: &[motifs::Op],
+    s: Span,
+    kind: LineKind,
+    diags: &mut Vec<Diagnostic>,
+    cx: Cx,
+) -> Vec<Beat> {
+    if cx.depth >= MAX_DEPTH {
+        diags.push(Diagnostic::error(
+            s,
+            Message::MotifLoop {
+                name: name.to_string(),
+            },
+        ));
+        return vec![Beat {
+            slots: vec![Slot::Rest(s)],
+            span: s,
+        }];
+    }
+    let src = &cx.lib.motifs[name];
+    let mut quiet = Vec::new();
+    let inner = Cx {
+        depth: cx.depth + 1,
+        placeholders: false,
+        ..cx
+    };
+    let bars = parse_in(&src.text, src.base, kind, &mut quiet, inner);
+    // A loop found deeper is reported here, where the loop is used.
+    if let Some(d) = quiet
+        .into_iter()
+        .find(|d| matches!(d.message, Message::MotifLoop { .. }))
+    {
+        diags.push(Diagnostic::error(s, d.message));
+    }
+    let mut beats: Vec<Beat> = bars
+        .into_iter()
+        .flat_map(|b| match b.content {
+            BarContent::Beats(beats) => beats,
+            _ => Vec::new(),
+        })
+        .collect();
+    let key = cx.lib.key.unwrap_or(crate::theory::Key {
+        tonic: 0,
+        minor: false,
+    });
+    motifs::apply(&mut beats, ops, key);
+    beats
 }
 
 /// Splits trailing `'`, `^`, `?` and `?30%` off a chord or note word.
@@ -491,6 +612,8 @@ struct SlotParser<'p, 'd> {
     kind: LineKind,
     octave: &'p mut Option<i32>,
     diags: &'d mut Vec<Diagnostic>,
+    /// `o` is a note whose pitch a row will give.
+    placeholders: bool,
     /// A dynamic written before a group, `p:[c4 d4]`, waiting for the
     /// group's first hit.
     pending: Option<Dyn>,
@@ -743,6 +866,11 @@ impl SlotParser<'_, '_> {
                     };
                     (Sound::Strum(stroke), accent)
                 }
+            }
+            LineKind::Pitched if self.placeholders && matches!(c, 'o' | 'O') => {
+                // A note waiting for its pitch: `o`, or `O` accented.
+                self.bump();
+                (Sound::Notes(vec![PLACEHOLDER]), c == 'O')
             }
             LineKind::Pitched => {
                 let mut notes = Vec::new();

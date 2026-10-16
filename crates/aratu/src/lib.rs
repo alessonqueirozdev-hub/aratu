@@ -12,6 +12,7 @@ pub mod exercise;
 pub mod grid;
 pub mod lex;
 pub mod model;
+pub mod motifs;
 pub mod music;
 pub mod params;
 pub mod parse;

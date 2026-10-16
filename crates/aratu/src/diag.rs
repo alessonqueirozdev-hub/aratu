@@ -266,6 +266,36 @@ pub enum Message {
     UnknownParam {
         name: String,
     },
+    /// A motif that uses itself, directly or through others.
+    MotifLoop {
+        name: String,
+    },
+    /// A motif written with bar lines.
+    MotifWithBars,
+    /// `from serie` names no row, motif or vector.
+    UnknownRow {
+        name: String,
+    },
+    /// `serie.X3`: not a form of a row.
+    BadRowForm {
+        form: String,
+    },
+    /// A row's token is not a note.
+    BadRowNote {
+        text: String,
+    },
+    /// A twelve-note row repeats a pitch class.
+    RowRepeats {
+        note: String,
+    },
+    /// `temas.9` in a list of fewer melodies.
+    ListIndex {
+        name: String,
+        index: usize,
+        count: usize,
+    },
+    /// `from` with no `o` in the rhythm.
+    NoPlaceholders,
     /// A chain names a voice or an effect that does not exist.
     UnknownSound {
         name: String,
@@ -580,6 +610,22 @@ impl Message {
             }
             (UnknownSection { name }, En) => format!("there is no section called `{name}`"),
             (UnknownSection { name }, Pt) => format!("não existe seção chamada `{name}`"),
+            (MotifLoop { name }, En) => format!("the motif `{name}` uses itself, so it would never end"),
+            (MotifLoop { name }, Pt) => format!("o motivo `{name}` usa a si mesmo e nunca terminaria"),
+            (MotifWithBars, En) => "a motif is a few beats, without bar lines; for whole bars, use a list".into(),
+            (MotifWithBars, Pt) => "um motivo é um trecho de tempos, sem barras de compasso; para compassos inteiros, use uma lista".into(),
+            (UnknownRow { name }, En) => format!("there is no row, motif or list of notes called `{name}`"),
+            (UnknownRow { name }, Pt) => format!("não existe série, motivo ou vetor de notas chamado `{name}`"),
+            (BadRowForm { form }, En) => format!("`{form}` is not a form of a row: use P, I, R or RI with a number from 0 to 11, as in serie.RI3"),
+            (BadRowForm { form }, Pt) => format!("`{form}` não é uma forma de série: use P, I, R ou RI com um número de 0 a 11, como em serie.RI3"),
+            (BadRowNote { text }, En) => format!("`{text}` is not a note of a row: use 0 to 11 or a note name, such as c, eb4 or dó"),
+            (BadRowNote { text }, Pt) => format!("`{text}` não é uma nota de série: use 0 a 11 ou um nome de nota, como dó, mib4 ou c"),
+            (RowRepeats { note }, En) => format!("this twelve-note row repeats `{note}`; a twelve-tone row uses each of the twelve notes once"),
+            (RowRepeats { note }, Pt) => format!("esta série de doze notas repete `{note}`; uma série dodecafônica usa cada uma das doze notas uma vez"),
+            (ListIndex { name, index, count }, En) => format!("the list `{name}` has {count} melodies, so there is no number {index}"),
+            (ListIndex { name, index, count }, Pt) => format!("a lista `{name}` tem {count} melodias, então não existe a de número {index}"),
+            (NoPlaceholders, En) => "this line takes notes from a row but has no `o` to put them in".into(),
+            (NoPlaceholders, Pt) => "esta linha pega notas de uma série, mas não tem nenhum `o` para colocá-las".into(),
             (UnknownSound { name, closest }, En) => match closest {
                 Some(c) => format!(
                     "there is no voice or effect called `{name}`; did you mean `{c}`? The Sounds panel lists them all"
@@ -771,6 +817,14 @@ impl Message {
                 format!("no existe una parte, línea o patrón llamado `{name}`")
             }
             (UnknownSection { name }, Es) => format!("no existe una sección llamada `{name}`"),
+            (MotifLoop { name }, Es) => format!("el motivo `{name}` se usa a sí mismo y nunca terminaría"),
+            (MotifWithBars, Es) => "un motivo es un trozo de tiempos, sin barras de compás; para compases enteros, usa una lista".into(),
+            (UnknownRow { name }, Es) => format!("no existe una serie, un motivo o un vector de notas llamado `{name}`"),
+            (BadRowForm { form }, Es) => format!("`{form}` no es una forma de serie: usa P, I, R o RI con un número de 0 a 11, como en serie.RI3"),
+            (BadRowNote { text }, Es) => format!("`{text}` no es una nota de serie: usa 0 a 11 o un nombre de nota, como do, mib4 o c"),
+            (RowRepeats { note }, Es) => format!("esta serie de doce notas repite `{note}`; una serie dodecafónica usa cada una de las doce notas una vez"),
+            (ListIndex { name, index, count }, Es) => format!("la lista `{name}` tiene {count} melodías, así que no existe la número {index}"),
+            (NoPlaceholders, Es) => "esta línea toma notas de una serie, pero no tiene ningún `o` donde ponerlas".into(),
             (UnknownSound { name, closest }, Es) => match closest {
                 Some(c) => format!(
                     "no existe un sonido o efecto llamado `{name}`; ¿quisiste decir `{c}`? El panel Sonidos los muestra todos"
