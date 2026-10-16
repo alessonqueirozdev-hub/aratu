@@ -242,6 +242,24 @@ pub enum LineKind {
     Chords,
     /// A strum pattern: `D du -u du`.
     Strum,
+    /// A percussion instrument with strokes of its own: `pandeiro = pd td`.
+    Percussion(Perc),
+}
+
+/// Brazilian percussion, and the flamenco cajón (see [`crate::percussion`]).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Perc {
+    Pandeiro,
+    Zabumba,
+    Triangle,
+    Agogo,
+    Surdo,
+    Tamborim,
+    Alfaia,
+    Gongue,
+    Shaker,
+    Cuica,
+    Cajon,
 }
 
 #[derive(Clone, Debug, PartialEq)]

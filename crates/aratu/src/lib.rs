@@ -16,6 +16,7 @@ pub mod motifs;
 pub mod music;
 pub mod params;
 pub mod parse;
+pub mod percussion;
 pub mod ratio;
 pub mod schedule;
 pub mod span;

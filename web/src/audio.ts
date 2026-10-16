@@ -605,6 +605,26 @@ export class Engine {
     return { src: n, gain };
   }
 
+  /** A bell or a triangle: a few sine partials dying away together. */
+  private ring(c: Chain, when: number, peak: number, partials: number[], decay: number): void {
+    const gain = this.ctx.createGain();
+    gain.connect(c.input);
+    gain.gain.setValueAtTime(0.0001, when);
+    gain.gain.linearRampToValueAtTime(peak, when + 0.002);
+    gain.gain.setTargetAtTime(0.0001, when + 0.002, decay);
+    partials.forEach((f, i) => {
+      const o = this.ctx.createOscillator();
+      o.type = "sine";
+      o.frequency.value = f;
+      const og = this.ctx.createGain();
+      og.gain.value = 1 / (i + 1);
+      o.connect(og).connect(gain);
+      o.start(when);
+      o.stop(when + decay * 6 + 0.05);
+      this.track(o, gain);
+    });
+  }
+
   /** The six square waves of an analogue cymbal, high-passed. */
   private metal(dest: AudioNode, when: number, peak: number, decay: number, cutoff: number): void {
     const gain = this.ctx.createGain();
@@ -848,6 +868,103 @@ export class Engine {
         this.noiseHit(c.input, when, "highpass", 4000, 0.7, g * 0.35, 0.006);
         return;
       }
+      // Brazilian percussion and the cajón, drawn from simple parts until
+      // recordings come: skins are falling sines, bells a few partials,
+      // jingles and shakers filtered noise.
+      case "pandeiro-thumb":
+        this.tom(c, when, g * 0.9, bright, 95, 0.12);
+        this.noiseHit(c.input, when + 0.004, "highpass", 6500, 0.8, g * 0.25, 0.06);
+        return;
+      case "pandeiro-fingers":
+        this.noiseHit(c.input, when, "highpass", 7000, 0.8, g * 0.45, 0.07);
+        this.noiseHit(c.input, when, "bandpass", 2400, 1.2, g * 0.15, 0.015);
+        return;
+      case "pandeiro-slap":
+        this.noiseHit(c.input, when, "bandpass", 2200 * bright, 1.1, g * 0.9, 0.025);
+        this.noiseHit(c.input, when + 0.003, "highpass", 6500, 0.8, g * 0.35, 0.08);
+        return;
+      case "pandeiro-muted":
+        this.tom(c, when, g * 0.7, bright, 120, 0.035);
+        return;
+      case "zabumba-open":
+        this.tom(c, when, g * 1.3, bright, 70, 0.32);
+        this.noiseHit(c.input, when, "lowpass", 600, 0.7, g * 0.3, 0.03);
+        return;
+      case "zabumba-muted":
+        this.tom(c, when, g * 1.1, bright, 80, 0.06);
+        return;
+      case "zabumba-stick":
+        this.noiseHit(c.input, when, "bandpass", 3200, 2, g * 0.7, 0.012);
+        this.ring(c, when, g * 0.25, [1500], 0.02);
+        return;
+      case "triangle-open":
+        this.ring(c, when, g * 0.25, [2650, 5300 * 1.01, 7950 * 1.02], 1.1);
+        return;
+      case "triangle-closed":
+        this.ring(c, when, g * 0.25, [2650, 5300 * 1.01, 7950 * 1.02], 0.05);
+        return;
+      case "agogo-high":
+        this.ring(c, when, g * 0.35, [1050, 2650, 4100], 0.35);
+        return;
+      case "agogo-low":
+        this.ring(c, when, g * 0.35, [720, 1830, 2900], 0.4);
+        return;
+      case "surdo-open":
+        this.tom(c, when, g * 1.4, bright, 58, 0.55);
+        return;
+      case "surdo-muted":
+        this.tom(c, when, g * 1.1, bright, 62, 0.08);
+        return;
+      case "tamborim-open":
+        this.tom(c, when, g * 0.6, bright, 620, 0.06);
+        this.noiseHit(c.input, when, "bandpass", 3500, 1.2, g * 0.5, 0.02);
+        return;
+      case "tamborim-muted":
+        this.tom(c, when, g * 0.5, bright, 650, 0.02);
+        this.noiseHit(c.input, when, "bandpass", 3500, 1.2, g * 0.4, 0.008);
+        return;
+      case "alfaia-open":
+        this.tom(c, when, g * 1.4, bright, 75, 0.45);
+        this.noiseHit(c.input, when, "lowpass", 900, 0.7, g * 0.35, 0.04);
+        return;
+      case "alfaia-muted":
+        this.tom(c, when, g * 1.2, bright, 85, 0.07);
+        return;
+      case "gongue-open":
+        this.ring(c, when, g * 0.4, [330, 790, 1270], 0.7);
+        return;
+      case "gongue-muted":
+        this.ring(c, when, g * 0.4, [330, 790, 1270], 0.06);
+        return;
+      case "shaker":
+        this.noiseHit(c.input, when, "bandpass", 6500, 1.5, g * 0.55, 0.035);
+        return;
+      case "cuica-high":
+      case "cuica-low": {
+        // The rod rubbed inside: a voice that slides.
+        const high = name === "cuica-high";
+        const o = ctx.createOscillator();
+        o.type = "triangle";
+        const gain = ctx.createGain();
+        o.frequency.setValueAtTime(high ? 520 : 260, when);
+        o.frequency.exponentialRampToValueAtTime(high ? 880 : 190, when + 0.12);
+        gain.gain.setValueAtTime(0.0001, when);
+        gain.gain.linearRampToValueAtTime(g * 0.5, when + 0.02);
+        gain.gain.setTargetAtTime(0.0001, when + 0.08, 0.05);
+        o.connect(gain).connect(c.input);
+        o.start(when);
+        o.stop(when + 0.4);
+        this.track(o, gain);
+        return;
+      }
+      case "cajon-bass":
+        this.tom(c, when, g * 1.2, bright, 90, 0.16);
+        this.noiseHit(c.input, when, "lowpass", 800, 0.7, g * 0.25, 0.02);
+        return;
+      case "cajon-slap":
+        this.noiseHit(c.input, when, "bandpass", 2600 * bright, 1, g * 0.9, 0.04);
+        this.tom(c, when, g * 0.4, bright, 380, 0.04);
+        return;
       case "clap": {
         // Hands clapping: a few hands a hair apart, then the room.
         for (const [dt, level] of [[0, 0.8], [0.011, 0.7], [0.022, 1]]) {

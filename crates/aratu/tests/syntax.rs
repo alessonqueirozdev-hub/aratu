@@ -727,3 +727,77 @@ fn a_rolled_chord_goes_up_from_the_lowest_note() {
         }
     }
 }
+
+#[test]
+fn brazilian_percussion_lines_have_strokes_of_their_own() {
+    use Drum::*;
+    let cases: [(&str, &[Drum]); 11] = [
+        (
+            "pandeiro = pd td pd td",
+            &[
+                PandeiroThumb,
+                PandeiroFingers,
+                PandeiroSlap,
+                PandeiroFingers,
+                PandeiroThumb,
+                PandeiroFingers,
+                PandeiroSlap,
+                PandeiroFingers,
+            ],
+        ),
+        (
+            "zabumba = o - b m",
+            &[ZabumbaOpen, ZabumbaStick, ZabumbaMuted],
+        ),
+        (
+            "triângulo = o f o f",
+            &[TriangleOpen, TriangleClosed, TriangleOpen, TriangleClosed],
+        ),
+        (
+            "agogô = a g a g",
+            &[AgogoHigh, AgogoLow, AgogoHigh, AgogoLow],
+        ),
+        ("surdo = - o - m", &[SurdoOpen, SurdoMuted]),
+        (
+            "tamborim = o o m o",
+            &[TamborimOpen, TamborimOpen, TamborimMuted, TamborimOpen],
+        ),
+        ("alfaia = o - m -", &[AlfaiaOpen, AlfaiaMuted]),
+        (
+            "gonguê = o m o m",
+            &[GongueOpen, GongueMuted, GongueOpen, GongueMuted],
+        ),
+        ("ganzá = ssss ssss ssss ssss", &[Shaker; 16]),
+        ("cuíca = a - g -", &[CuicaHigh, CuicaLow]),
+        (
+            "cajón = b t b t",
+            &[CajonBass, CajonSlap, CajonBass, CajonSlap],
+        ),
+    ];
+    for (src, want) in cases {
+        assert_eq!(drums(src), want, "{src}");
+    }
+    // Names in Spanish and English, inside a block, accents in upper case.
+    assert_eq!(drums("pandero = p - - -"), [PandeiroThumb]);
+    assert_eq!(drums("triangle = o - - -"), [TriangleOpen]);
+    let e = events(
+        "percussão {\n  pandeiro = P d t d\n  agogô = a g a g\n}",
+        1,
+        2,
+    );
+    assert!(e[0].accent);
+    assert_eq!(e.len(), 8);
+    // A letter the instrument does not play says which it does.
+    assert_eq!(
+        first("pandeiro = p x t d"),
+        Message::UnknownStroke {
+            ch: 'x',
+            instrument: aratu::ast::Perc::Pandeiro
+        }
+    );
+    assert!(
+        compile("pandeiro = p x t d").diagnostics[0]
+            .text(Lang::Pt)
+            .contains("p polegar, d dedos, t tapa, m abafado")
+    );
+}

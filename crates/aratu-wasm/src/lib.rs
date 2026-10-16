@@ -58,7 +58,12 @@ fn instrument(part: &aratu::model::Part) -> &'static str {
     use aratu::ast::LineKind;
     if part.lines.iter().any(|l| l.kind == LineKind::Strum) {
         "guitar"
-    } else if !part.lines.is_empty() && part.lines.iter().all(|l| l.kind == LineKind::Drums) {
+    } else if !part.lines.is_empty()
+        && part
+            .lines
+            .iter()
+            .all(|l| matches!(l.kind, LineKind::Drums | LineKind::Percussion(_)))
+    {
         "drums"
     } else if part.lines.iter().any(|l| l.kind == LineKind::Chords) {
         "keys"
@@ -451,7 +456,7 @@ pub fn grid_json(handle: u32, max_bars: usize) -> String {
             j.open_obj();
             j.key("label").str(&line.label);
             j.key("kind").str(match line.kind {
-                LineKind::Drums => "drums",
+                LineKind::Drums | LineKind::Percussion(_) => "drums",
                 LineKind::Strum => "strum",
                 LineKind::Pitched => "pitched",
                 LineKind::Chords => "chords",

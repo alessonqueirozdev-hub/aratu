@@ -374,6 +374,11 @@ pub enum Message {
     /// `every 4 bars: melody = …`, or `at bar` before a line inside a
     /// pattern or section.
     LineChangeOnlyAtBar,
+    /// A letter a percussion instrument does not play.
+    UnknownStroke {
+        ch: char,
+        instrument: crate::ast::Perc,
+    },
     /// `7/8 = 2+3`: groups that do not add up to the meter.
     BadMeterGroups {
         text: String,
@@ -762,6 +767,9 @@ impl Message {
             (UnknownMotifForm { name, form }, Es) => format!(
                 "`{name}` es un motivo, pero `.{form}` no es una de sus formas: `.inv`, `.retro`, `.ri`, `+2` (grados), `+3st` (semitonos)"
             ),
+            (UnknownStroke { ch, instrument }, En) => format!("`{ch}` is not a stroke {}", instrument.help(En)),
+            (UnknownStroke { ch, instrument }, Pt) => format!("`{ch}` não é um golpe {}", instrument.help(Pt)),
+            (UnknownStroke { ch, instrument }, Es) => format!("`{ch}` no es un golpe {}", instrument.help(Es)),
             (BadMeterGroups { text, units }, En) => format!("`{text}` should be groups that add up to {units}, such as `2+2+3` for 7/8"),
             (BadMeterGroups { text, units }, Pt) => format!("`{text}` deveria ser grupos que somam {units}, como `2+2+3` para 7/8"),
             (BadMeterGroups { text, units }, Es) => format!("`{text}` debería ser grupos que sumen {units}, como `2+2+3` para 7/8"),

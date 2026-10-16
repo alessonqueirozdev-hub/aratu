@@ -46,7 +46,6 @@ pub const DRUM_LINES: &[&str] = &[
     "conducao",
     "ataque",
     "aro",
-    "surdo",
     "tons",
     "palma",
     "palmas",
@@ -995,6 +994,9 @@ pub fn line_kind(line: &str, part: Option<&str>) -> LineKind {
     }
     if crate::words::is(&l, "strum") {
         return LineKind::Strum;
+    }
+    if let Some(p) = Perc::named(line) {
+        return LineKind::Percussion(p);
     }
     let in_drums = part.is_some_and(|p| DRUM_PARTS.contains(&p.to_lowercase().as_str()));
     if in_drums || DRUM_LINES.contains(&l.as_str()) {

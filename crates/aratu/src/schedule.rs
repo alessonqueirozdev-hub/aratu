@@ -63,6 +63,31 @@ pub enum Drum {
     SideStick,
     /// Hands clapping: palmas.
     Clap,
+    PandeiroThumb,
+    PandeiroFingers,
+    PandeiroSlap,
+    PandeiroMuted,
+    ZabumbaOpen,
+    ZabumbaMuted,
+    /// The *bacalhau*: a thin stick on the zabumba's other skin.
+    ZabumbaStick,
+    TriangleOpen,
+    TriangleClosed,
+    AgogoHigh,
+    AgogoLow,
+    SurdoOpen,
+    SurdoMuted,
+    TamborimOpen,
+    TamborimMuted,
+    AlfaiaOpen,
+    AlfaiaMuted,
+    GongueOpen,
+    GongueMuted,
+    Shaker,
+    CuicaHigh,
+    CuicaLow,
+    CajonBass,
+    CajonSlap,
     /// The flamenco *golpe* on a guitar's top, from a strum line.
     GuitarTap,
 }
@@ -98,6 +123,30 @@ impl Drum {
             Drum::FloorTom => "floor-tom",
             Drum::SideStick => "side-stick",
             Drum::Clap => "clap",
+            Drum::PandeiroThumb => "pandeiro-thumb",
+            Drum::PandeiroFingers => "pandeiro-fingers",
+            Drum::PandeiroSlap => "pandeiro-slap",
+            Drum::PandeiroMuted => "pandeiro-muted",
+            Drum::ZabumbaOpen => "zabumba-open",
+            Drum::ZabumbaMuted => "zabumba-muted",
+            Drum::ZabumbaStick => "zabumba-stick",
+            Drum::TriangleOpen => "triangle-open",
+            Drum::TriangleClosed => "triangle-closed",
+            Drum::AgogoHigh => "agogo-high",
+            Drum::AgogoLow => "agogo-low",
+            Drum::SurdoOpen => "surdo-open",
+            Drum::SurdoMuted => "surdo-muted",
+            Drum::TamborimOpen => "tamborim-open",
+            Drum::TamborimMuted => "tamborim-muted",
+            Drum::AlfaiaOpen => "alfaia-open",
+            Drum::AlfaiaMuted => "alfaia-muted",
+            Drum::GongueOpen => "gongue-open",
+            Drum::GongueMuted => "gongue-muted",
+            Drum::Shaker => "shaker",
+            Drum::CuicaHigh => "cuica-high",
+            Drum::CuicaLow => "cuica-low",
+            Drum::CajonBass => "cajon-bass",
+            Drum::CajonSlap => "cajon-slap",
             Drum::GuitarTap => "guitar-tap",
         }
     }
@@ -1509,7 +1558,11 @@ impl<'p> Scheduler<'p> {
             let mut also = None;
             match &h.sound {
                 Sound::Drum(c) => {
-                    if let Some(d) = Drum::from_symbol(*c) {
+                    let drum = match inst.line.kind {
+                        LineKind::Percussion(p) => p.stroke(*c),
+                        _ => Drum::from_symbol(*c),
+                    };
+                    if let Some(d) = drum {
                         kinds.push((EventKind::Drum(d), 0.0));
                     }
                 }

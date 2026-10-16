@@ -57,6 +57,9 @@ const DRUM_LINES = new Set([
   "hihat", "ride", "crash", "clap", "ht", "mt", "lt", "ft", "toms", "floor", "stick",
   "chimbal", "bumbo", "caixa", "prato", "pratos", "condução", "conducao", "ataque", "aro",
   "surdo", "tons", "palma", "palmas", "charles", "bombo", "caja", "platillo", "platillos",
+  "pandeiro", "pandero", "zabumba", "triangulo", "triângulo", "triangle", "ferrinho", "agogo",
+  "agogô", "tamborim", "alfaia", "gongue", "gonguê", "ganza", "ganzá", "agbe", "caxixi", "shaker",
+  "chocalho", "cuica", "cuíca", "cajon", "cajón",
 ]);
 const DRUM_PARTS = new Set(["drums", "drum", "kit", "bateria", "batería"]);
 

@@ -1184,7 +1184,7 @@ impl SlotParser<'_, '_> {
         let sound_start = self.pos;
         let c = self.peek()?;
         let (sound, accent) = match self.kind {
-            LineKind::Drums | LineKind::Strum => {
+            LineKind::Drums | LineKind::Strum | LineKind::Percussion(_) => {
                 if !c.is_ascii_alphabetic() {
                     self.bump();
                     self.diags.push(Diagnostic::error(
@@ -1196,7 +1196,20 @@ impl SlotParser<'_, '_> {
                 self.bump();
                 let lower = c.to_ascii_lowercase();
                 let accent = c.is_ascii_uppercase();
-                if self.kind == LineKind::Drums {
+                if let LineKind::Percussion(p) = self.kind {
+                    if p.stroke(lower).is_none() {
+                        self.skip_mods();
+                        self.diags.push(Diagnostic::error(
+                            self.at(sound_start),
+                            Message::UnknownStroke {
+                                ch: c,
+                                instrument: p,
+                            },
+                        ));
+                        return Some(Slot::Rest(self.at(start)));
+                    }
+                    (Sound::Drum(lower), accent)
+                } else if self.kind == LineKind::Drums {
                     if !DRUM_SYMBOLS.contains(&lower) {
                         self.skip_mods();
                         self.diags.push(Diagnostic::error(

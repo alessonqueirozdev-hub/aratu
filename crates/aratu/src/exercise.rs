@@ -96,6 +96,8 @@ fn drum_index(d: Drum) -> u8 {
         Drum::SideStick => 9,
         Drum::GuitarTap => 10,
         Drum::Clap => 11,
+        // Percussion strokes count by their place after the kit.
+        other => 12 + other as u8,
     }
 }
 

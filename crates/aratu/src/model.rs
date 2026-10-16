@@ -242,7 +242,7 @@ fn loose_part(line: &str, kind: LineKind) -> String {
     match kind {
         LineKind::Drums => "drums".into(),
         LineKind::Chords | LineKind::Strum => "chords".into(),
-        LineKind::Pitched => line.to_string(),
+        LineKind::Pitched | LineKind::Percussion(_) => line.to_string(),
     }
 }
 
