@@ -185,6 +185,11 @@ pub enum Message {
         first: String,
         second: String,
     },
+    /// Two notes glued inside brackets: only a space is missing.
+    GluedNotesInGroup {
+        first: String,
+        second: String,
+    },
     UnknownDrum {
         ch: char,
     },
@@ -378,6 +383,12 @@ impl Message {
             (GluedNotes { first, second }, En) => format!(
                 "two notes are written together in one beat; put them in brackets: `[{first} {second}]`"
             ),
+            (GluedNotesInGroup { first, second }, En) => format!(
+                "two notes are written together; put a space between them: `{first} {second}`"
+            ),
+            (GluedNotesInGroup { first, second }, Pt) => {
+                format!("duas notas estão coladas; separe com um espaço: `{first} {second}`")
+            }
             (GluedNotes { first, second }, Pt) => format!(
                 "duas notas estão coladas num tempo; escreva entre colchetes: `[{first} {second}]`"
             ),
@@ -640,6 +651,9 @@ impl Message {
             (UnknownNote { text }, Es) => format!(
                 "`{text}` no es una nota: las notas son do re mi fa sol la si, o c d e f g a b, con la octava, como do4"
             ),
+            (GluedNotesInGroup { first, second }, Es) => {
+                format!("hay dos notas pegadas; sepáralas con un espacio: `{first} {second}`")
+            }
             (GluedNotes { first, second }, Es) => format!(
                 "hay dos notas pegadas en un tiempo; escríbelas entre corchetes: `[{first} {second}]`"
             ),

@@ -204,8 +204,9 @@ As marcas de dinâmica são as da partitura: `ppp pp p mp mf f ff fff`, e
 `sfz`, `fp`.
 
 **Dentro de um compasso**, a marca vai na nota com dois-pontos, colada ou
-com um espaço (`p:dó4` ou `p: dó4`), e não conta como tempo. Em `f:fá4`, o
-primeiro `f` é forte e o segundo é a nota:
+com um espaço (`p:dó4` ou `p: dó4`), e não conta como tempo. Antes de colchetes, vale a partir da primeira nota
+do grupo: `p:[dó4< sol4]`. Em `f:fá4`, o primeiro `f` é forte e o segundo é
+a nota:
 
 ```aratu
 melodia = | p:dó4 mi4 sol4 dó5 | f:sol4 _ _ _ |

@@ -377,6 +377,7 @@ fn read_bar(
                     kind,
                     octave,
                     diags,
+                    pending: None,
                 };
                 p.seq(None, false)
             };
@@ -483,6 +484,9 @@ struct SlotParser<'p, 'd> {
     kind: LineKind,
     octave: &'p mut Option<i32>,
     diags: &'d mut Vec<Diagnostic>,
+    /// A dynamic written before a group, `p:[c4 d4]`, waiting for the
+    /// group's first hit.
+    pending: Option<Dyn>,
 }
 
 impl SlotParser<'_, '_> {
@@ -532,6 +536,8 @@ impl SlotParser<'_, '_> {
                 '[' => {
                     self.bump();
                     let inner = self.seq(Some(']'), false);
+                    // A mark before a group of rests reaches no further.
+                    self.pending = None;
                     if self.peek() == Some(']') {
                         self.bump();
                     }
@@ -547,9 +553,13 @@ impl SlotParser<'_, '_> {
                 '{' => {
                     self.bump();
                     let mut options = Vec::new();
+                    // `p:{c4|e4}`: whichever is chosen starts piano.
+                    let mark = self.pending;
                     loop {
                         let ostart = self.pos;
+                        self.pending = mark;
                         let opt = self.seq(Some('}'), true);
+                        self.pending = None;
                         if opt.is_empty() {
                             self.diags.push(Diagnostic::error(
                                 self.at(ostart.max(start)),
@@ -594,10 +604,15 @@ impl SlotParser<'_, '_> {
                                 {
                                     let first = self.text(prev.span);
                                     let second = self.text(h.span);
-                                    self.diags.push(Diagnostic::error(
-                                        prev.span.join(h.span),
-                                        Message::GluedNotes { first, second },
-                                    ));
+                                    // Inside brackets already, a space is
+                                    // all that is missing.
+                                    let message = if close == Some(']') {
+                                        Message::GluedNotesInGroup { first, second }
+                                    } else {
+                                        Message::GluedNotes { first, second }
+                                    };
+                                    self.diags
+                                        .push(Diagnostic::error(prev.span.join(h.span), message));
                                 }
                             }
                             slots.push(slot);
@@ -662,6 +677,11 @@ impl SlotParser<'_, '_> {
             // `p: c4` as well as `p:c4`.
             while self.peek().is_some_and(char::is_whitespace) {
                 self.bump();
+            }
+            // Before a group or a choice the mark waits for its first hit.
+            if matches!(self.peek(), Some('[' | '{')) {
+                self.pending = dynamic;
+                return None;
             }
             match self.peek() {
                 None | Some(']' | '}' | '|' | '_' | '-') => {
@@ -772,7 +792,7 @@ impl SlotParser<'_, '_> {
             fermata: false,
             chance: None,
             hairpin: None,
-            dynamic,
+            dynamic: dynamic.or(self.pending.take()),
         };
         self.mods(&mut hit);
         hit.span = self.at(start);
@@ -1009,6 +1029,55 @@ mod tests {
         };
         assert_eq!(h.dynamic, Some(Dyn::F));
         assert_eq!(h.hairpin, Some(Hairpin::Diminuendo));
+    }
+
+    #[test]
+    fn a_dynamic_before_brackets_marks_their_first_note() {
+        for src in [
+            "| p:[dó4< sol4] ré4 mi4 fá4 |",
+            "| p: [dó4< sol4] ré4 mi4 fá4 |",
+        ] {
+            let bars = ok(src, LineKind::Pitched);
+            let b = beats(&bars[0]);
+            assert_eq!(b.len(), 4, "{src}");
+            let Slot::Group(inner, _) = &b[0].slots[0] else {
+                panic!("{src}: {:?}", b[0].slots)
+            };
+            let Slot::Hit(first) = &inner[0] else {
+                panic!()
+            };
+            assert_eq!(first.dynamic, Some(Dyn::P), "{src}");
+            assert_eq!(first.hairpin, Some(Hairpin::Crescendo), "{src}");
+            let Slot::Hit(second) = &inner[1] else {
+                panic!()
+            };
+            assert_eq!(second.dynamic, None);
+        }
+        // Each option of a choice starts with the mark.
+        let bars = ok("| p:{c4|e4} d4 e4 f4 |", LineKind::Pitched);
+        let Slot::Choice(options, _) = &beats(&bars[0])[0].slots[0] else {
+            panic!()
+        };
+        for o in options {
+            let Slot::Hit(h) = &o[0] else { panic!() };
+            assert_eq!(h.dynamic, Some(Dyn::P));
+        }
+        // A mark before rests reaches no further than the brackets.
+        let bars = ok("| p:[- -] d4 e4 f4 |", LineKind::Pitched);
+        let Slot::Hit(h) = &beats(&bars[0])[1].slots[0] else {
+            panic!()
+        };
+        assert_eq!(h.dynamic, None);
+        // Notes glued inside brackets only miss a space.
+        let (_, d) = parse("| p:[dó4<sol4] ré4 mi4 fá4 |", LineKind::Pitched);
+        assert_eq!(d.len(), 1, "{d:?}");
+        assert_eq!(
+            d[0].message,
+            Message::GluedNotesInGroup {
+                first: "dó4<".into(),
+                second: "sol4".into()
+            }
+        );
     }
 
     #[test]
