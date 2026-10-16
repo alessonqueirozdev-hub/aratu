@@ -107,6 +107,10 @@ decides the sound, whatever the line is called:
 | `s` | snare |
 | `r` | ride |
 | `x` | crash |
+| `t` | high tom |
+| `m` | mid tom |
+| `f` | floor tom |
+| `k` | side stick (the stick across the snare's rim) |
 
 ```aratu
 drums {
@@ -117,8 +121,8 @@ drums {
 ```
 
 Every line inside `drums { }` is a drum line, and so is a line called `hh`,
-`bd`, `sd`, `cr`, `rd`, `kick`, `snare`, `hat`, `ride` or `crash` anywhere
-in the piece. An apostrophe makes a hit short: `c'` is a tight hi-hat. A
+`bd`, `sd`, `cr`, `rd`, `ht`, `mt`, `ft`, `toms`, `rim`, `kick`, `snare`,
+`hat`, `ride` or `crash` anywhere in the piece. An apostrophe makes a hit short: `c'` is a tight hi-hat. A
 closed hi-hat cuts an open one that is still ringing.
 
 ## 4. Melodies

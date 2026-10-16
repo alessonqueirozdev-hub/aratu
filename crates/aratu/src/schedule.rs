@@ -55,6 +55,10 @@ pub enum Drum {
     OpenHat,
     Ride,
     Crash,
+    HighTom,
+    MidTom,
+    FloorTom,
+    SideStick,
 }
 
 impl Drum {
@@ -66,6 +70,10 @@ impl Drum {
             'o' => Drum::OpenHat,
             'r' => Drum::Ride,
             'x' => Drum::Crash,
+            't' => Drum::HighTom,
+            'm' => Drum::MidTom,
+            'f' => Drum::FloorTom,
+            'k' => Drum::SideStick,
             _ => return None,
         })
     }
@@ -78,6 +86,10 @@ impl Drum {
             Drum::OpenHat => "open-hat",
             Drum::Ride => "ride",
             Drum::Crash => "crash",
+            Drum::HighTom => "high-tom",
+            Drum::MidTom => "mid-tom",
+            Drum::FloorTom => "floor-tom",
+            Drum::SideStick => "side-stick",
         }
     }
 }

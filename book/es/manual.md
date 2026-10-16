@@ -114,6 +114,10 @@ ritmo. El símbolo decide el sonido, sea cual sea el nombre de la línea:
 | `s` | caja |
 | `r` | ride |
 | `x` | crash |
+| `t` | tom agudo |
+| `m` | tom medio |
+| `f` | tom de piso |
+| `k` | aro (baqueta cruzada sobre la caja) |
 
 ```aratu
 drums {
@@ -124,8 +128,8 @@ drums {
 ```
 
 Toda línea dentro de `drums { }` es de batería, igual que una línea llamada
-`hh`, `bd`, `sd`, `cr`, `rd`, `kick`, `snare`, `hat`, `ride` o `crash` en
-cualquier lugar de la pieza. Un apóstrofo hace el golpe corto: `c'` es un
+`hh`, `bd`, `sd`, `cr`, `rd`, `ht`, `mt`, `ft`, `toms`, `rim`, `kick`,
+`snare`, `hat`, `ride` o `crash` en cualquier lugar de la pieza. Un apóstrofo hace el golpe corto: `c'` es un
 hi-hat seco. El hi-hat cerrado corta al abierto que todavía suena.
 
 ## 4. Melodías

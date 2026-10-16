@@ -325,6 +325,31 @@ export class Engine {
     }
   }
 
+  /** A tom: a skin tuned to `freq` that falls a little as it rings. */
+  private tom(c: Chain, when: number, g: number, bright: number, freq: number, decay: number): void {
+    const gain = this.ctx.createGain();
+    gain.connect(c.input);
+    // The skin and its first overtone.
+    for (const [ratio, level] of [[1, 1], [1.6, 0.25]]) {
+      const o = this.ctx.createOscillator();
+      o.type = "sine";
+      o.frequency.setValueAtTime(freq * ratio * (1 + 0.35 * Math.min(bright, 1.2)), when);
+      o.frequency.exponentialRampToValueAtTime(freq * ratio, when + 0.04);
+      o.frequency.exponentialRampToValueAtTime(freq * ratio * 0.9, when + decay * 3);
+      const og = this.ctx.createGain();
+      og.gain.value = level;
+      o.connect(og).connect(gain);
+      o.start(when);
+      o.stop(when + decay * 5 + 0.05);
+      this.track(o, gain);
+    }
+    gain.gain.setValueAtTime(0.0001, when);
+    gain.gain.linearRampToValueAtTime(g * 1.3, when + 0.002);
+    gain.gain.setTargetAtTime(0.0001, when + 0.01, decay);
+    // The stick on the skin.
+    this.noiseHit(c.input, when, "bandpass", freq * 8, 1, g * 0.3, 0.012);
+  }
+
   private drum(c: Chain, name: string, when: number, g: number): void {
     const ctx = this.ctx;
     // Harder hits are brighter, not only louder.
@@ -393,6 +418,34 @@ export class Engine {
         this.metal(c.input, when, g * 0.16, 0.5, 4500);
         this.noiseHit(c.input, when, "highpass", 4000 * bright, 0.7, g * 0.4, 0.45);
         return;
+      case "high-tom":
+        this.tom(c, when, g, bright, 210, 0.16);
+        return;
+      case "mid-tom":
+        this.tom(c, when, g, bright, 155, 0.2);
+        return;
+      case "floor-tom":
+        this.tom(c, when, g, bright, 100, 0.28);
+        return;
+      case "side-stick": {
+        // The stick across the rim: a dry, woody click with no snare wires.
+        const gain = ctx.createGain();
+        gain.connect(c.input);
+        const o = ctx.createOscillator();
+        o.type = "triangle";
+        o.frequency.setValueAtTime(1750, when);
+        o.frequency.exponentialRampToValueAtTime(1500, when + 0.02);
+        o.connect(gain);
+        o.start(when);
+        o.stop(when + 0.1);
+        this.track(o, gain);
+        gain.gain.setValueAtTime(0.0001, when);
+        gain.gain.linearRampToValueAtTime(g * 0.5, when + 0.001);
+        gain.gain.setTargetAtTime(0.0001, when + 0.001, 0.012);
+        this.noiseHit(c.input, when, "bandpass", 2600 * bright, 2.5, g * 0.9, 0.01);
+        this.noiseHit(c.input, when, "bandpass", 480, 4, g * 0.6, 0.02);
+        return;
+      }
       default:
         this.noiseHit(c.input, when, "highpass", 6000, 0.7, g * 0.4, 0.05);
     }

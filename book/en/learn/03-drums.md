@@ -11,6 +11,10 @@ line is called.
 | `s` | snare |
 | `r` | ride cymbal |
 | `x` | crash cymbal |
+| `t` | high tom |
+| `m` | mid tom |
+| `f` | floor tom |
+| `k` | side stick (the stick across the snare's rim) |
 
 The lines can sit together in a `drums { }` block, which shows they all
 belong to the kit:
@@ -52,7 +56,7 @@ ride keeps the eighths:
 ```aratu
 drums {
   cr = x - - -
-  rd = cc cc cc cc
+  rd = rr rr rr rr
   bd = b - b -
   sd = - s - s
 }
@@ -60,6 +64,35 @@ drums {
 
 > Since the symbol decides the sound, the cymbal letters sit in a line
 > called `cr` and the ride in `rd`, but any names would do.
+
+## Toms and the rim
+
+The toms play the fills: `t` is the high tom, `m` the mid tom and `f`
+the floor tom. Here the second bar ends going down through all three:
+
+```aratu
+tempo: 96
+
+drums {
+  hh  = | cc cc cc cc | cc cc -  -  |
+  bd  = | b  -  bb -  | b  -  -  -  |
+  sd  = | -  s  -  s  | -  s  -  -  |
+  tom = | -  -  -  -  | -  -  tm ff |
+}
+```
+
+The rim, `k`, is the stick laid across the snare: a dry, woody click with
+no snare wires. It is the bossa nova beat:
+
+```aratu
+tempo: 130
+
+drums {
+  hh  = cc cc cc cc
+  bd  = b -b b -b
+  rim = | k- -k - k | - k -k - |
+}
+```
 
 ## Exercises
 
@@ -87,6 +120,23 @@ hh = cc cc cc cc
 
 ```aratu answer
 hh = cc cc cc co
+```
+
+End the bar with a fill: on beat 4, an eighth on the high tom and one
+on the floor tom.
+
+```aratu exercise
+drums {
+  sd  = s s s -
+  tom = - - - -
+}
+```
+
+```aratu answer
+drums {
+  sd  = s s s -
+  tom = - - - tf
+}
 ```
 
 Now build a whole beat: hi-hat in eighths, bass drum on beats 1 and 3 and

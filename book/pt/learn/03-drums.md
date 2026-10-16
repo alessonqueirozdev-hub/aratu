@@ -11,6 +11,10 @@ qual for o nome da linha.
 | `s` | caixa |
 | `r` | prato de condução |
 | `x` | prato de ataque |
+| `t` | tom agudo |
+| `m` | tom médio |
+| `f` | surdo |
+| `k` | aro (baqueta atravessada na caixa) |
 
 As linhas podem ficar juntas num bloco `drums { }`. Assim fica claro que
 são todas da bateria:
@@ -52,7 +56,7 @@ a condução faz as colcheias:
 ```aratu
 drums {
   cr = x - - -
-  rd = cc cc cc cc
+  rd = rr rr rr rr
   bd = b - b -
   sd = - s - s
 }
@@ -60,6 +64,35 @@ drums {
 
 > Como o som vem do símbolo, as letras de prato ficam na linha `cr` e a
 > condução na linha `rd`, mas qualquer nome serviria.
+
+## Tons e aro
+
+Os tons fazem as viradas: `t` é o tom agudo, `m` o tom médio e `f` o
+surdo. Aqui o segundo compasso termina descendo pelos três:
+
+```aratu
+tempo: 96
+
+drums {
+  hh  = | cc cc cc cc | cc cc -  -  |
+  bd  = | b  -  bb -  | b  -  -  -  |
+  sd  = | -  s  -  s  | -  s  -  -  |
+  tom = | -  -  -  -  | -  -  tm ff |
+}
+```
+
+O aro, `k`, é a baqueta atravessada sobre a caixa: um som seco, de
+madeira, sem a esteira. É a batida da bossa nova:
+
+```aratu
+tempo: 130
+
+drums {
+  hh  = cc cc cc cc
+  bd  = b -b b -b
+  rim = | k- -k - k | - k -k - |
+}
+```
 
 ## Exercícios
 
@@ -87,6 +120,23 @@ hh = cc cc cc cc
 
 ```aratu answer
 hh = cc cc cc co
+```
+
+Termine o compasso com uma virada: no tempo 4, uma colcheia de tom agudo
+e uma de surdo.
+
+```aratu exercise
+drums {
+  sd  = s s s -
+  tom = - - - -
+}
+```
+
+```aratu answer
+drums {
+  sd  = s s s -
+  tom = - - - tf
+}
 ```
 
 Agora monte uma batida completa: chimbal em colcheias, bumbo nos tempos 1

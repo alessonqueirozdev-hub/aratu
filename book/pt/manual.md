@@ -111,6 +111,10 @@ O símbolo decide o som, seja qual for o nome da linha:
 | `s` | caixa |
 | `r` | condução |
 | `x` | ataque |
+| `t` | tom agudo |
+| `m` | tom médio |
+| `f` | surdo |
+| `k` | aro (baqueta atravessada na caixa) |
 
 ```aratu
 drums {
@@ -121,8 +125,8 @@ drums {
 ```
 
 Toda linha dentro de `drums { }` é de bateria, assim como uma linha chamada
-`hh`, `bd`, `sd`, `cr`, `rd`, `kick`, `snare`, `hat`, `ride` ou `crash` em
-qualquer lugar da peça. Um apóstrofo deixa a batida curta: `c'` é um chimbal
+`hh`, `bd`, `sd`, `cr`, `rd`, `ht`, `mt`, `ft`, `toms`, `rim`, `kick`,
+`snare`, `hat`, `ride` ou `crash` em qualquer lugar da peça. Um apóstrofo deixa a batida curta: `c'` é um chimbal
 seco. O chimbal fechado corta o aberto que ainda está soando.
 
 ## 4. Melodias

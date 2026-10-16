@@ -90,6 +90,10 @@ fn drum_index(d: Drum) -> u8 {
         Drum::OpenHat => 3,
         Drum::Ride => 4,
         Drum::Crash => 5,
+        Drum::HighTom => 6,
+        Drum::MidTom => 7,
+        Drum::FloorTom => 8,
+        Drum::SideStick => 9,
     }
 }
 

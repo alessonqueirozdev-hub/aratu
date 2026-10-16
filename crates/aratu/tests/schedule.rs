@@ -29,6 +29,28 @@ fn notes(ev: &[Event]) -> Vec<u8> {
 }
 
 #[test]
+fn toms_and_the_rim_have_their_own_symbols() {
+    let ev = events("drums {\n  toms = t m f -\n  rim = - k - K\n}", 1, 2);
+    let kinds: Vec<_> = ev.iter().map(|e| (e.beat, e.kind.clone())).collect();
+    for (beat, drum) in [
+        (0, Drum::HighTom),
+        (1, Drum::MidTom),
+        (2, Drum::FloorTom),
+        (1, Drum::SideStick),
+        (3, Drum::SideStick),
+    ] {
+        assert!(
+            kinds.contains(&(Ratio::from(beat), EventKind::Drum(drum))),
+            "{drum:?} on {beat}: {kinds:?}"
+        );
+    }
+    assert_eq!(Drum::FloorTom.name(), "floor-tom");
+    assert_eq!(Drum::SideStick.name(), "side-stick");
+    // A line named after a tom is a drum line without a `drums` block.
+    assert_eq!(events("ft = f f f f", 1, 2).len(), 4);
+}
+
+#[test]
 fn eighth_note_hi_hat_at_120() {
     let ev = events("tempo: 120\nhh = cc cc co cc", 1, 2);
     assert_eq!(ev.len(), 8);

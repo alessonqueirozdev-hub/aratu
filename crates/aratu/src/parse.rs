@@ -11,7 +11,7 @@ use crate::theory::{Dyn, Key, Meter};
 /// Line names read as drum lines wherever they are written.
 pub const DRUM_LINES: &[&str] = &[
     "hh", "oh", "bd", "sd", "rd", "cr", "cy", "rim", "cp", "tom", "perc", "kick", "snare", "hat",
-    "hihat", "ride", "crash", "clap",
+    "hihat", "ride", "crash", "clap", "ht", "mt", "lt", "ft", "toms", "floor", "stick",
 ];
 
 /// Parts whose lines are all drum lines.

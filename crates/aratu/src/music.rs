@@ -37,7 +37,7 @@ enum Tok<'a> {
 }
 
 /// The drum symbols and what they play.
-pub const DRUM_SYMBOLS: &[char] = &['c', 'o', 'b', 's', 'r', 'x'];
+pub const DRUM_SYMBOLS: &[char] = &['c', 'o', 'b', 's', 'r', 'x', 't', 'm', 'f', 'k'];
 
 fn tokenize<'a>(text: &'a str, base: usize, diags: &mut Vec<Diagnostic>) -> Vec<Tok<'a>> {
     let mut toks = Vec::new();

@@ -382,10 +382,10 @@ impl Message {
                 "duas notas estão coladas num tempo; escreva entre colchetes: `[{first} {second}]`"
             ),
             (UnknownDrum { ch }, En) => format!(
-                "`{ch}` is not a drum symbol: c closed hi-hat, o open hi-hat, b bass drum, s snare, r ride, x crash"
+                "`{ch}` is not a drum symbol: c closed hi-hat, o open hi-hat, b bass drum, s snare, r ride, x crash, t high tom, m mid tom, f floor tom, k side stick (rim)"
             ),
             (UnknownDrum { ch }, Pt) => format!(
-                "`{ch}` não é um símbolo de bateria: c chimbal fechado, o chimbal aberto, b bumbo, s caixa, r condução, x ataque"
+                "`{ch}` não é um símbolo de bateria: c chimbal fechado, o chimbal aberto, b bumbo, s caixa, r condução, x ataque, t tom agudo, m tom médio, f surdo, k aro"
             ),
             (UnknownStrum { ch }, En) => format!(
                 "`{ch}` is not a strum symbol: d down, u up, m muted, - the hand passes, _ let it ring"
@@ -644,7 +644,7 @@ impl Message {
                 "hay dos notas pegadas en un tiempo; escríbelas entre corchetes: `[{first} {second}]`"
             ),
             (UnknownDrum { ch }, Es) => format!(
-                "`{ch}` no es un símbolo de batería: c hi-hat cerrado, o hi-hat abierto, b bombo, s caja, r ride, x crash"
+                "`{ch}` no es un símbolo de batería: c hi-hat cerrado, o hi-hat abierto, b bombo, s caja, r ride, x crash, t tom agudo, m tom medio, f tom de piso, k aro"
             ),
             (UnknownStrum { ch }, Es) => format!(
                 "`{ch}` no es un símbolo de rasgueo: d hacia abajo, u hacia arriba, m apagado, - la mano pasa, _ deja sonar"

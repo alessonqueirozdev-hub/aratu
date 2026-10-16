@@ -381,7 +381,9 @@ them *Provisional*.
    beats each; three chords in 4/4 are an error that asks for holds,
    `| Am _ F G |`.
 7. **The drum symbol decides the sound**, whatever the line is called: c
-   closed hi-hat, o open hi-hat, b bass drum, s snare, r ride, x crash. Lines
+   closed hi-hat, o open hi-hat, b bass drum, s snare, r ride, x crash, t high
+   tom, m mid tom, f floor tom, k side stick (added on 15 October 2026, at the
+   user's request: the kit was missing its toms and rim). Lines
    inside `drums { }` and lines with drum names (`hh`, `bd`, `sd`, `cr`, `rd`,
    `kick`, `snare`, `hat`, `ride`, `crash` and a few more) are drum lines.
 8. **A fermata is `^`, twice the value, and every part waits for it.** How to
