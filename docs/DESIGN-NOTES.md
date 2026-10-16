@@ -670,3 +670,54 @@ survives a mid-bar swap. A program lists its moving parameters, and while it
 plays a new version of the text leaves them where they are instead of
 setting them back to the written value. Both numbers get knobs; a second
 needle on them shows where the parameter is now.
+
+## Syntax review (16 October 2026)
+
+A pass over the whole lexicon and grammar, compiling small pieces to see
+what Aratu accepts. Three kinds of findings.
+
+**Accepted but wrong, or told badly (fix first):**
+
+- `at bar 3: melodia = | … |` is read as a second definition from bar 1
+  (only the "appears twice" warning). Either a line may change at a bar, or
+  this must be an error.
+- Drum lines and parts by their Portuguese and Spanish names are not drums:
+  `caixa = - s - s` is a note error, and worse, `bumbo = b - b -` and
+  `chimbal = c c c c` play B4 and C4 with only an octave warning. `bateria`
+  is not a drum part.
+- `cp`, `clap` and `perc` are drum line names, but there are no symbols for
+  them: `cp = c - c -` plays the closed hat.
+- Misleading messages: an unknown header (`andamento: 120`, `tempp: 120`)
+  says a name is missing after `->`; `riff.invert` says `riff` is not a
+  note; `every 2 beats` mentions `over 4 bars`; typos of keywords (`ply`,
+  `patern`) and parameters get no "did you mean", which voices already have.
+
+**The same idea written differently in different places:**
+
+- Inversion and retrograde: `.inv .retro .ri` on motifs, `.invert
+  .retrograde` on lines, `I R RI` on rows; each rejects the others.
+- `[…]4x` is accepted, `play groove 3x` and `form: a 3x` are not.
+- Parameter motions take bars, beats, eighths and sixteenths; `cresc`,
+  `fade`, `rit`, `accel` and tempo ramps take bars only.
+- Times are only `at bar N`: no beat (`at bar 9 beat 3`), no ranges
+  (`from bar 9 to 16`), no `every 2 beats`.
+- Notes take solfège, chord symbols do not (`Dó`, `Rém`, `Sol7`); `N.C.`,
+  `C6/9` and `alt` chords are unknown (a rest `-` stands for N.C.).
+- Keywords are English only, while notes, keys and messages take
+  Portuguese and Spanish. Open: accept `compasso:`, `andamento:`, `tom:` and
+  the like as synonyms, or keep English and only explain better.
+
+**Not yet writable (most already proposed above, in "Proposal for what is
+still missing"):** continuing a long line on the next line; tuplets across
+beats (`2[c d e]`); marcato `!` (tried by the user), tenuto, slurs (the
+proposed `~` is now the roll); ghost notes `(s)`, flams, clap, cowbell and
+pedal hat; Brazilian percussion lines with their own strokes (pandeiro,
+zabumba, triangle, alfaia, gonguê, agogô, surdo, tamborim); a fermata's
+length; additive meters and polymeter; Roman numerals and arpeggio lines;
+`feel samba`, `feel maracatu`, `feel frevo`; techniques by word
+(`:trill`, `:gliss`, `:bend`, `Am:arp`); hands, pedal and 8va; a choice
+between fragments longer than a beat.
+
+**To call the syntax finished:** a formal grammar (EBNF) as the single
+reference, tests that cover each rule, and the editor's highlighting taken
+from the same word lists.
