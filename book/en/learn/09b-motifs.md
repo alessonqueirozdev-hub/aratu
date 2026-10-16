@@ -15,7 +15,12 @@ melody = | [e4 d c d]x4 |
 ```
 
 It is the same as writing `[e4 d c d]` four times. The `x` is always glued
-to the `]`; with a space, `| - x8 |` still means eight bars of rest.
+to the `]`; with a space, `| - x8 |` still means eight bars of rest. The
+number may come first too: `[e4 d c d]4x`.
+
+> Braces `{ }` are for chance: `{e4|g4}` draws one of the notes each time
+> round. To group, use brackets. If you write `{a2 e3 a e}x4`, with no `|`
+> inside, Aratu plays it as a group and suggests brackets.
 
 ## Motifs
 
@@ -130,6 +135,24 @@ melody = temas.1
 On stage, buttons appear to choose each list's melody without typing in
 front of the audience, and Alt+1 to Alt+9 do the same from the keyboard.
 
+### One melody per bar
+
+Each bar of a line can be a melody from the list too: write its name in
+place of that bar's notes.
+
+```aratu
+tempo: 100
+list temas {
+  | a2 e3 a e |
+  | a2 f3 a f |
+  | g2 c3 g c |
+}
+bass = | temas.1 | temas.1 | temas.2 | temas.3 |
+```
+
+It mixes with written bars, `| c4 _ _ _ | temas.2 |`, and `temas.all` in
+place of a bar puts them all, one after the other.
+
 ## Exercises
 
 Repeat the first beat in all four beats of the bar, with `x`.
@@ -164,4 +187,24 @@ melody = | o o o o | o o o o | o o o o | from serie.P0
 ```aratu answer
 row serie = 0 11 3 4 8 7 9 5 6 1 2 10
 melody = | o o o o | o o o o | o o o o | from serie.R0
+```
+
+Build the bass from melodies 1, 3 and 2 of the list, one in each bar.
+
+```aratu exercise bars=3
+list temas {
+  | a2 e3 a e |
+  | a2 f3 a f |
+  | g2 c3 g c |
+}
+bass = | temas.1 | - | - |
+```
+
+```aratu answer
+list temas {
+  | a2 e3 a e |
+  | a2 f3 a f |
+  | g2 c3 g c |
+}
+bass = | temas.1 | temas.3 | temas.2 |
 ```

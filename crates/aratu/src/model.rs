@@ -65,6 +65,23 @@ pub struct ParamSet {
     pub factor: f64,
 }
 
+/// A parameter moving from its value to another over a length of time,
+/// maybe back again, maybe again and again.
+#[derive(Clone, Debug)]
+pub struct Motion {
+    /// The value it moves to, in the parameter's own unit.
+    pub to: f64,
+    /// Where that number is written, and the written number per unit, for
+    /// its knob.
+    pub to_span: Span,
+    pub to_factor: f64,
+    pub rise: Length,
+    pub fall: Option<Length>,
+    pub repeat: bool,
+    /// Moves by equal ratios (frequencies, times), as the knob turns.
+    pub log: bool,
+}
+
 #[derive(Clone, Debug)]
 pub struct Line {
     pub name: String,
@@ -162,6 +179,8 @@ pub enum Action {
         value: f64,
         number_span: Span,
         factor: f64,
+        /// `-> 4000 Hz over 4 bars`: from `value` to another.
+        motion: Option<Motion>,
     },
     Transform {
         target: String,
@@ -396,7 +415,14 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
                     part.lines.push(line);
                 }
             }
-            (StmtKind::Param { path, value }, When::Bare) => match &s.part {
+            (
+                StmtKind::Param {
+                    path,
+                    value,
+                    sweep: None,
+                },
+                When::Bare,
+            ) => match &s.part {
                 Some(p) => {
                     let id = path
                         .iter()
@@ -586,7 +612,9 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
                     transform: *transform,
                 }
             }
-            StmtKind::Param { path, value } if s.when != When::Bare => {
+            // A parameter that moves is a command even without a time: it
+            // starts moving where it is written while playing live.
+            StmtKind::Param { path, value, sweep } if s.when != When::Bare || sweep.is_some() => {
                 let (part, id_path) = match &s.part {
                     Some(p) => (Some(p.text.clone()), &path[..]),
                     None if path.len() > 1
@@ -604,21 +632,48 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
                 let Some((v, factor)) = param_value(&id, value, diags) else {
                     continue;
                 };
+                let motion = match sweep {
+                    None => None,
+                    Some(sw) => {
+                        let Some((to, to_factor)) = param_value(&id, &sw.to, diags) else {
+                            continue;
+                        };
+                        Some(Motion {
+                            to,
+                            to_span: sw.to.number_span,
+                            to_factor,
+                            rise: sw.rise,
+                            fall: sw.fall,
+                            repeat: sw.repeat,
+                            log: params::lookup(&id).is_some_and(|i| i.scale == params::Scale::Log),
+                        })
+                    }
+                };
                 Action::Param {
                     part,
                     id,
                     value: v,
                     number_span: value.number_span,
                     factor,
+                    motion,
                 }
             }
             _ => continue,
+        };
+        let text = &src[s.span.start..s.span.end];
+        // A parameter that moves keeps where it is in its motion while its
+        // numbers change, as when a knob turns: only what it moves counts.
+        let key = match &action {
+            Action::Param {
+                motion: Some(_), ..
+            } => format!("{} = ->", collapse(text.split('=').next().unwrap_or(text))),
+            _ => collapse(text),
         };
         piece.commands.push(Command {
             at,
             action,
             span: s.span,
-            key: collapse(&src[s.span.start..s.span.end]),
+            key,
         });
     }
 

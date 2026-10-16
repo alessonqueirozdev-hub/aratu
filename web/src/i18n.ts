@@ -149,6 +149,7 @@ const words = {
   motifs: { pt: "Motivos e sequências", es: "Motivos y secuencias", en: "Motifs and sequences" },
   "twelve-tone": { pt: "Série dodecafônica", es: "Serie dodecafónica", en: "Twelve-tone row" },
   setlist: { pt: "Lista de melodias no palco", es: "Lista de melodías en el escenario", en: "A melody list on stage" },
+  sweeps: { pt: "Efeitos que se movem", es: "Efectos que se mueven", en: "Effects that move" },
 } as const;
 
 export type Word = keyof typeof words;

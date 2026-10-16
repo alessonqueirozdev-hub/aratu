@@ -2,7 +2,8 @@
 // beside it, shaped by the parameter (a cutoff turns on a logarithmic scale
 // in hertz, a mix from 0 to 1). Dragging the knob up or down rewrites the
 // number in the text, so the text stays the one source of truth, and the
-// sound follows at once.
+// sound follows at once. A parameter that moves shows where it is now with a
+// second needle that turns as the sound does.
 
 import { type Range, StateEffect, StateField } from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView, WidgetType } from "@codemirror/view";
@@ -68,13 +69,20 @@ class KnobWidget extends WidgetType {
     dom.title = `${c.part ? c.part + "." : ""}${c.id} = ${written(c, fromKnob(c, t))}${c.unit && c.factor === 1 ? " " + c.unit : ""}`;
   }
 
+  /** The second needle: where a moving parameter is now. */
+  drawNow(dom: HTMLElement, t: number): void {
+    const angle = -135 + 270 * t;
+    dom.querySelector("line.now")?.setAttribute("transform", `rotate(${angle} 10 10)`);
+  }
+
   toDOM(view: EditorView): HTMLElement {
     const dom = document.createElement("span");
     dom.className = "cm-knob";
     dom.setAttribute("aria-label", this.control.id);
     dom.innerHTML =
       '<svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" class="track"/>' +
-      '<path class="value" d=""/><line x1="10" y1="10" x2="10" y2="3"/></svg>';
+      '<path class="value" d=""/><line x1="10" y1="10" x2="10" y2="3"/>' +
+      '<line class="now" x1="10" y1="10" x2="10" y2="2"/></svg>';
     (dom as HTMLElement & { knob?: KnobWidget }).knob = this;
     this.draw(dom, toKnob(this.control, this.control.value));
 
@@ -148,4 +156,17 @@ export const knobs = [knobField];
 
 export function showKnobs(view: EditorView, controls: Control[], moved: KnobMoved): void {
   view.dispatch({ effects: setKnobs.of({ controls, moved }) });
+}
+
+/** Turns the second needle of the knobs of each moving parameter to where it
+ * is now, by `part<TAB>id`; knobs not in `now` hide it. */
+export function showMoving(view: EditorView, now: Map<string, number>): void {
+  for (const dom of view.dom.querySelectorAll<HTMLElement>(".cm-knob")) {
+    const knob = (dom as HTMLElement & { knob?: KnobWidget }).knob;
+    if (!knob) continue;
+    const c = knob.control;
+    const v = now.get(`${c.part}	${c.id}`);
+    dom.classList.toggle("moving", v !== undefined);
+    if (v !== undefined) knob.drawNow(dom, toKnob(c, v));
+  }
 }

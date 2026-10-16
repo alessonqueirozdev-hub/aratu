@@ -70,6 +70,8 @@ pub enum Thing {
     Bars,
     Beat,
     Value,
+    /// How long a parameter takes to move: `over 4 bars`.
+    Length,
 }
 
 impl Thing {
@@ -97,6 +99,12 @@ impl Thing {
             (Beat, Pt) => "um tempo como `beat 4`",
             (Value, En) => "a value",
             (Value, Pt) => "um valor",
+            (Length, En) => {
+                "a length such as `over 4 bars`, `over 2 beats`, `over 8 eighths` or `over 16 sixteenths`"
+            }
+            (Length, Pt) => {
+                "uma duração como `over 4 bars` (compassos), `over 2 beats` (tempos), `over 8 eighths` (colcheias) ou `over 16 sixteenths` (semicolcheias)"
+            }
             (Number, Es) => "un número",
             (Meter, Es) => "una indicación de compás como 4/4",
             (Key, Es) => "una tonalidad como A minor",
@@ -107,6 +115,9 @@ impl Thing {
             (Bars, Es) => "una duración como `over 4 bars`",
             (Beat, Es) => "un tiempo como `beat 4`",
             (Value, Es) => "un valor",
+            (Length, Es) => {
+                "una duración como `over 4 bars` (compases), `over 2 beats` (tiempos), `over 8 eighths` (corcheas) o `over 16 sixteenths` (semicorcheas)"
+            }
         }
     }
 }

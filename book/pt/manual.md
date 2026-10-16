@@ -417,7 +417,9 @@ padrão já toca uma vez a cada volta.
 Um `x` colado no colchete repete aquele tempo, cada vez no seu próprio
 tempo: `| [mi4 ré dó ré]x4 |` é o grupo quatro vezes. O `x` vai colado ao
 `]` (ou a um motivo); com espaço, `| - x8 |` continua sendo oito compassos
-de pausa.
+de pausa. `4x` também vale: `[mi4 ré dó ré]4x`. Chaves são para o acaso
+(`{mi4|sol4}`); um grupo entre chaves sem `|` toca como grupo, com um aviso
+para trocar por colchetes.
 
 ### Motivos
 
@@ -484,6 +486,11 @@ troca a melodia no próximo compasso. No modo palco, botões escolhem a
 melodia de cada lista, e Alt+1 a Alt+9 escolhem a da linha onde está o
 cursor.
 
+Cada compasso de uma linha também pode ser uma melodia da lista:
+`baixo = | temas.1 | temas.3 | temas.2 |`, misturada com compassos escritos
+se quiser, e `temas.all` no lugar de um compasso põe todas, em ordem. Uma
+lista que cita a si mesma para, com uma mensagem.
+
 ## 10. Tocar ao vivo
 
 Enquanto a peça toca, você a muda; você não a reescreve.
@@ -507,7 +514,9 @@ grande para o projetor. O contorno pisca no primeiro tempo de cada
 compasso, os símbolos acendem quando soam e a primeira mensagem aparece no
 canto. Os botões do canto tocam e param, mudam o tamanho da letra
 (A− e A+), mostram o mapa do ritmo embaixo e saem do palco; eles somem
-quando o mouse para. Esc também sai.
+quando o mouse para. Esc também sai. O botão **2 colunas** divide o código
+em duas colunas, como num jornal: a segunda continua de onde a primeira
+termina, as duas rolam juntas, e editar em qualquer uma muda o mesmo texto.
 
 ## 11. Transformações
 
@@ -622,6 +631,35 @@ painel Sons desliga o Manguebyte e tudo passa a tocar no provisório.
 Os parâmetros podem mudar por compasso como tudo mais: `at bar 16:
 baixo.reverb.mix = 0.65`.
 
+**Parâmetros que se movem.** `baixo.lowpass.cutoff = 300 Hz -> 4000 Hz over
+4 bars` leva o cutoff de 300 a 4000 Hz em quatro compassos e o deixa lá,
+como um crescendo do som.
+
+| Escreva | O que faz |
+|---|---|
+| `A -> B over 4 bars` | de A a B, uma vez, e fica em B |
+| `A <-> B over 4 bars` | vai e volta, 4 compassos para cada lado, sem parar |
+| `A -> B over 4 bars, back over 2 beats` | sobe e volta numa outra duração, uma vez |
+| `A <-> B over 4 bars, back over 1 bar` | o mesmo, sem parar |
+| `A -> B over 1 bar, loop` | sobe e recomeça de A, em rampa |
+
+A duração vai em `bars`, `beats`, `eighths` ou `sixteenths`; num
+compasso composto como 6/8, o tempo é a semínima pontuada, três colcheias. O
+caminho segue a escala do parâmetro: frequências e tempos andam por razões
+iguais, como o knob gira, e mix, volume e pan em linha reta. O Aratu marca um
+ponto a cada dezesseis avos de tempo e o som desliza entre eles.
+
+Sem tempo escrito, a linha começa a se mover onde foi escrita: no começo da
+peça, ou no compasso seguinte se a música já toca. `at bar 9:` a faz
+começar no compasso 9; `every 8 bars:` a faz terminar no fim de cada oito
+compassos, como uma virada, e `every 8 bars, first:`, começar no primeiro.
+Uma mudança posterior do mesmo parâmetro (`at bar 17: baixo.lowpass.cutoff =
+800 Hz`) toma o lugar. Mudar os números com a música tocando não faz o
+movimento recomeçar: ele segue de onde está, no novo caminho. Os dois
+números ganham knob, e enquanto toca um segundo ponteiro mostra onde o
+parâmetro está; uma versão nova do texto não o faz voltar ao valor
+escrito.
+
 ## 14. Referência rápida
 
 | Escreva | Significa |
@@ -656,11 +694,12 @@ baixo.reverb.mix = 0.65`.
 | `pattern nome { }`, `play nome`, `add nome` | padrões com nome, em sequência ou por cima |
 | `\|: :\|`, `:\| x4`, `\|1 \|2` | ritornelo, vezes, casas |
 | `%`, `%%` | repete o compasso anterior, os dois anteriores |
-| `[mi4 ré]x4` | um tempo repetido quatro vezes |
+| `[mi4 ré]x4`, `[mi4 ré]4x` | um tempo repetido quatro vezes |
 | `motif riff = …`, `riff+2`, `riff+3st` | motivo com nome; dois graus acima; três semitons |
 | `riff.inv`, `riff.retro`, `riff.ri` | inversão, retrógrado, retrógrado da inversão |
 | `row serie = 0 11 3 …`, `\| o o o o \| from serie.RI3` | série dodecafônica; ritmo que recebe as notas de uma forma |
 | `list temas { }`, `temas.2`, `temas.all`, `temas.random` | lista de melodias; uma pelo número, todas, sorteio |
+| `\| temas.1 \| temas.3 \|` | uma melodia da lista em cada compasso |
 | `segno:`, `coda:`, `fine:` | sinais |
 | `D.C.`, `D.S. al fine`, `D.S. al coda`, `to coda` | saltos |
 | `section nome { }`, `form: intro verso x2 refrao` | seções e forma |
@@ -671,3 +710,5 @@ baixo.reverb.mix = 0.65`.
 | `violão: out`, `violão: in` | silencia uma parte, traz de volta |
 | `->` | caminho do sinal |
 | `parte.parâmetro = valor` | um parâmetro, desenhado como knob |
+| `parte.lowpass.cutoff = 300 Hz -> 4000 Hz over 4 bars` | um parâmetro que se move, uma vez |
+| `<->`, `back over 2 beats`, `loop` | vai e volta; outra duração na volta; recomeça |

@@ -73,6 +73,15 @@ at bar 3: drums: out
 at bar 5: drums: in
 ```
 
+## No palco
+
+O botão **Palco**, em Tocar, deixa só o código na tela, em tela cheia e com
+letra grande, para tocar diante de uma plateia. O botão **2 colunas** divide
+o código em duas colunas, como num jornal: a segunda continua de onde a
+primeira termina, então cabe o dobro sem rolar a tela, e as duas rolam
+juntas. Dá para editar em qualquer uma. As listas de melodias ganham botões
+no canto, e Esc sai do palco.
+
 ## Exercícios
 
 Use os padrões prontos para tocar a frase: groove três vezes, depois a

@@ -539,6 +539,7 @@ impl Parser {
         let is_number = matches!(c.peek(), Some(ch) if ch.is_ascii_digit() || ch == '+' || ch == '-' && c.clone().number().is_some());
         if words.len() > 1 || is_number {
             let value = value(c).ok_or_else(|| expected(c, Thing::Value, &words.join(".")))?;
+            let sweep = sweep(c)?;
             self.end(c)?;
             let mut off = pspan.start;
             let path = words
@@ -549,7 +550,7 @@ impl Parser {
                     n
                 })
                 .collect();
-            return Ok(StmtKind::Param { path, value });
+            return Ok(StmtKind::Param { path, value, sweep });
         }
         let line_name = words[0];
         let kind = line_kind(line_name, part.map(|p| p.text.as_str()));
@@ -848,6 +849,68 @@ fn over_bars(c: &mut Cursor) -> Result<i64, Fail> {
     Ok(n)
 }
 
+/// What may follow a parameter's value: `-> 4000 Hz over 4 bars`; `<->`
+/// in place of the arrow goes back over the same length and starts again;
+/// `back over 2 beats` goes back over another length, `loop` starts again.
+fn sweep(c: &mut Cursor) -> Result<Option<Sweep>, Fail> {
+    let both = c.eat("<->");
+    if !both && !c.eat("->") {
+        return Ok(None);
+    }
+    let arrow = if both { "<->" } else { "->" };
+    let to = value(c).ok_or_else(|| expected(c, Thing::Value, arrow))?;
+    if !c.keyword("over") {
+        return Err(expected(c, Thing::Length, arrow));
+    }
+    let rise = length(c, "over")?;
+    let mut fall = both.then_some(rise);
+    let mut repeat = both;
+    loop {
+        let save = c.clone();
+        c.eat(",");
+        if c.keyword("back") {
+            if !c.keyword("over") {
+                return Err(expected(c, Thing::Length, "back"));
+            }
+            fall = Some(length(c, "back over")?);
+        } else if c.keyword("loop") {
+            repeat = true;
+        } else {
+            *c = save;
+            break;
+        }
+    }
+    Ok(Some(Sweep {
+        to,
+        rise,
+        fall,
+        repeat,
+    }))
+}
+
+/// `4 bars`, `2 beats`, `8 eighths`, `16 sixteenths`, after `over`.
+fn length(c: &mut Cursor, after: &str) -> Result<Length, Fail> {
+    let save = c.clone();
+    let count = match c.number() {
+        Some((n, _)) if n > 0.0 => n,
+        _ => {
+            *c = save;
+            return Err(expected(c, Thing::Length, after));
+        }
+    };
+    let unit = match c.name().map(|(w, _)| w.to_lowercase()).as_deref() {
+        Some("bar" | "bars") => TimeUnit::Bars,
+        Some("beat" | "beats") => TimeUnit::Beats,
+        Some("eighth" | "eighths") => TimeUnit::Eighths,
+        Some("sixteenth" | "sixteenths") => TimeUnit::Sixteenths,
+        _ => {
+            *c = save;
+            return Err(expected(c, Thing::Length, after));
+        }
+    };
+    Ok(Length { count, unit })
+}
+
 /// `x3` after a name.
 fn times_suffix(c: &mut Cursor) -> Option<u32> {
     let save = c.clone();
@@ -918,11 +981,13 @@ fn value(c: &mut Cursor) -> Option<Value> {
         span = c.span_from(number_span.start);
     } else {
         let save = c.clone();
-        if let Some((u, us)) = c.name() {
-            unit = Some(u.to_string());
-            span = span.join(us);
-        } else {
-            *c = save;
+        match c.name() {
+            // `0.2 -> 0.8 over 4 bars`: `over` is no unit.
+            Some((u, us)) if !u.eq_ignore_ascii_case("over") => {
+                unit = Some(u.to_string());
+                span = span.join(us);
+            }
+            _ => *c = save,
         }
     }
     Some(Value {
@@ -1075,7 +1140,7 @@ mod tests {
 
     #[test]
     fn parameters_chains_and_part_commands() {
-        let StmtKind::Param { path, value } = one("bass.reverb.mix = 0.42").kind else {
+        let StmtKind::Param { path, value, .. } = one("bass.reverb.mix = 0.42").kind else {
             panic!()
         };
         assert_eq!(path.len(), 3);

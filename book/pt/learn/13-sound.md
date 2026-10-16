@@ -55,6 +55,51 @@ mais finos.
 
 Um parâmetro também pode mudar num compasso: `at bar 9: baixo.reverb.mix = 0.6`.
 
-> Estes são sons simples, embutidos no navegador. O motor do Manguebyte vai
-> trazer instrumentos e efeitos de verdade, e os mesmos textos vão soar
-> melhor sem mudar nada.
+## Parâmetros que se movem
+
+Um parâmetro pode ir de um valor a outro aos poucos, como num crescendo.
+`->` vai uma vez e fica lá; `over` diz em quanto tempo:
+
+```aratu
+tempo: 100
+baixo: synth.saw -> lowpass
+baixo = | dó2 dó3 dó2 dó3 | mib2 mib3 mib2 mib3 |
+baixo.lowpass.cutoff = 300 Hz -> 4000 Hz over 4 bars
+```
+
+Com `<->` no lugar da seta, ele vai e volta sem parar: sobe em quatro
+compassos, desce em quatro, sobe de novo.
+
+```aratu
+tempo: 100
+baixo: synth.saw -> lowpass
+baixo = | dó2 dó3 dó2 dó3 | mib2 mib3 mib2 mib3 |
+baixo.lowpass.cutoff = 300 Hz <-> 4000 Hz over 4 bars
+```
+
+| Escreva | O que faz |
+|---|---|
+| `A -> B over 4 bars` | vai de A a B em 4 compassos e fica em B |
+| `A <-> B over 4 bars` | vai e volta, 4 compassos para cada lado, sem parar |
+| `A -> B over 4 bars, back over 2 bars` | sobe em 4, volta em 2, uma vez |
+| `A <-> B over 4 bars, back over 1 bar` | sobe em 4, volta em 1, sem parar |
+| `A -> B over 1 bar, loop` | sobe e recomeça de A, como uma rampa |
+
+A duração pode ser em compassos (`bars`), tempos (`beats`), colcheias
+(`eighths`) ou semicolcheias (`sixteenths`): `over 2 beats`,
+`over 3 eighths`.
+
+O cutoff anda na mesma escala do knob, a do ouvido: no meio do caminho entre
+300 e 4000 Hz ele está em cerca de 1100 Hz, não em 2150. Os dois números
+ganham knob, e enquanto toca um segundo ponteiro mostra onde o parâmetro
+está agora.
+
+> Escrita com a música tocando, a linha começa a se mover no compasso
+> seguinte, e girar um dos knobs muda o caminho sem fazê-lo recomeçar. Com
+> `at bar 9:` na frente, começa no compasso 9; com `every 8 bars:`,
+> termina no fim de cada oito compassos, como uma virada; com
+> `every 8 bars, first:`, começa no primeiro de cada oito.
+
+> Os sons gravados e a bateria analógica já tocam pelo motor do Manguebyte.
+> Os efeitos também vão passar para ele, e os mesmos textos vão soar melhor
+> sem mudar nada.

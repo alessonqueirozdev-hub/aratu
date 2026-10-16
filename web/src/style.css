@@ -1043,6 +1043,21 @@ select:hover {
   stroke: var(--accent);
 }
 
+/* A parameter that moves: a second needle shows where it is now. */
+.cm-knob line.now {
+  display: none;
+  stroke: var(--accent);
+  stroke-width: 2.5;
+}
+
+.cm-knob.moving line.now {
+  display: inline;
+}
+
+.cm-knob.moving .track {
+  stroke: var(--accent);
+}
+
 /* The footer. */
 
 .bottom {

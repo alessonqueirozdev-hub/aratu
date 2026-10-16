@@ -59,6 +59,9 @@ export interface Program {
   rows: { name: string; pitches: number[] }[];
   parts: PartInfo[];
   params: ParamValue[];
+  /** Parameters that move (`-> 4000 Hz over 4 bars`), by part ("all" for
+   * the whole mix). */
+  moving: { part: string; id: string }[];
   controls: Control[];
 }
 
@@ -78,6 +81,9 @@ export interface AratuEvent {
   drum?: string;
   param?: string;
   value?: number;
+  /** For a parameter that moves: seconds to glide to `value` from the
+   * point before. */
+  glide?: number;
   from: number;
   to: number;
   /** For a strum: where the chord it plays is written. */

@@ -8,7 +8,7 @@ import type { EditorView } from "@codemirror/view";
 import type { Aratu, BarInfo, Lang, Program } from "./aratu";
 import type { Engine } from "./audio";
 import { createEditor, setWrapping, showDiagnostics, showPlaying } from "./editor";
-import { knobs, showKnobs } from "./knobs";
+import { knobs, showKnobs, showMoving } from "./knobs";
 import { Player, type Scheduled } from "./player";
 
 export interface SessionOptions {
@@ -42,6 +42,8 @@ export class Session {
   private timer: number | undefined;
   private frame = 0;
   private shown = "";
+  /** Whether a knob shows where a moving parameter is now. */
+  private movingShown = false;
   /** A second view of the same text (the stage's second column). */
   mirror: EditorView | null = null;
   /** Set while a change is copied from one view to the other. */
@@ -183,6 +185,19 @@ export class Session {
         this.shown = key;
         for (const view of this.views()) showPlaying(view, spans);
       }
+      // Where each moving parameter is now, on its knobs.
+      const moving = new Set((this.player?.current?.moving ?? []).map((m) => `${m.part}	${m.id}`));
+      if (moving.size > 0 || this.movingShown) {
+        const now = new Map<string, number>();
+        for (const s of this.scheduled) {
+          const e = s.event;
+          if (s.at > engine.ctx.currentTime || e.param === undefined || e.value === undefined) continue;
+          const k = `${e.part}	${e.param}`;
+          if (moving.has(k)) now.set(k, e.value);
+        }
+        this.movingShown = now.size > 0;
+        for (const view of this.views()) showMoving(view, now);
+      }
       this.frame = requestAnimationFrame(tick);
     };
     this.frame = requestAnimationFrame(tick);
@@ -195,6 +210,8 @@ export class Session {
     this.scheduled = [];
     this.shown = "";
     for (const view of this.views()) showPlaying(view, []);
+    for (const view of this.views()) showMoving(view, new Map());
+    this.movingShown = false;
     if (Session.active === this) Session.active = null;
     if (was) this.o.onPlaying?.(false);
   }

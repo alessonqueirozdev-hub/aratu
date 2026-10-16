@@ -8,9 +8,11 @@
 //! and live anchors always give the same events, so any range of bars can
 //! be rendered on its own.
 
-use crate::ast::{Feel, Hit, LevelTarget, LineKind, Slot, Sound, Stroke, TempoChange, Transform};
+use crate::ast::{
+    Feel, Hit, Length, LevelTarget, LineKind, Slot, Sound, Stroke, TempoChange, TimeUnit, Transform,
+};
 use crate::dynamics::PICKUP;
-use crate::model::{Action, At, Command, Line, Part, Piece};
+use crate::model::{Action, At, Command, Line, Motion, Part, Piece};
 use crate::ratio::Ratio;
 use crate::span::Span;
 use crate::theory::{ACCENT, Chord, Meter};
@@ -106,6 +108,9 @@ pub enum EventKind {
     Param {
         id: String,
         value: f64,
+        /// For a parameter that moves: the seconds since its last point,
+        /// over which the sound goes smoothly to this value. 0 sets it.
+        glide: f64,
     },
 }
 
@@ -184,6 +189,43 @@ fn random_place(line: &Line, seed: u64, n: i64) -> usize {
     }
 }
 
+/// A length in beats of the meter where it starts.
+fn beats_of(l: Length, meter: Meter) -> f64 {
+    let unit = meter.beat_unit().to_f64();
+    l.count
+        * match l.unit {
+            TimeUnit::Bars => meter.beats().to_f64(),
+            TimeUnit::Beats => 1.0,
+            TimeUnit::Eighths => 0.125 / unit,
+            TimeUnit::Sixteenths => 0.0625 / unit,
+        }
+}
+
+/// The value of a moving parameter `p` beats after it starts from `from`.
+fn motion_value(from: f64, m: &Motion, rise: f64, fall: f64, p: f64) -> f64 {
+    let cycle = rise + fall;
+    let q = if m.repeat {
+        p.rem_euclid(cycle)
+    } else {
+        p.min(cycle)
+    };
+    if q <= rise {
+        between(from, m.to, q / rise, m.log)
+    } else {
+        between(m.to, from, (q - rise) / fall, m.log)
+    }
+}
+
+/// The value a fraction `t` of the way from `a` to `b`, by equal ratios
+/// for a parameter whose knob works that way.
+fn between(a: f64, b: f64, t: f64, log: bool) -> f64 {
+    if log && a > 0.0 && b > 0.0 {
+        a * (b / a).powf(t)
+    } else {
+        a + (b - a) * t
+    }
+}
+
 /// A number in `[0, 1)` fixed by its inputs.
 fn chance(seed: u64, line: u64, bar: i64, what: u64) -> f64 {
     let h = mix(seed ^ mix(line ^ mix((bar as u64) ^ mix(what))));
@@ -193,6 +235,11 @@ fn chance(seed: u64, line: u64, bar: i64, what: u64) -> f64 {
 /// A stretch of a bar and the chord sounding in it, with where that chord
 /// is written, for strums to play it and the editor to light it.
 type Region<'p> = (Ratio, Ratio, Option<&'p Chord>, Option<Span>);
+
+/// A moving parameter's command with the bar it starts from and, for
+/// `every`, the bar after the stretch it belongs to and whether it starts
+/// there.
+type Moving<'p> = (i64, Option<(i64, bool)>, &'p Command);
 
 /// One part of a bar after choices are made.
 #[derive(Clone, Copy, Debug)]
@@ -263,6 +310,8 @@ struct Scheduler<'p> {
     last_chord: HashMap<u64, Option<(&'p Chord, Span)>>,
     done: Vec<Sounding<'p>>,
     params: Vec<(i64, Event)>,
+    /// When each moving parameter had its last point, by its command.
+    last_point: HashMap<usize, f64>,
 }
 
 impl<'p> Scheduler<'p> {
@@ -295,6 +344,7 @@ impl<'p> Scheduler<'p> {
             last_chord: HashMap::new(),
             done: Vec::new(),
             params: Vec::new(),
+            last_point: HashMap::new(),
         }
     }
 
@@ -422,7 +472,11 @@ impl<'p> Scheduler<'p> {
                     continue;
                 }
                 if let Action::Param {
-                    part, id, value, ..
+                    part,
+                    id,
+                    value,
+                    motion: None,
+                    ..
                 } = &c.action
                 {
                     let clock = self.clocks.last().unwrap();
@@ -439,6 +493,7 @@ impl<'p> Scheduler<'p> {
                             kind: EventKind::Param {
                                 id: id.clone(),
                                 value: *value,
+                                glide: 0.0,
                             },
                             velocity: 0,
                             accent: false,
@@ -448,6 +503,7 @@ impl<'p> Scheduler<'p> {
                     ));
                 }
             }
+            self.motions(g, from, from_beat);
             g += 1;
         }
         // Whatever is still held ends where rendering stopped.
@@ -529,6 +585,167 @@ impl<'p> Scheduler<'p> {
 
     fn has_strum(&self, part: &Part) -> bool {
         part.lines.iter().any(|l| l.kind == LineKind::Strum)
+    }
+
+    /// The points of the parameters moving in bar `g`, one every sixteenth
+    /// of a beat and one where each turns, for the sound to glide between.
+    fn motions(&mut self, g: i64, from: i64, from_beat: Ratio) {
+        // Only the bar before the first one asked for matters: it tells
+        // when the last point was.
+        if g + 1 < from {
+            return;
+        }
+        let mut moving: Vec<Moving<'p>> = Vec::new();
+        for (b, c) in &self.timed {
+            if *b <= g {
+                moving.push((*b, None, *c));
+            }
+        }
+        // `every 8 bars, first:` starts it at the first bar of each eight;
+        // `every 8 bars:` has it end where the eight end, like a fill. The
+        // eight before ends on this bar's first beat.
+        for c in &self.every {
+            let At::Every { bars, first } = c.at else {
+                continue;
+            };
+            let bars = bars.max(1);
+            let a = g - (g - 1).rem_euclid(bars);
+            for a in [a - bars, a] {
+                if a >= 1 {
+                    moving.push((a, Some((a + bars, first)), *c));
+                }
+            }
+        }
+        let clock = &self.clocks[g as usize];
+        let beats = clock.beats;
+        for (a, stretch, c) in moving {
+            let Action::Param {
+                part,
+                id,
+                value,
+                motion: Some(m),
+                ..
+            } = &c.action
+            else {
+                continue;
+            };
+            // A later change of the same parameter takes over.
+            let taken = self.timed.iter().any(|(b, other)| {
+                *b > a
+                    && *b <= g
+                    && matches!(&other.action, Action::Param { part: p2, id: i2, .. } if p2 == part && i2 == id)
+            });
+            if taken {
+                continue;
+            }
+            let Some(first_beat) = self.clocks.get(a.max(0) as usize).map(|k| k.start_beat) else {
+                continue;
+            };
+            let meter = self.meter_at(a.max(1));
+            let rise = beats_of(m.rise, meter);
+            let fall = m.fall.map_or(0.0, |l| beats_of(l, meter));
+            let cycle = rise + fall;
+            if cycle <= 0.0 {
+                continue;
+            }
+            // Where it starts, in beats from the start of the piece.
+            let start = match stretch {
+                Some((e, false)) => {
+                    let len = (a..e)
+                        .map(|x| self.bar_beats(x))
+                        .fold(Ratio::ZERO, |s, b| s + b);
+                    ((first_beat + len).to_f64() - cycle).max(first_beat.to_f64())
+                }
+                _ => first_beat.to_f64(),
+            };
+            let p0 = clock.start_beat.to_f64() - start;
+            let p1 = p0 + beats.to_f64();
+            // The grid, and where it turns.
+            let mut at: Vec<Ratio> = Vec::new();
+            let step = Ratio::new(1, 16);
+            let mut x = Ratio::ZERO;
+            while x < beats {
+                at.push(x);
+                x += step;
+            }
+            let rounds = if m.repeat {
+                (p1 / cycle).ceil() as i64
+            } else {
+                0
+            };
+            let mut turns = vec![0.0];
+            for k in (p0 / cycle).floor().max(0.0) as i64..=rounds {
+                turns.push(k as f64 * cycle + rise);
+                turns.push((k + 1) as f64 * cycle);
+            }
+            for t in turns {
+                if t >= p0 && t < p1 {
+                    at.push(Ratio::new(((t - p0) * 1920.0).round() as i64, 1920));
+                }
+            }
+            at.sort();
+            at.dedup();
+            let key = std::ptr::from_ref(c) as usize;
+            let target = part.clone().unwrap_or_else(|| "all".into());
+            for x in at {
+                let p = p0 + x.to_f64();
+                if p < -1e-9 {
+                    continue;
+                }
+                // Its stretch is over: only the point on its last bar line.
+                if stretch.is_some_and(|(e, _)| g > e || (g == e && x > Ratio::ZERO)) {
+                    break;
+                }
+                if !m.repeat && p > cycle + 1e-9 {
+                    break;
+                }
+                let time = clock.time(x);
+                let glide = match self.last_point.get(&key) {
+                    Some(t) if p > 1e-9 => (time - t).max(0.0),
+                    _ => 0.0,
+                };
+                self.last_point.insert(key, time);
+                if g < from || (g == from && x < from_beat) {
+                    continue;
+                }
+                // Going up again and again without coming down: up to the
+                // top, then straight back to the start.
+                let rounds_done = p / cycle;
+                let saw = m.repeat
+                    && fall == 0.0
+                    && p > 1e-9
+                    && (rounds_done - rounds_done.round()).abs() < 1e-9;
+                let mut points = Vec::new();
+                if saw {
+                    points.push((m.to, glide));
+                    points.push((*value, 0.0));
+                } else {
+                    points.push((motion_value(*value, m, rise, fall, p), glide));
+                }
+                for (v, glide) in points {
+                    self.params.push((
+                        g,
+                        Event {
+                            bar: g,
+                            beat: x,
+                            time,
+                            duration: 0.0,
+                            part: target.clone(),
+                            line: String::new(),
+                            kind: EventKind::Param {
+                                id: id.clone(),
+                                value: v,
+                                glide,
+                            },
+                            velocity: 0,
+                            accent: false,
+                            also: None,
+                            span: c.span,
+                        },
+                    ));
+                }
+            }
+        }
     }
 
     /// Every line sounding at bar `g`.

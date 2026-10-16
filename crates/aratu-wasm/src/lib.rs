@@ -193,6 +193,25 @@ fn describe(handle: u32, program: &Program, src: &str, lang: Lang) -> String {
     }
     j.close_arr();
 
+    // Parameters that move: a new version of the text leaves them where
+    // they are instead of setting them back.
+    j.key("moving").open_arr();
+    for c in &piece.commands {
+        if let aratu::model::Action::Param {
+            part,
+            id,
+            motion: Some(_),
+            ..
+        } = &c.action
+        {
+            j.open_obj();
+            j.key("part").str(part.as_deref().unwrap_or("all"));
+            j.key("id").str(id);
+            j.close_obj();
+        }
+    }
+    j.close_arr();
+
     j.key("controls").open_arr();
     for ctl in controls(piece) {
         j.open_obj();
@@ -269,15 +288,27 @@ pub fn controls(piece: &Piece) -> Vec<Control> {
             value,
             number_span,
             factor,
+            motion,
         } = &c.action
         {
+            let part = part.as_deref().unwrap_or("all");
             let set = ParamSet {
                 id: id.clone(),
                 value: *value,
                 number_span: *number_span,
                 factor: *factor,
             };
-            push(part.as_deref().unwrap_or("all"), &set, true);
+            push(part, &set, true);
+            // Where it moves to has a knob too.
+            if let Some(m) = motion {
+                let to = ParamSet {
+                    id: id.clone(),
+                    value: m.to,
+                    number_span: m.to_span,
+                    factor: m.to_factor,
+                };
+                push(part, &to, true);
+            }
         }
     }
     if let Some(span) = piece.tempo_span {
@@ -352,9 +383,12 @@ pub fn render_json(
                 EventKind::Drum(d) => {
                     j.key("drum").str(d.name());
                 }
-                EventKind::Param { id, value } => {
+                EventKind::Param { id, value, glide } => {
                     j.key("param").str(id);
                     j.key("value").num(*value);
+                    if *glide > 0.0 {
+                        j.key("glide").num(*glide);
+                    }
                 }
             }
             j.key("from").num(program.pos(e.span.start) as f64);
@@ -753,6 +787,28 @@ mod tests {
         assert!(pt.contains("o compasso 1 de `bass` tem 5 tempos"), "{pt}");
         let (_, en) = compile_json("bass = | c2 _ _ _ _ |", Lang::En);
         assert!(en.contains("bar 1 of `bass` has 5 beats"), "{en}");
+    }
+
+    #[test]
+    fn moving_parameters_are_listed_and_glide() {
+        let src = "melodia = | c4 _ _ _ |\nmelodia.lowpass.cutoff = 300 Hz <-> 5 kHz over 2 bars";
+        let (h, text) = compile_json(src, Lang::En);
+        assert!(
+            text.contains("\"moving\":[{\"part\":\"melodia\",\"id\":\"lowpass.cutoff\"}]"),
+            "{text}"
+        );
+        // A knob for where it starts and one for where it goes, in kHz.
+        assert_eq!(
+            text.matches("\"id\":\"lowpass.cutoff\",\"part\"").count(),
+            2
+        );
+        assert!(text.contains("\"value\":5000,\"factor\":0.001"), "{text}");
+        let r = render_json(h, 1, 0, 2, 1, 0, "");
+        assert!(
+            r.contains("\"param\":\"lowpass.cutoff\",\"value\":300,"),
+            "{r}"
+        );
+        assert!(r.contains("\"glide\":"), "{r}");
     }
 
     #[test]

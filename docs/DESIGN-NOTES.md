@@ -635,3 +635,38 @@ and stop sends cancel and all notes off. Levels were measured in the
 browser against the stand-in's. A switch in the Sounds panel turns
 Manguebyte off (kept in the browser), and a browser that cannot run it
 falls back to the stand-in by itself.
+
+## Parameters that move (16 October 2026)
+
+The user asked for effects to change gradually, the way a crescendo does,
+over bars, beats or smaller lengths, going up and coming back. The writing
+follows the tempo ramp already in the language (`tempo 120 -> 140 over 4
+bars`):
+
+- `bass.lowpass.cutoff = 300 Hz -> 4000 Hz over 4 bars` goes once and stays.
+- `<->` in place of the arrow goes there and back, again and again.
+- `back over 2 beats` gives the way back another length; `loop` starts
+  again at the end (with no way back, a ramp).
+- Lengths are `bars`, `beats`, `eighths` and `sixteenths`, counted in the
+  meter where the motion starts; in 6/8 a beat is three eighths.
+
+The motion follows the parameter's scale, the one its knob turns on:
+frequencies and times by equal ratios, mixes and levels in a straight line.
+
+A moving parameter is a command even without a time, so it is anchored
+like any live line: from the start of the piece, or from the bar where it
+was written while playing. Its live key is only the path it moves
+(`bass.lowpass.cutoff = ->`), so turning one of its knobs, which rewrites a
+number, changes the way without starting the motion over. `at bar 9:`
+starts it there; `every 8 bars:` places it so it ends at the end of each
+stretch, like a fill, and `every 8 bars, first:` starts it at the first bar
+of each. A later change of the same parameter at a bar takes over.
+
+The scheduler marks a point every sixteenth of a beat and one at each turn,
+with the seconds since the point before (`glide`); the web engine moves the
+sound towards each point over that time (`setTargetAtTime` with a third of
+it as the time constant), which needs no earlier event to start from and
+survives a mid-bar swap. A program lists its moving parameters, and while it
+plays a new version of the text leaves them where they are instead of
+setting them back to the written value. Both numbers get knobs; a second
+needle on them shows where the parameter is now.

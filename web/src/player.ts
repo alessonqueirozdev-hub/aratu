@@ -117,7 +117,7 @@ export class Player {
     if (this.playing) {
       for (const l of program.live) if (!this.anchors.has(l.key)) this.anchors.set(l.key, l.now ? nowBar : bar);
     }
-    this.engine.configure(program);
+    this.engine.configure(program, this.playing);
   }
 
   /** Swaps `program` in at the next beat already scheduled: what the old

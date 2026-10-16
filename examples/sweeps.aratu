@@ -1,0 +1,19 @@
+// Parameters that move, like crescendos of the sound: the bass filter opens
+// and closes every four bars, the lead's echo grows and starts again, and a
+// reverb swells into every eighth bar. Turn a knob while it plays: the
+// motion goes on from where it is.
+meter: 4/4
+tempo: 112
+
+bass: synth.saw -> lowpass
+bass = | a1 a2 a1 a2 | f1 f2 f1 f2 | c2 c3 c2 c3 | g1 g2 g1 g2 |
+bass.lowpass.cutoff = 250 Hz <-> 3000 Hz over 4 bars
+bass.lowpass.resonance = 0.4
+
+lead: synth.square -> delay -> reverb
+lead = | e4 _ c5 b4 | a4 _ _ _ | g4 _ e4 g4 | d4 _ _ _ |
+lead.volume = 0.45
+lead.delay.mix = 0 -> 0.5 over 2 bars, loop
+every 8 bars: lead.reverb.mix = 0.1 -> 0.6 over 3 bars, back over 1 bar
+
+drums { hh = cc cc cc cc; bd = b - b -; sd = - s - s }

@@ -56,6 +56,51 @@ Shift para pasos más finos.
 
 Un parámetro también puede cambiar en un compás: `at bar 9: bajo.reverb.mix = 0.6`.
 
-> Estos son sonidos sencillos, incorporados al navegador. El motor de
-> Manguebyte traerá instrumentos y efectos de verdad, y los mismos textos
-> sonarán mejor sin cambiar nada.
+## Parámetros que se mueven
+
+Un parámetro puede ir de un valor a otro poco a poco, como en un crescendo.
+`->` va una vez y se queda; `over` dice en cuánto tiempo:
+
+```aratu
+tempo: 100
+bajo: synth.saw -> lowpass
+bajo = | do2 do3 do2 do3 | mib2 mib3 mib2 mib3 |
+bajo.lowpass.cutoff = 300 Hz -> 4000 Hz over 4 bars
+```
+
+Con `<->` en lugar de la flecha, va y vuelve sin parar: sube en cuatro
+compases, baja en cuatro, sube otra vez.
+
+```aratu
+tempo: 100
+bajo: synth.saw -> lowpass
+bajo = | do2 do3 do2 do3 | mib2 mib3 mib2 mib3 |
+bajo.lowpass.cutoff = 300 Hz <-> 4000 Hz over 4 bars
+```
+
+| Escribe | Qué hace |
+|---|---|
+| `A -> B over 4 bars` | va de A a B en 4 compases y se queda en B |
+| `A <-> B over 4 bars` | va y vuelve, 4 compases para cada lado, sin parar |
+| `A -> B over 4 bars, back over 2 bars` | sube en 4, vuelve en 2, una vez |
+| `A <-> B over 4 bars, back over 1 bar` | sube en 4, vuelve en 1, sin parar |
+| `A -> B over 1 bar, loop` | sube y empieza otra vez desde A, como una rampa |
+
+La duración puede ser en compases (`bars`), tiempos (`beats`), corcheas
+(`eighths`) o semicorcheas (`sixteenths`): `over 2 beats`,
+`over 3 eighths`.
+
+El cutoff anda en la misma escala que la perilla, la del oído: a mitad de
+camino entre 300 y 4000 Hz está en unos 1100 Hz, no en 2150. Los dos
+números tienen perilla, y mientras suena una segunda aguja muestra dónde
+está el parámetro ahora.
+
+> Escrita con la música sonando, la línea empieza a moverse en el compás
+> siguiente, y girar una de las perillas cambia el camino sin hacerlo
+> empezar de nuevo. Con `at bar 9:` delante, empieza en el compás 9; con
+> `every 8 bars:`, termina al final de cada ocho compases, como un
+> redoble; con `every 8 bars, first:`, empieza en el primero de cada ocho.
+
+> Los sonidos grabados y la batería analógica ya suenan con el motor de
+> Manguebyte. Los efectos también pasarán a él, y los mismos textos sonarán
+> mejor sin cambiar nada.

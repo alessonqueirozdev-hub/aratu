@@ -16,7 +16,13 @@ melodia = | [mi4 re do re]x4 |
 
 Es lo mismo que escribir `[mi4 re do re]` cuatro veces. La `x` va siempre
 pegada al `]`; separada por un espacio, `| - x8 |` sigue queriendo decir
-ocho compases de silencio.
+ocho compases de silencio. El número también puede ir antes:
+`[mi4 re do re]4x`.
+
+> Las llaves `{ }` son para el azar: `{mi4|sol4}` sortea una de las notas en
+> cada vuelta. Para agrupar, usa corchetes. Si escribes `{la2 mi3 la mi}x4`,
+> sin `|` dentro, Aratu lo toca como un grupo y avisa que cambies las llaves
+> por corchetes.
 
 ## Motivos
 
@@ -134,6 +140,24 @@ En el modo escenario aparecen botones para elegir la melodía de cada lista,
 sin escribir nada frente al público, y Alt+1 a Alt+9 hacen lo mismo con el
 teclado.
 
+### Una melodía por compás
+
+Cada compás de una línea también puede ser una melodía de la lista: escribe
+el nombre en lugar de las notas de ese compás.
+
+```aratu
+tempo: 100
+list temas {
+  | la2 mi3 la mi |
+  | la2 fa3 la fa |
+  | sol2 do3 sol do |
+}
+bajo = | temas.1 | temas.1 | temas.2 | temas.3 |
+```
+
+Se puede mezclar con compases escritos, `| do4 _ _ _ | temas.2 |`, y
+`temas.all` en lugar de un compás pone todas, una tras otra.
+
 ## Ejercicios
 
 Repite el primer tiempo en los cuatro tiempos del compás, con `x`.
@@ -168,4 +192,24 @@ melodia = | o o o o | o o o o | o o o o | from serie.P0
 ```aratu answer
 row serie = 0 11 3 4 8 7 9 5 6 1 2 10
 melodia = | o o o o | o o o o | o o o o | from serie.R0
+```
+
+Arma el bajo con las melodías 1, 3 y 2 de la lista, una en cada compás.
+
+```aratu exercise bars=3
+list temas {
+  | la2 mi3 la mi |
+  | la2 fa3 la fa |
+  | sol2 do3 sol do |
+}
+bajo = | temas.1 | - | - |
+```
+
+```aratu answer
+list temas {
+  | la2 mi3 la mi |
+  | la2 fa3 la fa |
+  | sol2 do3 sol do |
+}
+bajo = | temas.1 | temas.3 | temas.2 |
 ```

@@ -74,6 +74,15 @@ at bar 3: drums: out
 at bar 5: drums: in
 ```
 
+## En el escenario
+
+El botón **Escenario**, en Tocar, deja solo el código en la pantalla, a
+pantalla completa y con letra grande, para tocar frente al público. El botón
+**2 columnas** divide el código en dos columnas, como en un periódico: la
+segunda sigue donde termina la primera, así cabe el doble sin desplazar la
+pantalla, y las dos se desplazan juntas. Se puede editar en cualquiera. Las
+listas de melodías tienen botones en la esquina, y Esc sale del escenario.
+
 ## Ejercicios
 
 Usa los patrones listos para tocar la frase: groove tres veces, después el

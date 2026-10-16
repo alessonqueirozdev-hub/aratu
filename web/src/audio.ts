@@ -252,12 +252,14 @@ export class Engine {
     return c;
   }
 
-  /** Sets up every part of a program: its sound, its chain, its numbers. */
-  configure(program: Program): void {
-    for (const part of program.parts) this.configurePart(part, program.params);
+  /** Sets up every part of a program: its sound, its chain, its numbers.
+   * While `playing`, parameters that move are left where they are. */
+  configure(program: Program, playing = false): void {
+    const moving = new Set(playing ? program.moving.map((m) => `${m.part}	${m.id}`) : []);
+    for (const part of program.parts) this.configurePart(part, program.params, moving);
   }
 
-  private configurePart(part: PartInfo, globals: ParamValue[]): void {
+  private configurePart(part: PartInfo, globals: ParamValue[], moving: Set<string>): void {
     const c = this.chain(part.name);
     c.instrument = part.instrument;
     const written = part.chain[0] ?? "";
@@ -294,12 +296,18 @@ export class Engine {
       { id: "attack", value: 5 },
       { id: "release", value: 150 },
     ];
-    for (const p of [...defaults, ...globals, ...part.params]) this.setParam(c, p.id, p.value, now);
+    for (const p of [...defaults, ...globals, ...part.params]) {
+      if (moving.has(`${part.name}	${p.id}`) || moving.has(`all	${p.id}`)) continue;
+      this.setParam(c, p.id, p.value, now);
+    }
   }
 
-  private setParam(c: Chain, id: string, v: number, when: number): void {
+  /** Sets a parameter at `when`; with `glide`, the sound moves to it
+   * smoothly over the seconds before, as a moving parameter does. */
+  private setParam(c: Chain, id: string, v: number, when: number, glide = 0): void {
     const set = (p: AudioParam, value: number): void => {
-      p.setTargetAtTime(value, when, 0.015);
+      if (glide > 0) p.setTargetAtTime(value, Math.max(when - glide, 0), glide / 3);
+      else p.setTargetAtTime(value, when, 0.015);
     };
     switch (id) {
       case "volume":
@@ -467,7 +475,7 @@ export class Engine {
     this.made = [];
     if (e.param !== undefined && e.value !== undefined) {
       const targets = e.part === "all" ? [...this.chains.values()] : [this.chain(e.part)];
-      for (const c of targets) this.setParam(c, e.param, e.value, when);
+      for (const c of targets) this.setParam(c, e.param, e.value, when, e.glide ?? 0);
       return this.made;
     }
     const c = this.chain(e.part);

@@ -408,7 +408,9 @@ The pattern that was playing keeps counting its bars meanwhile, so
 
 An `x` glued to the bracket repeats that beat, each time in its own beat:
 `| [e4 d c d]x4 |` is the group four times. The `x` is glued to the `]` (or
-to a motif); with a space, `| - x8 |` is still eight bars of rest.
+to a motif); with a space, `| - x8 |` is still eight bars of rest. `4x`
+works too: `[e4 d c d]4x`. Braces are for chance (`{e4|g4}`); a group in
+braces with no `|` plays as a group, with a hint to use brackets.
 
 ### Motifs
 
@@ -474,6 +476,11 @@ order for the same `seed`. Changing the number while it plays changes the
 melody at the next bar. On stage, buttons choose each list's melody, and
 Alt+1 to Alt+9 choose it for the line where the cursor is.
 
+Each bar of a line can be a melody from the list too:
+`bass = | temas.1 | temas.3 | temas.2 |`, mixed with written bars if you
+like, and `temas.all` in place of a bar puts them all, in order. A list that
+names itself stops, with a message.
+
 ## 10. Playing live
 
 While a piece plays, you change it; you do not rewrite it.
@@ -500,7 +507,9 @@ large type for a projector. The frame flashes on the first beat of each
 bar, the symbols light up as they sound and the first message shows in the
 corner. The buttons in the corner play and stop, change the type size (A−
 and A+), show the rhythm map below and leave the stage; they fade when the
-mouse rests. Esc leaves too.
+mouse rests. Esc leaves too. The **2 columns** button splits the code in two
+columns, like a newspaper: the second goes on where the first ends, the two
+scroll together, and editing in either changes the same text.
 
 ## 11. Transformations
 
@@ -615,6 +624,35 @@ Sounds panel turns Manguebyte off and everything plays in the stand-in.
 Parameters can change by bar like anything else: `at bar 16:
 bass.reverb.mix = 0.65`.
 
+**Parameters that move.** `bass.lowpass.cutoff = 300 Hz -> 4000 Hz over 4
+bars` takes the cutoff from 300 to 4000 Hz over four bars and leaves it
+there, like a crescendo of the sound.
+
+| Write | What it does |
+|---|---|
+| `A -> B over 4 bars` | from A to B, once, and stays at B |
+| `A <-> B over 4 bars` | there and back, 4 bars each way, again and again |
+| `A -> B over 4 bars, back over 2 beats` | up, then back over another length, once |
+| `A <-> B over 4 bars, back over 1 bar` | the same, again and again |
+| `A -> B over 1 bar, loop` | up, then from A again, as a ramp |
+
+The length is in `bars`, `beats`, `eighths` or `sixteenths`; in a
+compound meter such as 6/8, a beat is the dotted quarter, three eighths. The
+way follows the parameter's scale: frequencies and times move by equal
+ratios, as the knob turns, and mix, volume and pan in a straight line. Aratu
+marks a point every sixteenth of a beat and the sound glides between them.
+
+With no time written, the line starts moving where it is written: at the
+start of the piece, or at the next bar if the music is playing. `at bar 9:`
+makes it start at bar 9; `every 8 bars:` makes it end at the end of every
+eight bars, like a fill, and `every 8 bars, first:` start at the first. A
+later change of the same parameter (`at bar 17: bass.lowpass.cutoff =
+800 Hz`) takes over. Changing the numbers while the music plays does not
+start the motion over: it goes on from where it is, along the new way. Both
+numbers get a knob, and while it plays a second needle shows where the
+parameter is; a new version of the text does not send it back to the
+written value.
+
 ## 14. Quick reference
 
 | Write | Means |
@@ -649,11 +687,12 @@ bass.reverb.mix = 0.65`.
 | `pattern name { }`, `play name`, `add name` | named patterns, in turn or on top |
 | `\|: :\|`, `:\| x4`, `\|1 \|2` | repeat, count, endings |
 | `%`, `%%` | repeat the bar before, the two before |
-| `[e4 d]x4` | a beat repeated four times |
+| `[e4 d]x4`, `[e4 d]4x` | a beat repeated four times |
 | `motif riff = …`, `riff+2`, `riff+3st` | a named motif; two degrees up; three semitones |
 | `riff.inv`, `riff.retro`, `riff.ri` | inversion, retrograde, retrograde inversion |
 | `row serie = 0 11 3 …`, `\| o o o o \| from serie.RI3` | a twelve-tone row; a rhythm taking a form's notes |
 | `list temas { }`, `temas.2`, `temas.all`, `temas.random` | a melody list; one by number, all, at random |
+| `\| temas.1 \| temas.3 \|` | a melody from the list in each bar |
 | `segno:`, `coda:`, `fine:` | markers |
 | `D.C.`, `D.S. al fine`, `D.S. al coda`, `to coda` | jumps |
 | `section name { }`, `form: intro verse x2 chorus` | sections and the form |
@@ -664,3 +703,5 @@ bass.reverb.mix = 0.65`.
 | `guitar: out`, `guitar: in` | silence a part, bring it back |
 | `->` | signal flow |
 | `part.param = value` | a parameter, drawn as a knob |
+| `part.lowpass.cutoff = 300 Hz -> 4000 Hz over 4 bars` | a parameter that moves, once |
+| `<->`, `back over 2 beats`, `loop` | there and back; another length back; again |

@@ -30,7 +30,8 @@ const KEYWORDS = new Set([
   "meter", "tempo", "key", "pickup", "seed", "form", "pattern", "section", "at", "bar", "bars",
   "every", "first", "last", "play", "add", "once", "now", "rit", "rall", "accel", "to", "over", "primo",
   "a", "out", "in", "cresc", "dim", "fade", "swing", "rubato", "humanize", "random", "beat", "al",
-  "fine", "coda", "ms", "Hz", "kHz", "motif", "row", "list", "from", "octave",
+  "fine", "coda", "ms", "Hz", "kHz", "motif", "row", "list", "from", "octave", "back",
+  "loop", "beats", "eighth", "eighths", "sixteenth", "sixteenths",
 ]);
 const DYNAMICS = new Set(["ppp", "pp", "p", "mp", "mf", "f", "ff", "fff", "sfz", "fp"]);
 // The same names the language reads as drum lines and drum parts.

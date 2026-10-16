@@ -66,10 +66,12 @@ pub enum StmtKind {
 
     /// `hh = cc cc co cc`
     Line(LineDef),
-    /// `bass.reverb.mix = 0.42`, or `reverb.mix = 0.42` inside `bass { }`.
+    /// `bass.reverb.mix = 0.42`, or `reverb.mix = 0.42` inside `bass { }`;
+    /// `lowpass.cutoff = 400 Hz -> 4000 Hz over 4 bars` moves it.
     Param {
         path: Vec<Name>,
         value: Value,
+        sweep: Option<Sweep>,
     },
     /// `bass: synth.saw -> lowpass -> reverb`
     Chain {
@@ -151,6 +153,34 @@ pub struct Value {
     /// Where the number itself is written, for the knob that rewrites it.
     pub number_span: Span,
     pub span: Span,
+}
+
+/// What may follow a parameter's value: `-> 4000 Hz over 4 bars`, or
+/// `<->` to go there and back again and again, with `back over 2 beats`
+/// for another length back and `loop` to start again at the end.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Sweep {
+    pub to: Value,
+    pub rise: Length,
+    /// How long the way back to the first value takes, when it goes back.
+    pub fall: Option<Length>,
+    /// Starts again when it ends.
+    pub repeat: bool,
+}
+
+/// `4 bars`, `2 beats`, `3 eighths`, `1.5 sixteenths`.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Length {
+    pub count: f64,
+    pub unit: TimeUnit,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TimeUnit {
+    Bars,
+    Beats,
+    Eighths,
+    Sixteenths,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
