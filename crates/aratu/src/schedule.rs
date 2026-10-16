@@ -1117,13 +1117,17 @@ impl<'p> Scheduler<'p> {
                     let mut strings = chord.guitar_voicing();
                     let spread = if h.accent { 0.006 } else { 0.012 };
                     match stroke {
-                        Stroke::Down => {}
+                        Stroke::Down | Stroke::DownTap => {}
                         Stroke::Up => {
                             strings.reverse();
                             strings.truncate(4);
                         }
                         Stroke::Muted => fixed = Some(0.04),
                         Stroke::Tap => {}
+                    }
+                    // The golpe lands with the first string.
+                    if *stroke == Stroke::DownTap {
+                        kinds.push((EventKind::Drum(Drum::GuitarTap), 0.0));
                     }
                     for (i, n) in strings.into_iter().enumerate() {
                         if let Some(k) = pitch(n) {

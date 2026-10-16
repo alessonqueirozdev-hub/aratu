@@ -131,7 +131,8 @@ a bar: the bar lines say the same with no parameters.
 
 **2e. Strumming.** A strum pattern uses the beat rules with its own symbols:
 `d` down, `u` up, `m` muted (a chuck), `g` a golpe on the top (added on 15
-October 2026 for flamenco: the wood sounds, not the strings), `-` the hand
+October 2026 for flamenco: the wood sounds, not the strings), `t` a down strum and a golpe together
+(*tudo junto*, *todo junto*, *together* in the three languages), `-` the hand
 passes without striking, `_` hold, and upper case for an accent.
 
 ```

@@ -263,6 +263,52 @@ fn a_golpe_taps_the_top_without_the_strings() {
 }
 
 #[test]
+fn t_strums_down_and_taps_the_top_together() {
+    let src = "guitar {
+  chords = | Am |
+  strum = t d T -
+}";
+    let ev = events(src, 1, 2);
+    let at =
+        |beat: i64| -> Vec<&Event> { ev.iter().filter(|e| e.beat == Ratio::int(beat)).collect() };
+    for beat in [0, 2] {
+        let here = at(beat);
+        let taps = here
+            .iter()
+            .filter(|e| e.kind == EventKind::Drum(Drum::GuitarTap))
+            .count();
+        let strings: Vec<u8> = here
+            .iter()
+            .filter_map(|e| match e.kind {
+                EventKind::Note(n) => Some(n),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(taps, 1, "one golpe on beat {beat}");
+        assert!(strings.len() >= 5, "the down strum sounds on beat {beat}");
+        assert!(strings.windows(2).all(|w| w[0] < w[1]), "low to high");
+        // The golpe lands with the first string.
+        let tap = here
+            .iter()
+            .find(|e| e.kind == EventKind::Drum(Drum::GuitarTap))
+            .unwrap();
+        let first = here
+            .iter()
+            .filter(|e| matches!(e.kind, EventKind::Note(_)))
+            .map(|e| e.time)
+            .fold(f64::MAX, f64::min);
+        close(tap.time, first);
+    }
+    // A plain down strum has no golpe.
+    assert!(
+        at(1)
+            .iter()
+            .all(|e| e.kind != EventKind::Drum(Drum::GuitarTap))
+    );
+    assert!(at(2)[0].velocity > at(0)[0].velocity, "T is accented");
+}
+
+#[test]
 fn chords_strum_and_change_at_the_right_bar() {
     let src = "tempo: 60\nguitar {\n  chords = | Am | C G |\n  strum = D du -u du\n}";
     let ev = events(src, 1, 3);

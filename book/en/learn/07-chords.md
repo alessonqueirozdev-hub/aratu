@@ -35,6 +35,7 @@ rhythm rules:
 | `u` | up |
 | `m` | muted |
 | `g` | golpe: the fingers tap the guitar's top, not the strings |
+| `t` | down strum and golpe together |
 | `-` | the hand passes without striking |
 | upper case | accented |
 
@@ -70,6 +71,18 @@ guitar {
 
 > Each beat has four sixteenths: down, golpe, down, up. The golpe on the
 > third beat is accented.
+
+Often the golpe falls **together** with a down strum: the hand sweeps down
+the strings and the ring finger taps the top at the same moment. That is
+written `t`, for *together*, and `T` is the same with an accent:
+
+```aratu
+tempo: 100
+guitar {
+  chords = | Am | G | F | E |
+  strum  = T-du g-du T-du g-du
+}
+```
 
 ## Exercises
 

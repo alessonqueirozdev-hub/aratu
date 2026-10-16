@@ -388,10 +388,10 @@ impl Message {
                 "`{ch}` não é um símbolo de bateria: c chimbal fechado, o chimbal aberto, b bumbo, s caixa, r condução, x ataque, t tom agudo, m tom médio, f surdo, k aro"
             ),
             (UnknownStrum { ch }, En) => format!(
-                "`{ch}` is not a strum symbol: d down, u up, m muted, g a tap on the top (golpe), - the hand passes, _ let it ring"
+                "`{ch}` is not a strum symbol: d down, u up, m muted, g a tap on the top (golpe), t down and golpe together, - the hand passes, _ let it ring"
             ),
             (UnknownStrum { ch }, Pt) => format!(
-                "`{ch}` não é um símbolo de batida: d para baixo, u para cima, m abafado, g golpe no tampo, - a mão passa, _ deixa soar"
+                "`{ch}` não é um símbolo de batida: d para baixo, u para cima, m abafado, g golpe no tampo, t para baixo com golpe, - a mão passa, _ deixa soar"
             ),
             (UnknownChord { text }, En) => format!("`{text}` is not a chord symbol I know"),
             (UnknownChord { text }, Pt) => format!("não conheço a cifra `{text}`"),
@@ -647,7 +647,7 @@ impl Message {
                 "`{ch}` no es un símbolo de batería: c hi-hat cerrado, o hi-hat abierto, b bombo, s caja, r ride, x crash, t tom agudo, m tom medio, f tom de piso, k aro"
             ),
             (UnknownStrum { ch }, Es) => format!(
-                "`{ch}` no es un símbolo de rasgueo: d hacia abajo, u hacia arriba, m apagado, g golpe en la tapa, - la mano pasa, _ deja sonar"
+                "`{ch}` no es un símbolo de rasgueo: d hacia abajo, u hacia arriba, m apagado, g golpe en la tapa, t hacia abajo con golpe, - la mano pasa, _ deja sonar"
             ),
             (UnknownChord { text }, Es) => format!("no conozco el acorde `{text}`"),
             (UnknownMark { word }, Es) => format!(

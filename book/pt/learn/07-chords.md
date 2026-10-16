@@ -35,6 +35,7 @@ regras de ritmo:
 | `u` | para cima |
 | `m` | abafada |
 | `g` | golpe: os dedos batem no tampo, sem tocar as cordas |
+| `t` | para baixo com golpe, tudo junto |
 | `-` | a mão passa sem tocar |
 | maiúscula | acentuada |
 
@@ -70,6 +71,18 @@ violão {
 
 > Cada tempo tem quatro semicolcheias: para baixo, golpe, para baixo, para
 > cima. O golpe do terceiro tempo é acentuado.
+
+Muitas vezes o golpe cai **junto** com a batida para baixo: a mão desce
+nas cordas e o dedo anelar bate no tampo no mesmo instante. Isso se
+escreve `t`, de *tudo junto*, e `T` é o mesmo com acento:
+
+```aratu
+tempo: 100
+violão {
+  chords = | Am | G | F | E |
+  strum  = T-du g-du T-du g-du
+}
+```
 
 ## Exercícios
 

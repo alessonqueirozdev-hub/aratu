@@ -704,6 +704,7 @@ impl SlotParser<'_, '_> {
                         'u' => Stroke::Up,
                         'm' => Stroke::Muted,
                         'g' => Stroke::Tap,
+                        't' => Stroke::DownTap,
                         _ => {
                             self.skip_mods();
                             self.diags.push(Diagnostic::error(

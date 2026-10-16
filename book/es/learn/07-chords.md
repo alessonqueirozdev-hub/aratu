@@ -35,6 +35,7 @@ mismas reglas de ritmo:
 | `u` | hacia arriba |
 | `m` | apagado |
 | `g` | golpe: los dedos golpean la tapa, sin tocar las cuerdas |
+| `t` | hacia abajo con golpe, todo junto |
 | `-` | la mano pasa sin tocar |
 | mayúscula | acentuado |
 
@@ -71,6 +72,18 @@ guitarra {
 
 > Cada tiempo tiene cuatro semicorcheas: hacia abajo, golpe, hacia abajo,
 > hacia arriba. El golpe del tercer tiempo va acentuado.
+
+Muchas veces el golpe cae **junto** con el rasgueo hacia abajo: la mano
+baja por las cuerdas y el dedo anular golpea la tapa en el mismo instante.
+Se escribe `t`, de *todo junto*, y `T` es lo mismo con acento:
+
+```aratu
+tempo: 100
+guitarra {
+  chords = | Am | G | F | E |
+  strum  = T-du g-du T-du g-du
+}
+```
 
 ## Ejercicios
 

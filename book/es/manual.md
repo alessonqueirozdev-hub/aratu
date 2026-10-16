@@ -184,6 +184,7 @@ símbolos de guitarra:
 | `u` | rasgueo hacia arriba |
 | `m` | rasgueo apagado |
 | `g` | golpe en la tapa (flamenco), sin las cuerdas |
+| `t` | hacia abajo con golpe, todo junto |
 | `-` | la mano pasa sin tocar |
 | `_` | deja sonar |
 | mayúscula | rasgueo acentuado |

@@ -175,6 +175,7 @@ symbols:
 | `u` | strum up |
 | `m` | muted strum (a chuck) |
 | `g` | a golpe, a tap on the guitar's top (flamenco), no strings |
+| `t` | a down strum and a golpe together |
 | `-` | the hand passes without striking |
 | `_` | let it ring |
 | upper case | accented strum |

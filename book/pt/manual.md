@@ -181,6 +181,7 @@ de violão:
 | `u` | batida para cima |
 | `m` | batida abafada |
 | `g` | golpe no tampo (flamenco), sem as cordas |
+| `t` | para baixo com golpe, tudo junto |
 | `-` | a mão passa sem tocar |
 | `_` | deixa soar |
 | maiúscula | batida acentuada |
