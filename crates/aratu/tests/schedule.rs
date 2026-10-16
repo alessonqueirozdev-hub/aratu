@@ -295,7 +295,7 @@ fn chords_alone_play_as_block_chords() {
 fn dynamics_accents_and_live_levels() {
     let ev = events("m = | p:c4 d4 E4 f4 |", 1, 2);
     let v: Vec<u8> = ev.iter().map(|e| e.velocity).collect();
-    assert_eq!(v, [49, 49, 69, 49]);
+    assert_eq!(v, [49, 49, 81, 49]);
     let ev = events("m = | c4 d4 e4 f4 |\nm: ff", 1, 2);
     assert!(ev.iter().all(|e| e.velocity == 112));
     let ev = events("m = | c4 d4 e4 f4 |\nm: fade out over 2 bars", 1, 4);

@@ -49,11 +49,12 @@ export class Engine {
     this.ctx = new AudioContext({ latencyHint: "interactive" });
     const ctx = this.ctx;
     // The master: a gentle compressor glues the parts, then a little gain.
+    // It is slow and light enough to let an accent through.
     const comp = ctx.createDynamicsCompressor();
-    comp.threshold.value = -18;
+    comp.threshold.value = -12;
     comp.knee.value = 6;
-    comp.ratio.value = 3;
-    comp.attack.value = 0.01;
+    comp.ratio.value = 2.5;
+    comp.attack.value = 0.02;
     comp.release.value = 0.15;
     const out = ctx.createGain();
     out.gain.value = 1.25;
@@ -228,7 +229,9 @@ export class Engine {
       return this.made;
     }
     const c = this.chain(e.part);
-    const g = Math.pow(e.vel / 127, 1.6) * 0.6;
+    // Loudness grows faster than velocity, so the step from mf to an
+    // accent is heard; mf itself stays where it was.
+    const g = Math.pow(e.vel / 127, 2) * 0.72;
     if (e.drum) this.drum(c, e.drum, when, g);
     else if (e.note !== undefined) this.note(c, e.note, when, Math.max(e.dur, 0.02), g);
     return this.made;

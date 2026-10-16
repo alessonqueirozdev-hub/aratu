@@ -32,12 +32,33 @@ const KEYWORDS = new Set([
   "fine", "coda", "ms", "Hz", "kHz",
 ]);
 const DYNAMICS = new Set(["ppp", "pp", "p", "mp", "mf", "f", "ff", "fff", "sfz", "fp"]);
+// The same names the language reads as drum lines and drum parts.
+const DRUM_LINES = new Set([
+  "hh", "oh", "bd", "sd", "rd", "cr", "cy", "rim", "cp", "tom", "perc", "kick", "snare", "hat",
+  "hihat", "ride", "crash", "clap", "ht", "mt", "lt", "ft", "toms", "floor", "stick",
+]);
+const DRUM_PARTS = new Set(["drums", "drum", "kit"]);
 
-const aratuLanguage = StreamLanguage.define<{ lineStart: boolean }>({
+interface State {
+  lineStart: boolean;
+  /** Braces open, and the depth of the drums block we are in (-1: none). */
+  depth: number;
+  drums: number;
+  /** A drums block opens at the next brace. */
+  opening: boolean;
+  /** This line is struck (drums or strum): one letter is one sound. */
+  struck: boolean;
+}
+
+const aratuLanguage = StreamLanguage.define<State>({
   name: "aratu",
-  startState: () => ({ lineStart: true }),
+  startState: () => ({ lineStart: true, depth: 0, drums: -1, opening: false, struck: false }),
+  copyState: (s) => ({ ...s }),
   token(stream, state) {
-    if (stream.sol()) state.lineStart = true;
+    if (stream.sol()) {
+      state.lineStart = true;
+      state.struck = false;
+    }
     if (stream.eatSpace()) return null;
     if (stream.match("//")) {
       stream.skipToEnd();
@@ -50,7 +71,24 @@ const aratuLanguage = StreamLanguage.define<{ lineStart: boolean }>({
     if (stream.match(/^[0-9]+\/[0-9]+/)) return "number";
     if (stream.match(/^->/) || stream.match(/^[=:]/)) return "operator";
     if (stream.match(/^[_\-.]/)) return "punctuation";
-    if (stream.match(/^[[\]{}]/)) return "bracket";
+    if (stream.match("{")) {
+      state.depth++;
+      if (state.opening && state.drums < 0) state.drums = state.depth;
+      state.opening = false;
+      return "bracket";
+    }
+    if (stream.match("}")) {
+      if (state.depth === state.drums) state.drums = -1;
+      state.depth = Math.max(0, state.depth - 1);
+      return "bracket";
+    }
+    if (stream.match(/^[[\]]/)) return "bracket";
+    // In a drum or strum line each letter is a sound, and upper case is an
+    // accent, drawn so it stands out.
+    if (state.struck) {
+      const ch = stream.match(/^\p{L}/u) as RegExpMatchArray | null;
+      if (ch) return /\p{Lu}/u.test(ch[0]) ? "strong" : "variableName";
+    }
     if (stream.match(/^[?'^<>+%]/)) return "operator";
     const word = stream.match(/^[\p{L}_][\p{L}\p{N}_#]*/u) as RegExpMatchArray | null;
     if (word) {
@@ -59,7 +97,13 @@ const aratuLanguage = StreamLanguage.define<{ lineStart: boolean }>({
       state.lineStart = false;
       if (KEYWORDS.has(w)) return "keyword";
       if (DYNAMICS.has(w)) return "atom";
-      if (first && stream.match(/^\s*(=|\{|:)/, false)) return "definition";
+      if (first && stream.match(/^\s*(=|\{|:)/, false)) {
+        if (stream.match(/^\s*\{/, false) && DRUM_PARTS.has(w)) state.opening = true;
+        if (stream.match(/^\s*=/, false)) {
+          state.struck = state.drums >= 0 || DRUM_LINES.has(w) || w === "strum";
+        }
+        return "definition";
+      }
       if (/^[A-G](#|b)?(m|maj|min|dim|aug|sus|°|º|ø|\d|M)*/.test(w) && /^[A-G]/.test(w)) return "typeName";
       return "variableName";
     }
@@ -81,6 +125,7 @@ const style = HighlightStyle.define([
   { tag: t.bracket, color: "var(--barline)" },
   { tag: t.operator, color: "var(--operator)" },
   { tag: t.variableName, color: "var(--text)" },
+  { tag: t.strong, color: "var(--accent)", fontWeight: "800" },
 ]);
 
 // Spans that are sounding right now.

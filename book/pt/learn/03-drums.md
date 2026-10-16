@@ -16,6 +16,23 @@ qual for o nome da linha.
 | `f` | surdo |
 | `k` | aro (baqueta atravessada na caixa) |
 
+Cada linha também tem um **nome**, escrito antes do `=`. O costume é usar
+as abreviações do inglês, as mesmas dos estúdios e das baterias
+eletrônicas:
+
+| Nome da linha | Vem de | Peça |
+|---|---|---|
+| `hh` | *hi-hat* | chimbal |
+| `bd` | *bass drum* | bumbo |
+| `sd` | *snare drum* | caixa |
+| `rd` | *ride* | prato de condução |
+| `cr` | *crash* | prato de ataque |
+| `tom` | *tom* | tons e surdo |
+| `rim` | *rim* | aro |
+
+O nome é só um rótulo, para você se achar; quem decide o som é o símbolo.
+Uma linha `chimbal = cc cc cc cc` dentro de `drums { }` soa igual.
+
 As linhas podem ficar juntas num bloco `drums { }`. Assim fica claro que
 são todas da bateria:
 
@@ -62,8 +79,9 @@ drums {
 }
 ```
 
-> Como o som vem do símbolo, as letras de prato ficam na linha `cr` e a
-> condução na linha `rd`, mas qualquer nome serviria.
+> A linha `cr` (*crash*) leva o prato de ataque, `x`, e a linha `rd`
+> (*ride*) leva a condução, `r`. Troque um `r` por `c` e ouça a diferença
+> entre a condução e o chimbal.
 
 ## Tons e aro
 

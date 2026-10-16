@@ -220,8 +220,9 @@ impl Dyn {
     }
 }
 
-/// The velocity an accent adds.
-pub const ACCENT: u8 = 20;
+/// The velocity an accent adds: two marks up, so an accent in `mf` sounds
+/// like `ff` and stands out clearly from the beats around it.
+pub const ACCENT: u8 = 32;
 
 /// A chord symbol, read as a lead sheet writes it.
 #[derive(Clone, Debug, PartialEq, Eq)]

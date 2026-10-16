@@ -214,6 +214,12 @@ export class RhythmMap {
             hit.style.width = `calc(${((c.len ?? 1) / total) * 100}% - 3px)`;
             hit.classList.add("long");
           }
+          // An upper-case symbol is accented; a chord symbol is upper case
+          // anyway. A dynamic before it (`f:C`) does not count.
+          const sound = (c.text ?? "").replace(/^\p{L}+:/u, "");
+          if (line.kind !== "chords" && /^\p{Lu}/u.test(sound)) {
+            hit.classList.add("accented");
+          }
           cell.append(hit);
         });
         if (editable && bar.editable) this.attach(view);

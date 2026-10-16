@@ -16,6 +16,24 @@ sonido, sea cual sea el nombre de la línea.
 | `f` | tom de piso |
 | `k` | aro (baqueta cruzada sobre la caja) |
 
+Cada línea tiene también un **nombre**, escrito antes del `=`. Lo
+habitual es usar las abreviaturas del inglés, las mismas de los estudios y
+de las cajas de ritmo:
+
+| Nombre de la línea | Viene de | Pieza |
+|---|---|---|
+| `hh` | *hi-hat* | hi-hat |
+| `bd` | *bass drum* | bombo |
+| `sd` | *snare drum* | caja |
+| `rd` | *ride* | platillo ride |
+| `cr` | *crash* | platillo crash |
+| `tom` | *tom* | toms |
+| `rim` | *rim* | aro |
+
+El nombre es solo una etiqueta, para orientarte; el sonido lo decide el
+símbolo. Una línea `hihat = cc cc cc cc` dentro de `drums { }` suena
+igual.
+
 Las líneas pueden ir juntas en un bloque `drums { }`. Así queda claro que
 todas son de la batería:
 
@@ -62,8 +80,9 @@ drums {
 }
 ```
 
-> Como el sonido sale del símbolo, las letras de platillo van en la línea
-> `cr` y el ride en la línea `rd`, pero cualquier nombre serviría.
+> La línea `cr` (*crash*) lleva el platillo crash, `x`, y la línea `rd`
+> (*ride*) lleva el ride, `r`. Cambia una `r` por `c` y escucha la
+> diferencia entre el ride y el hi-hat.
 
 ## Toms y aro
 

@@ -16,6 +16,22 @@ line is called.
 | `f` | floor tom |
 | `k` | side stick (the stick across the snare's rim) |
 
+Each line also has a **name**, written before the `=`. The custom is to
+use the short names studios and drum machines use:
+
+| Line name | Short for | Drum |
+|---|---|---|
+| `hh` | hi-hat | hi-hat |
+| `bd` | bass drum | bass drum |
+| `sd` | snare drum | snare |
+| `rd` | ride | ride cymbal |
+| `cr` | crash | crash cymbal |
+| `tom` | tom | toms |
+| `rim` | rim | side stick |
+
+The name is only a label, to find your way; the symbol decides the sound.
+A line `hats = cc cc cc cc` inside `drums { }` sounds the same.
+
 The lines can sit together in a `drums { }` block, which shows they all
 belong to the kit:
 
@@ -62,8 +78,9 @@ drums {
 }
 ```
 
-> Since the symbol decides the sound, the cymbal letters sit in a line
-> called `cr` and the ride in `rd`, but any names would do.
+> The `cr` (crash) line holds the crash, `x`, and the `rd` (ride) line
+> holds the ride, `r`. Change an `r` to `c` and hear the ride turn into
+> the hi-hat.
 
 ## Toms and the rim
 
