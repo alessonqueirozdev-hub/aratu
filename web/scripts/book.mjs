@@ -116,7 +116,10 @@ function manual(lang) {
   chapters.push({ id: "intro", title: title(intro), html: page(intro, `manual-${lang}-intro`) });
   for (const part of parts) {
     const heading = part.match(/^##\s+(.+)$/m)[1].trim();
-    const id = slug(heading.replace(/^\d+\.\s*/, ""));
+    // The chapter's number names it in every language, so switching
+    // language keeps the page.
+    const number = heading.match(/^(\d+)\./);
+    const id = number ? number[1] : slug(heading);
     const body = part.replace(/^##\s+.+$/m, `# ${heading}`);
     chapters.push({ id, title: heading, html: page(body, `manual-${lang}-${id}`) });
   }
