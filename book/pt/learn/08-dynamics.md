@@ -10,7 +10,8 @@ melodia = | p:dó4 mi sol dó5 | f:sol4 _ _ _ |
 ```
 
 O primeiro compasso é piano; o segundo, forte. A marca não conta como
-tempo.
+tempo, e pode ter um espaço depois dos dois-pontos: `p: dó4` também vale.
+Em `f: fá4`, o primeiro `f` é forte e o segundo é a nota fá.
 
 ## Crescendo e diminuendo
 

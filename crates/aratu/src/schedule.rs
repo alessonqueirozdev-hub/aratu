@@ -59,6 +59,8 @@ pub enum Drum {
     MidTom,
     FloorTom,
     SideStick,
+    /// The flamenco *golpe* on a guitar's top, from a strum line.
+    GuitarTap,
 }
 
 impl Drum {
@@ -90,6 +92,7 @@ impl Drum {
             Drum::MidTom => "mid-tom",
             Drum::FloorTom => "floor-tom",
             Drum::SideStick => "side-stick",
+            Drum::GuitarTap => "guitar-tap",
         }
     }
 }
@@ -1103,6 +1106,8 @@ impl<'p> Scheduler<'p> {
                         .filter_map(pitch)
                         .map(|k| (k, 0.0)),
                 ),
+                // A tap sounds the top, not the strings, so it needs no chord.
+                Sound::Strum(Stroke::Tap) => kinds.push((EventKind::Drum(Drum::GuitarTap), 0.0)),
                 Sound::Strum(stroke) => {
                     let chord = chords
                         .iter()
@@ -1118,6 +1123,7 @@ impl<'p> Scheduler<'p> {
                             strings.truncate(4);
                         }
                         Stroke::Muted => fixed = Some(0.04),
+                        Stroke::Tap => {}
                     }
                     for (i, n) in strings.into_iter().enumerate() {
                         if let Some(k) = pitch(n) {

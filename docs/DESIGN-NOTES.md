@@ -130,8 +130,9 @@ where unmarked chords last the default length and marked ones a fraction of
 a bar: the bar lines say the same with no parameters.
 
 **2e. Strumming.** A strum pattern uses the beat rules with its own symbols:
-`d` down, `u` up, `m` muted (a chuck), `-` the hand passes without striking,
-`_` hold, and upper case for an accent.
+`d` down, `u` up, `m` muted (a chuck), `g` a golpe on the top (added on 15
+October 2026 for flamenco: the wood sounds, not the strings), `-` the hand
+passes without striking, `_` hold, and upper case for an accent.
 
 ```
 guitar {
@@ -155,7 +156,8 @@ bar for composing, as one short line for changing a piece live.
 
 - Marks: `ppp pp p mp mf f ff fff`, plus `sfz` and `fp`. Inside a bar a mark
   is attached to the beat it starts with a colon, so it is not counted as a
-  beat: `| p:c4 e4 g4 c5 |`.
+  beat: `| p:c4 e4 g4 c5 |`. A space after the colon is allowed (`p: c4`),
+  since every other colon in Aratu is followed by one.
 - Hairpins as in a score: `<` crescendo and `>` diminuendo, from the beat
   they follow to the next mark: `| p:c4< d4 e4 f4 | f:g4 |`.
 - Live: `piano: cresc to ff over 4 bars`, `drums: dim to p over 2 bars`,

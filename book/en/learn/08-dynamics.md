@@ -10,7 +10,8 @@ melody = | p:c4 e g c5 | f:g4 _ _ _ |
 ```
 
 The first bar is piano; the second, forte. The mark does not count as a
-beat.
+beat, and it may have a space after the colon: `p: c4` works too. In
+`f: f4` the first `f` is forte and the second is the note F.
 
 ## Crescendo and diminuendo
 

@@ -62,6 +62,18 @@ fn tokenize<'a>(text: &'a str, base: usize, diags: &mut Vec<Diagnostic>) -> Vec<
         let clen = c.len_utf8();
         if opens.is_empty() {
             if c.is_whitespace() {
+                // A dynamic belongs to the beat after it, with or without a
+                // space: `p: c4` reads as `p:c4`.
+                let rest = text[i..].trim_start();
+                let dynamic = word_start.is_some_and(|s| {
+                    text[s..i]
+                        .strip_suffix(':')
+                        .is_some_and(|w| Dyn::parse(w).is_some())
+                });
+                if dynamic && !rest.is_empty() && !rest.starts_with('|') {
+                    i = text.len() - rest.len();
+                    continue;
+                }
                 flush(&mut toks, &mut word_start, i);
                 i += clen;
                 continue;
@@ -438,7 +450,7 @@ fn chord_beat(w: &str, s: Span, diags: &mut Vec<Diagnostic>) -> Vec<Slot> {
     if let Some((d, rest)) = core.split_once(':') {
         if let Some(dy) = Dyn::parse(d) {
             dynamic = Some(dy);
-            core = rest;
+            core = rest.trim_start();
         }
     }
     match Chord::parse(core) {
@@ -647,8 +659,12 @@ impl SlotParser<'_, '_> {
                 ));
                 return None;
             }
+            // `p: c4` as well as `p:c4`.
+            while self.peek().is_some_and(char::is_whitespace) {
+                self.bump();
+            }
             match self.peek() {
-                None | Some(' ' | ']' | '}' | '|' | '_' | '-') => {
+                None | Some(']' | '}' | '|' | '_' | '-') => {
                     self.diags
                         .push(Diagnostic::error(sp, Message::DynamicBeforeNothing));
                     return None;
@@ -687,6 +703,7 @@ impl SlotParser<'_, '_> {
                         'd' => Stroke::Down,
                         'u' => Stroke::Up,
                         'm' => Stroke::Muted,
+                        'g' => Stroke::Tap,
                         _ => {
                             self.skip_mods();
                             self.diags.push(Diagnostic::error(
@@ -991,6 +1008,29 @@ mod tests {
         };
         assert_eq!(h.dynamic, Some(Dyn::F));
         assert_eq!(h.hairpin, Some(Hairpin::Diminuendo));
+    }
+
+    #[test]
+    fn a_dynamic_may_have_a_space_after_it() {
+        // `f:` is forte and the `f` after it is the note F, with or without
+        // a space between them.
+        for src in ["| p: c4 c c d | f: f f e d |", "| p:c4 c c d | f:f f e d |"] {
+            let bars = ok(src, LineKind::Pitched);
+            for (bar, dynamic, note) in [(0, Dyn::P, 60), (1, Dyn::F, 65)] {
+                let b = beats(&bars[bar]);
+                assert_eq!(b.len(), 4, "{src}");
+                let Slot::Hit(h) = &b[0].slots[0] else {
+                    panic!()
+                };
+                assert_eq!(h.dynamic, Some(dynamic), "{src}");
+                assert_eq!(h.sound, Sound::Notes(vec![note]), "{src}");
+            }
+        }
+        let bars = ok("p: s s f: S s", LineKind::Drums);
+        assert_eq!(beats(&bars[0]).len(), 4);
+        // A dynamic with nothing after it is still an error.
+        let (_, d) = parse("| c4 d4 e4 p: |", LineKind::Pitched);
+        assert!(d.iter().any(|d| d.message == Message::DynamicBeforeNothing));
     }
 
     #[test]

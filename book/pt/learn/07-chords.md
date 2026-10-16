@@ -34,6 +34,7 @@ regras de ritmo:
 | `d` | para baixo |
 | `u` | para cima |
 | `m` | abafada |
+| `g` | golpe: os dedos batem no tampo, sem tocar as cordas |
 | `-` | a mão passa sem tocar |
 | maiúscula | acentuada |
 
@@ -52,6 +53,23 @@ batida para baixo as cordas soam da grave para a aguda, na para cima da
 aguda para a grave, como num violão de verdade.
 
 > Mude a batida para `D -u D -u` e ouça a diferença, com a música tocando.
+
+## O golpe no tampo
+
+No flamenco a mão também bate no tampo do violão, o *golpe*. Ele se
+escreve `g`, e `G` é um golpe acentuado. As cordas não soam no golpe;
+soa a madeira:
+
+```aratu
+tempo: 100
+violão {
+  chords = | Am | G | F | E |
+  strum  = dgdu dgdu dGdu dgdu
+}
+```
+
+> Cada tempo tem quatro semicolcheias: para baixo, golpe, para baixo, para
+> cima. O golpe do terceiro tempo é acentuado.
 
 ## Exercícios
 

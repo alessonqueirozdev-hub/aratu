@@ -430,6 +430,30 @@ export class Engine {
       case "floor-tom":
         this.tom(c, when, g, bright, 100, 0.28);
         return;
+      case "guitar-tap": {
+        // The flamenco golpe: a finger on the guitar's top. The wooden body
+        // thumps, the nail clicks, and the strings stay still.
+        const gain = ctx.createGain();
+        gain.connect(c.input);
+        for (const [f, level] of [[105, 1], [210, 0.45]]) {
+          const o = ctx.createOscillator();
+          o.type = "sine";
+          o.frequency.setValueAtTime(f * 1.15, when);
+          o.frequency.exponentialRampToValueAtTime(f, when + 0.015);
+          const og = ctx.createGain();
+          og.gain.value = level;
+          o.connect(og).connect(gain);
+          o.start(when);
+          o.stop(when + 0.25);
+          this.track(o, gain);
+        }
+        gain.gain.setValueAtTime(0.0001, when);
+        gain.gain.linearRampToValueAtTime(g * 1.4, when + 0.002);
+        gain.gain.setTargetAtTime(0.0001, when + 0.004, 0.045);
+        this.noiseHit(c.input, when, "bandpass", 1400 * bright, 1.2, g * 0.9, 0.012);
+        this.noiseHit(c.input, when, "highpass", 4000, 0.7, g * 0.35, 0.006);
+        return;
+      }
       case "side-stick": {
         // The stick across the rim: a dry, woody click with no snare wires.
         const gain = ctx.createGain();

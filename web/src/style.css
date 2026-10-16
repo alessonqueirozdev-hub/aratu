@@ -428,7 +428,7 @@ select:hover {
 }
 
 .rhythm-grid .grid-row {
-  grid-template-columns: 120px repeat(var(--bars), minmax(240px, 1fr));
+  grid-template-columns: 120px repeat(var(--bars), minmax(max(240px, var(--bar-min, 0px)), 1fr));
 }
 
 .rhythm-grid .grid-bar {
@@ -819,7 +819,8 @@ select:hover {
 
 .grid-row {
   display: grid;
-  grid-template-columns: 92px repeat(var(--bars), minmax(150px, 1fr));
+  /* A bar with many steps is wider, so each step keeps room for its letter. */
+  grid-template-columns: 92px repeat(var(--bars), minmax(max(150px, var(--bar-min, 0px)), 1fr));
   gap: 6px;
   align-items: center;
 }
@@ -944,6 +945,12 @@ select:hover {
   line-height: 20px;
   text-align: center;
   white-space: nowrap;
+}
+
+.grid-hit.short {
+  min-width: 0;
+  max-width: 18px;
+  padding: 0;
 }
 
 /* An accent: bigger, bolder, ringed, with the score's accent sign above. */

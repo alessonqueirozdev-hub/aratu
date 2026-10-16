@@ -294,6 +294,8 @@ pub enum Stroke {
     Down,
     Up,
     Muted,
+    /// A tap on the guitar's top, the flamenco *golpe*: no strings.
+    Tap,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

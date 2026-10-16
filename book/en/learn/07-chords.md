@@ -34,6 +34,7 @@ rhythm rules:
 | `d` | down |
 | `u` | up |
 | `m` | muted |
+| `g` | golpe: the fingers tap the guitar's top, not the strings |
 | `-` | the hand passes without striking |
 | upper case | accented |
 
@@ -52,6 +53,23 @@ strum sounds the strings from low to high, an up strum from high to low,
 as on a real guitar.
 
 > Change the strum to `D -u D -u` and hear the difference while it plays.
+
+## The golpe on the top
+
+In flamenco the hand also taps the guitar's top: the *golpe*. It is
+written `g`, and `G` is an accented golpe. The strings do not sound on a
+golpe; the wood does:
+
+```aratu
+tempo: 100
+guitar {
+  chords = | Am | G | F | E |
+  strum  = dgdu dgdu dGdu dgdu
+}
+```
+
+> Each beat has four sixteenths: down, golpe, down, up. The golpe on the
+> third beat is accented.
 
 ## Exercises
 

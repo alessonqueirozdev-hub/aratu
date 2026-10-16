@@ -174,6 +174,7 @@ symbols:
 | `d` | strum down |
 | `u` | strum up |
 | `m` | muted strum (a chuck) |
+| `g` | a golpe, a tap on the guitar's top (flamenco), no strings |
 | `-` | the hand passes without striking |
 | `_` | let it ring |
 | upper case | accented strum |
@@ -194,8 +195,9 @@ the chords play whole, like a keyboard.
 
 Dynamic marks are the score's: `ppp pp p mp mf f ff fff`, and `sfz`, `fp`.
 
-**Inside a bar**, a mark sits on the note it starts with a colon, so it
-does not count as a beat:
+**Inside a bar**, a mark sits on the note it starts with a colon, with or
+without a space (`p:c4` or `p: c4`), and does not count as a beat. In
+`f:f4` the first `f` is forte and the second is the note:
 
 ```aratu
 melody = | p:c4 e4 g4 c5 | f:g4 _ _ _ |

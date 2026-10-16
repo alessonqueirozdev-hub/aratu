@@ -163,6 +163,12 @@ export class RhythmMap {
     for (let k = 1; k <= round; k++) columns.push(k);
     const table = el("div", "grid");
     table.style.setProperty("--bars", String(columns.length));
+    // Room for every step of the busiest drum or strum bar, about 13px a
+    // step (notes are drawn as long bars and need none), up to 32 steps.
+    const steps = lines
+      .filter((l) => l.kind === "drums" || l.kind === "strum")
+      .flatMap((l) => l.bars.map((b) => lcm(b.res, q) * b.beats));
+    table.style.setProperty("--bar-min", `${Math.min(Math.max(0, ...steps), 32) * 13}px`);
     const editable = !!this.o.view;
 
     for (const line of lines) {
@@ -213,6 +219,10 @@ export class RhythmMap {
           if (line.kind === "pitched" || line.kind === "chords") {
             hit.style.width = `calc(${((c.len ?? 1) / total) * 100}% - 3px)`;
             hit.classList.add("long");
+          } else {
+            // A hit fits in its step, so fast strokes do not pile up.
+            hit.style.width = `calc(${100 / total}% - 2px)`;
+            hit.classList.add("short");
           }
           // An upper-case symbol is accented; a chord symbol is upper case
           // anyway. A dynamic before it (`f:C`) does not count.

@@ -180,6 +180,7 @@ de violão:
 | `d` | batida para baixo |
 | `u` | batida para cima |
 | `m` | batida abafada |
+| `g` | golpe no tampo (flamenco), sem as cordas |
 | `-` | a mão passa sem tocar |
 | `_` | deixa soar |
 | maiúscula | batida acentuada |
@@ -201,8 +202,9 @@ forte e mais rápido. Sem batida, os acordes tocam inteiros, como um teclado.
 As marcas de dinâmica são as da partitura: `ppp pp p mp mf f ff fff`, e
 `sfz`, `fp`.
 
-**Dentro de um compasso**, a marca vai colada na nota com dois-pontos, e
-não conta como tempo:
+**Dentro de um compasso**, a marca vai na nota com dois-pontos, colada ou
+com um espaço (`p:dó4` ou `p: dó4`), e não conta como tempo. Em `f:fá4`, o
+primeiro `f` é forte e o segundo é a nota:
 
 ```aratu
 melodia = | p:dó4 mi4 sol4 dó5 | f:sol4 _ _ _ |

@@ -34,6 +34,7 @@ mismas reglas de ritmo:
 | `d` | hacia abajo |
 | `u` | hacia arriba |
 | `m` | apagado |
+| `g` | golpe: los dedos golpean la tapa, sin tocar las cuerdas |
 | `-` | la mano pasa sin tocar |
 | mayúscula | acentuado |
 
@@ -53,6 +54,23 @@ arriba, de la aguda a la grave, como en una guitarra de verdad.
 
 > Cambia el rasgueo a `D -u D -u` y escucha la diferencia, con la música
 > sonando.
+
+## El golpe en la tapa
+
+En el flamenco la mano también golpea la tapa de la guitarra: el *golpe*.
+Se escribe `g`, y `G` es un golpe acentuado. En el golpe no suenan las
+cuerdas; suena la madera:
+
+```aratu
+tempo: 100
+guitarra {
+  chords = | Am | G | F | E |
+  strum  = dgdu dgdu dGdu dgdu
+}
+```
+
+> Cada tiempo tiene cuatro semicorcheas: hacia abajo, golpe, hacia abajo,
+> hacia arriba. El golpe del tercer tiempo va acentuado.
 
 ## Ejercicios
 

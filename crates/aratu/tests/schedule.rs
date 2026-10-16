@@ -241,6 +241,28 @@ fn repeats_and_jumps_play_in_order() {
 }
 
 #[test]
+fn a_golpe_taps_the_top_without_the_strings() {
+    let src = "guitar {\n  chords = | Am |\n  strum = d g dg G\n}";
+    let ev = events(src, 1, 2);
+    let taps: Vec<(Ratio, u8)> = ev
+        .iter()
+        .filter(|e| e.kind == EventKind::Drum(Drum::GuitarTap))
+        .map(|e| (e.beat, e.velocity))
+        .collect();
+    assert_eq!(taps.len(), 3, "{taps:?}");
+    assert_eq!(taps[0].0, Ratio::int(1));
+    assert_eq!(taps[1].0, Ratio::new(5, 2));
+    assert_eq!(taps[2].0, Ratio::int(3));
+    assert!(taps[2].1 > taps[1].1, "an upper-case golpe is accented");
+    // No strings sound on a golpe.
+    assert!(
+        !ev.iter()
+            .any(|e| e.beat == Ratio::int(1) && matches!(e.kind, EventKind::Note(_)))
+    );
+    assert_eq!(Drum::GuitarTap.name(), "guitar-tap");
+}
+
+#[test]
 fn chords_strum_and_change_at_the_right_bar() {
     let src = "tempo: 60\nguitar {\n  chords = | Am | C G |\n  strum = D du -u du\n}";
     let ev = events(src, 1, 3);
