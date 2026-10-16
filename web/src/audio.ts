@@ -57,8 +57,18 @@ export class Engine {
     comp.attack.value = 0.02;
     comp.release.value = 0.15;
     const out = ctx.createGain();
-    out.gain.value = 1.25;
-    comp.connect(out).connect(ctx.destination);
+    out.gain.value = 1.1;
+    // Last, a limiter: fast and hard, it only acts on the rare peaks (an
+    // accented strum with a golpe on top) that would otherwise clip. Its
+    // threshold sits just under full scale, so the automatic make-up gain
+    // stays tiny and the accents keep their distance from the other beats.
+    const limit = ctx.createDynamicsCompressor();
+    limit.threshold.value = -1.5;
+    limit.knee.value = 0;
+    limit.ratio.value = 20;
+    limit.attack.value = 0.001;
+    limit.release.value = 0.08;
+    comp.connect(out).connect(limit).connect(ctx.destination);
     this.master = ctx.createGain();
     this.master.gain.value = 0.7;
     this.master.connect(comp);
@@ -448,7 +458,7 @@ export class Engine {
           this.track(o, gain);
         }
         gain.gain.setValueAtTime(0.0001, when);
-        gain.gain.linearRampToValueAtTime(g * 1.4, when + 0.002);
+        gain.gain.linearRampToValueAtTime(g * 1.1, when + 0.002);
         gain.gain.setTargetAtTime(0.0001, when + 0.004, 0.045);
         this.noiseHit(c.input, when, "bandpass", 1400 * bright, 1.2, g * 0.9, 0.012);
         this.noiseHit(c.input, when, "highpass", 4000, 0.7, g * 0.35, 0.006);
