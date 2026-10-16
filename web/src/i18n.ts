@@ -32,6 +32,8 @@ const words = {
   // The playground.
   play: { pt: "Tocar", es: "Tocar", en: "Play" },
   stop: { pt: "Parar", es: "Detener", en: "Stop" },
+  stage: { pt: "Palco", es: "Escenario", en: "Stage" },
+  stageExit: { pt: "Sair", es: "Salir", en: "Exit" },
   examples: { pt: "Exemplos", es: "Ejemplos", en: "Examples" },
   messages: { pt: "Mensagens", es: "Mensajes", en: "Messages" },
   allGood: { pt: "Tudo certo. Pode tocar.", es: "Todo bien. Puedes tocar.", en: "All good. Ready to play." },
@@ -50,9 +52,9 @@ const words = {
   next: { pt: "A mudança entra no compasso", es: "El cambio entra en el compás", en: "The change comes in at bar" },
   beat: { pt: "tempo", es: "tiempo", en: "beat" },
   hint: {
-    pt: "Ctrl+Enter toca ou atualiza · Ctrl+. para · mude o texto enquanto toca: a mudança entra na próxima barra",
-    es: "Ctrl+Enter toca o actualiza · Ctrl+. detiene · cambia el texto mientras suena: el cambio entra en la próxima barra",
-    en: "Ctrl+Enter plays or updates · Ctrl+. stops · change the text while it plays: the change comes in at the next bar line",
+    pt: "Ctrl+Enter toca ou atualiza · Ctrl+. para · mude o texto enquanto toca: a mudança entra na próxima barra · Palco (Ctrl+Shift+F): só o código, em tela cheia; Esc sai",
+    es: "Ctrl+Enter toca o actualiza · Ctrl+. detiene · cambia el texto mientras suena: el cambio entra en la próxima barra · Escenario (Ctrl+Shift+F): solo el código, en pantalla completa; Esc sale",
+    en: "Ctrl+Enter plays or updates · Ctrl+. stops · change the text while it plays: the change comes in at the next bar line · Stage (Ctrl+Shift+F): only the code, full screen; Esc leaves",
   },
   ecosystem: { pt: "Parte do ecossistema", es: "Parte del ecosistema", en: "Part of the ecosystem" },
   source: { pt: "Código-fonte", es: "Código fuente", en: "Source code" },

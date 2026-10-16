@@ -135,6 +135,11 @@ async function main(): Promise<void> {
       ul.append(li);
     }
     $("note").textContent = p.ok ? "" : playground?.playing ? tr("keepsPlaying", lang) : tr("fixFirst", lang);
+    // On stage the first problem shows over the code, in the musician's words.
+    const first = p.diagnostics.find((d) => d.severity === "error") ?? p.diagnostics[0];
+    const msg = $("stage-msg");
+    msg.hidden = !first;
+    msg.textContent = first ? `${tr("line", lang)} ${first.line}: ${first.message}` : "";
     if (p.ok) map.draw(p, playground?.text ?? "");
   };
 
@@ -152,15 +157,21 @@ async function main(): Promise<void> {
       const delay = Math.max(0, (at - ctx.currentTime) * 1000);
       window.setTimeout(() => {
         $("bar").textContent = String(info.bar);
+        $("stage-bar-n").textContent = String(info.bar);
         $("bpm").textContent = String(Math.round(info.bpm));
         $("meter").textContent = info.meter;
       }, delay);
       const beatLen = (info.end - info.start) / Math.max(info.beats, 1);
       for (let b = 0; b < info.beats; b++) {
         window.setTimeout(() => {
-          const dot = $("beat");
-          dot.classList.add("on");
-          window.setTimeout(() => dot.classList.remove("on"), 90);
+          const dots = [$("beat"), $("stage-beat")];
+          for (const dot of dots) dot.classList.add("on");
+          // On stage, the first beat of each bar lights the frame.
+          if (b === 0) document.body.classList.add("downbeat");
+          window.setTimeout(() => {
+            for (const dot of dots) dot.classList.remove("on");
+            document.body.classList.remove("downbeat");
+          }, 120);
         }, delay + b * beatLen * 1000);
       }
     },
@@ -177,6 +188,70 @@ async function main(): Promise<void> {
   });
   $("play").onclick = () => void playground.play();
   $("stop").onclick = () => playground.stop();
+  // The stage: only the code, full screen and big enough for a projector,
+  // for playing live in front of people.
+  let stageFont = Number(load("aratu.stageFont") ?? 30) || 30;
+  let idleTimer = 0;
+  const onStage = () => document.body.classList.contains("stage");
+  const setStageFont = (px: number) => {
+    stageFont = Math.min(72, Math.max(16, px));
+    document.body.style.setProperty("--stage-font", `${stageFont}px`);
+    save("aratu.stageFont", String(stageFont));
+    playground.view.requestMeasure();
+  };
+  // The controls fade when the mouse rests, and come back when it moves.
+  const wake = () => {
+    document.body.classList.remove("idle");
+    window.clearTimeout(idleTimer);
+    if (onStage()) idleTimer = window.setTimeout(() => document.body.classList.add("idle"), 2500);
+  };
+  const enterStage = () => {
+    if (!location.hash.startsWith("#/tocar")) location.hash = "#/tocar";
+    document.body.classList.add("stage");
+    document.documentElement.dataset.theme = "dark";
+    setStageFont(stageFont);
+    document.documentElement.requestFullscreen?.().catch(() => {
+      // Without full screen (an iframe, an old browser) the stage still works.
+    });
+    wake();
+    playground.view.focus();
+  };
+  const leaveStage = () => {
+    document.body.classList.remove("stage", "stage-map", "idle");
+    window.clearTimeout(idleTimer);
+    applyTheme();
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    playground.view.requestMeasure();
+  };
+  $("stage").onclick = enterStage;
+  $("stage-exit").onclick = leaveStage;
+  $("stage-play").onclick = () => void playground.play();
+  $("stage-stop").onclick = () => playground.stop();
+  $("stage-smaller").onclick = () => setStageFont(stageFont - 4);
+  $("stage-bigger").onclick = () => setStageFont(stageFont + 4);
+  $("stage-map").onclick = () => {
+    document.body.classList.toggle("stage-map");
+    $("stage-map").classList.toggle("on", document.body.classList.contains("stage-map"));
+    playground.view.requestMeasure();
+  };
+  document.addEventListener("fullscreenchange", () => {
+    if (!document.fullscreenElement && onStage()) leaveStage();
+  });
+  document.addEventListener("mousemove", wake);
+  window.addEventListener(
+    "keydown",
+    (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === "f") {
+        e.preventDefault();
+        if (onStage()) leaveStage();
+        else enterStage();
+      } else if (e.key === "Escape" && onStage() && !document.fullscreenElement) {
+        leaveStage();
+      }
+    },
+    true,
+  );
+
   $<HTMLSelectElement>("examples").onchange = (e) => {
     const ex = examples.find((x) => x.id === (e.target as HTMLSelectElement).value);
     if (ex) playground.text = ex.text;
@@ -290,6 +365,7 @@ async function main(): Promise<void> {
       $(`tab-${v}`).classList.toggle("here", v === which);
     }
     if (which !== "play") {
+      if (document.body.classList.contains("stage")) $("stage-exit").click();
       Session.active?.stop();
       showPage(which, id ?? (which === "learn" ? currentLearn : undefined));
     } else {

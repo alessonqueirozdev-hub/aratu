@@ -412,6 +412,14 @@ Enquanto a peça toca, você a muda; você não a reescreve.
 - **Nada recomeça.** As partes mantêm o lugar no compasso quando outra muda,
   e enquanto o texto tiver erro, continua tocando a última versão certa.
 
+**O palco.** Para tocar diante de uma plateia, o botão **Palco** em Tocar
+(ou Ctrl+Shift+F) deixa só o código na tela, em tela cheia e com letra
+grande para o projetor. O contorno pisca no primeiro tempo de cada
+compasso, os símbolos acendem quando soam e a primeira mensagem aparece no
+canto. Os botões do canto tocam e param, mudam o tamanho da letra
+(A− e A+), mostram o mapa do ritmo embaixo e saem do palco; eles somem
+quando o mouse para. Esc também sai.
+
 ## 11. Transformações
 
 Verbos curtos mudam uma parte, uma linha ou um padrão sem reescrevê-lo:

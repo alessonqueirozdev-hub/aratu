@@ -421,6 +421,15 @@ Mientras la pieza suena, la cambias; no la reescribes.
   cuando otra cambia, y mientras el texto tenga un error, sigue sonando la
   última versión que estaba bien.
 
+**El escenario.** Para tocar frente al público, el botón **Escenario** en
+Tocar (o Ctrl+Shift+F) deja solo el código en la pantalla, en pantalla
+completa y con letra grande para el proyector. El borde destella en el
+primer tiempo de cada compás, los símbolos se encienden cuando suenan y el
+primer mensaje aparece en la esquina. Los botones de la esquina tocan y
+detienen, cambian el tamaño de la letra (A− y A+), muestran el mapa del
+ritmo abajo y salen del escenario; desaparecen cuando el ratón se queda
+quieto. Esc también sale.
+
 ## 11. Transformaciones
 
 Verbos cortos cambian una parte, una línea o un patrón sin reescribirlo:

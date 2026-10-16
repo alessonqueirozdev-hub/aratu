@@ -1053,6 +1053,157 @@ select:hover {
   background: var(--paper);
 }
 
+/* The stage: only the code, full screen, for playing live. */
+
+.stage-bar,
+.stage-msg {
+  display: none;
+}
+
+body.stage {
+  overflow: hidden;
+  background: var(--code-bg);
+}
+
+body.stage .top,
+body.stage .bottom,
+body.stage .toolbar,
+body.stage .side,
+body.stage .hint,
+body.stage #view-play > .rhythm {
+  display: none !important;
+}
+
+body.stage .play-view {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  margin: 0;
+  padding: 0;
+  max-width: none;
+  background: var(--code-bg);
+}
+
+body.stage .work {
+  display: block;
+  height: 100vh;
+  min-height: 0;
+}
+
+body.stage #editor {
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  transition: box-shadow 120ms ease-out;
+}
+
+body.stage.downbeat #editor {
+  box-shadow:
+    inset 0 0 0 4px var(--accent),
+    inset 0 0 60px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+body.stage #editor .cm-editor {
+  font-size: var(--stage-font, 30px);
+}
+
+body.stage #editor .cm-gutters {
+  display: none;
+}
+
+body.stage #editor .cm-content {
+  padding: 8vh 6vw 30vh;
+}
+
+body.stage .cm-activeLine {
+  background: transparent !important;
+}
+
+body.stage .cm-playing {
+  box-shadow:
+    0 0 18px var(--playing),
+    0 0 4px var(--playing);
+}
+
+body.stage.stage-map .work {
+  height: 64vh;
+}
+
+body.stage.stage-map #view-play > .rhythm {
+  display: block !important;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 36vh;
+  overflow: auto;
+  margin: 0;
+  border-radius: 0;
+  border-width: 1px 0 0;
+}
+
+body.stage.stage-map #view-play > .rhythm .rhythm-head p {
+  display: none;
+}
+
+body.stage .stage-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 30;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--panel) 85%, transparent);
+  backdrop-filter: blur(8px);
+  transition: opacity 400ms;
+}
+
+.stage-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 56px;
+  padding: 0 6px;
+  color: var(--text);
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
+body.stage.idle {
+  cursor: none;
+}
+
+body.stage.idle .stage-bar {
+  opacity: 0;
+  pointer-events: none;
+}
+
+body.stage .stage-msg:not([hidden]) {
+  display: block;
+  /* Top right, under the controls: code lines seldom reach there, and the
+     line being written is never covered. */
+  position: fixed;
+  top: 76px;
+  right: 16px;
+  z-index: 30;
+  max-width: min(38vw, 560px);
+  margin: 0;
+  padding: 10px 16px;
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--panel) 90%, transparent);
+  color: var(--text);
+  font-size: calc(var(--stage-font, 30px) * 0.5);
+  line-height: 1.4;
+}
+
+
 @media (max-width: 900px) {
   /* minmax(0, ...) lets a column be narrower than its widest content, so
      the lesson list scrolls on its own instead of widening the page. */

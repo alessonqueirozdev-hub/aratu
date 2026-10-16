@@ -408,6 +408,14 @@ While a piece plays, you change it; you do not rewrite it.
   changes, and while the text has an error the last good version keeps
   playing.
 
+**The stage.** To play in front of an audience, the **Stage** button in Play
+(or Ctrl+Shift+F) leaves only the code on the screen, full screen and in
+large type for a projector. The frame flashes on the first beat of each
+bar, the symbols light up as they sound and the first message shows in the
+corner. The buttons in the corner play and stop, change the type size (A−
+and A+), show the rhythm map below and leave the stage; they fade when the
+mouse rests. Esc leaves too.
+
 ## 11. Transformations
 
 Short verbs change a part, a line or a pattern without rewriting it:
