@@ -204,7 +204,13 @@ impl Segments {
         }
         if words.is_empty() {
             let at_an_edge = (before.is_none() && self.bars.is_empty()) || after.is_none();
-            if !at_an_edge {
+            // `:| |:`, `:| x4 |` and `:||:` are two signs meeting at one bar
+            // line, as a score draws them, not a bar left empty.
+            let signs_meet = matches!(
+                before,
+                Some((BarLine::End | BarLine::EndStart | BarLine::EndEnding(_), _))
+            ) || matches!(after, Some((BarLine::Start, _)));
+            if !at_an_edge && !signs_meet {
                 if let (Some((_, b)), Some((_, a))) = (before, after) {
                     diags.push(Diagnostic::error(b.join(a), Message::EmptyBar));
                 }
@@ -1196,6 +1202,18 @@ mod tests {
         assert_eq!(d[0].message, Message::ChanceRange { percent: 150.0 });
         let (_, d) = parse("| c | | c |", LineKind::Drums);
         assert_eq!(d[0].message, Message::EmptyBar);
+        // Repeat signs meeting at one bar line leave no bar empty.
+        for src in [
+            "|: c4 e4 g4 e4 :| x10 |: g4 b4 d5 b4 :| x10 |",
+            "|: c4 e4 g4 e4 :| |: g4 b4 d5 b4 :|",
+            "|: c4 e4 g4 e4 :||: g4 b4 d5 b4 :|",
+            "|: c4 e4 g4 e4 :| x4 | g4 b4 d5 b4 |",
+        ] {
+            let (bars, d) = parse(src, LineKind::Pitched);
+            assert!(d.is_empty(), "{src}: {d:?}");
+            assert_eq!(bars.len(), 2, "{src}");
+            assert!(bars[0].repeat_end.is_some(), "{src}");
+        }
         let (_, d) = parse("e g", LineKind::Pitched);
         assert_eq!(d[0].message, Message::NoOctave { note: "e".into() });
         let _ = Ratio::ONE;
