@@ -135,6 +135,9 @@ const words = {
   form: { pt: "Seções e forma", es: "Secciones y forma", en: "Sections and form" },
   waltz: { pt: "Valsa com anacruse", es: "Vals con anacrusa", en: "Waltz with a pickup" },
   sound: { pt: "Sons e knobs", es: "Sonidos y perillas", en: "Sounds and knobs" },
+  motifs: { pt: "Motivos e sequências", es: "Motivos y secuencias", en: "Motifs and sequences" },
+  "twelve-tone": { pt: "Série dodecafônica", es: "Serie dodecafónica", en: "Twelve-tone row" },
+  setlist: { pt: "Lista de melodias no palco", es: "Lista de melodías en el escenario", en: "A melody list on stage" },
 } as const;
 
 export type Word = keyof typeof words;

@@ -80,6 +80,9 @@ export interface AratuEvent {
   value?: number;
   from: number;
   to: number;
+  /** For a strum: where the chord it plays is written. */
+  cfrom?: number;
+  cto?: number;
 }
 
 export interface BarInfo {

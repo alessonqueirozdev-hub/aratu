@@ -1,0 +1,9 @@
+// A twelve-tone row and its forms, each poured into a rhythm. The Rows tab
+// shows the row's matrix; click a form's name to write it here.
+tempo: 72
+
+row serie = 0 11 3 4 8 7 9 5 6 1 2 10
+
+melody = | o o [o o] o | o _ [o o] o | O o o o | from serie.P0 octave 4
+answer = | - o - o | [o o] o _ o | o - O _ | from serie.RI5 octave 3
+pulse = | o _ _ _ | o _ _ _ | o _ _ _ | from serie.I0 octave 2

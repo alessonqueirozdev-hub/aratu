@@ -79,7 +79,11 @@ async function main(): Promise<void> {
   };
   applyWords();
 
-  const aratu = await Aratu.load("aratu.wasm");
+  // The page stamps the script with its version (see scripts/build.mjs);
+  // the wasm gets the same stamp, so a new deploy never mixes with an old
+  // copy kept by the browser.
+  const version = new URL(import.meta.url).searchParams.get("v");
+  const aratu = await Aratu.load(version ? `aratu.wasm?v=${version}` : "aratu.wasm");
   let engine: Engine | null = null;
   const getEngine = (): Engine => {
     if (!engine) {

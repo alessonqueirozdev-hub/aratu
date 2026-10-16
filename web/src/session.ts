@@ -53,6 +53,10 @@ export class Session {
           for (const s of this.scheduled) {
             s.event.from = changes.mapPos(s.event.from, 1);
             s.event.to = changes.mapPos(s.event.to, -1);
+            if (s.event.cfrom !== undefined && s.event.cto !== undefined) {
+              s.event.cfrom = changes.mapPos(s.event.cfrom, 1);
+              s.event.cto = changes.mapPos(s.event.cto, -1);
+            }
           }
           o.onChange?.(text);
           window.clearTimeout(this.timer);
@@ -129,6 +133,10 @@ export class Session {
             if (cs && !cs.empty) {
               s.event.from = cs.mapPos(s.event.from, 1);
               s.event.to = cs.mapPos(s.event.to, -1);
+              if (s.event.cfrom !== undefined && s.event.cto !== undefined) {
+                s.event.cfrom = cs.mapPos(s.event.cfrom, 1);
+                s.event.cto = cs.mapPos(s.event.cto, -1);
+              }
             }
           }
           this.scheduled.push(...list);
@@ -148,7 +156,15 @@ export class Session {
       if (!this.playing) return;
       const now = engine.ctx.currentTime;
       this.scheduled = this.scheduled.filter((s) => s.at + Math.max(s.event.dur, 0.12) > now - 0.05);
-      const spans = this.scheduled.filter((s) => s.at <= now).map((s) => ({ from: s.event.from, to: s.event.to }));
+      // A strum lights its chord symbol too.
+      const spans = this.scheduled
+        .filter((s) => s.at <= now)
+        .flatMap((s) => {
+          const own = { from: s.event.from, to: s.event.to };
+          return s.event.cfrom !== undefined && s.event.cto !== undefined
+            ? [own, { from: s.event.cfrom, to: s.event.cto }]
+            : [own];
+        });
       const key = spans.map((s) => `${s.from}:${s.to}`).join(",");
       if (key !== this.shown) {
         this.shown = key;

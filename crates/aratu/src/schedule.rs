@@ -127,6 +127,8 @@ pub struct Event {
     pub accent: bool,
     /// The written symbol that made it, for the editor to light up.
     pub span: Span,
+    /// For a strum, the chord symbol it plays, lit up with it.
+    pub also: Option<Span>,
 }
 
 /// The time and frame of one bar.
@@ -189,7 +191,9 @@ fn chance(seed: u64, line: u64, bar: i64, what: u64) -> f64 {
 }
 
 /// Where a chord sounds in a bar: start, end, and the chord (none for N.C.).
-type Region<'p> = (Ratio, Ratio, Option<&'p Chord>);
+/// A stretch of a bar and the chord sounding in it, with where that chord
+/// is written, for strums to play it and the editor to light it.
+type Region<'p> = (Ratio, Ratio, Option<&'p Chord>, Option<Span>);
 
 /// One part of a bar after choices are made.
 #[derive(Clone, Copy, Debug)]
@@ -226,6 +230,7 @@ struct Sounding<'p> {
     part: &'p str,
     line: &'p str,
     span: Span,
+    also: Option<Span>,
     humanize: f64,
     jitter: f64,
 }
@@ -256,7 +261,7 @@ struct Scheduler<'p> {
     /// Open sounds by instance.
     open: HashMap<u64, Sounding<'p>>,
     /// The chord sounding in each part instance, for holds over bar lines.
-    last_chord: HashMap<u64, Option<&'p Chord>>,
+    last_chord: HashMap<u64, Option<(&'p Chord, Span)>>,
     done: Vec<Sounding<'p>>,
     params: Vec<(i64, Event)>,
 }
@@ -375,12 +380,17 @@ impl<'p> Scheduler<'p> {
                     let mut list = Vec::new();
                     let mut last = self.last_chord.get(&key).copied().flatten();
                     for p in protos {
-                        let chord = match p.hit.map(|h| &h.sound) {
-                            Some(Sound::Chord(c)) => Some(c),
+                        let chord = match p.hit.map(|h| (&h.sound, h.span)) {
+                            Some((Sound::Chord(c), s)) => Some((c, s)),
                             Some(_) => None,
                             None => last,
                         };
-                        list.push((p.start, p.start + p.len, chord));
+                        list.push((
+                            p.start,
+                            p.start + p.len,
+                            chord.map(|c| c.0),
+                            chord.map(|c| c.1),
+                        ));
                         last = chord;
                     }
                     // A chord held to the end of the bar stays for the next.
@@ -433,6 +443,7 @@ impl<'p> Scheduler<'p> {
                             },
                             velocity: 0,
                             accent: false,
+                            also: None,
                             span: c.span,
                         },
                     ));
@@ -473,6 +484,7 @@ impl<'p> Scheduler<'p> {
                     velocity: s.velocity,
                     accent: s.accent,
                     span: s.span,
+                    also: s.also,
                 });
             }
             let _ = s.humanize;
@@ -1133,6 +1145,7 @@ impl<'p> Scheduler<'p> {
 
             let mut kinds: Vec<(EventKind, f64)> = Vec::new();
             let mut fixed = None;
+            let mut also = None;
             match &h.sound {
                 Sound::Drum(c) => {
                     if let Some(d) = Drum::from_symbol(*c) {
@@ -1151,11 +1164,13 @@ impl<'p> Scheduler<'p> {
                 // A tap sounds the top, not the strings, so it needs no chord.
                 Sound::Strum(Stroke::Tap) => kinds.push((EventKind::Drum(Drum::GuitarTap), 0.0)),
                 Sound::Strum(stroke) => {
-                    let chord = chords
+                    let region = chords
                         .iter()
-                        .find(|(s, e, _)| p.start >= *s && p.start < *e)
-                        .and_then(|(_, _, c)| *c);
-                    let Some(chord) = chord else { continue };
+                        .find(|(s, e, _, _)| p.start >= *s && p.start < *e);
+                    let Some((_, _, Some(chord), at)) = region else {
+                        continue;
+                    };
+                    also = *at;
                     let mut strings = chord.guitar_voicing();
                     let spread = if h.accent { 0.006 } else { 0.012 };
                     match stroke {
@@ -1198,6 +1213,7 @@ impl<'p> Scheduler<'p> {
                 part: inst.part.name.as_str(),
                 line: inst.line.label.as_str(),
                 span: h.span,
+                also,
                 humanize: human.unwrap_or(0.0),
                 jitter,
             };

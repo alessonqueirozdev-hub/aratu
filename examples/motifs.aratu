@@ -1,0 +1,20 @@
+// Motifs: one idea, moved through the key, turned upside down and
+// played backwards, over an ostinato.
+tempo: 96
+key: A minor
+
+motif riff = [e4 d c d]
+motif ost = [a2 e3 a3 e3]
+
+melody = | riff riff+1 riff+2 riff+3 | riff.inv riff.retro riff.ri e4 |
+bass = | ost ost ost ost |
+
+piano {
+  chords = | Am | F |
+}
+
+drums {
+  hh = [cc]x4
+  bd = b - b -
+  sd = - s - s
+}

@@ -1,0 +1,23 @@
+// A set prepared for the stage: melodies in a list, chosen by number.
+// Press Stage: the buttons pick a melody, or Alt+1 to Alt+3; random draws
+// one each time round.
+tempo: 104
+key: C major
+
+motif hook = [e4 g e d]
+
+list temas {
+  | hook hook+1 hook hook-1 | c4 _ _ _ |
+  | e4 e g _ | a g e _ |
+  | hook.inv hook.retro hook hook | g4 _ _ _ |
+}
+
+melody = temas.1
+
+drums {
+  hh = cc cc co cc
+  bd = b - bb -
+  sd = - s - S
+}
+
+bass = | c2 _ g2 _ | a2 _ f2 _ |

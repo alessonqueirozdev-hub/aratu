@@ -744,3 +744,40 @@ fn parts_go_out_and_come_back_in() {
     let ev = events("bass = | c2 _ _ _ |\nhh = c c c c\nall: out", 1, 3);
     assert!(ev.is_empty());
 }
+
+#[test]
+fn a_strum_points_at_the_chord_it_plays() {
+    let src = "seed 7\nguitar {\n  chords = | Am | Dm {E|G} |\n  strum = d d d d\n}";
+    let c = compile(src);
+    assert!(c.diagnostics.is_empty(), "{:?}", c.diagnostics);
+    let ev = render(&c.piece, &Options::default(), 1, 13).events;
+    let written = |e: &Event| e.also.map(|s| &src[s.start..s.end]);
+    // Bar 1: every strum lights Am.
+    assert!(
+        ev.iter()
+            .filter(|e| e.bar == 1)
+            .all(|e| written(e) == Some("Am"))
+    );
+    // Bar 2's second half lights whichever of E and G was chosen, and
+    // both are chosen over the bars.
+    let mut chosen = std::collections::HashSet::new();
+    for e in ev
+        .iter()
+        .filter(|e| e.bar % 2 == 0 && e.beat >= Ratio::int(2))
+    {
+        let w = written(e).unwrap();
+        let pcs = match e.kind {
+            EventKind::Note(n) => n % 12,
+            _ => continue,
+        };
+        // The chord sounding and the chord lit agree.
+        if w == "E" {
+            assert!([4, 8, 11].contains(&pcs), "{w} {pcs}");
+        } else {
+            assert_eq!(w, "G");
+            assert!([7, 11, 2].contains(&pcs), "{w} {pcs}");
+        }
+        chosen.insert(w);
+    }
+    assert_eq!(chosen.len(), 2, "{chosen:?}");
+}

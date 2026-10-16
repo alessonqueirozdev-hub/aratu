@@ -359,6 +359,10 @@ pub fn render_json(
             }
             j.key("from").num(program.pos(e.span.start) as f64);
             j.key("to").num(program.pos(e.span.end) as f64);
+            if let Some(a) = e.also {
+                j.key("cfrom").num(program.pos(a.start) as f64);
+                j.key("cto").num(program.pos(a.end) as f64);
+            }
             j.close_obj();
         }
         j.close_arr();
