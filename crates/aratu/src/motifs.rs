@@ -58,20 +58,16 @@ pub fn motif_ref<'a>(word: &'a str, lib: &Library) -> Option<(&'a str, Vec<Op>)>
     }
     let mut ops = Vec::new();
     let mut rest = &word[end..];
-    loop {
-        if let Some(r) = rest.strip_prefix(".inv") {
+    while let Some(r) = rest.strip_prefix('.') {
+        let len = r.find(['.', '+', '-']).unwrap_or(r.len());
+        let (moves, flips) = mirror(&r[..len])?;
+        if moves {
             ops.push(Op::Invert);
-            rest = r;
-        } else if let Some(r) = rest.strip_prefix(".retro") {
-            ops.push(Op::Retrograde);
-            rest = r;
-        } else if let Some(r) = rest.strip_prefix(".ri") {
-            ops.push(Op::Invert);
-            ops.push(Op::Retrograde);
-            rest = r;
-        } else {
-            break;
         }
+        if flips {
+            ops.push(Op::Retrograde);
+        }
+        rest = &r[len..];
     }
     if let Some(sign) = rest.chars().next().filter(|c| *c == '+' || *c == '-') {
         let digits = rest[1..].chars().take_while(char::is_ascii_digit).count();
@@ -89,6 +85,19 @@ pub fn motif_ref<'a>(word: &'a str, lib: &Library) -> Option<(&'a str, Vec<Op>)>
         }
     }
     rest.is_empty().then_some((name, ops))
+}
+
+/// The names of inversion, retrograde and their mix, the same for motifs,
+/// rows and lines: `inv`, `invert`, `inversion` or `I`; `retro`,
+/// `retrograde` or `R`; `ri` or `RI`. Whether it turns the intervals
+/// upside down, and whether it plays backwards.
+pub fn mirror(word: &str) -> Option<(bool, bool)> {
+    Some(match word.to_lowercase().as_str() {
+        "inv" | "invert" | "inversion" | "i" => (true, false),
+        "retro" | "retrograde" | "r" => (false, true),
+        "ri" | "retroinv" => (true, true),
+        _ => return None,
+    })
 }
 
 /// Splits a repeat count off a word: `[e3 d3]x4`, `riffx4`. Only after a
@@ -227,6 +236,28 @@ pub fn form_ref(word: &str) -> Result<(&str, Form, i32), String> {
     let Some((name, form)) = word.split_once('.') else {
         return Ok((word, Form::P, 0));
     };
+    // The same names as for motifs and lines, with the transposition after:
+    // `serie.inv`, `serie.retrograde5`.
+    let letters = form.trim_end_matches(|c: char| c.is_ascii_digit());
+    if letters.len() > 2 {
+        let f = match mirror(letters) {
+            Some((true, true)) => Form::RI,
+            Some((true, false)) => Form::I,
+            Some((false, true)) => Form::R,
+            _ if letters.eq_ignore_ascii_case("prime") => Form::P,
+            _ => return Err(form.to_string()),
+        };
+        let digits = &form[letters.len()..];
+        let n = if digits.is_empty() {
+            Ok(0)
+        } else {
+            digits.parse::<i32>()
+        };
+        return match n {
+            Ok(n) if (0..12).contains(&n) => Ok((name, f, n)),
+            _ => Err(form.to_string()),
+        };
+    }
     let upper = form.to_uppercase();
     let (f, digits) = if let Some(d) = upper.strip_prefix("RI") {
         (Form::RI, d)

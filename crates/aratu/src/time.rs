@@ -236,7 +236,10 @@ mod tests {
             TempoChange::Ramp {
                 from: None,
                 to: 60.0,
-                bars: 2,
+                length: crate::ast::Length {
+                    count: 2.0,
+                    unit: crate::ast::TimeUnit::Bars,
+                },
             },
             Ratio::int(4),
             Ratio::int(8),
@@ -272,7 +275,10 @@ mod tests {
             TempoChange::Ramp {
                 from: None,
                 to: 80.0,
-                bars: 2,
+                length: crate::ast::Length {
+                    count: 2.0,
+                    unit: crate::ast::TimeUnit::Bars,
+                },
             },
             Ratio::int(8),
             Ratio::int(8),

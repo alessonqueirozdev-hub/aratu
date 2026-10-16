@@ -235,28 +235,48 @@ pub struct Chord {
 }
 
 impl Chord {
-    /// `Am`, `F`, `G7`, `Cmaj7`, `Dm7b5`, `E/G#`, `C7M`, `Bº`, `G7(b9)`.
+    /// `Am`, `F`, `G7`, `Cmaj7`, `Dm7b5`, `E/G#`, `C7M`, `Bº`, `G7(b9)`,
+    /// `C6/9`, `E7alt`, and with solfège as Brazilian cifra also writes it:
+    /// `Lám`, `Sol7`, `Fá#m7`, `Dó/Mi`.
     pub fn parse(text: &str) -> Option<Chord> {
+        // `6/9` is a chord, not a bass under `6`.
+        let text = text.replace("6/9", "69");
+        // Letters first, so `Faug` is F augmented and not `Fa` and `ug`.
+        Self::parse_from(&text, false).or_else(|| Self::parse_from(&text, true))
+    }
+
+    /// The pitch class and length of a chord's root, or of its bass after
+    /// `/`: an upper-case letter, or a solfège syllable, with accidentals.
+    fn root(text: &str, solfege: bool) -> Option<(i32, usize)> {
         let first = text.chars().next()?;
-        if !first.is_ascii_uppercase() {
+        if !first.is_uppercase() {
             return None;
         }
-        let root = letter_pitch_class(first)?;
-        let mut rest = &text[1..];
-        let (acc, alen) = accidentals(rest);
-        let root = (root + acc).rem_euclid(12);
-        rest = &rest[alen..];
+        let (pc, len) = if solfege {
+            let (pc, _, len) = note_name(text).filter(|(_, _, len)| *len > 1)?;
+            (pc, len)
+        } else {
+            (
+                letter_pitch_class(first).filter(|_| first.is_ascii_uppercase())?,
+                1,
+            )
+        };
+        let (acc, alen) = accidentals(&text[len..]);
+        Some(((pc + acc).rem_euclid(12), len + alen))
+    }
+
+    fn parse_from(text: &str, solfege: bool) -> Option<Chord> {
+        let (root, len) = Self::root(text, solfege)?;
+        let mut rest = &text[len..];
 
         let mut bass = None;
         if let Some(i) = rest.find('/') {
             let b = &rest[i + 1..];
-            let bc = b.chars().next()?;
-            let bpc = letter_pitch_class(bc).filter(|_| bc.is_ascii_uppercase())?;
-            let (bacc, balen) = accidentals(&b[1..]);
-            if 1 + balen != b.len() {
+            let (bpc, blen) = Self::root(b, false).or_else(|| Self::root(b, true))?;
+            if blen != b.len() {
                 return None;
             }
-            bass = Some((bpc + bacc).rem_euclid(12));
+            bass = Some(bpc);
             rest = &rest[..i];
         }
 
@@ -268,9 +288,9 @@ impl Chord {
         // Longest spellings first.
         const TOKENS: &[&str] = &[
             "maj13", "maj11", "maj9", "maj7", "add11", "add13", "add9", "add2", "add4", "sus2",
-            "sus4", "dim7", "m7b5", "min", "maj", "dim", "aug", "sus", "7M", "M7", "Δ7", "°7",
-            "º7", "ø7", "b13", "#11", "b9", "#9", "b5", "#5", "13", "11", "m", "-", "Δ", "°", "º",
-            "ø", "+", "M", "9", "7", "6", "5", "4", "2",
+            "alt", "69", "sus4", "dim7", "m7b5", "min", "maj", "dim", "aug", "sus", "7M", "M7",
+            "Δ7", "°7", "º7", "ø7", "b13", "#11", "b9", "#9", "b5", "#5", "13", "11", "m", "-",
+            "Δ", "°", "º", "ø", "+", "M", "9", "7", "6", "5", "4", "2",
         ];
         while !q.is_empty() {
             let tok = TOKENS.iter().find(|t| q.starts_with(*t))?;
@@ -310,6 +330,13 @@ impl Chord {
                 "sus2" | "2" => third = Some(2),
                 "5" => third = None,
                 "6" => extra.push(9),
+                "69" => extra.extend([9, 14]),
+                // Altered: the seventh with the fifth and the ninth raised.
+                "alt" => {
+                    seventh.get_or_insert(10);
+                    fifth = 8;
+                    extra.push(15);
+                }
                 "7" => {
                     if seventh.is_none() {
                         seventh = Some(10)

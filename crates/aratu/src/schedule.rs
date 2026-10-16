@@ -390,9 +390,19 @@ impl<'p> Scheduler<'p> {
                 }
                 if let Action::Tempo(t) = c.action {
                     let len = match t {
-                        TempoChange::Ramp { bars, .. } => (g..g + bars)
-                            .map(|x| self.bar_beats(x))
-                            .fold(Ratio::ZERO, |a, b| a + b),
+                        // Whole bars are counted bar by bar, so a meter
+                        // change inside the ramp is followed exactly.
+                        TempoChange::Ramp { length, .. }
+                            if length.unit == TimeUnit::Bars && length.count.fract() == 0.0 =>
+                        {
+                            (g..g + length.count as i64)
+                                .map(|x| self.bar_beats(x))
+                                .fold(Ratio::ZERO, |a, b| a + b)
+                        }
+                        TempoChange::Ramp { length, .. } => {
+                            let beats = beats_of(length, self.meter_at(g.max(1)));
+                            Ratio::new((beats * 1920.0).round() as i64, 1920)
+                        }
                         _ => Ratio::ZERO,
                     };
                     self.tempo.change(t, start_beat, len);
@@ -925,7 +935,7 @@ impl<'p> Scheduler<'p> {
             return Vec::new();
         }
         let has = |f: &dyn Fn(&Transform) -> bool| transforms.iter().any(f);
-        let retro = has(&|t| matches!(t, Transform::Retrograde));
+        let retro = has(&|t| matches!(t, Transform::Retrograde | Transform::RetroInvert));
         let augment = has(&|t| matches!(t, Transform::Augment));
         let diminish = has(&|t| matches!(t, Transform::Diminish));
 
@@ -1189,7 +1199,7 @@ impl<'p> Scheduler<'p> {
                 let Action::Level {
                     target: t,
                     to,
-                    bars,
+                    length,
                 } = &c.action
                 else {
                     continue;
@@ -1201,10 +1211,13 @@ impl<'p> Scheduler<'p> {
                     LevelTarget::Dynamic(d) => d.velocity() as f64,
                     LevelTarget::Silence => 0.0,
                 };
-                if *bars == 0 {
+                // The length in bars of the meter where it starts.
+                let meter = self.meter_at((*b).max(1));
+                let bars = beats_of(*length, meter) / meter.beats().to_f64();
+                if bars <= 0.0 {
                     level = goal;
                 } else {
-                    let progress = ((g - b) as f64 + frac) / *bars as f64;
+                    let progress = ((g - b) as f64 + frac) / bars;
                     level = if progress >= 1.0 {
                         goal
                     } else {
@@ -1341,7 +1354,7 @@ impl<'p> Scheduler<'p> {
                 match t {
                     Transform::Velocity(x) => velocity *= x,
                     Transform::Transpose(n) => transpose += *n as i32,
-                    Transform::Invert => invert = true,
+                    Transform::Invert | Transform::RetroInvert => invert = true,
                     _ => {}
                 }
             }

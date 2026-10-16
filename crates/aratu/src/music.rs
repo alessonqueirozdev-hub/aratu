@@ -796,7 +796,8 @@ fn split_mods(w: &str) -> (&str, bool, bool, Option<f64>, Option<f64>) {
 fn chord_beat(w: &str, s: Span, diags: &mut Vec<Diagnostic>) -> Vec<Slot> {
     match w {
         "_" => return vec![Slot::Hold(s)],
-        "-" => return vec![Slot::Rest(s)],
+        // No chord: `N.C.` as a lead sheet writes it, or a rest.
+        "-" | "N.C." | "N.C" | "NC" | "n.c." => return vec![Slot::Rest(s)],
         _ => {}
     }
     if let Some(inner) = w.strip_prefix('{').and_then(|r| r.strip_suffix('}')) {

@@ -176,3 +176,130 @@ fn a_line_changes_at_a_bar() {
     );
     assert_eq!(e[0].beat, Ratio::ZERO);
 }
+
+#[test]
+fn inversion_and_retrograde_have_the_same_names_everywhere() {
+    // Motifs take the names lines and rows use, and the other way round.
+    let motif = |form: &str| {
+        notes(
+            &format!("motif riff = [e4 d4 c4 d4]\nmelodia = | riff.{form} - - - |"),
+            1,
+            2,
+        )
+    };
+    for (a, b) in [
+        ("inv", "invert"),
+        ("inv", "I"),
+        ("retro", "retrograde"),
+        ("retro", "R"),
+        ("ri", "RI"),
+    ] {
+        assert_eq!(motif(a), motif(b), "{a} {b}");
+    }
+    let line = |t: &str| notes(&format!("baixo = | c2 d2 e2 f2 |\nbaixo.{t}"), 1, 2);
+    assert_eq!(line("inv"), line("invert"));
+    assert_eq!(line("retro"), line("retrograde"));
+    let ri: Vec<u8> = line("ri").iter().map(|n| n.1).collect();
+    assert_eq!(ri, [31, 32, 34, 36], "inverted around C, then backwards");
+    let row = |f: &str| {
+        notes(
+            &format!("row s = 0 4 7 11\nmelodia = | o o o o | from s.{f}"),
+            1,
+            2,
+        )
+    };
+    assert_eq!(row("I0"), row("inv"));
+    assert_eq!(row("R5"), row("retrograde5"));
+    // `transpose` may say it counts semitones, as `+3st` does.
+    assert_eq!(
+        notes("baixo = | c2 _ _ _ |\nbaixo.transpose 3st", 1, 2),
+        [(1, 39)]
+    );
+}
+
+#[test]
+fn three_x_reads_like_x_three_in_play_and_form() {
+    let play = |s: &str| {
+        events(
+            &format!("pattern g {{ hh = c c c c }}\npattern f {{ sd = s s s s }}\nplay g {s}, f"),
+            1,
+            5,
+        )
+        .iter()
+        .filter(|e| e.kind == EventKind::Drum(Drum::Snare))
+        .map(|e| e.bar)
+        .collect::<Vec<_>>()
+    };
+    assert_eq!(play("3x"), play("x3"));
+    assert_eq!(play("3x")[0], 4);
+    let form = |s: &str| {
+        notes(
+            &format!(
+                "section a {{ m = | c4 _ _ _ | }}\nsection b {{ m = | g4 _ _ _ | }}\nform: a {s} b"
+            ),
+            1,
+            5,
+        )
+    };
+    assert_eq!(form("2x"), form("x2"));
+}
+
+#[test]
+fn crescendos_and_tempo_ramps_take_the_lengths_parameters_take() {
+    // Two beats of 4/4 are half a bar.
+    let level = |len: &str| {
+        events(
+            &format!(
+                "piano = | c4 c c c | c c c c |\npiano: pp\nat bar 1: piano: cresc to ff over {len}"
+            ),
+            1,
+            2,
+        )
+        .iter()
+        .map(|e| e.velocity)
+        .collect::<Vec<_>>()
+    };
+    assert_eq!(level("2 beats"), level("4 eighths"));
+    assert_eq!(level("2 beats"), level("8 sixteenths"));
+    assert_ne!(level("2 beats"), level("1 bar"));
+    let times = |len: &str| {
+        events(
+            &format!("tempo: 120\nhh = c c c c\nat bar 2: rit to 60 over {len}"),
+            1,
+            4,
+        )
+        .iter()
+        .map(|e| e.time)
+        .collect::<Vec<_>>()
+    };
+    assert_eq!(times("4 beats"), times("1 bar"));
+    assert_ne!(times("2 beats"), times("1 bar"));
+}
+
+#[test]
+fn chords_in_solfege_no_chord_six_nine_and_altered() {
+    let chord = |c: &str| {
+        let mut n: Vec<u8> = events(&format!("piano {{ chords = | {c} | }}"), 1, 2)
+            .iter()
+            .filter_map(|e| match e.kind {
+                EventKind::Note(n) => Some(n % 12),
+                _ => None,
+            })
+            .collect();
+        n.sort_unstable();
+        n.dedup();
+        n
+    };
+    assert_eq!(chord("Lám"), chord("Am"));
+    assert_eq!(chord("Sol7"), chord("G7"));
+    assert_eq!(chord("Fá#m7"), chord("F#m7"));
+    assert_eq!(chord("Dó/Mi"), chord("C/E"));
+    assert_eq!(chord("Sib"), chord("Bb"));
+    // Letters stay letters: F augmented, not `Fa` and `ug`.
+    assert_eq!(chord("Faug"), [1, 5, 9]);
+    assert_eq!(chord("C6/9"), [0, 2, 4, 7, 9]);
+    assert_eq!(chord("E7alt"), [0, 2, 4, 7, 8]);
+    for nc in ["N.C.", "NC", "-"] {
+        assert!(chord(nc).is_empty(), "{nc}");
+    }
+}

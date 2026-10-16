@@ -166,7 +166,8 @@ pub enum Action {
     Level {
         target: String,
         to: LevelTarget,
-        bars: i64,
+        /// How long it takes to get there; nothing for at once.
+        length: Length,
     },
     /// `guitar: out` or `guitar: in`.
     Mute {
@@ -582,7 +583,10 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
                 Action::Level {
                     target: target.text.clone(),
                     to: LevelTarget::Dynamic(*dynamic),
-                    bars: 0,
+                    length: Length {
+                        count: 0.0,
+                        unit: TimeUnit::Bars,
+                    },
                 }
             }
             StmtKind::Mute { target, muted } => {
@@ -592,12 +596,12 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
                     muted: *muted,
                 }
             }
-            StmtKind::LevelRamp { target, to, bars } => {
+            StmtKind::LevelRamp { target, to, length } => {
                 check_target(&piece, target, diags);
                 Action::Level {
                     target: target.text.clone(),
                     to: *to,
-                    bars: *bars,
+                    length: *length,
                 }
             }
             StmtKind::Feel { target, feel } => {

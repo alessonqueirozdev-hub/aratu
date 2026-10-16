@@ -493,12 +493,12 @@ impl Parser {
                     let from = tempo(c, "tempo")?;
                     if c.eat("->") {
                         let to = tempo(c, "->")?;
-                        let bars = over_bars(c)?;
+                        let length = over_length(c)?;
                         self.end(c)?;
                         return Ok(StmtKind::TempoChange(TempoChange::Ramp {
                             from: Some(from),
                             to,
-                            bars,
+                            length,
                         }));
                     }
                     self.end(c)?;
@@ -509,12 +509,12 @@ impl Parser {
                         return Err(expected(c, Thing::Number, &first));
                     }
                     let to = tempo(c, "to")?;
-                    let bars = over_bars(c)?;
+                    let length = over_length(c)?;
                     self.end(c)?;
                     return Ok(StmtKind::TempoChange(TempoChange::Ramp {
                         from: None,
                         to,
-                        bars,
+                        length,
                     }));
                 }
                 "a" if c.keyword("tempo") => {
@@ -784,12 +784,12 @@ impl Parser {
                             after: "to".into(),
                         },
                     ))?;
-                    let bars = over_bars(c)?;
+                    let length = over_length(c)?;
                     self.end(c)?;
                     return Ok(StmtKind::LevelRamp {
                         target,
                         to: LevelTarget::Dynamic(d),
-                        bars,
+                        length,
                     });
                 }
                 "fade" => {
@@ -800,9 +800,9 @@ impl Parser {
                     } else {
                         return Err(expected(c, Thing::Bars, "fade"));
                     };
-                    let bars = over_bars(c)?;
+                    let length = over_length(c)?;
                     self.end(c)?;
-                    return Ok(StmtKind::LevelRamp { target, to, bars });
+                    return Ok(StmtKind::LevelRamp { target, to, length });
                 }
                 "swing" | "rubato" | "humanize" => {
                     *c = save;
@@ -860,9 +860,18 @@ impl Parser {
                 Transform::Density(v)
             }
             "velocity" => Transform::Velocity(num(c, verb)?),
-            "transpose" => Transform::Transpose(num(c, verb)? as i64),
-            "invert" => Transform::Invert,
-            "retrograde" => Transform::Retrograde,
+            "transpose" => {
+                let n = num(c, verb)? as i64;
+                // In semitones, as `riff+3st` says it.
+                c.keyword("st");
+                Transform::Transpose(n)
+            }
+            // The same names as motifs and rows take.
+            v if crate::motifs::mirror(v).is_some() => match crate::motifs::mirror(v) {
+                Some((true, true)) => Transform::RetroInvert,
+                Some((true, false)) => Transform::Invert,
+                _ => Transform::Retrograde,
+            },
             "augment" => Transform::Augment,
             "diminish" => Transform::Diminish,
             _ => return Ok(None),
@@ -924,21 +933,13 @@ fn key(c: &mut Cursor) -> Result<Key, Fail> {
     ))
 }
 
-/// `over 4 bars`
-fn over_bars(c: &mut Cursor) -> Result<i64, Fail> {
+/// `over 4 bars`, `over 6 beats`, `over 8 eighths`: the same lengths a
+/// moving parameter takes.
+fn over_length(c: &mut Cursor) -> Result<Length, Fail> {
     if !c.keyword("over") {
-        return Err(expected(c, Thing::Bars, "to"));
+        return Err(expected(c, Thing::Length, "to"));
     }
-    let (n, ns) = c
-        .integer()
-        .ok_or_else(|| expected(c, Thing::Bars, "over"))?;
-    if n == 0 {
-        return Err((ns, Message::BarZero));
-    }
-    if !(c.keyword("bars") || c.keyword("bar")) {
-        return Err(expected(c, Thing::Bars, &format!("over {n}")));
-    }
-    Ok(n)
+    length(c, "over")
 }
 
 /// What may follow a parameter's value: `-> 4000 Hz over 4 bars`; `<->`
@@ -1003,12 +1004,18 @@ fn length(c: &mut Cursor, after: &str) -> Result<Length, Fail> {
     Ok(Length { count, unit })
 }
 
-/// `x3` after a name.
+/// `x3` after a name, or `3x` as people also say it.
 fn times_suffix(c: &mut Cursor) -> Option<u32> {
     let save = c.clone();
     if let Some((w, _)) = c.name() {
         if let Some(n) = w.strip_prefix('x').and_then(|n| n.parse::<u32>().ok()) {
             return Some(n.max(1));
+        }
+    }
+    *c = save.clone();
+    if let Some((n, _)) = c.integer() {
+        if matches!(c.name(), Some((x, _)) if x.eq_ignore_ascii_case("x")) {
+            return Some((n as u32).max(1));
         }
     }
     *c = save;
@@ -1171,7 +1178,10 @@ mod tests {
             StmtKind::TempoChange(TempoChange::Ramp {
                 from: None,
                 to: 80.0,
-                bars: 2
+                length: Length {
+                    count: 2.0,
+                    unit: TimeUnit::Bars
+                }
             })
         );
         assert_eq!(
@@ -1179,7 +1189,10 @@ mod tests {
             StmtKind::TempoChange(TempoChange::Ramp {
                 from: Some(120.0),
                 to: 140.0,
-                bars: 4
+                length: Length {
+                    count: 4.0,
+                    unit: TimeUnit::Bars
+                }
             })
         );
         assert_eq!(
@@ -1263,7 +1276,7 @@ mod tests {
             one("piano: cresc to ff over 4 bars").kind,
             StmtKind::LevelRamp {
                 to: LevelTarget::Dynamic(Dyn::Ff),
-                bars: 4,
+                length: Length { count: 4.0, .. },
                 ..
             }
         ));
@@ -1271,7 +1284,7 @@ mod tests {
             one("all: fade out over 8 bars").kind,
             StmtKind::LevelRamp {
                 to: LevelTarget::Silence,
-                bars: 8,
+                length: Length { count: 8.0, .. },
                 ..
             }
         ));

@@ -92,7 +92,7 @@ pub enum StmtKind {
     LevelRamp {
         target: Name,
         to: LevelTarget,
-        bars: i64,
+        length: Length,
     },
     /// `swing 60%`, `piano: rubato 10%`, `humanize 5 ms`
     Feel {
@@ -203,11 +203,11 @@ pub enum Feel {
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum TempoChange {
     Set(f64),
-    /// `rit`/`rall`/`accel to N over B bars`, or `tempo A -> N over B bars`.
+    /// `rit`/`rall`/`accel to N over 2 bars`, or `tempo A -> N over 8 beats`.
     Ramp {
         from: Option<f64>,
         to: f64,
-        bars: i64,
+        length: Length,
     },
     ATempo,
     Primo,
@@ -221,6 +221,8 @@ pub enum Transform {
     Transpose(i64),
     Invert,
     Retrograde,
+    /// `bass.ri`: inverted and backwards.
+    RetroInvert,
     Augment,
     Diminish,
 }
