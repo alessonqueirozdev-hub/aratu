@@ -288,6 +288,63 @@ impl Chord {
         Self::parse_from(&text, false).or_else(|| Self::parse_from(&text, true))
     }
 
+    /// A chord by its degree in `key`, as harmony is taught: `I`, `vi`,
+    /// `IV`, `V7`, `ii7`, `vii°`; upper case is a major chord and lower
+    /// case a minor one, a flat or sharp before borrows from outside the key
+    /// (`bVII`), and `/` names the degree it leads to (`V7/V`, the
+    /// dominant of the dominant).
+    pub fn roman(text: &str, key: Key) -> Option<Chord> {
+        let text = text.replace("6/9", "69");
+        if let Some((left, right)) = text.split_once('/') {
+            let target = Self::roman(right, key)?;
+            // The degree it leads to is minor when written in lower case.
+            let minor = right
+                .trim_start_matches(['b', '#', '♭', '♯'])
+                .starts_with(|c: char| c.is_ascii_lowercase());
+            let local = Key {
+                tonic: target.root,
+                minor,
+            };
+            return Self::roman(left, local);
+        }
+        let (acc, alen) = accidentals(&text);
+        let rest = &text[alen..];
+        const NUMERALS: [(&str, usize); 7] = [
+            ("VII", 7),
+            ("VI", 6),
+            ("IV", 4),
+            ("V", 5),
+            ("III", 3),
+            ("II", 2),
+            ("I", 1),
+        ];
+        let (degree, upper, len) = NUMERALS.iter().find_map(|(n, d)| {
+            if rest.starts_with(n) {
+                Some((*d, true, n.len()))
+            } else if rest.starts_with(&n.to_lowercase()) {
+                Some((*d, false, n.len()))
+            } else {
+                None
+            }
+        })?;
+        let scale: [i32; 7] = if key.minor {
+            [0, 2, 3, 5, 7, 8, 10]
+        } else {
+            [0, 2, 4, 5, 7, 9, 11]
+        };
+        let root = (key.tonic + scale[degree - 1] + acc).rem_euclid(12);
+        const NAMES: [&str; 12] = [
+            "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B",
+        ];
+        let suffix = &rest[len..];
+        let name = format!(
+            "{}{}{suffix}",
+            NAMES[root as usize],
+            if upper { "" } else { "m" }
+        );
+        Self::parse(&name)
+    }
+
     /// The pitch class and length of a chord's root, or of its bass after
     /// `/`: an upper-case letter, or a solfège syllable, with accidentals.
     fn root(text: &str, solfege: bool) -> Option<(i32, usize)> {

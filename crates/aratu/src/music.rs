@@ -683,7 +683,15 @@ fn word_beats(
 ) -> Vec<Beat> {
     if kind == LineKind::Chords {
         return vec![Beat {
-            slots: chord_beat(w, s, diags),
+            slots: chord_beat(
+                w,
+                s,
+                diags,
+                cx.lib.key.unwrap_or(crate::theory::Key {
+                    tonic: 0,
+                    minor: false,
+                }),
+            ),
             span: s,
             len: 1,
         }];
@@ -844,7 +852,17 @@ fn split_mods(w: &str) -> (&str, bool, bool, Option<f64>, Option<f64>) {
     (core, stacc, ferm, chance, bad_chance)
 }
 
-fn chord_beat(w: &str, s: Span, diags: &mut Vec<Diagnostic>) -> Vec<Slot> {
+/// `:arp` after a chord or notes, in any of the three languages.
+fn strip_arp(core: &str) -> (&str, bool) {
+    for mark in [":arp", ":arpejo", ":arpegio", ":arpeggio"] {
+        if let Some(c) = core.strip_suffix(mark) {
+            return (c, true);
+        }
+    }
+    (core, false)
+}
+
+fn chord_beat(w: &str, s: Span, diags: &mut Vec<Diagnostic>, key: crate::theory::Key) -> Vec<Slot> {
     match w {
         "_" => return vec![Slot::Hold(s)],
         // No chord: `N.C.` as a lead sheet writes it, or a rest.
@@ -861,7 +879,7 @@ fn chord_beat(w: &str, s: Span, diags: &mut Vec<Diagnostic>) -> Vec<Slot> {
                 diags.push(Diagnostic::error(os, Message::EmptyChoice));
                 continue;
             }
-            options.push(chord_beat(opt.trim(), os, diags));
+            options.push(chord_beat(opt.trim(), os, diags, key));
         }
         return vec![Slot::Choice(options, s)];
     }
@@ -869,6 +887,8 @@ fn chord_beat(w: &str, s: Span, diags: &mut Vec<Diagnostic>) -> Vec<Slot> {
     if let Some(n) = bad {
         diags.push(Diagnostic::error(s, Message::ChanceRange { percent: n }));
     }
+    let (stripped, arp) = strip_arp(core);
+    core = stripped;
     let mut dynamic = None;
     if let Some((d, rest)) = core.split_once(':') {
         if let Some(dy) = Dyn::parse(d) {
@@ -876,7 +896,8 @@ fn chord_beat(w: &str, s: Span, diags: &mut Vec<Diagnostic>) -> Vec<Slot> {
             core = rest.trim_start();
         }
     }
-    match Chord::parse(core) {
+    // A chord symbol, or a degree of the key: `| I | vi | IV | V7 |`.
+    match Chord::parse(core).or_else(|| Chord::roman(core, key)) {
         Some(chord) => vec![Slot::Hit(Hit {
             span: s,
             sound: Sound::Chord(chord),
@@ -887,6 +908,7 @@ fn chord_beat(w: &str, s: Span, diags: &mut Vec<Diagnostic>) -> Vec<Slot> {
             fermata,
             hold: 2,
             roll: false,
+            arp,
             chance,
             hairpin: None,
             dynamic,
@@ -1265,6 +1287,7 @@ impl SlotParser<'_, '_> {
             fermata: false,
             hold: 2,
             roll: false,
+            arp: false,
             chance: None,
             hairpin: None,
             dynamic: dynamic.or(self.pending.take()),
@@ -1285,6 +1308,7 @@ impl SlotParser<'_, '_> {
             fermata: false,
             hold: 2,
             roll: false,
+            arp: false,
             chance: None,
             hairpin: None,
             dynamic: None,
@@ -1298,6 +1322,20 @@ impl SlotParser<'_, '_> {
             match c {
                 '\'' => hit.staccato = true,
                 '!' => hit.marcato = true,
+                ':' => {
+                    let rest = &self.s[self.pos..];
+                    let mark = [":arpeggio", ":arpegio", ":arpejo", ":arp"]
+                        .into_iter()
+                        .find(|m| rest.starts_with(m));
+                    match mark {
+                        Some(m) => {
+                            hit.arp = true;
+                            self.pos += m.len();
+                            continue;
+                        }
+                        None => break,
+                    }
+                }
                 '^' => {
                     hit.fermata = true;
                     // `^3`: held three times as long.

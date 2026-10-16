@@ -672,3 +672,58 @@ fn marcato_ghost_notes_and_a_fermata_s_length() {
         Message::UnclosedBracket { open: '(' }
     );
 }
+
+#[test]
+fn chords_by_their_degree_in_the_key() {
+    let pcs = |src: &str, bar: i64| -> Vec<u8> {
+        let mut n: Vec<u8> = events(src, bar, bar + 1)
+            .iter()
+            .filter_map(|e| match e.kind {
+                EventKind::Note(n) => Some(n % 12),
+                _ => None,
+            })
+            .collect();
+        n.sort_unstable();
+        n.dedup();
+        n
+    };
+    let same = |a: &str, b: &str, bars: i64| {
+        for bar in 1..=bars {
+            assert_eq!(pcs(a, bar), pcs(b, bar), "{a} / {b}, bar {bar}");
+        }
+    };
+    same(
+        "key: C major\nchords = | I | vi | IV | V7 |",
+        "chords = | C | Am | F | G7 |",
+        4,
+    );
+    same(
+        "key: A minor\nchords = | i | iv | V7 | VI |",
+        "chords = | Am | Dm | E7 | F |",
+        4,
+    );
+    same(
+        "key: C major\nchords = | ii7 | vii° | bVII | V7/V |",
+        "chords = | Dm7 | Bdim | Bb | D7 |",
+        4,
+    );
+    // In Portuguese, with the key in solfège.
+    same(
+        "tom: Sol maior\nacordes = | I | V |",
+        "chords = | G | D |",
+        2,
+    );
+}
+
+#[test]
+fn a_rolled_chord_goes_up_from_the_lowest_note() {
+    for src in ["chords = | Am:arp |", "melodia = | a3+c4+e4:arp _ _ _ |"] {
+        let e = events(src, 1, 2);
+        let mut last = (0u8, -1.0);
+        for x in &e {
+            let EventKind::Note(n) = x.kind else { continue };
+            assert!(n > last.0 && x.time > last.1, "{src}: {e:?}");
+            last = (n, x.time);
+        }
+    }
+}

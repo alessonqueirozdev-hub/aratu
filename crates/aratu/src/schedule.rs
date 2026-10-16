@@ -1557,6 +1557,16 @@ impl<'p> Scheduler<'p> {
             if kinds.is_empty() {
                 continue;
             }
+            // A rolled chord: from the lowest note up, a little apart.
+            if h.arp {
+                kinds.sort_by_key(|(k, _)| match k {
+                    EventKind::Note(n) => *n,
+                    _ => 0,
+                });
+                for (i, k) in kinds.iter_mut().enumerate() {
+                    k.1 = i as f64 * 0.045;
+                }
+            }
             let velocity = if matches!(h.sound, Sound::Strum(Stroke::Muted)) {
                 (velocity as f64 * 0.6) as u8
             } else {

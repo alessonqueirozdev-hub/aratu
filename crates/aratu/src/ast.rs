@@ -329,6 +329,8 @@ pub struct Hit {
     /// `~`: a roll, fast strokes filling the hit's length (a tremolo on a
     /// note).
     pub roll: bool,
+    /// `Am:arp`, `c4+e4+g4:arp`: the notes rolled from the lowest up.
+    pub arp: bool,
     /// `?` (0.5) or `?30%` (0.3): the chance the hit is played.
     pub chance: Option<f64>,
     pub hairpin: Option<Hairpin>,
