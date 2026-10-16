@@ -226,7 +226,9 @@ function sfz(notes, rate, loop) {
 }
 
 /** The kit as SFZ: General MIDI drum keys. */
-const GM = { kick: 36, snare: 38, "side-stick": 37, "closed-hat": 42, "open-hat": 46, ride: 51, crash: 49, "high-tom": 50, "mid-tom": 47, "floor-tom": 43 };
+// "guitar-tap" (the flamenco golpe) is 88 in the contract with Manguebyte, past
+// every GM and GM2 percussion key; VCSL has no recording of it yet.
+const GM = { kick: 36, snare: 38, "side-stick": 37, "closed-hat": 42, "open-hat": 46, ride: 51, crash: 49, "high-tom": 50, "mid-tom": 47, "floor-tom": 43, "guitar-tap": 88 };
 function kitSfz(hits) {
   const lines = ["// Made by Aratu's web/scripts/samples.mjs from VCSL (CC0).", "<control> default_path=./", "<group> loop_mode=one_shot"];
   for (const [name, file] of Object.entries(hits)) {

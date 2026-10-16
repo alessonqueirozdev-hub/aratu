@@ -402,6 +402,12 @@ Smaller choices made along the way:
   `web/scripts/samples.mjs`, with an SFZ file each for Manguebyte's sampler.
   The browser sounds stand in until Manguebyte's engine plays the same codes;
   the user prefers every voice and effect to come from Manguebyte.
+- **The contract with Manguebyte's web engine** (agreed on 16 October 2026,
+  Manguebyte aa9a07c, `crates/manguebyte-web/README.md`, ABI version 2): one
+  32-byte record per event; byte 9 holds flags, bit 0 the accent (Aratu's
+  `acc`). Drum keys follow General MIDI: b 36, s 38, k 37, c 42, o 46, x 49,
+  r 51, t 50, m 47, f 43, and the flamenco golpe 88, the first key past every
+  GM and GM2 percussion key. The kit's `voice.sfz` uses the same keys.
 - `~` after a symbol is a roll (a tremolo on a note): strokes of an eighth of
   a beat through the hit's length, the hands alternating, growing into the
   next mark under a hairpin (15 October 2026, at the user's request).
