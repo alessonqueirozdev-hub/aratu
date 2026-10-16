@@ -158,8 +158,11 @@ fn grid_bar(line: &Line, index: usize, position: i64, beats: i64, src: &str) -> 
             } else {
                 Ratio::ONE
             };
-            for (b, beat) in written.iter().enumerate() {
-                choice |= lay(&beat.slots, share * Ratio::int(b as i64), share, &mut parts);
+            let mut at = Ratio::ZERO;
+            for beat in written {
+                let len = share * Ratio::int(beat.len as i64);
+                choice |= lay(&beat.slots, at, len, &mut parts);
+                at += len;
             }
             if let (Some(first), Some(last)) = (written.first(), written.last()) {
                 let s = first.span.join(last.span);
@@ -279,7 +282,9 @@ pub fn grid(piece: &Piece, src: &str, max_bars: usize) -> Vec<GridLine> {
             }
             for (k, &i) in line.order.iter().take(max_bars).enumerate() {
                 let b = match &line.bars[i].content {
-                    BarContent::Beats(w) if line.kind != LineKind::Chords => w.len() as i64,
+                    BarContent::Beats(w) if line.kind != LineKind::Chords => {
+                        w.iter().map(|b| b.len as i64).sum()
+                    }
                     _ => beats,
                 };
                 bars.push(grid_bar(line, i, k as i64 + 1, b.max(1), src));

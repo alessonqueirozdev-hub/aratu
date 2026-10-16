@@ -374,6 +374,11 @@ pub enum Message {
     /// `every 4 bars: melody = …`, or `at bar` before a line inside a
     /// pattern or section.
     LineChangeOnlyAtBar,
+    /// `7/8 = 2+3`: groups that do not add up to the meter.
+    BadMeterGroups {
+        text: String,
+        units: u32,
+    },
     /// `from bar 16 to 9:`
     BadRange {
         from: i64,
@@ -757,6 +762,9 @@ impl Message {
             (UnknownMotifForm { name, form }, Es) => format!(
                 "`{name}` es un motivo, pero `.{form}` no es una de sus formas: `.inv`, `.retro`, `.ri`, `+2` (grados), `+3st` (semitonos)"
             ),
+            (BadMeterGroups { text, units }, En) => format!("`{text}` should be groups that add up to {units}, such as `2+2+3` for 7/8"),
+            (BadMeterGroups { text, units }, Pt) => format!("`{text}` deveria ser grupos que somam {units}, como `2+2+3` para 7/8"),
+            (BadMeterGroups { text, units }, Es) => format!("`{text}` debería ser grupos que sumen {units}, como `2+2+3` para 7/8"),
             (BadRange { from, to }, En) => format!("the range ends before it starts: write `from bar {to} to {from}`"),
             (BadRange { from, to }, Pt) => format!("o trecho termina antes de começar: escreva `from bar {to} to {from}`"),
             (BadRange { from, to }, Es) => format!("el tramo termina antes de empezar: escribe `from bar {to} to {from}`"),

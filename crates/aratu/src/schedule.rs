@@ -1080,18 +1080,21 @@ impl<'p> Scheduler<'p> {
             } else {
                 Ratio::ONE
             };
-            for (b, beat) in written.iter().enumerate() {
+            let mut at = Ratio::ZERO;
+            for beat in written {
+                let len = share * Ratio::int(beat.len as i64);
                 self.flatten(
                     &beat.slots,
-                    share * Ratio::int(b as i64),
-                    share,
+                    at,
+                    len,
                     line.seed_key,
                     g,
                     &mut counter,
                     &mut flats,
                 );
+                at += len;
             }
-            let bar_len = share * Ratio::int(written.len() as i64);
+            let bar_len = at;
 
             // Rotation by the bar's finest part.
             for t in &transforms {

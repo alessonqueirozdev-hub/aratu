@@ -284,6 +284,10 @@ pub enum BarContent {
 pub struct Beat {
     pub slots: Vec<Slot>,
     pub span: Span,
+    /// How many beats it takes: 1, or more for a tuplet across beats
+    /// (`2[c d e]`, three notes in two beats) or a group of an additive
+    /// meter (`7/8 = 2+2+3`, written `cc cc ccc`).
+    pub len: u32,
 }
 
 /// One equal part of a beat or of a group.

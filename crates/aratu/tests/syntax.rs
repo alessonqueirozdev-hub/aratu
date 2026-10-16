@@ -581,3 +581,65 @@ fn a_long_line_goes_on_on_the_next_lines() {
     // A bar line after something that is not music is still a mistake.
     assert_eq!(first("tempo: 100\n| c4 d e f |"), Message::UnknownLine);
 }
+
+fn beats_of(src: &str) -> Vec<Ratio> {
+    events(src, 1, 2).iter().map(|e| e.beat).collect()
+}
+
+#[test]
+fn a_tuplet_may_span_several_beats() {
+    // Three notes in two beats: a half-note triplet's worth of quarters.
+    let b = beats_of("melodia = | 2[c4 d e] f g |");
+    assert_eq!(
+        b,
+        [
+            Ratio::ZERO,
+            Ratio::new(2, 3),
+            Ratio::new(4, 3),
+            Ratio::int(2),
+            Ratio::int(3)
+        ]
+    );
+    // Four in three, then a beat's rest; drums the same way.
+    let b = beats_of("hh = | 3[c c c c] - |");
+    assert_eq!(
+        b,
+        [
+            Ratio::ZERO,
+            Ratio::new(3, 4),
+            Ratio::new(3, 2),
+            Ratio::new(9, 4)
+        ]
+    );
+    // It counts its beats in the bar.
+    assert!(matches!(
+        first("melodia = | 2[c4 d e] f |"),
+        Message::BeatCount { .. }
+    ));
+}
+
+#[test]
+fn an_additive_meter_groups_its_units() {
+    // One word per group: the groups' lengths.
+    let b = beats_of("meter: 7/8 = 2+2+3\nhh = | cc cc ccc |");
+    assert_eq!(b, (0..7).map(Ratio::int).collect::<Vec<_>>());
+    let b = beats_of("meter: 7/8 = 2+2+3\nbd = | b b b |");
+    assert_eq!(b, [Ratio::ZERO, Ratio::int(2), Ratio::int(4)]);
+    // Or one word per unit, as any 7/8.
+    let b = beats_of("meter: 7/8 = 2+2+3\nhh = | c c c c c c c |");
+    assert_eq!(b.len(), 7);
+    // In Portuguese too, and the groups must add up.
+    let b = beats_of("compasso: 7/8 = 3+2+2\nbumbo = | b b b |");
+    assert_eq!(b, [Ratio::ZERO, Ratio::int(3), Ratio::int(5)]);
+    assert_eq!(
+        first("meter: 7/8 = 2+3\nhh = | c c c c c c c |"),
+        Message::BadMeterGroups {
+            text: "2+3".into(),
+            units: 7
+        }
+    );
+    assert_eq!(
+        compile("meter: 7/8 = 2+2+3").piece.meter.to_string(),
+        "7/8 = 2+2+3"
+    );
+}

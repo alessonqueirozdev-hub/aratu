@@ -73,10 +73,17 @@ pub fn accidentals(text: &str) -> (i32, usize) {
 pub struct Meter {
     pub num: u32,
     pub den: u32,
+    /// `7/8 = 2+2+3`: how the bar's units group into the beats a musician
+    /// counts, zeros after the last; all zeros for an even meter.
+    pub groups: [u8; 8],
 }
 
 impl Meter {
-    pub const COMMON: Meter = Meter { num: 4, den: 4 };
+    pub const COMMON: Meter = Meter {
+        num: 4,
+        den: 4,
+        groups: [0; 8],
+    };
 
     pub fn parse(text: &str) -> Option<Meter> {
         let (n, d) = text.split_once('/')?;
@@ -85,12 +92,42 @@ impl Meter {
         if !(1..=64).contains(&num) || ![1, 2, 4, 8, 16, 32].contains(&den) {
             return None;
         }
-        Some(Meter { num, den })
+        Some(Meter {
+            num,
+            den,
+            groups: [0; 8],
+        })
+    }
+
+    /// The groups of an additive meter (`2+2+3`); empty for an even one.
+    pub fn groups(&self) -> &[u8] {
+        let n = self.groups.iter().position(|g| *g == 0).unwrap_or(8);
+        &self.groups[..n]
+    }
+
+    /// The meter grouped as `2+2+3` says, when the groups add up to it.
+    pub fn grouped(self, text: &str) -> Option<Meter> {
+        let groups: Vec<u8> = text
+            .split('+')
+            .map(|g| g.trim().parse::<u8>().ok().filter(|g| *g > 0))
+            .collect::<Option<_>>()?;
+        if groups.is_empty()
+            || groups.len() > 8
+            || groups.iter().map(|g| u32::from(*g)).sum::<u32>() != self.num
+        {
+            return None;
+        }
+        let mut all = [0; 8];
+        all[..groups.len()].copy_from_slice(&groups);
+        Some(Meter {
+            groups: all,
+            ..self
+        })
     }
 
     /// 6/8, 9/8, 12/8 and the like are counted in dotted beats.
     pub fn is_compound(self) -> bool {
-        self.den >= 8 && self.num > 3 && self.num % 3 == 0
+        self.groups[0] == 0 && self.den >= 8 && self.num > 3 && self.num % 3 == 0
     }
 
     /// The number of beats a musician counts in one bar.
@@ -114,7 +151,13 @@ impl Meter {
 
 impl std::fmt::Display for Meter {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}/{}", self.num, self.den)
+        write!(f, "{}/{}", self.num, self.den)?;
+        let groups = self.groups();
+        if !groups.is_empty() {
+            let g: Vec<String> = groups.iter().map(u8::to_string).collect();
+            write!(f, " = {}", g.join("+"))?;
+        }
+        Ok(())
     }
 }
 

@@ -685,6 +685,7 @@ fn word_beats(
         return vec![Beat {
             slots: chord_beat(w, s, diags),
             span: s,
+            len: 1,
         }];
     }
     let (core, times) = motifs::split_times(w, cx.lib);
@@ -695,11 +696,20 @@ fn word_beats(
         None if unknown_pick(core, cs, cx, diags) => vec![Beat {
             slots: vec![Slot::Rest(cs)],
             span: cs,
+            len: 1,
         }],
         None => {
+            // `2[c d e]`: a group across that many beats.
+            let digits = core.bytes().take_while(u8::is_ascii_digit).count();
+            let (len, body) = match core[digits..].strip_prefix('[') {
+                Some(_) if digits > 0 => {
+                    (core[..digits].parse::<u32>().unwrap_or(1).max(1), digits)
+                }
+                _ => (1, 0),
+            };
             let mut p = SlotParser {
-                s: core,
-                base: cs.start,
+                s: &core[body..],
+                base: cs.start + body,
                 pos: 0,
                 kind,
                 octave,
@@ -710,6 +720,7 @@ fn word_beats(
             vec![Beat {
                 slots: p.seq(None, false),
                 span: cs,
+                len,
             }]
         }
     };
@@ -765,6 +776,7 @@ fn motif_beats(
         return vec![Beat {
             slots: vec![Slot::Rest(s)],
             span: s,
+            len: 1,
         }];
     }
     let src = &cx.lib.motifs[name];

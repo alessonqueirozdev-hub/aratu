@@ -121,7 +121,7 @@ impl Line {
     pub fn beats(&self, i: usize, meter: Meter) -> Ratio {
         match (&self.bars[i].content, self.kind) {
             (_, LineKind::Chords) => meter.beats(),
-            (BarContent::Beats(b), _) => Ratio::int(b.len() as i64),
+            (BarContent::Beats(b), _) => Ratio::int(b.iter().map(|x| x.len as i64).sum()),
             (BarContent::Simile(_) | BarContent::Rest(_), _) => meter.beats(),
         }
     }
@@ -944,6 +944,29 @@ fn prepare_line(
         return;
     }
 
+    // `7/8 = 2+2+3`: a bar written one word per group (`cc cc ccc`)
+    // gives each word its group's length.
+    let order = line.order.clone();
+    for (k, &i) in order.iter().enumerate() {
+        let meter = if from_bar_one {
+            meters.at(1 + k as i64)
+        } else {
+            meters.first
+        };
+        let groups = meter.groups();
+        if let BarContent::Beats(beats) = &mut line.bars[i].content {
+            if !groups.is_empty()
+                && line.kind != LineKind::Chords
+                && beats.len() == groups.len()
+                && beats.iter().all(|b| b.len == 1)
+            {
+                for (b, g) in beats.iter_mut().zip(groups) {
+                    b.len = u32::from(*g);
+                }
+            }
+        }
+    }
+
     // Each bar against the meter of the bar where it sounds. Lines of
     // patterns and sections are checked against the meter at their start.
     let len = line.order.len() as i64;
@@ -1011,7 +1034,7 @@ fn bar_fits(line: &Line, i: usize, meter: Meter, number: usize) -> Option<Messag
         }
         return None;
     }
-    let found = Ratio::int(beats.len() as i64);
+    let found = Ratio::int(beats.iter().map(|b| b.len as i64).sum());
     (found != meter.beats()).then(|| Message::BeatCount {
         line: line.label.clone(),
         bar: number,

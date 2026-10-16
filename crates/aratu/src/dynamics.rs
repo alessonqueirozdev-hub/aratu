@@ -68,9 +68,10 @@ pub fn levels(line: &Line, diags: &mut Vec<Diagnostic>) -> HashMap<(usize, usize
         let BarContent::Beats(beats) = &line.bars[i].content else {
             continue;
         };
-        for (b, beat) in beats.iter().enumerate() {
-            let beat_start = pos + Ratio::int(b as i64);
-            visit(&beat.slots, beat_start, Ratio::ONE, &mut |h, at, _| {
+        let mut beat_start = pos;
+        for beat in beats {
+            let len = Ratio::int(beat.len as i64);
+            visit(&beat.slots, beat_start, len, &mut |h, at, _| {
                 if let Some(d) = h.dynamic {
                     marks.push((at, d));
                 }
@@ -88,8 +89,9 @@ pub fn levels(line: &Line, diags: &mut Vec<Diagnostic>) -> HashMap<(usize, usize
                     mark: h.dynamic,
                 });
             });
+            beat_start += len;
         }
-        pos += Ratio::int(beats.len() as i64);
+        pos = beat_start;
     }
     let end = pos;
 

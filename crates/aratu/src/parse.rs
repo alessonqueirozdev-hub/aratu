@@ -1017,6 +1017,21 @@ fn meter(c: &mut Cursor) -> Result<Meter, Fail> {
     let skip = text.len();
     let rest = c.rest();
     *c = Cursor::from_str(&rest.text[skip..], rest.span.start + skip);
+    // `7/8 = 2+2+3`: how the units group into beats.
+    if c.eat("=") {
+        let r = c.clone().rest();
+        let groups = r.text.split_whitespace().next().unwrap_or("");
+        let grouped = m.grouped(groups).ok_or((
+            Span::new(r.span.start, r.span.start + groups.len()),
+            Message::BadMeterGroups {
+                text: groups.to_string(),
+                units: m.num,
+            },
+        ))?;
+        let rest = c.rest();
+        *c = Cursor::from_str(&rest.text[groups.len()..], rest.span.start + groups.len());
+        return Ok(grouped);
+    }
     Ok(m)
 }
 
@@ -1341,7 +1356,7 @@ mod tests {
         );
         assert_eq!(
             one("at bar 17: meter 7/8").kind,
-            StmtKind::MeterChange(Meter { num: 7, den: 8 })
+            StmtKind::MeterChange(Meter::parse("7/8").unwrap())
         );
         let s = one("every 8 bars, first: add crash");
         assert!(matches!(
