@@ -6,6 +6,7 @@ import { HighlightStyle, StreamLanguage, bracketMatching, syntaxHighlighting } f
 import { type Diagnostic as CmDiagnostic, lintGutter, setDiagnostics } from "@codemirror/lint";
 import {
   type ChangeSet,
+  Compartment,
   EditorState,
   type Extension,
   RangeSetBuilder,
@@ -160,6 +161,13 @@ export interface EditorHooks {
   stop(): void;
 }
 
+/** Long lines wrapped or not; on in the stage's two columns. */
+const wrapping = new Compartment();
+
+export function setWrapping(view: EditorView, on: boolean): void {
+  view.dispatch({ effects: wrapping.reconfigure(on ? EditorView.lineWrapping : []) });
+}
+
 export function createEditor(
   parent: HTMLElement,
   doc: string,
@@ -172,6 +180,7 @@ export function createEditor(
     state: EditorState.create({
       doc,
       extensions: [
+        wrapping.of([]),
         compact ? [] : [lineNumbers(), highlightActiveLineGutter()],
         history(),
         drawSelection(),

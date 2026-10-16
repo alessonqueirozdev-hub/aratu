@@ -100,10 +100,20 @@ pub fn split_times<'a>(word: &'a str, lib: &Library) -> (&'a str, u32) {
     };
     let sign = word[at..].chars().next().map_or(1, char::len_utf8);
     let digits = &word[at + sign..];
-    let Ok(n) = digits.parse::<u32>() else {
-        return (word, 1);
+    // `x4`, or `4x` as people also say it.
+    let (core, n) = if digits.is_empty() {
+        let head = &word[..at];
+        let d = head.len() - head.trim_end_matches(|c: char| c.is_ascii_digit()).len();
+        match head[head.len() - d..].parse::<u32>() {
+            Ok(n) if d > 0 => (&head[..head.len() - d], n),
+            _ => return (word, 1),
+        }
+    } else {
+        match digits.parse::<u32>() {
+            Ok(n) => (&word[..at], n),
+            Err(_) => return (word, 1),
+        }
     };
-    let core = &word[..at];
     let after_bracket = core.ends_with(']') || core.ends_with('}');
     if n >= 1 && (after_bracket || motif_ref(core, lib).is_some()) {
         (core, n)

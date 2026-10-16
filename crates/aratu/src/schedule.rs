@@ -165,7 +165,6 @@ fn mix(mut z: u64) -> u64 {
     z ^ (z >> 31)
 }
 
-/// A number in `[0, 1)` fixed by its inputs.
 /// For `temas.random`: the place in `order` of a line's bar `n`, one
 /// melody chosen at random (from the seed) each time round.
 fn random_place(line: &Line, seed: u64, n: i64) -> usize {
@@ -185,12 +184,12 @@ fn random_place(line: &Line, seed: u64, n: i64) -> usize {
     }
 }
 
+/// A number in `[0, 1)` fixed by its inputs.
 fn chance(seed: u64, line: u64, bar: i64, what: u64) -> f64 {
     let h = mix(seed ^ mix(line ^ mix((bar as u64) ^ mix(what))));
     (h >> 11) as f64 / (1u64 << 53) as f64
 }
 
-/// Where a chord sounds in a bar: start, end, and the chord (none for N.C.).
 /// A stretch of a bar and the chord sounding in it, with where that chord
 /// is written, for strums to play it and the editor to light it.
 type Region<'p> = (Ratio, Ratio, Option<&'p Chord>, Option<Span>);

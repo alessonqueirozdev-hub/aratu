@@ -7,7 +7,7 @@ import { ChangeSet } from "@codemirror/state";
 import type { EditorView } from "@codemirror/view";
 import type { Aratu, BarInfo, Lang, Program } from "./aratu";
 import type { Engine } from "./audio";
-import { createEditor, showDiagnostics, showPlaying } from "./editor";
+import { createEditor, setWrapping, showDiagnostics, showPlaying } from "./editor";
 import { knobs, showKnobs } from "./knobs";
 import { Player, type Scheduled } from "./player";
 
@@ -42,6 +42,10 @@ export class Session {
   private timer: number | undefined;
   private frame = 0;
   private shown = "";
+  /** A second view of the same text (the stage's second column). */
+  mirror: EditorView | null = null;
+  /** Set while a change is copied from one view to the other. */
+  private syncing = false;
 
   constructor(private readonly o: SessionOptions) {
     this.view = createEditor(
@@ -49,6 +53,12 @@ export class Session {
       o.text,
       {
         change: (text, changes) => {
+          // Into the second view, unless it came from there.
+          if (this.mirror && !this.syncing) {
+            this.syncing = true;
+            this.mirror.dispatch({ changes });
+            this.syncing = false;
+          }
           for (const [h, cs] of this.editsSince) this.editsSince.set(h, cs.compose(changes));
           for (const s of this.scheduled) {
             s.event.from = changes.mapPos(s.event.from, 1);
@@ -98,12 +108,15 @@ export class Session {
     if (this.broken) aratu.release(this.broken.handle);
     this.broken = null;
     this.latest = p;
-    showDiagnostics(this.view, p.diagnostics);
-    showKnobs(this.view, p.controls, (control, value) => {
+    const moved = (control: Program["controls"][number], value: number) => {
       // Parameters set at a bar, and the tempo, come in with the text.
       if (control.timed || control.id === "tempo" || !this.playing) return;
       this.o.engine().setNow(control.part, control.id, value);
-    });
+    };
+    for (const view of this.views()) {
+      showDiagnostics(view, p.diagnostics);
+      showKnobs(view, p.controls, moved);
+    }
     this.o.onCompile?.(p);
     if (!p.ok) {
       this.broken = p;
@@ -168,7 +181,7 @@ export class Session {
       const key = spans.map((s) => `${s.from}:${s.to}`).join(",");
       if (key !== this.shown) {
         this.shown = key;
-        showPlaying(this.view, spans);
+        for (const view of this.views()) showPlaying(view, spans);
       }
       this.frame = requestAnimationFrame(tick);
     };
@@ -181,7 +194,7 @@ export class Session {
     cancelAnimationFrame(this.frame);
     this.scheduled = [];
     this.shown = "";
-    showPlaying(this.view, []);
+    for (const view of this.views()) showPlaying(view, []);
     if (Session.active === this) Session.active = null;
     if (was) this.o.onPlaying?.(false);
   }
@@ -189,6 +202,50 @@ export class Session {
   destroy(): void {
     this.stop();
     window.clearTimeout(this.timer);
+    this.unmirror();
     this.view.destroy();
+  }
+
+  private views(): EditorView[] {
+    return this.mirror ? [this.view, this.mirror] : [this.view];
+  }
+
+  /** Opens a second view of the text in `parent`: what is typed in either
+   * is the same piece, and both show what sounds, the messages and the
+   * knobs. Long lines wrap in both. */
+  openMirror(parent: HTMLElement): EditorView {
+    if (this.mirror) return this.mirror;
+    const mirror = createEditor(
+      parent,
+      this.text,
+      {
+        change: (_text, changes) => {
+          if (this.syncing) return;
+          this.syncing = true;
+          this.view.dispatch({ changes });
+          this.syncing = false;
+        },
+        run: () => void this.play(),
+        stop: () => this.stop(),
+      },
+      [knobs],
+      this.o.compact,
+    );
+    this.mirror = mirror;
+    setWrapping(this.view, true);
+    setWrapping(mirror, true);
+    if (this.latest) {
+      showDiagnostics(mirror, this.latest.diagnostics);
+    }
+    // Knobs come with the next compile; ask for it now.
+    this.compile();
+    return mirror;
+  }
+
+  unmirror(): void {
+    if (!this.mirror) return;
+    this.mirror.destroy();
+    this.mirror = null;
+    setWrapping(this.view, false);
   }
 }

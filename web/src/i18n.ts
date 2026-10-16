@@ -34,6 +34,7 @@ const words = {
   stop: { pt: "Parar", es: "Detener", en: "Stop" },
   stage: { pt: "Palco", es: "Escenario", en: "Stage" },
   stageExit: { pt: "Sair", es: "Salir", en: "Exit" },
+  stageSplit: { pt: "2 colunas", es: "2 columnas", en: "2 columns" },
   examples: { pt: "Exemplos", es: "Ejemplos", en: "Examples" },
   messages: { pt: "Mensagens", es: "Mensajes", en: "Messages" },
   allGood: { pt: "Tudo certo. Pode tocar.", es: "Todo bien. Puedes tocar.", en: "All good. Ready to play." },

@@ -1172,6 +1172,46 @@ select:hover {
   background: color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
+/* Two columns on stage: the second view goes on where the first ends. */
+
+body.stage.stage-split .work {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0;
+}
+
+body.stage #editor-mirror {
+  height: 100%;
+  border: 0;
+  border-left: 1px solid var(--line);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+body.stage #editor-mirror .cm-editor {
+  font-size: var(--stage-font, 30px);
+}
+
+body.stage #editor-mirror .cm-gutters {
+  display: none;
+}
+
+body.stage.stage-split #editor .cm-content,
+body.stage.stage-split #editor-mirror .cm-content {
+  padding: 8vh 3vw 30vh;
+}
+
+/* Room below, so the second column can always start after the first. */
+body.stage.stage-split #editor-mirror .cm-content {
+  padding-bottom: 100vh;
+}
+
+body.stage.stage-split.downbeat #editor-mirror {
+  box-shadow:
+    inset 0 0 0 4px var(--accent),
+    inset 0 0 60px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
 /* Melody lists on the stage. */
 
 .stage-lists {

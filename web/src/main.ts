@@ -310,6 +310,46 @@ async function main(): Promise<void> {
     document.body.style.setProperty("--stage-font", `${stageFont}px`);
     save("aratu.stageFont", String(stageFont));
     playground.view.requestMeasure();
+    playground.mirror?.requestMeasure();
+    requestAnimationFrame(followColumn);
+  };
+  // Two columns on stage: a second view of the code that goes on where
+  // the first ends, like a newspaper's columns, so more of the piece shows
+  // without scrolling. Scrolling either moves both.
+  let split = load("aratu.stageSplit") === "on";
+  let linking = false;
+  const followColumn = () => {
+    const m = playground.mirror;
+    if (!m || linking) return;
+    linking = true;
+    const v = playground.view.scrollDOM;
+    m.scrollDOM.scrollTop = v.scrollTop + v.clientHeight;
+    linking = false;
+  };
+  const leadColumn = () => {
+    const m = playground.mirror;
+    if (!m || linking) return;
+    linking = true;
+    const v = playground.view.scrollDOM;
+    v.scrollTop = Math.max(0, m.scrollDOM.scrollTop - v.clientHeight);
+    linking = false;
+  };
+  playground.view.scrollDOM.addEventListener("scroll", followColumn);
+  window.addEventListener("resize", () => requestAnimationFrame(followColumn));
+  const applySplit = () => {
+    const on = split && onStage();
+    document.body.classList.toggle("stage-split", on);
+    $("editor-mirror").hidden = !on;
+    $("stage-split").classList.toggle("on", split);
+    if (on && !playground.mirror) {
+      const m = playground.openMirror($("editor-mirror"));
+      m.scrollDOM.addEventListener("scroll", leadColumn);
+    }
+    if (!on && playground.mirror) playground.unmirror();
+    playground.view.requestMeasure();
+    // Once the second view has laid itself out, it starts where the first
+    // ends.
+    for (const ms of [50, 250, 600]) window.setTimeout(followColumn, ms);
   };
   // The controls fade when the mouse rests, and come back when it moves.
   const wake = () => {
@@ -322,6 +362,7 @@ async function main(): Promise<void> {
     document.body.classList.add("stage");
     document.documentElement.dataset.theme = "dark";
     setStageFont(stageFont);
+    applySplit();
     document.documentElement.requestFullscreen?.().catch(() => {
       // Without full screen (an iframe, an old browser) the stage still works.
     });
@@ -330,6 +371,7 @@ async function main(): Promise<void> {
   };
   const leaveStage = () => {
     document.body.classList.remove("stage", "stage-map", "idle");
+    applySplit();
     window.clearTimeout(idleTimer);
     applyTheme();
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
@@ -337,6 +379,11 @@ async function main(): Promise<void> {
   };
   $("stage").onclick = enterStage;
   $("stage-exit").onclick = leaveStage;
+  $("stage-split").onclick = () => {
+    split = !split;
+    save("aratu.stageSplit", split ? "on" : "off");
+    applySplit();
+  };
   $("stage-play").onclick = () => void playground.play();
   $("stage-stop").onclick = () => playground.stop();
   $("stage-smaller").onclick = () => setStageFont(stageFont - 4);

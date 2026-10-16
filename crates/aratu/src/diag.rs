@@ -272,6 +272,10 @@ pub enum Message {
     },
     /// A motif written with bar lines.
     MotifWithBars,
+    /// `{a2 e3 a e}`: braces with a single option.
+    BracesOneOption {
+        inner: String,
+    },
     /// `from serie` names no row, motif or vector.
     UnknownRow {
         name: String,
@@ -612,6 +616,8 @@ impl Message {
             (UnknownSection { name }, Pt) => format!("não existe seção chamada `{name}`"),
             (MotifLoop { name }, En) => format!("the motif `{name}` uses itself, so it would never end"),
             (MotifLoop { name }, Pt) => format!("o motivo `{name}` usa a si mesmo e nunca terminaria"),
+            (BracesOneOption { inner }, En) => format!("braces choose between options split by `|`, as in `{{a|b}}`; to group notes in one beat, use brackets: `[{inner}]` (and `[{inner}]x4` to repeat it)"),
+            (BracesOneOption { inner }, Pt) => format!("chaves escolhem entre opções separadas por `|`, como `{{a|b}}`; para agrupar notas num tempo, use colchetes: `[{inner}]` (e `[{inner}]x4` para repetir)"),
             (MotifWithBars, En) => "a motif is a few beats, without bar lines; for whole bars, use a list".into(),
             (MotifWithBars, Pt) => "um motivo é um trecho de tempos, sem barras de compasso; para compassos inteiros, use uma lista".into(),
             (UnknownRow { name }, En) => format!("there is no row, motif or list of notes called `{name}`"),
@@ -818,6 +824,7 @@ impl Message {
             }
             (UnknownSection { name }, Es) => format!("no existe una sección llamada `{name}`"),
             (MotifLoop { name }, Es) => format!("el motivo `{name}` se usa a sí mismo y nunca terminaría"),
+            (BracesOneOption { inner }, Es) => format!("las llaves eligen entre opciones separadas por `|`, como `{{a|b}}`; para agrupar notas en un tiempo, usa corchetes: `[{inner}]` (y `[{inner}]x4` para repetirlo)"),
             (MotifWithBars, Es) => "un motivo es un trozo de tiempos, sin barras de compás; para compases enteros, usa una lista".into(),
             (UnknownRow { name }, Es) => format!("no existe una serie, un motivo o un vector de notas llamado `{name}`"),
             (BadRowForm { form }, Es) => format!("`{form}` no es una forma de serie: usa P, I, R o RI con un número de 0 a 11, como en serie.RI3"),

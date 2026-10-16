@@ -212,6 +212,168 @@ fn parse_in(
     seg.bars
 }
 
+/// The music of a line or of a list's melody: a plain rhythm, or one whose
+/// `o`s take their notes from a row (`… from serie.P0`).
+pub fn music_of(
+    lib: &Library,
+    diags: &mut Vec<Diagnostic>,
+    text: &str,
+    base: usize,
+    kind: LineKind,
+) -> Vec<Bar> {
+    let cx = Cx {
+        lib,
+        placeholders: false,
+        depth: 0,
+    };
+    music_in(text, base, kind, diags, cx)
+}
+
+fn music_in(
+    text: &str,
+    base: usize,
+    kind: LineKind,
+    diags: &mut Vec<Diagnostic>,
+    cx: Cx,
+) -> Vec<Bar> {
+    if kind == LineKind::Pitched {
+        if let Some(at) = text.find(" from ") {
+            return rhythm_from_row(
+                cx,
+                diags,
+                &text[..at],
+                base,
+                &text[at + 6..],
+                base + at + 6,
+                kind,
+            );
+        }
+    }
+    parse_in(text, base, kind, diags, cx)
+}
+
+/// `| o o [o o] o | from serie.P0 octave 4`: a rhythm whose `o`s take their
+/// pitches from a row, a motif or a vector `[0 11 3 …]`.
+fn rhythm_from_row(
+    cx: Cx,
+    diags: &mut Vec<Diagnostic>,
+    rhythm: &str,
+    base: usize,
+    source: &str,
+    source_base: usize,
+    kind: LineKind,
+) -> Vec<Bar> {
+    let lib = cx.lib;
+    let trimmed = source.trim_start();
+    let lead = source.len() - trimmed.len();
+    let src_span = |from: usize, len: usize| {
+        Span::new(source_base + lead + from, source_base + lead + from + len)
+    };
+    let (mut pitches, rest) = if let Some(inner) = trimmed.strip_prefix('[') {
+        let close = inner.find(']').unwrap_or(inner.len());
+        let (pitches, bad, _) = motifs::read_row(&inner[..close]);
+        for (at, len) in bad {
+            diags.push(Diagnostic::error(
+                src_span(1 + at, len),
+                Message::BadRowNote {
+                    text: inner[at..at + len].to_string(),
+                },
+            ));
+        }
+        (pitches, inner.get(close + 1..).unwrap_or(""))
+    } else {
+        let end = trimmed.find(char::is_whitespace).unwrap_or(trimmed.len());
+        let word = &trimmed[..end];
+        let pitches = match motifs::form_ref(word) {
+            Err(form) => {
+                diags.push(Diagnostic::error(
+                    src_span(0, end),
+                    Message::BadRowForm { form },
+                ));
+                Vec::new()
+            }
+            Ok((name, form, n)) => {
+                let row = if let Some(r) = lib.rows.get(name) {
+                    Some(r.clone())
+                } else if let Some(src) = lib.motifs.get(name) {
+                    // A motif's notes, in order, as a row.
+                    let mut quiet = Vec::new();
+                    let inner = Cx {
+                        depth: cx.depth + 1,
+                        placeholders: false,
+                        ..cx
+                    };
+                    let mut bars =
+                        parse_in(&src.text, src.base, LineKind::Pitched, &mut quiet, inner);
+                    let mut v = Vec::new();
+                    motifs::each_note_in_bars(&mut bars, &mut |n| v.extend(n.iter().copied()));
+                    Some(v)
+                } else {
+                    None
+                };
+                match row {
+                    Some(r) => motifs::row_form(&r, form, n),
+                    None => {
+                        diags.push(Diagnostic::error(
+                            src_span(0, name.len()),
+                            Message::UnknownRow {
+                                name: name.to_string(),
+                            },
+                        ));
+                        Vec::new()
+                    }
+                }
+            }
+        };
+        (pitches, &trimmed[end..])
+    };
+    // `octave 3`: every pitch class in that octave.
+    let mut words = rest.split_whitespace();
+    if let (Some(w), Some(n)) = (words.next(), words.next()) {
+        if w.eq_ignore_ascii_case("octave") {
+            if let Ok(o) = n.parse::<i32>() {
+                for p in &mut pitches {
+                    *p = p.rem_euclid(12) + 12 * (o + 1);
+                }
+            }
+        }
+    }
+    let mut bars = parse_in(
+        rhythm,
+        base,
+        kind,
+        diags,
+        Cx {
+            placeholders: true,
+            ..cx
+        },
+    );
+    if motifs::fill(&mut bars, &pitches) == 0 {
+        diags.push(Diagnostic::warning(
+            Span::new(base, base + rhythm.trim_end().len()),
+            Message::NoPlaceholders,
+        ));
+    }
+    bars
+}
+
+/// What `temas.2` or `temas.all` stands for when it fills a bar: the list's
+/// melodies, or, out of range, the number asked for and how many there are.
+type ListFound<'l> = Result<Vec<&'l motifs::Source>, (String, usize, usize)>;
+
+fn list_ref<'l>(word: &str, lib: &'l Library) -> Option<ListFound<'l>> {
+    let (name, which) = word.split_once('.')?;
+    let items = lib.lists.get(name)?;
+    if which == "all" {
+        return Some(Ok(items.iter().collect()));
+    }
+    let index: usize = which.parse().ok()?;
+    Some(match index.checked_sub(1).and_then(|i| items.get(i)) {
+        Some(item) => Ok(vec![item]),
+        None => Err((name.to_string(), index, items.len())),
+    })
+}
+
 /// Bars being assembled from the words between bar lines.
 struct Segments {
     bars: Vec<Bar>,
@@ -258,6 +420,58 @@ impl Segments {
                 apply_after(last, bl);
             }
             return;
+        }
+        // A list's melody standing for a bar: `| temas.1 | temas.3 |`. Its
+        // bars come in its place; its own mistakes are told in the list.
+        if words.len() == 1 {
+            if let Some(found) = list_ref(words[0].0, cx.lib) {
+                let (word, at) = words[0];
+                words.clear();
+                match found {
+                    Err((name, index, count)) => {
+                        diags.push(Diagnostic::error(
+                            at,
+                            Message::ListIndex { name, index, count },
+                        ));
+                    }
+                    Ok(_) if cx.depth >= MAX_DEPTH => {
+                        let name = word.split('.').next().unwrap_or(word).to_string();
+                        diags.push(Diagnostic::error(at, Message::MotifLoop { name }));
+                    }
+                    Ok(items) => {
+                        let inner = Cx {
+                            depth: cx.depth + 1,
+                            placeholders: false,
+                            ..cx
+                        };
+                        let mut quiet = Vec::new();
+                        let first = self.bars.len();
+                        for item in items {
+                            self.bars.extend(music_in(
+                                &item.text, item.base, self.kind, &mut quiet, inner,
+                            ));
+                        }
+                        // A list that uses itself is told where it is used.
+                        if let Some(d) = quiet
+                            .into_iter()
+                            .find(|d| matches!(d.message, Message::MotifLoop { .. }))
+                        {
+                            diags.push(Diagnostic::error(at, d.message));
+                        }
+                        if let (Some((bl, _)), Some(bar)) = (before, self.bars.get_mut(first)) {
+                            match bl {
+                                BarLine::Start | BarLine::EndStart => bar.repeat_start = true,
+                                BarLine::Ending(n) | BarLine::EndEnding(n) => bar.ending = Some(n),
+                                _ => {}
+                            }
+                        }
+                        if let (Some((bl, _)), Some(last)) = (after, self.bars.last_mut()) {
+                            apply_after(last, bl);
+                        }
+                    }
+                }
+                return;
+            }
         }
         let span = words.iter().fold(words[0].1, |s, (_, ws)| s.join(*ws));
         let mut bar = read_bar(words, span, self.kind, &mut self.octave, diags, cx);
@@ -710,6 +924,18 @@ impl SlotParser<'_, '_> {
                         }
                     }
                     let sp = self.at(start);
+                    // `{a2 e3 a e}`: braces with nothing to choose from. It
+                    // plays as a group; brackets are the way to say so.
+                    if options.len() == 1 {
+                        let end = if self.s[..self.pos].ends_with('}') {
+                            self.pos - 1
+                        } else {
+                            self.pos
+                        };
+                        let inner = self.s[start + 1..end].trim().to_string();
+                        self.diags
+                            .push(Diagnostic::warning(sp, Message::BracesOneOption { inner }));
+                    }
                     if options.is_empty() {
                         slots.push(Slot::Rest(sp));
                     } else {

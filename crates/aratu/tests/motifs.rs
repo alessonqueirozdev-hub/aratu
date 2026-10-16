@@ -231,3 +231,58 @@ fn a_list_melody_may_use_motifs_and_rows() {
     assert_eq!(n[..8], [60, 62, 60, 62, 60, 62, 60, 62]);
     assert_eq!(n[8..], [60, 64, 67, 60]);
 }
+
+#[test]
+fn list_melodies_fill_bars_inside_a_line() {
+    let list = "list temas {\n  | a2 e3 a e |\n  | a2 f3 a f |\n  | g2 c3 g c |\n}\n";
+    // With or without the outer bar lines, one melody per bar.
+    for line in [
+        "melodia = | temas.1 | temas.3 | temas.2 |",
+        "melodia = temas.1 | temas.3 | temas.2",
+    ] {
+        let n = clean(&format!("{list}{line}"), 3);
+        assert_eq!(
+            n,
+            [45, 52, 57, 52, 43, 48, 55, 48, 45, 53, 57, 53],
+            "{line}"
+        );
+    }
+    // Mixed with written bars, and all of them as one bar's worth.
+    let n = clean(&format!("{list}melodia = | c4 _ _ _ | temas.all |"), 4);
+    assert_eq!(n.len(), 13);
+    let (_, m) = notes(&format!("{list}melodia = | temas.1 | temas.9 |"), 2);
+    assert!(
+        m.iter().any(|m| matches!(
+            m,
+            Message::ListIndex {
+                index: 9,
+                count: 3,
+                ..
+            }
+        )),
+        "{m:?}"
+    );
+    // A list that names itself stops, with a message.
+    let (_, m) = notes("list t {\n  | t.1 |\n}\nmelodia = | t.1 |", 1);
+    assert!(
+        m.iter().any(|m| matches!(m, Message::MotifLoop { .. })),
+        "{m:?}"
+    );
+}
+
+#[test]
+fn four_x_reads_like_x_four_and_braces_alone_suggest_brackets() {
+    let a = clean("melodia = | [a2 e3 a e]4x |", 1);
+    let b = clean("melodia = | [a2 e3 a e]x4 |", 1);
+    assert_eq!(a, b);
+    assert_eq!(a.len(), 16);
+    // Braces with one option still play as a group, with a hint.
+    let (n, m) = notes("melodia = | {a2 e3 a e}x4 |", 1);
+    assert_eq!(n, a);
+    assert!(
+        m.contains(&Message::BracesOneOption {
+            inner: "a2 e3 a e".into()
+        }),
+        "{m:?}"
+    );
+}
