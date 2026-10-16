@@ -218,7 +218,7 @@ async function main(): Promise<void> {
     const counts = new Map(p.lists.map((l) => [l.name, l.count]));
     const text = playground.text;
     const out: ListRef[] = [];
-    for (const m of text.matchAll(/([\p{L}_][\p{L}\p{N}_]*)\.(\d+|all|random)(?![\p{L}\p{N}_])/gu)) {
+    for (const m of text.matchAll(/([\p{L}_][\p{L}\p{N}_]*)\.(\d+|all|random|todas|todos|tudo|acaso|aleat[oó]ri[oa]|sorteio)(?![\p{L}\p{N}_])/gu)) {
       const count = counts.get(m[1]);
       if (count === undefined || m.index === undefined) continue;
       const lineStart = text.lastIndexOf("\n", m.index) + 1;

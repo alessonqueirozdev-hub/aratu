@@ -237,14 +237,14 @@ fn music_in(
     cx: Cx,
 ) -> Vec<Bar> {
     if kind == LineKind::Pitched {
-        if let Some(at) = text.find(" from ") {
+        if let Some((at, len)) = row_from(text) {
             return rhythm_from_row(
                 cx,
                 diags,
                 &text[..at],
                 base,
-                &text[at + 6..],
-                base + at + 6,
+                &text[at + len..],
+                base + at + len,
                 kind,
             );
         }
@@ -330,7 +330,7 @@ fn rhythm_from_row(
     // `octave 3`: every pitch class in that octave.
     let mut words = rest.split_whitespace();
     if let (Some(w), Some(n)) = (words.next(), words.next()) {
-        if w.eq_ignore_ascii_case("octave") {
+        if crate::words::is(w, "octave") {
             if let Ok(o) = n.parse::<i32>() {
                 for p in &mut pitches {
                     *p = p.rem_euclid(12) + 12 * (o + 1);
@@ -357,6 +357,17 @@ fn rhythm_from_row(
     bars
 }
 
+/// Where `from` sits in a rhythm that takes its notes from a row, and how
+/// long the word is with its spaces: `from`, `desde`, or `com` and
+/// `con` (the short Portuguese and Spanish words for "from" are notes:
+/// `do`, `de`).
+fn row_from(text: &str) -> Option<(usize, usize)> {
+    [" from ", " desde ", " com ", " con "]
+        .iter()
+        .filter_map(|w| text.find(w).map(|at| (at, w.len())))
+        .min()
+}
+
 /// What `temas.2` or `temas.all` stands for when it fills a bar: the list's
 /// melodies, or, out of range, the number asked for and how many there are.
 type ListFound<'l> = Result<Vec<&'l motifs::Source>, (String, usize, usize)>;
@@ -364,7 +375,7 @@ type ListFound<'l> = Result<Vec<&'l motifs::Source>, (String, usize, usize)>;
 fn list_ref<'l>(word: &str, lib: &'l Library) -> Option<ListFound<'l>> {
     let (name, which) = word.split_once('.')?;
     let items = lib.lists.get(name)?;
-    if which == "all" {
+    if crate::words::is(which, "all") {
         return Some(Ok(items.iter().collect()));
     }
     let index: usize = which.parse().ok()?;

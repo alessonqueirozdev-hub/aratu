@@ -216,7 +216,10 @@ impl Parser {
         let mut c = Cursor::new(b.header);
         let (first, fspan) = c.name().expect("block headers are names");
         let second = c.name();
-        match (first.to_lowercase().as_str(), second) {
+        match (
+            crate::words::which(first, &["pattern", "section", "list"]).unwrap_or(""),
+            second,
+        ) {
             ("pattern", Some((n, _))) => self.nodes(&b.body, &Scope::Pattern(n.to_string()), None),
             ("section", Some((n, _))) => self.nodes(&b.body, &Scope::Section(n.to_string()), None),
             ("list", Some(_)) => {
@@ -289,7 +292,13 @@ impl Parser {
     ) -> Result<(When, StmtKind), Fail> {
         // When.
         let start = c.offset();
-        if c.keyword("at") {
+        let at_save = c.clone();
+        let literal_at = c.clone().word("at");
+        if c.keyword("at") && {
+            // `en el compás 9`, `no compasso 9`
+            let _ = c.word("el");
+            literal_at || c.peek_keyword("bar")
+        } {
             if !c.keyword("bar") {
                 return Err(expected(c, Thing::BarNumber, "at"));
             }
@@ -301,6 +310,13 @@ impl Parser {
             }
             let mut said = format!("at bar {n}");
             let mut beat = None;
+            // `at bar 9, beat 3` reads the same.
+            {
+                let s = c.clone();
+                if !(c.eat(",") && c.peek_keyword("beat")) {
+                    *c = s;
+                }
+            }
             if c.keyword("beat") {
                 match c.number() {
                     Some((b, _)) if b >= 1.0 => {
@@ -323,10 +339,14 @@ impl Parser {
                 kind,
             ));
         }
-        // `from bar 9 to 16:`
+        *c = at_save;
+        // `from bar 9 to 16:`, `do compasso 9 ao 16:`, `desde el compás 9 hasta el 16:`
         {
             let save = c.clone();
-            if c.keyword("from") && c.keyword("bar") {
+            if c.keyword("from") && {
+                let _ = c.word("el");
+                c.keyword("bar") || c.keyword("bars")
+            } {
                 let (a, as_) = c
                     .integer()
                     .ok_or_else(|| expected(c, Thing::BarNumber, "from bar"))?;
@@ -336,6 +356,7 @@ impl Parser {
                 if !c.keyword("to") {
                     return Err(expected(c, Thing::RangeEnd, &format!("from bar {a}")));
                 }
+                let _ = c.word("el") || c.word("o");
                 c.keyword("bar");
                 let (z, zs) = c
                     .integer()
@@ -358,7 +379,15 @@ impl Parser {
             }
             *c = save;
         }
-        if c.keyword("every") {
+        let every = c.keyword("every") || {
+            let s = c.clone();
+            let found = c.word("a") && c.keyword("every");
+            if !found {
+                *c = s;
+            }
+            found
+        };
+        if every {
             let (n, ns) = c
                 .integer()
                 .ok_or_else(|| expected(c, Thing::Number, "every"))?;
@@ -419,7 +448,8 @@ impl Parser {
         let Some((word, _)) = c.name() else {
             return Ok(None);
         };
-        let word = word.to_lowercase();
+        let word = crate::words::which(word, &["seed", "meter", "tempo", "key", "pickup", "form"])
+            .map_or_else(|| word.to_lowercase(), String::from);
         if word == "seed" {
             c.eat(":");
             if c.keyword("random") {
@@ -503,7 +533,13 @@ impl Parser {
             let r = c.rest();
             return Err((r.span, Message::UnknownLine));
         };
-        let first = words[0].to_lowercase();
+        let first = crate::words::which(
+            words[0],
+            &[
+                "play", "add", "tempo", "meter", "key", "swing", "rubato", "humanize",
+            ],
+        )
+        .map_or_else(|| words[0].to_lowercase(), String::from);
 
         // `name = music` or `path = value`.
         if c.eat("=") {
@@ -525,13 +561,13 @@ impl Parser {
                             break;
                         }
                     }
-                    let once = c.keyword("once");
+                    let once = once(c);
                     self.end(c)?;
                     return Ok(StmtKind::Play { entries, once });
                 }
                 "add" => {
                     let (n, s) = c.name().ok_or_else(|| expected(c, Thing::Name, "add"))?;
-                    let once = c.keyword("once");
+                    let once = once(c);
                     self.end(c)?;
                     return Ok(StmtKind::Add {
                         pattern: name(n, s),
@@ -766,8 +802,8 @@ impl Parser {
     ) -> Option<(Vec<Bar>, Vec<usize>)> {
         let (name, which) = text.trim().split_once('.')?;
         let items = self.lib.lists.get(name)?.clone();
-        let random = which == "random";
-        let chosen: Vec<&Source> = if which == "all" || random {
+        let random = crate::words::is(which, "random");
+        let chosen: Vec<&Source> = if crate::words::is(which, "all") || random {
             items.iter().collect()
         } else {
             let index: usize = which.parse().ok()?;
@@ -799,6 +835,12 @@ impl Parser {
     }
 
     fn part_command(&mut self, c: &mut Cursor, target: Name) -> Result<StmtKind, Fail> {
+        // `todos: fora` is `all: out`.
+        let target = if crate::words::is(&target.text, "all") {
+            name("all", target.span)
+        } else {
+            target
+        };
         let save = c.clone();
         let arrow = c.clone().rest().text.contains("->");
         // `andamento: 120`: a header said in Portuguese or Spanish.
@@ -818,6 +860,7 @@ impl Parser {
                     return Ok(StmtKind::Level { target, dynamic: d });
                 }
             }
+            let w = crate::words::which(&w, &["out", "in"]).map_or(w, String::from);
             if (w == "out" || w == "in") && c.at_end() {
                 return Ok(StmtKind::Mute {
                     target,
@@ -857,7 +900,7 @@ impl Parser {
                     self.end(c)?;
                     return Ok(StmtKind::LevelRamp { target, to, length });
                 }
-                "swing" | "rubato" | "humanize" => {
+                w if crate::words::which(w, &["swing", "rubato", "humanize"]).is_some() => {
                     *c = save;
                     let feel = feel(c)?;
                     self.end(c)?;
@@ -900,6 +943,18 @@ impl Parser {
     }
 
     fn transform(&mut self, c: &mut Cursor, verb: &str) -> Result<Option<Transform>, Fail> {
+        let verb = crate::words::which(
+            verb,
+            &[
+                "rotate",
+                "density",
+                "velocity",
+                "transpose",
+                "augment",
+                "diminish",
+            ],
+        )
+        .unwrap_or(verb);
         let num = |c: &mut Cursor, what: &str| -> Result<f64, Fail> {
             c.number()
                 .map(|(v, _)| v)
@@ -935,10 +990,10 @@ impl Parser {
 /// How the line's symbols are read, from its name and the part it is in.
 pub fn line_kind(line: &str, part: Option<&str>) -> LineKind {
     let l = line.to_lowercase();
-    if l == "chords" {
+    if crate::words::is(&l, "chords") {
         return LineKind::Chords;
     }
-    if l == "strum" {
+    if crate::words::is(&l, "strum") {
         return LineKind::Strum;
     }
     let in_drums = part.is_some_and(|p| DRUM_PARTS.contains(&p.to_lowercase().as_str()));
@@ -1044,17 +1099,44 @@ fn length(c: &mut Cursor, after: &str) -> Result<Length, Fail> {
             return Err(expected(c, Thing::Length, after));
         }
     };
-    let unit = match c.name().map(|(w, _)| w.to_lowercase()).as_deref() {
-        Some("bar" | "bars") => TimeUnit::Bars,
-        Some("beat" | "beats") => TimeUnit::Beats,
-        Some("eighth" | "eighths") => TimeUnit::Eighths,
-        Some("sixteenth" | "sixteenths") => TimeUnit::Sixteenths,
+    let unit = match c.name().map(|(w, _)| {
+        crate::words::which(
+            w,
+            &[
+                "bar",
+                "bars",
+                "beat",
+                "beats",
+                "eighth",
+                "eighths",
+                "sixteenth",
+                "sixteenths",
+            ],
+        )
+    }) {
+        Some(Some("bar" | "bars")) => TimeUnit::Bars,
+        Some(Some("beat" | "beats")) => TimeUnit::Beats,
+        Some(Some("eighth" | "eighths")) => TimeUnit::Eighths,
+        Some(Some("sixteenth" | "sixteenths")) => TimeUnit::Sixteenths,
         _ => {
             *c = save;
             return Err(expected(c, Thing::Length, after));
         }
     };
     Ok(Length { count, unit })
+}
+
+/// `once`, `uma vez`, `una vez`.
+fn once(c: &mut Cursor) -> bool {
+    if c.keyword("once") {
+        return true;
+    }
+    let s = c.clone();
+    if (c.word("uma") || c.word("una")) && c.word("vez") {
+        return true;
+    }
+    *c = s;
+    false
 }
 
 /// `x3` after a name, or `3x` as people also say it.
@@ -1077,7 +1159,8 @@ fn times_suffix(c: &mut Cursor) -> Option<u32> {
 
 fn feel(c: &mut Cursor) -> Result<Feel, Fail> {
     let (w, _) = c.name().expect("called on a feel word");
-    let w = w.to_lowercase();
+    let w =
+        crate::words::which(w, &["swing", "rubato"]).map_or_else(|| w.to_lowercase(), String::from);
     match w.as_str() {
         "swing" | "rubato" => {
             let (v, _) = c.number().ok_or_else(|| expected(c, Thing::Number, &w))?;
@@ -1135,7 +1218,7 @@ fn value(c: &mut Cursor) -> Option<Value> {
         let save = c.clone();
         match c.name() {
             // `0.2 -> 0.8 over 4 bars`: `over` is no unit.
-            Some((u, us)) if !u.eq_ignore_ascii_case("over") => {
+            Some((u, us)) if !crate::words::is(u, "over") => {
                 unit = Some(u.to_string());
                 span = span.join(us);
             }

@@ -92,9 +92,11 @@ pub fn motif_ref<'a>(word: &'a str, lib: &Library) -> Option<(&'a str, Vec<Op>)>
 /// `retrograde` or `R`; `ri` or `RI`. Whether it turns the intervals
 /// upside down, and whether it plays backwards.
 pub fn mirror(word: &str) -> Option<(bool, bool)> {
-    Some(match word.to_lowercase().as_str() {
-        "inv" | "invert" | "inversion" | "i" => (true, false),
-        "retro" | "retrograde" | "r" => (false, true),
+    Some(match crate::words::fold(word).as_str() {
+        "inv" | "invert" | "inversion" | "i" | "inversao" | "inverter" | "inverte" | "invertir" => {
+            (true, false)
+        }
+        "retro" | "retrograde" | "r" | "retrogrado" => (false, true),
         "ri" | "retroinv" => (true, true),
         _ => return None,
     })
@@ -244,7 +246,7 @@ pub fn form_ref(word: &str) -> Result<(&str, Form, i32), String> {
             Some((true, true)) => Form::RI,
             Some((true, false)) => Form::I,
             Some((false, true)) => Form::R,
-            _ if letters.eq_ignore_ascii_case("prime") => Form::P,
+            _ if ["prime", "original"].contains(&crate::words::fold(letters).as_str()) => Form::P,
             _ => return Err(form.to_string()),
         };
         let digits = &form[letters.len()..];

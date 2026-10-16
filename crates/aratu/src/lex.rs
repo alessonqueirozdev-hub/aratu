@@ -229,11 +229,12 @@ impl<'a> Cursor<'a> {
         }
     }
 
-    /// Consumes the word `kw` (ignoring case) if it comes next as a whole word.
+    /// Consumes the keyword `kw` if it comes next as a whole word, in
+    /// English, Portuguese or Spanish, ignoring case and accents.
     pub fn keyword(&mut self, kw: &str) -> bool {
         let save = self.pos;
         match self.name() {
-            Some((w, _)) if w.eq_ignore_ascii_case(kw) => true,
+            Some((w, _)) if crate::words::is(w, kw) => true,
             _ => {
                 self.pos = save;
                 false
@@ -247,6 +248,18 @@ impl<'a> Cursor<'a> {
         let found = self.keyword(kw);
         self.pos = save;
         found
+    }
+
+    /// Consumes `word` itself (ignoring case) if it comes next.
+    pub fn word(&mut self, word: &str) -> bool {
+        let save = self.pos;
+        match self.name() {
+            Some((w, _)) if w.eq_ignore_ascii_case(word) => true,
+            _ => {
+                self.pos = save;
+                false
+            }
+        }
     }
 
     /// A name: a letter or `_`, then letters, digits and `_`.

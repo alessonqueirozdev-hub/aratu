@@ -69,13 +69,12 @@ fn hands_clap_with_p() {
 }
 
 #[test]
-fn a_header_in_portuguese_or_misspelt_is_told_with_the_right_word() {
+fn a_misspelt_header_is_told_with_the_right_word() {
     for (src, word, suggestion) in [
-        ("andamento: 120", "andamento", "tempo"),
-        ("compasso: 3/4", "compasso", "meter"),
-        ("tom: lá menor", "tom", "key"),
         ("tempp: 120", "tempp", "tempo"),
         ("metter: 3/4", "metter", "meter"),
+        ("velocidade: 120", "velocidade", "tempo"),
+        ("escala: lá menor", "escala", "key"),
     ] {
         assert_eq!(
             first(src),
@@ -448,4 +447,110 @@ fn times_that_cannot_be_are_told() {
         first(&format!("{GROOVE}from bar 5 to 2: play f")),
         Message::BadRange { from: 5, to: 2 }
     );
+}
+
+#[test]
+fn the_same_piece_in_english_portuguese_and_spanish() {
+    let en = "meter: 4/4
+tempo: 100
+key: A minor
+seed 7
+pattern groove { hh = cc cc cc cc; bd = b - b -; sd = - s - s }
+pattern fill { sd = ss ss SS SS }
+motif riff = [e4 d4 c4 d4]
+row serie = 0 4 7 11
+list temas {
+  | a4 _ _ _ |
+  | g4 _ _ _ |
+}
+melodia = | riff riff+1 riff.inv riff |
+bass = | o o o o | from serie octave 2
+tune = temas.all
+play groove x3, fill
+at bar 4 beat 3: add fill once
+every 8 bars, first: bass.transpose 2
+from bar 5 to 6: drums: out
+at bar 7: melodia: cresc to ff over 6 beats
+at bar 9: tempo 120 -> 132 over 2 bars
+at bar 2: bass.lowpass.cutoff = 300 Hz <-> 3000 Hz over 4 sixteenths, back over 2 eighths, loop
+chords = | Am | F |
+strum = d du -u du
+all: swing 60%";
+    let pt = "compasso: 4/4
+andamento: 100
+tom: lá menor
+semente 7
+padrão groove { hh = cc cc cc cc; bd = b - b -; sd = - s - s }
+padrão fill { sd = ss ss SS SS }
+motivo riff = [e4 d4 c4 d4]
+série serie = 0 4 7 11
+lista temas {
+  | a4 _ _ _ |
+  | g4 _ _ _ |
+}
+melodia = | riff riff+1 riff.inversão riff |
+bass = | o o o o | com serie oitava 2
+tune = temas.todas
+toque groove 3x, fill
+no compasso 4 tempo 3: adicione fill uma vez
+a cada 8 compassos, primeiro: bass.transpor 2
+do compasso 5 ao 6: bateria: fora
+no compasso 7: melodia: cresc até ff em 6 tempos
+no compasso 9: andamento 120 -> 132 em 2 compassos
+no compasso 2: bass.lowpass.cutoff = 300 Hz <-> 3000 Hz em 4 semicolcheias, volta em 2 colcheias, repete
+acordes = | Am | F |
+batida = d du -u du
+todos: swing 60%";
+    let es = "compás: 4/4
+pulso: 100
+tonalidad: la menor
+semilla 7
+patrón groove { hh = cc cc cc cc; bd = b - b -; sd = - s - s }
+patrón fill { sd = ss ss SS SS }
+motivo riff = [e4 d4 c4 d4]
+serie serie = 0 4 7 11
+lista temas {
+  | a4 _ _ _ |
+  | g4 _ _ _ |
+}
+melodia = | riff riff+1 riff.invertir riff |
+bass = | o o o o | desde serie octava 2
+tune = temas.todos
+toca groove x3, fill
+en el compás 4, tiempo 3: añade fill una vez
+cada 8 compases, primero: bass.transponer 2
+desde el compás 5 hasta el 6: batería: fuera
+en el compás 7: melodia: cresc hasta ff en 6 tiempos
+en el compás 9: pulso 120 -> 132 en 2 compases
+en compás 2: bass.lowpass.cutoff = 300 Hz <-> 3000 Hz en 4 semicorcheas, vuelta en 2 corcheas, repite
+acordes = | Am | F |
+rasgueo = d du -u du
+todos: swing 60%";
+    let play = |src: &str| -> Vec<String> {
+        events(src, 1, 13)
+            .iter()
+            .map(|e| {
+                format!(
+                    "{} {} {:?} {} {:.4}",
+                    e.bar, e.beat, e.kind, e.velocity, e.time
+                )
+            })
+            .collect()
+    };
+    let english = play(en);
+    assert!(english.len() > 300);
+    for (lang, src) in [("Portuguese", pt), ("Spanish", es)] {
+        let other = play(src);
+        let at = other
+            .iter()
+            .zip(&english)
+            .position(|(a, b)| a != b)
+            .unwrap_or(other.len().min(english.len()));
+        assert!(
+            other.len() == english.len() && at == other.len(),
+            "{lang}: from event {at}: {:?} against {:?}",
+            &other[at..(at + 3).min(other.len())],
+            &english[at..(at + 3).min(english.len())]
+        );
+    }
 }

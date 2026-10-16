@@ -510,12 +510,14 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
 
     // Parameters written as `bass.reverb.mix = 0.42` outside the block.
     for (path, value, _) in global_params {
-        let first = &path[0].text;
-        let is_part = path.len() > 1 && top.parts.iter().any(|p| &p.name == first);
-        let (part, id_path) = if is_part {
-            (Some(&path[0]), &path[1..])
+        let names: Vec<&str> = top.parts.iter().map(|p| p.name.as_str()).collect();
+        let part = (path.len() > 1)
+            .then(|| part_named(&names, &path[0].text))
+            .flatten();
+        let id_path = if part.is_some() {
+            &path[1..]
         } else {
-            (None, &path[..])
+            &path[..]
         };
         let id = id_path
             .iter()
@@ -530,7 +532,7 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
                 factor,
             };
             match part {
-                Some(p) => top.get(&p.text, p.span).params.push(set),
+                Some(p) => top.get(&p, path[0].span).params.push(set),
                 None => piece.params.push(set),
             }
         }
@@ -623,41 +625,27 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
                     }
                 }
             }
-            StmtKind::Level { target, dynamic } => {
-                check_target(&piece, target, diags);
-                Action::Level {
-                    target: target.text.clone(),
-                    to: LevelTarget::Dynamic(*dynamic),
-                    length: Length {
-                        count: 0.0,
-                        unit: TimeUnit::Bars,
-                    },
-                }
-            }
-            StmtKind::Mute { target, muted } => {
-                check_target(&piece, target, diags);
-                Action::Mute {
-                    target: target.text.clone(),
-                    muted: *muted,
-                }
-            }
-            StmtKind::LevelRamp { target, to, length } => {
-                check_target(&piece, target, diags);
-                Action::Level {
-                    target: target.text.clone(),
-                    to: *to,
-                    length: *length,
-                }
-            }
-            StmtKind::Feel { target, feel } => {
-                if let Some(t) = target {
-                    check_target(&piece, t, diags);
-                }
-                Action::Feel {
-                    target: target.as_ref().map(|t| t.text.clone()),
-                    feel: *feel,
-                }
-            }
+            StmtKind::Level { target, dynamic } => Action::Level {
+                target: target_of(&piece, target, diags),
+                to: LevelTarget::Dynamic(*dynamic),
+                length: Length {
+                    count: 0.0,
+                    unit: TimeUnit::Bars,
+                },
+            },
+            StmtKind::Mute { target, muted } => Action::Mute {
+                target: target_of(&piece, target, diags),
+                muted: *muted,
+            },
+            StmtKind::LevelRamp { target, to, length } => Action::Level {
+                target: target_of(&piece, target, diags),
+                to: *to,
+                length: *length,
+            },
+            StmtKind::Feel { target, feel } => Action::Feel {
+                target: target.as_ref().map(|t| target_of(&piece, t, diags)),
+                feel: *feel,
+            },
             StmtKind::Transform { target, transform } => {
                 let known = piece.all_parts().any(|p| {
                     p.name == target.text
@@ -681,12 +669,11 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
             // A parameter that moves is a command even without a time: it
             // starts moving where it is written while playing live.
             StmtKind::Param { path, value, sweep } if s.when != When::Bare || sweep.is_some() => {
+                let names: Vec<&str> = piece.parts.iter().map(|p| p.name.as_str()).collect();
                 let (part, id_path) = match &s.part {
                     Some(p) => (Some(p.text.clone()), &path[..]),
-                    None if path.len() > 1
-                        && piece.parts.iter().any(|p| p.name == path[0].text) =>
-                    {
-                        (Some(path[0].text.clone()), &path[1..])
+                    None if path.len() > 1 && part_named(&names, &path[0].text).is_some() => {
+                        (part_named(&names, &path[0].text), &path[1..])
                     }
                     None => (None, &path[..]),
                 };
@@ -836,9 +823,15 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
     piece
 }
 
-fn check_target(piece: &Piece, target: &Name, diags: &mut Vec<Diagnostic>) {
-    if target.text == "all" || piece.all_parts().any(|p| p.name == target.text) {
-        return;
+/// The part a command is for, with a warning when there is none of that
+/// name; a drum part may be called by its name in any language.
+fn target_of(piece: &Piece, target: &Name, diags: &mut Vec<Diagnostic>) -> String {
+    if target.text == "all" {
+        return target.text.clone();
+    }
+    let names: Vec<&str> = piece.all_parts().map(|p| p.name.as_str()).collect();
+    if let Some(n) = part_named(&names, &target.text) {
+        return n;
     }
     diags.push(Diagnostic::warning(
         target.span,
@@ -846,6 +839,21 @@ fn check_target(piece: &Piece, target: &Name, diags: &mut Vec<Diagnostic>) {
             name: target.text.clone(),
         },
     ));
+    target.text.clone()
+}
+
+/// The part a name stands for among `names`: the part of that name, or,
+/// for a drum part's name in any language (`drums`, `bateria`, `kit`),
+/// the drum part there is.
+fn part_named(names: &[&str], name: &str) -> Option<String> {
+    if names.contains(&name) {
+        return Some(name.to_string());
+    }
+    let drums = |n: &str| crate::parse::DRUM_PARTS.contains(&n.to_lowercase().as_str());
+    if drums(name) {
+        return names.iter().find(|n| drums(n)).map(|n| n.to_string());
+    }
+    None
 }
 
 /// The value of a parameter in its own unit and the factor back to the

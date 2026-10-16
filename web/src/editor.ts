@@ -26,13 +26,30 @@ import {
 import { tags as t } from "@lezer/highlight";
 import type { Diagnostic } from "./aratu";
 
+// Folded (lower case, no accents), in English, Portuguese and Spanish, as
+// the language reads them. The short Portuguese and Spanish words that are
+// also notes or everyday words (`do`, `de`, `a`, `no`, `em`) are left
+// plain, so a melody does not light up as keywords.
 const KEYWORDS = new Set([
   "meter", "tempo", "key", "pickup", "seed", "form", "pattern", "section", "at", "bar", "bars",
   "every", "first", "last", "play", "add", "once", "now", "rit", "rall", "accel", "to", "over", "primo",
-  "a", "out", "in", "cresc", "dim", "fade", "swing", "rubato", "humanize", "random", "beat", "al",
-  "fine", "coda", "ms", "Hz", "kHz", "motif", "row", "list", "from", "octave", "back",
-  "loop", "beats", "eighth", "eighths", "sixteenth", "sixteenths",
+  "out", "in", "cresc", "dim", "fade", "swing", "rubato", "humanize", "random", "beat",
+  "fine", "coda", "ms", "hz", "khz", "motif", "row", "list", "from", "octave", "back",
+  "loop", "beats", "eighth", "eighths", "sixteenth", "sixteenths", "all",
+  "compasso", "compassos", "compas", "compases", "andamento", "pulso", "tonalidade", "tonalidad",
+  "anacruse", "anacrusa", "semente", "semilla", "forma", "cada", "primeiro", "primeira", "primero",
+  "primera", "ultimo", "ultima", "agora", "ahora", "desde", "ate", "hasta", "durante", "volta",
+  "vuelta", "repete", "repite", "toque", "toca", "adicione", "acrescente", "anade", "agrega",
+  "padrao", "patron", "secao", "seccion", "motivo", "serie", "lista", "oitava", "octava", "todos",
+  "todas", "tudo", "acaso", "aleatorio", "aleatoria", "fora", "fuera", "dentro", "tempos",
+  "tiempo", "tiempos", "colcheia", "colcheias", "corchea", "corcheas", "semicolcheia",
+  "semicolcheias", "semicorchea", "semicorcheas", "vez", "uma", "una", "com", "con",
 ]);
+const fold = (w: string): string =>
+  w
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "");
 const DYNAMICS = new Set(["ppp", "pp", "p", "mp", "mf", "f", "ff", "fff", "sfz", "fp"]);
 // The same names the language reads as drum lines and drum parts.
 const DRUM_LINES = new Set([
@@ -99,12 +116,15 @@ const aratuLanguage = StreamLanguage.define<State>({
       const w = word[0];
       const first = state.lineStart;
       state.lineStart = false;
-      if (KEYWORDS.has(w)) return "keyword";
+      if (KEYWORDS.has(fold(w))) return "keyword";
       if (DYNAMICS.has(w)) return "atom";
       if (first && stream.match(/^\s*(=|\{|:)/, false)) {
         if (stream.match(/^\s*\{/, false) && DRUM_PARTS.has(w)) state.opening = true;
         if (stream.match(/^\s*=/, false)) {
-          state.struck = state.drums >= 0 || DRUM_LINES.has(w) || w === "strum";
+          state.struck =
+            state.drums >= 0 ||
+            DRUM_LINES.has(w) ||
+            ["strum", "batida", "levada", "rasgueo", "rasgueado"].includes(fold(w));
         }
         return "definition";
       }

@@ -33,32 +33,14 @@ pub fn closest<'a>(word: &str, candidates: impl IntoIterator<Item = &'a str>) ->
 /// The words of the frame of a piece, written before a colon.
 pub const HEADERS: &[&str] = &["meter", "tempo", "key", "pickup", "seed", "form"];
 
-/// What musicians write for each of them in Portuguese and Spanish.
+/// Words that are not headers but are meant as one. The headers' own words
+/// in Portuguese and Spanish (`andamento:`, `compasso:`, `tom:`) are
+/// read as headers; see [`crate::words`].
 const HEADER_WORDS: &[(&str, &str)] = &[
-    ("andamento", "tempo"),
-    ("bpm", "tempo"),
     ("velocidade", "tempo"),
     ("velocidad", "tempo"),
-    ("compasso", "meter"),
-    ("compás", "meter"),
-    ("compas", "meter"),
-    ("fórmula", "meter"),
-    ("formula", "meter"),
-    ("métrica", "meter"),
-    ("metrica", "meter"),
     ("time", "meter"),
-    ("tom", "key"),
-    ("tonalidade", "key"),
-    ("tonalidad", "key"),
-    ("tono", "key"),
     ("escala", "key"),
-    ("anacruse", "pickup"),
-    ("anacrusa", "pickup"),
-    ("semente", "seed"),
-    ("semilla", "seed"),
-    ("forma", "form"),
-    ("estrutura", "form"),
-    ("estructura", "form"),
 ];
 
 /// The header a Portuguese or Spanish word stands for: `andamento` is
@@ -92,7 +74,7 @@ mod tests {
             None,
             "a right word needs no help"
         );
-        assert_eq!(header_for("Andamento"), Some("tempo"));
-        assert_eq!(header_for("tom"), Some("key"));
+        assert_eq!(header_for("Velocidade"), Some("tempo"));
+        assert_eq!(header_for("escala"), Some("key"));
     }
 }
