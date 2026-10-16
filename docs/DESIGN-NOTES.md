@@ -400,8 +400,11 @@ Smaller choices made along the way:
 - Inside brackets, glued symbols and spaces are the same level: `[-c4 d4]`
   has three parts. Brackets nest: `c[cc]`.
 - A note before any octave is taken as octave 4, with a warning.
-- A live level (`piano: ff`, `cresc to ff over 4 bars`, `fade out`) scales
-  the part's written dynamics: at `mf` they sound as written.
+- A live level (`piano: ff`, `cresc to ff over 4 bars`, `fade out`) takes
+  the part from its written dynamics to the mark it names, accents staying
+  above. (Until 15 October 2026 it scaled the written marks against mf, so a
+  part written in p and taken to ff ended near mp; the user heard no
+  crescendo.)
 - A hairpin with no later mark moves one step (mf to f) by the end of the
   line, with a warning.
 - `section` holds parts and lines like the top of the piece and lasts as long

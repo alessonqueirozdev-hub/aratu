@@ -13,7 +13,7 @@ use crate::dynamics::PICKUP;
 use crate::model::{Action, At, Command, Line, Part, Piece};
 use crate::ratio::Ratio;
 use crate::span::Span;
-use crate::theory::{ACCENT, Chord, Dyn, Meter};
+use crate::theory::{ACCENT, Chord, Meter};
 use crate::time::{BarClock, Tempo};
 use std::collections::HashMap;
 
@@ -904,10 +904,15 @@ impl<'p> Scheduler<'p> {
         muted
     }
 
-    fn level(&self, part: &str, g: i64, frac: f64) -> f64 {
+    /// How much a live level change (`melodia: cresc to ff over 4 bars`)
+    /// scales a note whose written dynamic gives it `written`. The level
+    /// moves from what is written to the dynamic asked for, so a part
+    /// written in p does reach ff; accents keep their place above it.
+    fn level(&self, part: &str, g: i64, frac: f64, written: f64) -> f64 {
+        let written = written.max(1.0);
         let mut total = 1.0;
         for target in ["all", part] {
-            let mut factor = 1.0;
+            let mut level = written;
             for (b, c) in &self.timed {
                 if *b > g {
                     break;
@@ -924,21 +929,21 @@ impl<'p> Scheduler<'p> {
                     continue;
                 }
                 let goal = match to {
-                    LevelTarget::Dynamic(d) => d.velocity() as f64 / Dyn::Mf.velocity() as f64,
+                    LevelTarget::Dynamic(d) => d.velocity() as f64,
                     LevelTarget::Silence => 0.0,
                 };
                 if *bars == 0 {
-                    factor = goal;
+                    level = goal;
                 } else {
                     let progress = ((g - b) as f64 + frac) / *bars as f64;
-                    factor = if progress >= 1.0 {
+                    level = if progress >= 1.0 {
                         goal
                     } else {
-                        factor + (goal - factor) * progress
+                        level + (goal - level) * progress
                     };
                 }
             }
-            total *= factor;
+            total *= level / written;
         }
         total
     }
@@ -1063,7 +1068,7 @@ impl<'p> Scheduler<'p> {
                 }
             }
             let frac = (p.start / beats.max(Ratio::new(1, 1000))).to_f64();
-            velocity *= self.level(part, g, frac);
+            velocity *= self.level(part, g, frac, p.velocity);
             let jitter = match human {
                 Some(ms) => {
                     let r = chance(

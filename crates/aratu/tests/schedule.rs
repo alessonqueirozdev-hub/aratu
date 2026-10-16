@@ -373,6 +373,36 @@ fn dynamics_accents_and_live_levels() {
 }
 
 #[test]
+fn a_live_crescendo_reaches_the_dynamic_it_names() {
+    // Written in p, a crescendo to ff over 4 bars arrives at ff.
+    let ev = events(
+        "melodia = | p:dó4 mi sol Mi |\nmelodia: cresc to ff over 4 bars",
+        1,
+        7,
+    );
+    let plain: Vec<u8> = ev
+        .iter()
+        .filter(|e| e.beat != Ratio::int(3))
+        .map(|e| e.velocity)
+        .collect();
+    assert_eq!(plain[0], 49, "it starts as written");
+    assert!(plain.windows(2).all(|w| w[0] <= w[1]), "{plain:?}");
+    let last = |bar: i64, beat: i64| {
+        ev.iter()
+            .find(|e| e.bar == bar && e.beat == Ratio::int(beat))
+            .unwrap()
+            .velocity
+    };
+    assert_eq!(last(5, 0), 112, "ff after four bars");
+    assert_eq!(last(6, 0), 112, "and it stays there");
+    assert!(last(6, 3) > last(6, 0), "the accent stays above");
+    // A dim goes down to its mark the same way.
+    let ev = events("m = | f:c4 d4 e4 f4 |\nm: dim to pp over 2 bars", 1, 5);
+    assert_eq!(ev[0].velocity, 96);
+    assert_eq!(ev.last().unwrap().velocity, 33);
+}
+
+#[test]
 fn swing_delays_the_second_eighth() {
     let ev = events("tempo: 60\nswing 60%\nhh = cc cc cc cc", 1, 2);
     close(ev[1].time, 0.6);

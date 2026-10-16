@@ -33,16 +33,15 @@ to the dynamic the music is at.
 
 ## Changing a whole part
 
-One line changes the level of a whole part, relative to what is written
-in it:
+One line takes a whole part to a dynamic, whatever is written in it:
 
 ```aratu
 melody = | c4 e g e |
 melody: pp
 ```
 
-Try `melody: ff`, or `melody: cresc to ff over 4 bars` (a four-bar
-crescendo).
+Try `melody: ff`, or `melody: cresc to ff over 4 bars`: a four-bar
+crescendo that starts from what is written and reaches ff.
 
 ## Exercises
 

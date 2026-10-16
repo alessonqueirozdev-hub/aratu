@@ -33,16 +33,16 @@ intensidad a la marca en la que está la música.
 
 ## Cambiar la parte entera
 
-Una sola línea cambia el volumen de una parte entera, respecto de lo que
-está escrito en ella:
+Una sola línea lleva una parte entera a una dinámica, sea cual sea la que
+está escrita en ella:
 
 ```aratu
 melodia = | do4 mi sol mi |
 melodia: pp
 ```
 
-Prueba `melodia: ff`, o `melodia: cresc to ff over 4 bars` (un crescendo
-de cuatro compases).
+Prueba `melodia: ff`, o `melodia: cresc to ff over 4 bars`: un crescendo
+de cuatro compases, que sale de lo que está escrito y llega a ff.
 
 ## Ejercicios
 

@@ -33,16 +33,16 @@ intensidade à marca em que a música está.
 
 ## Mudar a parte inteira
 
-Uma linha só muda o volume de uma parte inteira, em relação ao que está
-escrito nela:
+Uma linha só leva uma parte inteira a uma dinâmica, seja qual for a que
+está escrita nela:
 
 ```aratu
 melodia = | dó4 mi sol mi |
 melodia: pp
 ```
 
-Experimente `melodia: ff`, ou `melodia: cresc to ff over 4 bars` (um
-crescendo de quatro compassos).
+Experimente `melodia: ff`, ou `melodia: cresc to ff over 4 bars`: um
+crescendo de quatro compassos, que parte do que está escrito e chega a ff.
 
 ## Exercícios
 

@@ -221,9 +221,10 @@ drums: dim to p over 2 bars
 all: fade out over 8 bars
 ```
 
-A part's level scales the marks written in its lines: at `mf` they sound as
-written, at `ff` everything is louder by the same proportion, and
-`fade out` takes the part to silence.
+A level line takes the whole part to the dynamic it names:
+`melody: cresc to ff over 4 bars` starts from what is written and reaches
+ff in the fourth bar, even when the line is written in p. Accents stay
+above the other notes, and `fade out` takes the part to silence.
 
 Each mark stands for a fixed velocity: ppp 16, pp 33, p 49, mp 64, mf 80,
 f 96, ff 112, fff 127. An accent adds to the current one. A hairpin with no

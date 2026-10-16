@@ -232,9 +232,10 @@ drums: dim to p over 2 bars
 all: fade out over 8 bars
 ```
 
-El nivel de una parte multiplica las marcas escritas en sus líneas: en `mf`
-suenan como están escritas, en `ff` todo suena más fuerte en la misma
-proporción, y `fade out` lleva la parte al silencio.
+Una línea de nivel lleva la parte entera hasta la dinámica que nombra:
+`melodia: cresc to ff over 4 bars` sale de lo que está escrito y llega a ff
+en el cuarto compás, aunque la línea esté escrita en p. Los acentos siguen
+por encima de las otras notas, y `fade out` lleva la parte al silencio.
 
 Cada marca vale una intensidad fija: ppp 16, pp 33, p 49, mp 64, mf 80, f
 96, ff 112, fff 127. El acento suma a la marca en la que está la música. Un
