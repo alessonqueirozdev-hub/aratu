@@ -395,6 +395,9 @@ them *Provisional*.
 
 Smaller choices made along the way:
 
+- `~` after a symbol is a roll (a tremolo on a note): strokes of an eighth of
+  a beat through the hit's length, the hands alternating, growing into the
+  next mark under a hairpin (15 October 2026, at the user's request).
 - `.` inside a beat stands for `__`, so `c.c` is `c__c` and `[c4. d]` is
   `[c4 _ _ d]`.
 - Inside brackets, glued symbols and spaces are the same level: `[-c4 d4]`

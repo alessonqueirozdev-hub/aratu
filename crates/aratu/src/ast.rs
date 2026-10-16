@@ -273,6 +273,9 @@ pub struct Hit {
     pub accent: bool,
     pub staccato: bool,
     pub fermata: bool,
+    /// `~`: a roll, fast strokes filling the hit's length (a tremolo on a
+    /// note).
+    pub roll: bool,
     /// `?` (0.5) or `?30%` (0.3): the chance the hit is played.
     pub chance: Option<f64>,
     pub hairpin: Option<Hairpin>,

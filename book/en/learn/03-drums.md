@@ -111,6 +111,25 @@ drums {
 }
 ```
 
+## Rolls
+
+A tilde, `~`, after the symbol makes a **roll**: the hit becomes very fast
+strokes, eight a beat, through its whole length. With `_` the roll lasts
+more beats, and with `<` it grows into the next mark:
+
+```aratu
+tempo: 90
+
+drums {
+  sd = | p:s~< _ _ f:S | - s - s |
+  bd = | -     - - b   | b - b - |
+  cr = | -     - - x   | - - - - |
+}
+```
+
+> The roll grows for three beats and bursts into the accent with the crash.
+> Try `f~` on the floor tom or `x~` on a cymbal.
+
 ## Exercises
 
 A rock beat with the snare **accented** on beat 4.

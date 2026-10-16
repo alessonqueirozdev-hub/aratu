@@ -68,6 +68,8 @@ export interface AratuEvent {
   /** The line that played it: `bass`, `drums.hh`. */
   line: string;
   vel: number;
+  /** 1 when written in upper case. */
+  acc?: number;
   note?: number;
   drum?: string;
   param?: string;

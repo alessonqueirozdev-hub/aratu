@@ -113,6 +113,25 @@ drums {
 }
 ```
 
+## Redoble
+
+Una tilde, `~`, después del símbolo hace un **redoble**: el golpe se vuelve
+golpes muy rápidos, ocho por tiempo, durante toda su duración. Con `_` el
+redoble dura más tiempos, y con `<` crece hasta la próxima marca:
+
+```aratu
+tempo: 90
+
+drums {
+  sd = | p:s~< _ _ f:S | - s - s |
+  bd = | -     - - b   | b - b - |
+  cr = | -     - - x   | - - - - |
+}
+```
+
+> El redoble crece durante tres tiempos y estalla en el acento con el
+> platillo. Prueba `f~` en el tom de piso o `x~` en el platillo.
+
 ## Ejercicios
 
 Un ritmo de rock con la caja **acentuada** en el tiempo 4.

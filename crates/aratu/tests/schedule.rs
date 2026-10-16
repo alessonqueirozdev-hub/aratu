@@ -51,6 +51,38 @@ fn toms_and_the_rim_have_their_own_symbols() {
 }
 
 #[test]
+fn a_roll_fills_its_length_with_strokes() {
+    // A three-beat roll closing on an accent.
+    let ev = events("sd = s~ _ _ S", 1, 2);
+    let roll: Vec<&Event> = ev.iter().filter(|e| e.beat < Ratio::int(3)).collect();
+    assert_eq!(roll.len(), 24, "eight strokes a beat for three beats");
+    for (i, e) in roll.iter().enumerate() {
+        assert_eq!(e.beat, Ratio::new(i as i64, 8));
+        assert_eq!(e.kind, EventKind::Drum(Drum::Snare));
+    }
+    assert!(roll[0].velocity > roll[1].velocity, "the hands alternate");
+    let last = ev.last().unwrap();
+    assert_eq!(last.beat, Ratio::int(3));
+    assert!(last.accent && last.velocity > roll[0].velocity);
+    // Under a hairpin the roll grows into the next mark.
+    let ev = events("sd = p:s~< _ _ f:S", 1, 2);
+    let evens: Vec<u8> = ev
+        .iter()
+        .filter(|e| e.beat < Ratio::int(3))
+        .step_by(2)
+        .map(|e| e.velocity)
+        .collect();
+    assert!(evens.windows(2).all(|w| w[0] <= w[1]), "{evens:?}");
+    assert!(evens.last().unwrap() > &(evens[0] + 30), "{evens:?}");
+    // A note rolls as a tremolo.
+    let ev = events("m = | c4~ _ d4 e4 |", 1, 2);
+    assert_eq!(
+        ev.iter().filter(|e| e.kind == EventKind::Note(60)).count(),
+        16
+    );
+}
+
+#[test]
 fn eighth_note_hi_hat_at_120() {
     let ev = events("tempo: 120\nhh = cc cc co cc", 1, 2);
     assert_eq!(ev.len(), 8);

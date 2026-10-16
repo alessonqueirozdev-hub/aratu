@@ -132,6 +132,21 @@ Toda línea dentro de `drums { }` es de batería, igual que una línea llamada
 `snare`, `hat`, `ride` o `crash` en cualquier lugar de la pieza. Un apóstrofo hace el golpe corto: `c'` es un
 hi-hat seco. El hi-hat cerrado corta al abierto que todavía suena.
 
+**Redoble.** Una tilde después del símbolo hace un redoble, como las rayitas
+de trémolo en la partitura: golpes de fusa (ocho por tiempo) durante toda la
+duración del golpe, con las manos alternando. `s~ _ _ S` es un redoble de
+tres tiempos que cierra en un acento; con un regulador crece hasta la
+próxima marca:
+
+```aratu
+drums {
+  sd = p:s~< _ _ f:S
+}
+```
+
+Vale para cualquier pieza (`f~` en el tom de piso, `x~` en el platillo) y
+para notas, como trémolo: `do4~ _`.
+
 ## 4. Melodías
 
 Las notas se escriben en minúscula, con la octava: `do4` (o `c4`) es el do

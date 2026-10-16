@@ -467,6 +467,7 @@ fn chord_beat(w: &str, s: Span, diags: &mut Vec<Diagnostic>) -> Vec<Slot> {
             accent: false,
             staccato,
             fermata,
+            roll: false,
             chance,
             hairpin: None,
             dynamic,
@@ -796,6 +797,7 @@ impl SlotParser<'_, '_> {
             accent,
             staccato: false,
             fermata: false,
+            roll: false,
             chance: None,
             hairpin: None,
             dynamic: dynamic.or(self.pending.take()),
@@ -812,6 +814,7 @@ impl SlotParser<'_, '_> {
             accent: false,
             staccato: false,
             fermata: false,
+            roll: false,
             chance: None,
             hairpin: None,
             dynamic: None,
@@ -825,6 +828,7 @@ impl SlotParser<'_, '_> {
             match c {
                 '\'' => hit.staccato = true,
                 '^' => hit.fermata = true,
+                '~' => hit.roll = true,
                 '<' => hit.hairpin = Some(Hairpin::Crescendo),
                 '>' => hit.hairpin = Some(Hairpin::Diminuendo),
                 '?' => {

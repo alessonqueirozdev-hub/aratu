@@ -112,6 +112,25 @@ drums {
 }
 ```
 
+## Rufo
+
+Um til, `~`, depois do símbolo faz um **rufo**: a batida vira golpes bem
+rápidos, oito por tempo, durante toda a sua duração. Com `_` o rufo dura
+mais tempos, e com `<` ele cresce até a próxima marca:
+
+```aratu
+tempo: 90
+
+drums {
+  sd = | p:s~< _ _ f:S | - s - s |
+  bd = | -     - - b   | b - b - |
+  cr = | -     - - x   | - - - - |
+}
+```
+
+> O rufo cresce por três tempos e explode no acento com o prato. Experimente
+> `f~` no surdo ou `x~` no prato.
+
 ## Exercícios
 
 Uma batida de rock com a caixa **acentuada** no tempo 4.

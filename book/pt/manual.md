@@ -129,6 +129,20 @@ Toda linha dentro de `drums { }` é de bateria, assim como uma linha chamada
 `snare`, `hat`, `ride` ou `crash` em qualquer lugar da peça. Um apóstrofo deixa a batida curta: `c'` é um chimbal
 seco. O chimbal fechado corta o aberto que ainda está soando.
 
+**Rufo.** Um til depois do símbolo faz um rufo, como os tracinhos de trêmulo
+na partitura: golpes de fusa (oito por tempo) durante toda a duração da
+batida, com as mãos alternando. `s~ _ _ S` é um rufo de três tempos que
+fecha num acento; com um regulador ele cresce até a próxima marca:
+
+```aratu
+drums {
+  sd = p:s~< _ _ f:S
+}
+```
+
+Vale para qualquer peça (`f~` no surdo, `x~` no prato) e para notas, como
+trêmulo: `dó4~ _`.
+
 ## 4. Melodias
 
 As notas se escrevem em minúsculas, com a oitava: `dó4` (ou `c4`) é o dó

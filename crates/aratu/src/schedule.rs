@@ -122,6 +122,9 @@ pub struct Event {
     pub line: String,
     pub kind: EventKind,
     pub velocity: u8,
+    /// Written in upper case: the engine may play it another way (a slap
+    /// bass pops it).
+    pub accent: bool,
     /// The written symbol that made it, for the editor to light up.
     pub span: Span,
 }
@@ -197,6 +200,7 @@ struct Sounding<'p> {
     written: Ratio,
     kinds: Vec<(EventKind, f64)>,
     velocity: u8,
+    accent: bool,
     staccato: bool,
     /// A fixed length in seconds (a muted strum), instead of the written one.
     fixed: Option<f64>,
@@ -409,6 +413,7 @@ impl<'p> Scheduler<'p> {
                                 value: *value,
                             },
                             velocity: 0,
+                            accent: false,
                             span: c.span,
                         },
                     ));
@@ -447,6 +452,7 @@ impl<'p> Scheduler<'p> {
                     line: s.line.to_string(),
                     kind: kind.clone(),
                     velocity: s.velocity,
+                    accent: s.accent,
                     span: s.span,
                 });
             }
@@ -1032,7 +1038,16 @@ impl<'p> Scheduler<'p> {
         let (_, _, human) = self.feel(part, g);
         let first_pitch = first_pitch(inst.line);
 
-        for p in protos {
+        // The next hit's level, for a roll that crescendos into it.
+        let next_level: Vec<Option<f64>> = (0..protos.len())
+            .map(|i| {
+                protos[i + 1..]
+                    .iter()
+                    .find(|q| q.hit.is_some())
+                    .map(|q| q.velocity)
+            })
+            .collect();
+        for (index, p) in protos.into_iter().enumerate() {
             let end_off = p.start + p.len;
             let Some(h) = p.hit else {
                 // The bar holds on the sound of the bar before.
@@ -1155,6 +1170,7 @@ impl<'p> Scheduler<'p> {
                 written: p.start,
                 kinds,
                 velocity,
+                accent: h.accent,
                 staccato: h.staccato,
                 fixed,
                 part: inst.part.name.as_str(),
@@ -1163,6 +1179,37 @@ impl<'p> Scheduler<'p> {
                 humanize: human.unwrap_or(0.0),
                 jitter,
             };
+            if h.roll {
+                // A roll: strokes of an eighth of a beat (thirty-seconds in
+                // 4/4) over the hit's length, the hands alternating, rising
+                // or falling to the next hit under a hairpin.
+                let step = Ratio::new(1, 8);
+                let until = end_off.min(beats);
+                let goal = match (h.hairpin, next_level[index]) {
+                    (Some(_), Some(next)) if p.velocity > 0.0 => next / p.velocity,
+                    _ => 1.0,
+                };
+                let span_beats = (until - p.start).to_f64().max(1e-9);
+                let mut at = p.start;
+                let mut stroke = 0;
+                while at < until {
+                    let t = (at - p.start).to_f64() / span_beats;
+                    let hand = if stroke % 2 == 0 { 1.0 } else { 0.88 };
+                    let level = s.velocity as f64 * (1.0 + (goal - 1.0) * t) * hand;
+                    let next = (at + step).min(until);
+                    self.done.push(Sounding {
+                        start: (g, self.warp(part, g, beats, at)),
+                        end: (g, self.warp(part, g, beats, next)),
+                        written: at,
+                        velocity: level.round().clamp(1.0, 127.0) as u8,
+                        accent: s.accent && stroke == 0,
+                        ..s.clone()
+                    });
+                    at = next;
+                    stroke += 1;
+                }
+                continue;
+            }
             if p.open && !matches!(h.sound, Sound::Drum(_)) {
                 self.open.insert(key, s);
             } else {

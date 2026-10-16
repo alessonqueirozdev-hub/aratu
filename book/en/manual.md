@@ -125,6 +125,20 @@ Every line inside `drums { }` is a drum line, and so is a line called `hh`,
 `hat`, `ride` or `crash` anywhere in the piece. An apostrophe makes a hit short: `c'` is a tight hi-hat. A
 closed hi-hat cuts an open one that is still ringing.
 
+**Rolls.** A tilde after the symbol makes a roll, like the tremolo strokes in
+a score: thirty-second strokes (eight a beat) through the whole length of
+the hit, the hands alternating. `s~ _ _ S` is a three-beat roll closing on
+an accent; under a hairpin it grows into the next mark:
+
+```aratu
+drums {
+  sd = p:s~< _ _ f:S
+}
+```
+
+It works on any drum (`f~` on the floor tom, `x~` on a cymbal) and on
+notes, as a tremolo: `c4~ _`.
+
 ## 4. Melodies
 
 Notes are written in lower case, with the octave: `c4` is middle C. Sharps

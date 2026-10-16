@@ -320,6 +320,9 @@ pub fn render_json(
             j.key("part").str(&e.part);
             j.key("line").str(&e.line);
             j.key("vel").num(e.velocity as f64);
+            if e.accent {
+                j.key("acc").num(1.0);
+            }
             match &e.kind {
                 EventKind::Note(n) => {
                     j.key("note").num(*n as f64);
