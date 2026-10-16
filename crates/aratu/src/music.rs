@@ -59,6 +59,12 @@ fn tokenize<'a>(text: &'a str, base: usize, diags: &mut Vec<Diagnostic>) -> Vec<
         (text[from..j].parse().ok(), j)
     };
     while i < text.len() {
+        // A line continued on the next keeps the comment of the first.
+        if text[i..].starts_with("//") {
+            flush(&mut toks, &mut word_start, i);
+            i = text[i..].find('\n').map_or(text.len(), |n| i + n);
+            continue;
+        }
         let c = text[i..].chars().next().unwrap();
         let clen = c.len_utf8();
         if opens.is_empty() {
@@ -144,7 +150,29 @@ fn tokenize<'a>(text: &'a str, base: usize, diags: &mut Vec<Diagnostic>) -> Vec<
         ));
     }
     flush(&mut toks, &mut word_start, text.len());
-    toks
+    // The bar line that ends a line and the one that starts the next, in
+    // music written on several lines, are one bar line.
+    let mut merged: Vec<Tok<'a>> = Vec::with_capacity(toks.len());
+    for t in toks {
+        if let (Some(Tok::Line(a, sa)), Tok::Line(b, sb)) = (merged.last(), &t) {
+            let between = &text[sa.end - base..sb.start - base];
+            let blank = between
+                .lines()
+                .all(|l| l.split("//").next().unwrap_or("").trim().is_empty());
+            if between.contains('\n') && blank {
+                let kind = match (*a, *b) {
+                    (BarLine::Plain, x) | (x, BarLine::Plain) => x,
+                    (BarLine::End, BarLine::Start) => BarLine::EndStart,
+                    (x, _) => x,
+                };
+                let span = sa.join(*sb);
+                *merged.last_mut().unwrap() = Tok::Line(kind, span);
+                continue;
+            }
+        }
+        merged.push(t);
+    }
+    merged
 }
 
 /// Reads the music after `=` in a line of the given kind.

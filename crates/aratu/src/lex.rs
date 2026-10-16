@@ -61,6 +61,12 @@ fn trimmed(text: &str, start: usize) -> Line<'_> {
     }
 }
 
+/// A line of music: a name, `=` and bars (`melody = | c4 d e f |`).
+fn is_music_line(text: &str) -> bool {
+    text.split_once('=')
+        .is_some_and(|(name, music)| !name.contains('.') && music.contains('|'))
+}
+
 /// Splits `text` at `;` into statements.
 fn split_statements<'a>(text: &'a str, start: usize, out: &mut Vec<Node<'a>>) {
     let mut from = 0;
@@ -96,6 +102,27 @@ pub fn layout<'a>(src: &'a str, diags: &mut Vec<Diagnostic>) -> Vec<Node<'a>> {
         let line = trimmed(body, start);
         if line.text.is_empty() {
             continue;
+        }
+        // A line that starts with a bar line goes on with the line of music
+        // above it, so a long melody can take several lines. In a list each
+        // line is a melody of its own.
+        if line.text.starts_with('|') || line.text.starts_with(":|") {
+            let (header, items) = stack.last_mut().unwrap();
+            let in_list = header.is_some_and(|h| {
+                h.text
+                    .split_whitespace()
+                    .next()
+                    .is_some_and(|w| crate::words::is(w, "list"))
+            });
+            if let (false, Some(Node::Line(prev))) = (in_list, items.last_mut()) {
+                if is_music_line(prev.text) {
+                    *prev = Line {
+                        text: &src[prev.span.start..line.span.end],
+                        span: Span::new(prev.span.start, line.span.end),
+                    };
+                    continue;
+                }
+            }
         }
         if line.text == "}" {
             if stack.len() > 1 {

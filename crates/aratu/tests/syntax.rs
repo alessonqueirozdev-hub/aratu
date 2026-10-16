@@ -554,3 +554,30 @@ todos: swing 60%";
         );
     }
 }
+
+#[test]
+fn a_long_line_goes_on_on_the_next_lines() {
+    let one = notes("melodia = | c4 d e f | g a b c5 |", 1, 3);
+    for src in [
+        "melodia = | c4 d e f |\n          | g a b c5 |",
+        "melodia = | c4 d e f | // the first bar\n  | g a b c5 |",
+        "piano {\n  melodia = | c4 d e f |\n    | g a b c5 |\n}",
+    ] {
+        let c = compile(src);
+        assert!(c.diagnostics.is_empty(), "{src}: {:?}", c.diagnostics);
+        assert_eq!(notes(src, 1, 3), one, "{src}");
+    }
+    // Chords too, and the light falls on the second line's symbols.
+    let src = "chords = | Am | F |\n         | C | G |";
+    let e = events(src, 4, 5);
+    let n = e
+        .iter()
+        .find(|x| matches!(x.kind, EventKind::Note(_)))
+        .unwrap();
+    assert_eq!(&src[n.span.start..n.span.end], "G");
+    // In a list each line is a melody of its own.
+    let src = "list t {\n  | c4 _ _ _ |\n  | g4 _ _ _ |\n}\nmelodia = t.2";
+    assert_eq!(notes(src, 1, 2), [(1, 67)]);
+    // A bar line after something that is not music is still a mistake.
+    assert_eq!(first("tempo: 100\n| c4 d e f |"), Message::UnknownLine);
+}
