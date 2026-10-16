@@ -407,25 +407,10 @@ pub fn closest(code: &str) -> Option<&'static str> {
         .iter()
         .map(|v| v.code)
         .chain(EFFECTS.iter().copied())
-        .map(|c| (distance(code, c), c))
+        .map(|c| (crate::suggest::distance(code, c), c))
         .filter(|(d, c)| *d <= 3.max(c.len() / 3))
         .min_by_key(|(d, _)| *d)
         .map(|(_, c)| c)
-}
-
-fn distance(a: &str, b: &str) -> usize {
-    let b: Vec<char> = b.chars().collect();
-    let mut row: Vec<usize> = (0..=b.len()).collect();
-    for (i, ca) in a.chars().enumerate() {
-        let mut prev = row[0];
-        row[0] = i + 1;
-        for (j, cb) in b.iter().enumerate() {
-            let cur = row[j + 1];
-            row[j + 1] = (prev + usize::from(ca != *cb)).min(row[j] + 1).min(cur + 1);
-            prev = cur;
-        }
-    }
-    row[b.len()]
 }
 
 #[cfg(test)]

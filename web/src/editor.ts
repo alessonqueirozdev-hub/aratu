@@ -38,8 +38,10 @@ const DYNAMICS = new Set(["ppp", "pp", "p", "mp", "mf", "f", "ff", "fff", "sfz",
 const DRUM_LINES = new Set([
   "hh", "oh", "bd", "sd", "rd", "cr", "cy", "rim", "cp", "tom", "perc", "kick", "snare", "hat",
   "hihat", "ride", "crash", "clap", "ht", "mt", "lt", "ft", "toms", "floor", "stick",
+  "chimbal", "bumbo", "caixa", "prato", "pratos", "condução", "conducao", "ataque", "aro",
+  "surdo", "tons", "palma", "palmas", "charles", "bombo", "caja", "platillo", "platillos",
 ]);
-const DRUM_PARTS = new Set(["drums", "drum", "kit"]);
+const DRUM_PARTS = new Set(["drums", "drum", "kit", "bateria", "batería"]);
 
 interface State {
   lineStart: boolean;

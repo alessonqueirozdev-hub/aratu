@@ -61,6 +61,11 @@ pub fn lookup(id: &str) -> Option<&'static ParamInfo> {
     PARAMS.iter().find(|p| p.id.eq_ignore_ascii_case(id))
 }
 
+/// The known parameter nearest to a misspelt one: `lowpass.cutof`.
+pub fn closest(id: &str) -> Option<&'static str> {
+    crate::suggest::closest(id, PARAMS.iter().map(|p| p.id))
+}
+
 /// Converts a written value to the parameter's own unit: `1.2 kHz` to 1200
 /// Hz, `0.25 s` to 250 ms, `40%` to 0.4 for a plain 0-to-1 parameter.
 /// Returns `None` for a unit that does not fit the parameter.

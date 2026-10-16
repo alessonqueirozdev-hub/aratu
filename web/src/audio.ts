@@ -839,6 +839,14 @@ export class Engine {
         this.noiseHit(c.input, when, "highpass", 4000, 0.7, g * 0.35, 0.006);
         return;
       }
+      case "clap": {
+        // Hands clapping: a few hands a hair apart, then the room.
+        for (const [dt, level] of [[0, 0.8], [0.011, 0.7], [0.022, 1]]) {
+          this.noiseHit(c.input, when + dt, "bandpass", 1100 * bright, 1.4, g * level, 0.008);
+        }
+        this.noiseHit(c.input, when + 0.03, "bandpass", 1300, 1.1, g * 0.5, 0.07);
+        return;
+      }
       case "side-stick": {
         // The stick across the rim: a dry, woody click with no snare wires.
         const gain = ctx.createGain();

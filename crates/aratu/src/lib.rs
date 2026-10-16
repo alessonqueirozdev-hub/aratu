@@ -19,6 +19,7 @@ pub mod parse;
 pub mod ratio;
 pub mod schedule;
 pub mod span;
+pub mod suggest;
 pub mod theory;
 pub mod time;
 pub mod unroll;

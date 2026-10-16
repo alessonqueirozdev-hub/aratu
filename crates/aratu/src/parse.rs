@@ -11,12 +11,55 @@ use crate::theory::{Dyn, Key, Meter};
 
 /// Line names read as drum lines wherever they are written.
 pub const DRUM_LINES: &[&str] = &[
-    "hh", "oh", "bd", "sd", "rd", "cr", "cy", "rim", "cp", "tom", "perc", "kick", "snare", "hat",
-    "hihat", "ride", "crash", "clap", "ht", "mt", "lt", "ft", "toms", "floor", "stick",
+    "hh",
+    "oh",
+    "bd",
+    "sd",
+    "rd",
+    "cr",
+    "cy",
+    "rim",
+    "cp",
+    "tom",
+    "perc",
+    "kick",
+    "snare",
+    "hat",
+    "hihat",
+    "ride",
+    "crash",
+    "clap",
+    "ht",
+    "mt",
+    "lt",
+    "ft",
+    "toms",
+    "floor",
+    "stick",
+    // Portuguese
+    "chimbal",
+    "bumbo",
+    "caixa",
+    "prato",
+    "pratos",
+    "condução",
+    "conducao",
+    "ataque",
+    "aro",
+    "surdo",
+    "tons",
+    "palma",
+    "palmas",
+    // Spanish
+    "charles",
+    "bombo",
+    "caja",
+    "platillo",
+    "platillos",
 ];
 
 /// Parts whose lines are all drum lines.
-pub const DRUM_PARTS: &[&str] = &["drums", "drum", "kit"];
+pub const DRUM_PARTS: &[&str] = &["drums", "drum", "kit", "bateria", "batería"];
 
 /// Reads a whole piece.
 pub fn parse(src: &str) -> (Ast, Vec<Diagnostic>) {
@@ -204,8 +247,14 @@ impl Parser {
                 }
             }
             (_, Some(_)) => {
-                self.diags
-                    .push(Diagnostic::error(b.header.span, Message::UnknownLine));
+                let message = match crate::suggest::closest(first, ["pattern", "section", "list"]) {
+                    Some(s) => Message::UnknownWord {
+                        word: first.to_string(),
+                        suggestion: s.to_string(),
+                    },
+                    None => Message::UnknownLine,
+                };
+                self.diags.push(Diagnostic::error(b.header.span, message));
             }
         }
     }
@@ -264,7 +313,7 @@ impl Parser {
                 return Err((ns, Message::BarZero));
             }
             if !(c.keyword("bars") || c.keyword("bar")) {
-                return Err(expected(c, Thing::Bars, &format!("every {n}")));
+                return Err(expected(c, Thing::BarsWord, &format!("every {n}")));
             }
             let mut first = false;
             if c.eat(",") {
@@ -525,6 +574,16 @@ impl Parser {
         }
 
         let r = c.rest();
+        if let Some(s) = crate::suggest::closest(words[0], crate::suggest::KEYWORDS.iter().copied())
+        {
+            return Err((
+                pspan,
+                Message::UnknownWord {
+                    word: words[0].to_string(),
+                    suggestion: s.to_string(),
+                },
+            ));
+        }
         Err((r.span, Message::UnknownLine))
     }
 
@@ -688,6 +747,17 @@ impl Parser {
 
     fn part_command(&mut self, c: &mut Cursor, target: Name) -> Result<StmtKind, Fail> {
         let save = c.clone();
+        let arrow = c.clone().rest().text.contains("->");
+        // `andamento: 120`: a header said in Portuguese or Spanish.
+        if let Some(h) = crate::suggest::header_for(&target.text).filter(|_| !arrow) {
+            return Err((
+                target.span,
+                Message::UnknownHeader {
+                    word: target.text.clone(),
+                    suggestion: h.to_string(),
+                },
+            ));
+        }
         if let Some((w, _)) = c.name() {
             let w = w.to_lowercase();
             if let Some(d) = Dyn::parse(&w) {
@@ -746,12 +816,34 @@ impl Parser {
                 _ => {}
             }
         }
-        *c = save;
-        let units = chain(c)?;
-        Ok(StmtKind::Chain {
-            target: Some(target),
-            units,
-        })
+        *c = save.clone();
+        match chain(c) {
+            Ok(units) => Ok(StmtKind::Chain {
+                target: Some(target),
+                units,
+            }),
+            // A chain gone wrong is told as it is; anything else is not a
+            // command for a part, or a misspelt header.
+            Err(e) if arrow => Err(e),
+            Err(_) => Err(
+                match crate::suggest::closest(&target.text, crate::suggest::HEADERS.iter().copied())
+                {
+                    Some(h) => (
+                        target.span,
+                        Message::UnknownHeader {
+                            word: target.text.clone(),
+                            suggestion: h.to_string(),
+                        },
+                    ),
+                    None => (
+                        save.clone().rest().span,
+                        Message::BadPartCommand {
+                            part: target.text.clone(),
+                        },
+                    ),
+                },
+            ),
+        }
     }
 
     fn transform(&mut self, c: &mut Cursor, verb: &str) -> Result<Option<Transform>, Fail> {

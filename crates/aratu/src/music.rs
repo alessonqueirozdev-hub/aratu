@@ -38,7 +38,7 @@ enum Tok<'a> {
 }
 
 /// The drum symbols and what they play.
-pub const DRUM_SYMBOLS: &[char] = &['c', 'o', 'b', 's', 'r', 'x', 't', 'm', 'f', 'k'];
+pub const DRUM_SYMBOLS: &[char] = &['c', 'o', 'b', 's', 'r', 'x', 't', 'm', 'f', 'k', 'p'];
 
 fn tokenize<'a>(text: &'a str, base: usize, diags: &mut Vec<Diagnostic>) -> Vec<Tok<'a>> {
     let mut toks = Vec::new();
@@ -652,6 +652,11 @@ fn word_beats(
     let cs = Span::new(s.start, s.start + core.len());
     let once = match motifs::motif_ref(core, cx.lib) {
         Some((name, ops)) => motif_beats(name, &ops, cs, kind, diags, cx),
+        // `riff.foo`, `temas.foo`: a motif or a list with a word it lacks.
+        None if unknown_pick(core, cs, cx, diags) => vec![Beat {
+            slots: vec![Slot::Rest(cs)],
+            span: cs,
+        }],
         None => {
             let mut p = SlotParser {
                 s: core,
@@ -674,6 +679,30 @@ fn word_beats(
         beats.extend(once.iter().cloned());
     }
     beats
+}
+
+/// Tells `riff.foo` and `temas.foo` as a motif's or a list's mistake
+/// rather than as notes; true when it did.
+fn unknown_pick(word: &str, s: Span, cx: Cx, diags: &mut Vec<Diagnostic>) -> bool {
+    let Some((name, rest)) = word.split_once('.') else {
+        return false;
+    };
+    let pick = rest.split(['+', '-']).next().unwrap_or(rest).to_string();
+    let message = if cx.lib.motifs.contains_key(name) {
+        Message::UnknownMotifForm {
+            name: name.to_string(),
+            form: pick,
+        }
+    } else if cx.lib.lists.contains_key(name) {
+        Message::UnknownListPick {
+            name: name.to_string(),
+            pick,
+        }
+    } else {
+        return false;
+    };
+    diags.push(Diagnostic::error(s, message));
+    true
 }
 
 /// A motif's beats, moved as asked. Its notes keep the spans of its

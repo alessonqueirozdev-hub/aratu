@@ -61,6 +61,8 @@ pub enum Drum {
     MidTom,
     FloorTom,
     SideStick,
+    /// Hands clapping: palmas.
+    Clap,
     /// The flamenco *golpe* on a guitar's top, from a strum line.
     GuitarTap,
 }
@@ -78,6 +80,7 @@ impl Drum {
             'm' => Drum::MidTom,
             'f' => Drum::FloorTom,
             'k' => Drum::SideStick,
+            'p' => Drum::Clap,
             _ => return None,
         })
     }
@@ -94,6 +97,7 @@ impl Drum {
             Drum::MidTom => "mid-tom",
             Drum::FloorTom => "floor-tom",
             Drum::SideStick => "side-stick",
+            Drum::Clap => "clap",
             Drum::GuitarTap => "guitar-tap",
         }
     }
@@ -754,8 +758,17 @@ impl<'p> Scheduler<'p> {
         let mut out = Vec::new();
         for part in &piece.parts {
             for line in &part.lines {
+                // Of a line written `at bar n:` too, the version that has
+                // begun last sounds, counting its bars from where it began.
+                let later = part
+                    .lines
+                    .iter()
+                    .any(|o| o.name == line.name && o.from > line.from && o.from <= g);
+                if later || line.from > g.max(1) {
+                    continue;
+                }
                 if g == 0 {
-                    if line.pickup.is_some() {
+                    if line.pickup.is_some() && line.from == 1 {
                         out.push(Instance {
                             part,
                             line,
@@ -768,7 +781,7 @@ impl<'p> Scheduler<'p> {
                     out.push(Instance {
                         part,
                         line,
-                        local: Some(g - 1),
+                        local: Some(g - line.from),
                         origin: 1,
                         group: None,
                     });

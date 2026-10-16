@@ -72,6 +72,8 @@ pub enum Thing {
     Value,
     /// How long a parameter takes to move: `over 4 bars`.
     Length,
+    /// The word `bars` after `every 4`.
+    BarsWord,
 }
 
 impl Thing {
@@ -99,6 +101,9 @@ impl Thing {
             (Beat, Pt) => "um tempo como `beat 4`",
             (Value, En) => "a value",
             (Value, Pt) => "um valor",
+            (BarsWord, En) => "`bars` (every counts whole bars)",
+            (BarsWord, Pt) => "`bars` (o every conta compassos inteiros)",
+            (BarsWord, Es) => "`bars` (every cuenta compases enteros)",
             (Length, En) => {
                 "a length such as `over 4 bars`, `over 2 beats`, `over 8 eighths` or `over 16 sixteenths`"
             }
@@ -276,6 +281,7 @@ pub enum Message {
     },
     UnknownParam {
         name: String,
+        closest: Option<String>,
     },
     /// A motif that uses itself, directly or through others.
     MotifLoop {
@@ -336,6 +342,33 @@ pub enum Message {
         unit: String,
         name: String,
     },
+    /// A word before `:` that stands for a header: `andamento: 120`.
+    UnknownHeader {
+        word: String,
+        suggestion: String,
+    },
+    /// `bass: 120`: nothing a part can be told.
+    BadPartCommand {
+        part: String,
+    },
+    /// A misspelt keyword: `ply groove`.
+    UnknownWord {
+        word: String,
+        suggestion: String,
+    },
+    /// `riff.foo`: a form a motif does not have.
+    UnknownMotifForm {
+        name: String,
+        form: String,
+    },
+    /// `temas.foo`: something a list cannot pick.
+    UnknownListPick {
+        name: String,
+        pick: String,
+    },
+    /// `every 4 bars: melody = …`, or `at bar` before a line inside a
+    /// pattern or section.
+    LineChangeOnlyAtBar,
 }
 
 fn beats_en(n: Ratio) -> String {
@@ -443,10 +476,10 @@ impl Message {
                 "duas notas estão coladas num tempo; escreva entre colchetes: `[{first} {second}]`"
             ),
             (UnknownDrum { ch }, En) => format!(
-                "`{ch}` is not a drum symbol: c closed hi-hat, o open hi-hat, b bass drum, s snare, r ride, x crash, t high tom, m mid tom, f floor tom, k side stick (rim)"
+                "`{ch}` is not a drum symbol: c closed hi-hat, o open hi-hat, b bass drum, s snare, r ride, x crash, t high tom, m mid tom, f floor tom, k side stick (rim), p hand clap"
             ),
             (UnknownDrum { ch }, Pt) => format!(
-                "`{ch}` não é um símbolo de bateria: c chimbal fechado, o chimbal aberto, b bumbo, s caixa, r condução, x ataque, t tom agudo, m tom médio, f surdo, k aro"
+                "`{ch}` não é um símbolo de bateria: c chimbal fechado, o chimbal aberto, b bumbo, s caixa, r condução, x ataque, t tom agudo, m tom médio, f surdo, k aro, p palma"
             ),
             (UnknownStrum { ch }, En) => format!(
                 "`{ch}` is not a strum symbol: d down, u up, m muted, g a tap on the top (golpe), t down and golpe together, - the hand passes, _ let it ring"
@@ -659,12 +692,62 @@ impl Message {
                     format!("não existe som ou efeito chamado `{name}`; o painel Sons mostra todos")
                 }
             },
-            (UnknownParam { name }, En) => {
-                format!("`{name}` is not a parameter I know yet, so it gets no knob")
+            (UnknownParam { name, closest }, En) => match closest {
+                Some(c) => format!("`{name}` is not a parameter I know; did you mean `{c}`?"),
+                None => format!("`{name}` is not a parameter I know yet, so it gets no knob"),
+            },
+            (UnknownParam { name, closest }, Pt) => match closest {
+                Some(c) => format!("não conheço o parâmetro `{name}`; seria `{c}`?"),
+                None => format!("ainda não conheço o parâmetro `{name}`, então ele fica sem knob"),
+            },
+            (UnknownHeader { word, suggestion }, En) => {
+                format!("I do not know `{word}:`; did you mean `{suggestion}:`?")
             }
-            (UnknownParam { name }, Pt) => {
-                format!("ainda não conheço o parâmetro `{name}`, então ele fica sem knob")
+            (UnknownHeader { word, suggestion }, Pt) => {
+                format!("não conheço `{word}:`; seria `{suggestion}:`?")
             }
+            (UnknownHeader { word, suggestion }, Es) => {
+                format!("no conozco `{word}:`; ¿sería `{suggestion}:`?")
+            }
+            (BadPartCommand { part }, En) => format!(
+                "after `{part}:` comes a dynamic (`mf`), `out` or `in`, `cresc to ff over 4 bars`, `swing 60%`, or the sound and its effects (`synth.saw -> lowpass`)"
+            ),
+            (BadPartCommand { part }, Pt) => format!(
+                "depois de `{part}:` vem uma dinâmica (`mf`), `out` ou `in`, `cresc to ff over 4 bars`, `swing 60%`, ou o som e os efeitos (`synth.saw -> lowpass`)"
+            ),
+            (BadPartCommand { part }, Es) => format!(
+                "después de `{part}:` va una dinámica (`mf`), `out` o `in`, `cresc to ff over 4 bars`, `swing 60%`, o el sonido y sus efectos (`synth.saw -> lowpass`)"
+            ),
+            (UnknownWord { word, suggestion }, En) => {
+                format!("I do not know `{word}`; did you mean `{suggestion}`?")
+            }
+            (UnknownWord { word, suggestion }, Pt) => {
+                format!("não conheço `{word}`; seria `{suggestion}`?")
+            }
+            (UnknownWord { word, suggestion }, Es) => {
+                format!("no conozco `{word}`; ¿sería `{suggestion}`?")
+            }
+            (UnknownMotifForm { name, form }, En) => format!(
+                "`{name}` is a motif, but `.{form}` is not one of its forms: `.inv`, `.retro`, `.ri`, `+2` (degrees), `+3st` (semitones)"
+            ),
+            (UnknownMotifForm { name, form }, Pt) => format!(
+                "`{name}` é um motivo, mas `.{form}` não é uma forma dele: `.inv`, `.retro`, `.ri`, `+2` (graus), `+3st` (semitons)"
+            ),
+            (UnknownMotifForm { name, form }, Es) => format!(
+                "`{name}` es un motivo, pero `.{form}` no es una de sus formas: `.inv`, `.retro`, `.ri`, `+2` (grados), `+3st` (semitonos)"
+            ),
+            (LineChangeOnlyAtBar, En) => "a line can change at a bar (`at bar 9: melody = …`) outside patterns and sections, but not with `every` or inside a pattern; to vary it every few bars, use a pattern with `every`".into(),
+            (LineChangeOnlyAtBar, Pt) => "uma linha pode mudar num compasso (`at bar 9: melodia = …`) fora de padrões e seções, mas não com `every` nem dentro de um padrão; para variar de tantos em tantos compassos, use um padrão com `every`".into(),
+            (LineChangeOnlyAtBar, Es) => "una línea puede cambiar en un compás (`at bar 9: melodia = …`) fuera de patrones y secciones, pero no con `every` ni dentro de un patrón; para variarla cada tantos compases, usa un patrón con `every`".into(),
+            (UnknownListPick { name, pick }, En) => format!(
+                "the list `{name}` has no `.{pick}`: pick `.1`, `.2`…, `.all` or `.random`"
+            ),
+            (UnknownListPick { name, pick }, Pt) => format!(
+                "a lista `{name}` não tem `.{pick}`: escolha `.1`, `.2`…, `.all` ou `.random`"
+            ),
+            (UnknownListPick { name, pick }, Es) => format!(
+                "la lista `{name}` no tiene `.{pick}`: elige `.1`, `.2`…, `.all` o `.random`"
+            ),
             (BadUnit { unit, name }, En) => format!("`{name}` is not measured in {unit}"),
             (BadUnit { unit, name }, Pt) => format!("`{name}` não se mede em {unit}"),
             (
@@ -742,7 +825,7 @@ impl Message {
                 "hay dos notas pegadas en un tiempo; escríbelas entre corchetes: `[{first} {second}]`"
             ),
             (UnknownDrum { ch }, Es) => format!(
-                "`{ch}` no es un símbolo de batería: c hi-hat cerrado, o hi-hat abierto, b bombo, s caja, r ride, x crash, t tom agudo, m tom medio, f tom de piso, k aro"
+                "`{ch}` no es un símbolo de batería: c hi-hat cerrado, o hi-hat abierto, b bombo, s caja, r ride, x crash, t tom agudo, m tom medio, f tom de piso, k aro, p palmas"
             ),
             (UnknownStrum { ch }, Es) => format!(
                 "`{ch}` no es un símbolo de rasgueo: d hacia abajo, u hacia arriba, m apagado, g golpe en la tapa, t hacia abajo con golpe, - la mano pasa, _ deja sonar"
@@ -851,9 +934,10 @@ impl Message {
                     "no existe un sonido o efecto llamado `{name}`; el panel Sonidos los muestra todos"
                 ),
             },
-            (UnknownParam { name }, Es) => {
-                format!("todavía no conozco el parámetro `{name}`, así que no tiene perilla")
-            }
+            (UnknownParam { name, closest }, Es) => match closest {
+                Some(c) => format!("no conozco el parámetro `{name}`; ¿sería `{c}`?"),
+                None => format!("todavía no conozco el parámetro `{name}`, así que no tiene perilla"),
+            },
             (BadUnit { unit, name }, Es) => format!("`{name}` no se mide en {unit}"),
             (
                 ParamOutOfRange {

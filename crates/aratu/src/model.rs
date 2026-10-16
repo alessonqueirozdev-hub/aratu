@@ -106,6 +106,10 @@ pub struct Line {
     /// `temas.random`: where each melody starts in `order` and how many
     /// bars it plays; one is chosen each time round.
     pub rounds: Vec<(usize, usize)>,
+    /// The bar this version of the line sounds from: 1, or `n` for one
+    /// written `at bar n: name = …`, which starts there from its own first
+    /// bar and takes the place of the one before.
+    pub from: i64,
 }
 
 impl Line {
@@ -383,7 +387,15 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
             }
         };
         match (&s.kind, &s.when) {
-            (StmtKind::Line(l), _) => {
+            (StmtKind::Line(l), when) => {
+                let from = match (when, &s.scope) {
+                    (When::AtBar(n, _), Scope::Top) => *n,
+                    (When::Bare | When::Now, _) => 1,
+                    (_, _) => {
+                        diags.push(Diagnostic::error(s.span, Message::LineChangeOnlyAtBar));
+                        continue;
+                    }
+                };
                 let part_name = s
                     .part
                     .as_ref()
@@ -402,8 +414,13 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
                     levels: HashMap::new(),
                     variants: l.variants.clone(),
                     rounds: Vec::new(),
+                    from,
                 };
-                if let Some(i) = part.lines.iter().position(|x| x.name == line.name) {
+                if let Some(i) = part
+                    .lines
+                    .iter()
+                    .position(|x| x.name == line.name && x.from == from)
+                {
                     diags.push(Diagnostic::warning(
                         l.name.span,
                         Message::DuplicateLine {
@@ -766,6 +783,7 @@ fn param_value(id: &str, value: &Value, diags: &mut Vec<Diagnostic>) -> Option<(
             value.span,
             Message::UnknownParam {
                 name: id.to_string(),
+                closest: params::closest(id).map(String::from),
             },
         ));
         return Some((value.number, 1.0));

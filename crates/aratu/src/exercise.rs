@@ -95,6 +95,7 @@ fn drum_index(d: Drum) -> u8 {
         Drum::FloorTom => 8,
         Drum::SideStick => 9,
         Drum::GuitarTap => 10,
+        Drum::Clap => 11,
     }
 }
 
