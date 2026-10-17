@@ -1,5 +1,6 @@
 // Sampled voices: recordings from the Versilian Community Sample Library
-// (CC0), prepared by scripts/samples.mjs into samples/<voice>/. A voice is
+// (CC0), prepared by scripts/samples.mjs into samples/<voice>/, and kits
+// recorded for Aratu, kept beside them. A voice is
 // fetched the first time a piece uses it; until it arrives, the engine plays
 // a synthesized stand-in.
 

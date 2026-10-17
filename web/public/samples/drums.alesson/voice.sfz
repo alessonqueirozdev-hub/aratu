@@ -1,0 +1,65 @@
+// Kit gravado do Alesson: drums recorded by Alesson Queiroz, CC0 1.0
+// (https://creativecommons.org/publicdomain/zero/1.0/). 48 kHz, 24-bit, mono.
+// General MIDI drum keys. Every hit plays to its end (one_shot); round robins
+// (seq_length/seq_position) take turns per velocity layer. Velocity scales
+// gain by (velocity/127)^2 (amp_veltrack=100) unless a layer says otherwise.
+// See README.md for how each sample was made and what was left out.
+<control> default_path=samples/
+<global> loop_mode=one_shot
+
+// 36 Bass Drum 1: the kick of groove-completo, separated from the mix
+// (score-informed NMF deconvolution + Wiener mask). Six hits on the 16th
+// before beat 3, where nothing else starts with them.
+<master> polyphony=4
+<group>
+<region> sample=kick_groove_rr1.wav key=36 seq_length=6 seq_position=1
+<region> sample=kick_groove_rr2.wav key=36 seq_length=6 seq_position=2
+<region> sample=kick_groove_rr3.wav key=36 seq_length=6 seq_position=3
+<region> sample=kick_groove_rr4.wav key=36 seq_length=6 seq_position=4
+<region> sample=kick_groove_rr5.wav key=36 seq_length=6 seq_position=5
+<region> sample=kick_groove_rr6.wav key=36 seq_length=6 seq_position=6
+
+// 38 Acoustic Snare: the dedicated snare takes, three velocity layers.
+//   v1   1-40   ghost note, snare-drum-1 at 0.144 s (the only soft single
+//              stroke in the takes), fixed gain: amp_veltrack=0, volume=+8.9
+//              puts it 3 dB under the quietest v2 note.
+//   v2  41-100  snare-drum-2: five strokes played alike (band-limited at
+//              11.8 kHz, darker, longer ring); volume=-1.3 meets v3 at
+//              velocity 100/101 in loudness.
+//   v3 101-127  snare-drum-1: the two full-band loud strokes.
+// The roll file (snare-drum-rufu) holds only buzz rolls, no separable strokes.
+<master> polyphony=6
+<group> lovel=1 hivel=40 amp_veltrack=0 volume=8.9
+<region> sample=snare_v1_rr1.wav key=38
+<group> lovel=41 hivel=100 volume=-1.3
+<region> sample=snare_v2_rr1.wav key=38 seq_length=5 seq_position=1
+<region> sample=snare_v2_rr2.wav key=38 seq_length=5 seq_position=2
+<region> sample=snare_v2_rr3.wav key=38 seq_length=5 seq_position=3
+<region> sample=snare_v2_rr4.wav key=38 seq_length=5 seq_position=4
+<region> sample=snare_v2_rr5.wav key=38 seq_length=5 seq_position=5
+<group> lovel=101 hivel=127
+<region> sample=snare_v3_rr1.wav key=38 seq_length=2 seq_position=1
+<region> sample=snare_v3_rr2.wav key=38 seq_length=2 seq_position=2
+
+// 40 Electric Snare, used here as the ALTERNATIVE snare: the snare of
+// groove-completo, separated from the mix. Six strokes, round robin.
+<master> polyphony=6
+<group>
+<region> sample=snare_groove_rr1.wav key=40 seq_length=6 seq_position=1
+<region> sample=snare_groove_rr2.wav key=40 seq_length=6 seq_position=2
+<region> sample=snare_groove_rr3.wav key=40 seq_length=6 seq_position=3
+<region> sample=snare_groove_rr4.wav key=40 seq_length=6 seq_position=4
+<region> sample=snare_groove_rr5.wav key=40 seq_length=6 seq_position=5
+<region> sample=snare_groove_rr6.wav key=40 seq_length=6 seq_position=6
+
+// 49 Crash Cymbal 1: the ataque take (struck with a kick, removed by a
+// 250 Hz high-pass). The take repeats one strike, so the two samples
+// differ only in their first 1.5 s; tails ring about 5 s.
+<master> polyphony=4
+<group>
+<region> sample=crash_rr1.wav key=49 seq_length=2 seq_position=1
+<region> sample=crash_rr2.wav key=49 seq_length=2 seq_position=2
+
+// Not mapped (the sampler's host falls back to its own sounds): 42/44/46
+// hi-hats and 57 Crash Cymbal 2. They exist only inside groove-completo
+// and could not be separated cleanly (README.md, report.json).

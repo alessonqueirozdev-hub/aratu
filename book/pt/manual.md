@@ -747,6 +747,13 @@ Community Sample Library, em domínio público (CC0), baixadas na primeira vez
 que uma peça as usa. Enquanto chegam, um som sintetizado parecido toca no
 lugar.
 
+A bateria gravada do Alesson (`drums.alesson`) foi gravada por Alesson
+Queiroz e também está em domínio público (CC0). Bumbo, caixa e ataque são
+gravações, com várias tomadas de cada um que se revezam; na caixa, a nota
+fantasma `(s)` e as dinâmicas mais suaves tocam um toque leve, e os
+acentos, um golpe mais forte. As outras peças (chimbais, condução, tons)
+são sintetizadas.
+
 **O motor do Manguebyte.** Todos os sons do painel tocam pelo motor do
 Manguebyte, o motor de áudio do ecossistema, que roda no navegador: os
 gravados num sampler; violões e baixos (`guitar.nylon`, `guitar.steel`,

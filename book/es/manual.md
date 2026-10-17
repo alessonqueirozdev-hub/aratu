@@ -761,6 +761,12 @@ grabaciones de la Versilian Community Sample Library, de dominio público
 suena en su lugar un sonido sintetizado parecido. Los demás se sintetizan
 en el navegador.
 
+La batería grabada de Alesson (`drums.alesson`) la grabó Alesson Queiroz y
+también es de dominio público (CC0). Bombo, caja y crash son grabaciones,
+con varias tomas de cada uno que se turnan; en la caja, la nota fantasma
+`(s)` y las dinámicas más suaves tocan un golpe leve, y los acentos, uno
+más fuerte. Las demás piezas (hi-hats, ride, toms) son sintetizadas.
+
 **El motor de Manguebyte.** Todos los sonidos del panel suenan con el
 motor de Manguebyte, el motor de audio del ecosistema, que funciona en el
 navegador: los grabados en un sampler; guitarras y bajos (`guitar.nylon`,

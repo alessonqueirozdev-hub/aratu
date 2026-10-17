@@ -3,7 +3,8 @@
 // each instrument, makes them mono, trims and shortens them, resamples them
 // to a light rate and writes 16-bit WAV files with an index per voice into
 // public/samples/. The editor fetches a voice the first time a piece uses
-// it. Run once, by hand, and commit the result:
+// it. The voices in KEPT were made elsewhere: their folders are left as they
+// are. Run once, by hand, and commit the result:
 //
 //   node scripts/samples.mjs            (downloads into .samples-cache/)
 //
@@ -53,6 +54,29 @@ const KIT = {
     "side-stick": ["Membranophones/Struck Membranophones/Legacy Snares", /drum1\/snare1_click\.wav$/, 0.4],
   },
 };
+
+/** Voices recorded for Aratu rather than taken from VCSL: this script
+ * neither deletes nor rewrites their folders, which hold their own
+ * README.md and LICENSE.txt, and credits them at the end of SOURCES.md. */
+const KEPT = [
+  {
+    code: "drums.alesson",
+    credit: `Recorded by Alesson Queiroz and dedicated to the public domain under
+Creative Commons Zero (CC0 1.0):
+https://creativecommons.org/publicdomain/zero/1.0/. Kept as it came, not
+made by \`web/scripts/samples.mjs\`: 22 hits, 48 kHz, 24-bit, mono, mapped
+to General MIDI keys in \`voice.sfz\` (kick, snare in three velocity layers,
+an alternative snare on key 40, crash), with round robins. They come from
+takes of a snare, a crash and a whole groove. Each hit was cut from just
+before its attack to where its tail meets the noise floor, with one gain
+per instrument and no compression or EQ. The kick and the alternative
+snare were separated from the groove (score-informed NMF and a Wiener
+mask) and kept only where the other drums leak in below -25 dB; the
+hi-hats did not come out clean, so they stay synthesized.
+\`drums.alesson/README.md\` tells how every sample was made, and
+\`LICENSE.txt\` holds the dedication. Thank you, Alesson.`,
+  },
+];
 
 const NAMES = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
 function midi(name) {
@@ -296,7 +320,14 @@ async function kit(files) {
 }
 
 mkdirSync(cache, { recursive: true });
-rmSync(out, { recursive: true, force: true });
+// Only the folders made here start over; the kept voices stay.
+for (const v of [...PITCHED, KIT]) {
+  if (KEPT.some((k) => k.code === v.code)) throw new Error(`${v.code} is both made and kept`);
+  rmSync(join(out, v.code), { recursive: true, force: true });
+}
+for (const k of KEPT) {
+  if (!existsSync(join(out, k.code, "voice.sfz"))) throw new Error(`${k.code}: its folder is missing from ${out}`);
+}
 mkdirSync(out, { recursive: true });
 const files = await tree();
 const report = [];
@@ -311,6 +342,9 @@ for (const r of report) {
 console.log(`total ${(total / 1e6).toFixed(1)} MB`);
 writeFileSync(
   join(out, "SOURCES.md"),
-  `# Sampled voices\n\nThe recordings in this folder come from the Versilian Community Sample\nLibrary (VCSL), released under Creative Commons Zero (CC0):\nhttps://github.com/sgossner/VCSL and https://versilian-studios.com/vcsl/.\nThey were made mono, trimmed, shortened and resampled by\n\`web/scripts/samples.mjs\`. Thank you, Versilian Studios.\n\n` +
-    report.map((r) => `## ${r.code}\n\n${r.sources.map((s) => `- ${s}`).join("\n")}\n`).join("\n"),
+  `# Sampled voices\n\nMost recordings in this folder come from the Versilian Community Sample\nLibrary (VCSL), released under Creative Commons Zero (CC0):\nhttps://github.com/sgossner/VCSL and https://versilian-studios.com/vcsl/.\nThey were made mono, trimmed, shortened and resampled by\n\`web/scripts/samples.mjs\`. Thank you, Versilian Studios. The voices at\nthe end were recorded for Aratu.\n\n` +
+    [
+      ...report.map((r) => `## ${r.code}\n\n${r.sources.map((s) => `- ${s}`).join("\n")}\n`),
+      ...KEPT.map((k) => `## ${k.code}\n\n${k.credit}\n`),
+    ].join("\n"),
 );

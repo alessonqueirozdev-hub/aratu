@@ -1,0 +1,24 @@
+CC0 1.0 Universal (CC0 1.0) - Public Domain Dedication
+
+Kit gravado do Alesson (drum samples)
+Recorded by Alesson Queiroz.
+
+To the extent possible under law, Alesson Queiroz has waived all copyright
+and related or neighboring rights to this work: the sound recordings in
+samples/, the demo recording demo_groove.wav, the instrument mapping
+voice.sfz and the accompanying README.md and report.json. This work is
+published from: Brazil.
+
+You can copy, modify, distribute and perform the work, even for commercial
+purposes, all without asking permission. No attribution is required, though
+it is appreciated.
+
+The work is provided as-is, without warranties of any kind.
+
+Deed and full legal code: https://creativecommons.org/publicdomain/zero/1.0/
+
+---
+
+Na medida do permitido por lei, Alesson Queiroz, que gravou estes sons,
+renunciou a todos os direitos autorais e conexos sobre esta obra e a dedicou
+ao domínio público pela CC0 1.0: https://creativecommons.org/publicdomain/zero/1.0/

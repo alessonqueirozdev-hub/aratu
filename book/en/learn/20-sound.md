@@ -26,7 +26,7 @@ snaps. The codes have two parts, the family and the instrument:
 | basses | `bass.finger`, `bass.slap`, `bass.808`, `bass.acid`, `bass.synth` |
 | winds | `sax.tenor`, `recorder.alto` |
 | synthesizers | `synth.saw`, `synth.square`, `synth.pad`, `synth.supersaw`, `synth.lead` |
-| drum kits | `drums.kit`, `drums.808`, `drums.acoustic` |
+| drum kits | `drums.kit`, `drums.808`, `drums.acoustic`, `drums.alesson` |
 
 Open the **Sounds** panel, beside the messages in Play, to hear each one
 and put its code in the text with a click. They all play through

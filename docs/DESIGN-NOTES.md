@@ -832,3 +832,17 @@ instead of a grab-bag chapter 9, and a test (`every_feature_is_taught_in_
 every_language`) lists the features of the language and fails when one of
 them appears in no lesson's code, in any of the three languages. A new
 feature gets a line in that list, and a lesson.
+
+## A drum kit recorded for Aratu (16 October 2026)
+
+Alesson Queiroz recorded a snare, a crash and a whole groove; Manguebyte's
+session cut them into 22 hits (round robins, and three velocity layers on
+the snare), mapped them to General MIDI keys in an SFZ file and dedicated
+them to the public domain (CC0 1.0). Aratu keeps the folder as it came in
+`web/public/samples/drums.alesson/`, with its README translated into
+English, as the voice `drums.alesson`: a sampler kit on Manguebyte, whose
+keys without a sample (hi-hats, ride, toms) play Manguebyte's synthesized
+drums. Its level matches the acoustic kit's at the same gain. The stand-in
+plays one take each of kick, snare and crash and the analogue kit for the
+rest. `web/scripts/samples.mjs` now starts over only the VCSL folders it
+makes, keeps this one and credits it in `SOURCES.md`.

@@ -42,6 +42,7 @@ const MB_VOICES: Record<string, MbVoice> = {
   "drums.kit": { kind: "drums" },
   "drums.808": { kind: "analog_kit" },
   "drums.acoustic": { kind: "sampler_kit" },
+  "drums.alesson": { kind: "sampler_kit" },
   "guitar.nylon": { kind: "plucked", preset: "nylon_guitar" },
   "guitar.steel": { kind: "plucked", preset: "steel_guitar" },
   "bass.finger": { kind: "plucked", preset: "finger_bass" },
@@ -117,6 +118,7 @@ const MB_GAIN: Record<string, number> = {
   "drums.kit": 0.91,
   "drums.808": 1.03,
   "drums.acoustic": 1.49,
+  "drums.alesson": 1.49,
   "piano.grand": 1.54,
   "piano.upright": 3.50,
   "keys.epiano": 2.90,
@@ -205,6 +207,7 @@ const VOICE_GAIN: Record<string, number> = {
 /** What a sampled voice plays while its recordings are on their way. */
 const STAND_IN: Record<string, string> = {
   "drums.acoustic": "drums.kit",
+  "drums.alesson": "drums.kit",
   "piano.grand": "keys.epiano",
   "piano.upright": "keys.epiano",
   "keys.harpsichord": "guitar.steel",

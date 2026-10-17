@@ -739,6 +739,12 @@ Versilian Community Sample Library, in the public domain (CC0), fetched the
 first time a piece uses them. While they arrive, a similar synthesized sound
 plays instead.
 
+Alesson's recorded kit (`drums.alesson`) was recorded by Alesson Queiroz
+and is in the public domain too (CC0). Its kick, snare and crash are
+recordings, with several takes of each that take turns; on the snare, a
+ghost note `(s)` and the softest dynamics play a light stroke, and accents
+a harder one. The other drums (hi-hats, ride, toms) are synthesized.
+
 **Manguebyte's engine.** Every sound in the panel plays through
 Manguebyte's engine, the ecosystem's audio engine, running in the browser:
 the recorded ones in a sampler; guitars and basses (`guitar.nylon`,

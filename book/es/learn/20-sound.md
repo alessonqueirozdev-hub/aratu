@@ -26,7 +26,7 @@ chasquea. Los códigos tienen dos partes, la familia y el instrumento:
 | bajos | `bass.finger`, `bass.slap`, `bass.808`, `bass.acid`, `bass.synth` |
 | vientos | `sax.tenor`, `recorder.alto` |
 | sintetizadores | `synth.saw`, `synth.square`, `synth.pad`, `synth.supersaw`, `synth.lead` |
-| baterías | `drums.kit`, `drums.808`, `drums.acoustic` |
+| baterías | `drums.kit`, `drums.808`, `drums.acoustic`, `drums.alesson` |
 
 Abre el panel **Sonidos**, junto a los mensajes en Tocar, para escuchar
 cada uno y poner el código en el texto con un clic. Todos suenan con el

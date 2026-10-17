@@ -25,7 +25,7 @@ estala. Os códigos têm duas partes, a família e o instrumento:
 | baixos | `bass.finger`, `bass.slap`, `bass.808`, `bass.acid`, `bass.synth` |
 | sopros | `sax.tenor`, `recorder.alto` |
 | sintetizadores | `synth.saw`, `synth.square`, `synth.pad`, `synth.supersaw`, `synth.lead` |
-| baterias | `drums.kit`, `drums.808`, `drums.acoustic` |
+| baterias | `drums.kit`, `drums.808`, `drums.acoustic`, `drums.alesson` |
 
 Abra o painel **Sons**, ao lado das mensagens em Tocar, para ouvir cada um
 e pôr o código no texto com um clique. Todos tocam pelo motor do

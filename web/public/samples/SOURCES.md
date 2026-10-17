@@ -1,10 +1,11 @@
 # Sampled voices
 
-The recordings in this folder come from the Versilian Community Sample
+Most recordings in this folder come from the Versilian Community Sample
 Library (VCSL), released under Creative Commons Zero (CC0):
 https://github.com/sgossner/VCSL and https://versilian-studios.com/vcsl/.
 They were made mono, trimmed, shortened and resampled by
-`web/scripts/samples.mjs`. Thank you, Versilian Studios.
+`web/scripts/samples.mjs`. Thank you, Versilian Studios. The voices at
+the end were recorded for Aratu.
 
 ## piano.grand
 
@@ -237,3 +238,20 @@ They were made mono, trimmed, shortened and resampled by
 - Membranophones/Struck Membranophones/Tom 2/Stick/TomL_HitS_v3_rr1_Mid.wav
 - Membranophones/Struck Membranophones/Legacy Toms/tenor_lower/tenor_ff_rr1.wav
 - Membranophones/Struck Membranophones/Legacy Snares/drum1/snare1_click.wav
+
+## drums.alesson
+
+Recorded by Alesson Queiroz and dedicated to the public domain under
+Creative Commons Zero (CC0 1.0):
+https://creativecommons.org/publicdomain/zero/1.0/. Kept as it came, not
+made by `web/scripts/samples.mjs`: 22 hits, 48 kHz, 24-bit, mono, mapped
+to General MIDI keys in `voice.sfz` (kick, snare in three velocity layers,
+an alternative snare on key 40, crash), with round robins. They come from
+takes of a snare, a crash and a whole groove. Each hit was cut from just
+before its attack to where its tail meets the noise floor, with one gain
+per instrument and no compression or EQ. The kick and the alternative
+snare were separated from the groove (score-informed NMF and a Wiener
+mask) and kept only where the other drums leak in below -25 dB; the
+hi-hats did not come out clean, so they stay synthesized.
+`drums.alesson/README.md` tells how every sample was made, and
+`LICENSE.txt` holds the dedication. Thank you, Alesson.

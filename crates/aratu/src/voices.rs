@@ -3,7 +3,8 @@
 //! One list serves the checker (an unknown voice is reported, with the
 //! closest code) and the editor's Sounds panel. Synthesized voices are made
 //! in the browser; sampled ones play recordings from the Versilian Community
-//! Sample Library (CC0), fetched the first time a piece uses them.
+//! Sample Library (CC0), or recorded for Aratu (`drums.alesson`, CC0),
+//! fetched the first time a piece uses them.
 
 use crate::diag::Lang;
 
@@ -142,6 +143,17 @@ pub const VOICES: &[Voice] = &[
         Drums,
         Sampled,
         ["Bateria acústica", "Batería acústica", "Acoustic kit"],
+        BEAT,
+    ),
+    v(
+        "drums.alesson",
+        Drums,
+        Sampled,
+        [
+            "Bateria gravada do Alesson",
+            "Batería grabada de Alesson",
+            "Alesson's recorded kit",
+        ],
         BEAT,
     ),
     v(
