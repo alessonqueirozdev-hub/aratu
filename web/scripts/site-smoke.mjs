@@ -1,20 +1,24 @@
 // Builds the pages to read into a scratch folder and checks them: every
 // lesson and chapter in every language has its page, with a title, a
 // description and all its text; every relative link lands on a file, even
-// when the site lives in a folder; and the site map lists every page.
+// when the site lives in a folder; the site map lists every page; and every
+// page, the editor's too, shows its language's card when shared.
 import assert from "node:assert/strict";
 import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { KINDS, LANGS, readBook } from "./book.mjs";
-import { SITE_URL, buildSite } from "./site.mjs";
+import { KINDS, LANGS, escape, readBook } from "./book.mjs";
+import { pngSize } from "./og.mjs";
+import { SHARE_IMAGE, SITE_URL, buildSite, shareImageFile } from "./site.mjs";
+import { tr } from "../src/i18n.ts";
 
 const web = join(dirname(fileURLToPath(import.meta.url)), "..");
 const out = mkdtempSync(join(tmpdir(), "aratu-site-"));
 try {
   // What copyStatic puts beside the pages, for the links to land on.
-  for (const f of ["index.html", join("src", "style.css"), join("public", "mascot.png")]) {
+  const cards = LANGS.map((l) => join("public", shareImageFile(l)));
+  for (const f of ["index.html", join("src", "style.css"), join("public", "mascot.png"), ...cards]) {
     cpSync(join(web, f), join(out, f.split(/[\\/]/).pop()));
   }
   const written = buildSite(out);
@@ -28,6 +32,25 @@ try {
       .replace(/\s+/g, " ")
       .trim();
   const attr = (html, re) => html.match(re)?.[1] ?? "";
+
+  // The card a shared link shows: the page's language's, the same for Open
+  // Graph and Twitter, on the site, there, and as big as the page says.
+  const shareCard = (where, html, lang) => {
+    const meta = (name) => attr(html, new RegExp(`<meta\\s+(?:property|name)="${name}"\\s+content="([^"]*)"`));
+    const image = meta("og:image");
+    assert.equal(image, SITE_URL + shareImageFile(lang), `${where}: og:image`);
+    assert.equal(meta("twitter:image"), image, `${where}: twitter:image`);
+    const file = join(out, image.slice(SITE_URL.length));
+    assert.ok(existsSync(file), `${where}: ${image} is not there`);
+    const { width, height } = pngSize(file);
+    assert.deepEqual([width, height], [SHARE_IMAGE.width, SHARE_IMAGE.height], `${where}: ${image} is ${width}×${height}`);
+    assert.deepEqual([meta("og:image:width"), meta("og:image:height")], [`${width}`, `${height}`], `${where}: og:image size`);
+    const alt = escape(tr("shareImageAlt", lang));
+    assert.equal(meta("og:image:alt"), alt, `${where}: og:image:alt`);
+    assert.equal(meta("twitter:image:alt"), alt, `${where}: twitter:image:alt`);
+    assert.equal(meta("twitter:card"), "summary_large_image", `${where}: twitter:card`);
+  };
+  shareCard("index.html", readFileSync(join(out, "index.html"), "utf8").replaceAll("%SITE_URL%", SITE_URL), "pt");
 
   let pages = 0;
   const check = (path, title, live) => {
@@ -48,6 +71,7 @@ try {
     for (const p of ["og:title", "og:description", "og:url", "og:image"]) {
       assert.match(html, new RegExp(`<meta property="${p}" content="[^"]+"`), `${path}: ${p}`);
     }
+    shareCard(path, html, lang);
     assert.ok(!/href="#\//.test(html), `${path}: a link into the editor's routes was left as it was`);
     assert.ok(sitemap.includes(`<loc>${SITE_URL}${path}</loc>`), `${path}: not in the site map`);
     if (live) {

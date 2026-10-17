@@ -198,6 +198,11 @@ const words = {
     es: "Aratu es un lenguaje para escribir música con el teclado de la computadora y oírla al momento, como piensa un músico: en compases, tiempos, notas y cifrados. Se cambia el texto mientras suena, y la música cambia con él. Tiene un curso, un manual y un editor en el navegador, en portugués, español e inglés.",
     en: "Aratu is a language for writing music on a computer keyboard and hearing it at once, the way a musician thinks: in bars, beats, notes and chords. Change the text while it plays, and the music changes with it. It has a course, a manual and an editor in the browser, in Portuguese, Spanish and English.",
   },
+  shareImageAlt: {
+    pt: "O caranguejo do Aratu, de fones, tocando num laptop, ao lado do nome Aratu, do lema e de um maracatu escrito em Aratu.",
+    es: "El cangrejo de Aratu, con auriculares, tocando en una laptop, junto al nombre Aratu, su lema y un maracatu escrito en Aratu.",
+    en: "Aratu's crab, wearing headphones and playing on a laptop, beside the name Aratu, its tagline and a maracatu written in Aratu.",
+  },
   courseIntro: {
     pt: "Um curso de Aratu do primeiro compasso a um maracatu: ritmo, bateria, percussão brasileira, melodia, harmonia, forma e música ao vivo. Cada lição tem exemplos para ouvir e mudar, e exercícios que o Aratu confere pelo som.",
     es: "Un curso de Aratu del primer compás a un maracatu: ritmo, batería, percusión brasileña, melodía, armonía, forma y música en vivo. Cada lección tiene ejemplos para escuchar y cambiar, y ejercicios que Aratu comprueba por el sonido.",

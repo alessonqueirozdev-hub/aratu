@@ -17,6 +17,11 @@ const web = join(dirname(fileURLToPath(import.meta.url)), "..");
  * map); the pages reach each other and the editor by relative links. */
 export const SITE_URL = (process.env.ARATU_SITE_URL || "https://aratu.live/").replace(/\/*$/, "/");
 
+/** The picture a link shows when shared (Open Graph, Twitter): a card per
+ * language, drawn by scripts/og.mjs into public/. */
+export const SHARE_IMAGE = { width: 1200, height: 630 };
+export const shareImageFile = (lang) => `og-${lang}.png`;
+
 const HTML_LANG = { pt: "pt-BR", es: "es", en: "en" };
 const LOCALE = { pt: "pt_BR", es: "es_LA", en: "en_US" };
 const LANG_NAME = { pt: "Português", es: "Español", en: "English" };
@@ -117,7 +122,7 @@ function relink(html, p) {
 
 function head(p, { title, description, type }, alternates, style) {
   const url = SITE_URL + p.path;
-  const image = `${SITE_URL}mascot.png`;
+  const image = SITE_URL + shareImageFile(p.lang);
   const links = Object.entries(alternates)
     .map(([lang, path]) => `<link rel="alternate" hreflang="${lang}" href="${SITE_URL}${path}" />`)
     .join("\n    ");
@@ -137,15 +142,17 @@ function head(p, { title, description, type }, alternates, style) {
     <meta property="og:description" content="${escape(description)}" />
     <meta property="og:url" content="${url}" />
     <meta property="og:image" content="${image}" />
-    <meta property="og:image:width" content="192" />
-    <meta property="og:image:height" content="192" />
-    <meta property="og:image:alt" content="Aratu" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="${SHARE_IMAGE.width}" />
+    <meta property="og:image:height" content="${SHARE_IMAGE.height}" />
+    <meta property="og:image:alt" content="${escape(tr("shareImageAlt", p.lang))}" />
     <meta property="og:locale" content="${LOCALE[p.lang]}" />
     ${locales}
-    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${escape(title)}" />
     <meta name="twitter:description" content="${escape(description)}" />
     <meta name="twitter:image" content="${image}" />
+    <meta name="twitter:image:alt" content="${escape(tr("shareImageAlt", p.lang))}" />
     <link rel="icon" href="${up(p.path)}mascot.png" />
     <link rel="stylesheet" href="${up(p.path)}style.css?v=${style}" />
     <script>
