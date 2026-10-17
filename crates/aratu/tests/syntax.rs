@@ -1709,3 +1709,51 @@ fn an_echo_plays_each_sound_again_softer() {
         placed(&format!("{lead}lead.echo 1 beat"), 1, 2)
     );
 }
+
+/// The notes a piece plays in bar 1, in order, chords low to high.
+fn notes_of(src: &str) -> Vec<u8> {
+    let c = compile(src);
+    let problems: Vec<String> = c.diagnostics.iter().map(|d| d.text(Lang::En)).collect();
+    assert!(problems.is_empty(), "{src}: {problems:?}");
+    let mut ev: Vec<(Ratio, u8)> = render(&c.piece, &Options::default(), 1, 2)
+        .events
+        .iter()
+        .filter_map(|e| match e.kind {
+            EventKind::Note(n) => Some((e.beat, n)),
+            _ => None,
+        })
+        .collect();
+    ev.sort();
+    ev.into_iter().map(|(_, n)| n).collect()
+}
+
+#[test]
+fn a_melody_may_be_written_by_the_degrees_of_its_key() {
+    // 1 is the tonic in octave 4; 8 is it an octave higher.
+    assert_eq!(notes_of("key: C major\nm = | 1 3 5 8 |"), [60, 64, 67, 72]);
+    assert_eq!(notes_of("key: A minor\nm = | 1 3 5 7 |"), [69, 72, 76, 79]);
+    assert_eq!(
+        notes_of("tom: Sol maior\nm = | 1 2 3 4 |"),
+        [67, 69, 71, 72]
+    );
+    // No key: C major.
+    assert_eq!(notes_of("m = | 1 _ 5 _ |"), [60, 67]);
+    // Accidentals after the number, and a comma for each octave down.
+    assert_eq!(
+        notes_of("key: C major\nm = | 4# 7b 5, 1,, |"),
+        [66, 70, 55, 36]
+    );
+    // Everything a note can do: groups, chords, holds, staccato, fermata,
+    // repeats and tuplets.
+    assert_eq!(
+        notes_of("m = | [1 2 3 4] 1+3+5 _ 5'^ |"),
+        [60, 62, 64, 65, 60, 64, 67, 67]
+    );
+    assert_eq!(notes_of("m = | [1 3]x4 |").len(), 8);
+    assert_eq!(notes_of("m = | 2[1 2 3] 5 _ |"), [60, 62, 64, 67]);
+    // A degree no melody reaches is told.
+    let c = compile("m = | 1 0 22 1 |");
+    let texts: Vec<String> = c.diagnostics.iter().map(|d| d.text(Lang::Pt)).collect();
+    assert_eq!(texts.len(), 2, "{texts:?}");
+    assert!(texts[0].starts_with("`0` não é um grau"), "{texts:?}");
+}

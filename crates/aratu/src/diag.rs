@@ -441,6 +441,10 @@ pub enum Message {
     GrooveOnlyBare,
     /// A groove in a piece that is not in 4/4.
     GrooveMeter,
+    /// A degree written as a note beyond what a melody reaches.
+    DegreeRange {
+        degree: i32,
+    },
     /// A letter a percussion instrument does not play.
     UnknownStroke {
         ch: char,
@@ -982,6 +986,9 @@ impl Message {
             (GrooveOnlyBare, En) => "a groove writes lines, so it goes on a line of its own, without `at bar` or `every`; to change it at a bar, write the line that changes (`at bar 9: hh = …`) or use patterns".into(),
             (GrooveOnlyBare, Pt) => "uma levada escreve linhas, então vai numa linha só dela, sem `at bar` nem `every`; para mudar num compasso, escreva a linha que muda (`at bar 9: hh = …`) ou use padrões".into(),
             (GrooveOnlyBare, Es) => "un ritmo escribe líneas, así que va en una línea propia, sin `at bar` ni `every`; para cambiarlo en un compás, escribe la línea que cambia (`at bar 9: hh = …`) o usa patrones".into(),
+            (DegreeRange { degree }, En) => format!("`{degree}` is not a degree a melody reaches: degrees go from 1, the key's first note, up to 21, three octaves higher; for notes below, write a comma after the degree (`5,`)"),
+            (DegreeRange { degree }, Pt) => format!("`{degree}` não é um grau que uma melodia alcança: os graus vão do 1, a primeira nota do tom, até o 21, três oitavas acima; para notas mais graves, escreva uma vírgula depois do grau (`5,`)"),
+            (DegreeRange { degree }, Es) => format!("`{degree}` no es un grado que una melodía alcance: los grados van del 1, la primera nota de la tonalidad, hasta el 21, tres octavas arriba; para notas más graves, escribe una coma después del grado (`5,`)"),
             (GrooveMeter, En) => "the grooves are in 4/4, and this piece is in another meter; write `meter: 4/4`, or write the drum lines yourself".into(),
             (GrooveMeter, Pt) => "as levadas são em 4/4, e esta peça está em outra fórmula; escreva `meter: 4/4`, ou escreva as linhas da bateria você mesmo".into(),
             (GrooveMeter, Es) => "los ritmos son en 4/4, y esta pieza está en otro compás; escribe `meter: 4/4`, o escribe tú las líneas de la batería".into(),

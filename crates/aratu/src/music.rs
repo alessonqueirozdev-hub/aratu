@@ -786,6 +786,7 @@ fn word_beats(
                 graces: std::mem::take(graces),
                 in_grace: false,
                 euclid: None,
+                key: cx.lib.key,
             };
             let slots = p.seq(None, false);
             *graces = p.graces;
@@ -1066,6 +1067,8 @@ struct SlotParser<'p, 'd> {
     /// Where the last Euclidean rhythm read is written: one alone in its
     /// bar fills the bar.
     euclid: Option<Span>,
+    /// The piece's first key, for notes written as degrees (`1 3 5`).
+    key: Option<crate::theory::Key>,
 }
 
 /// `hits` spread as evenly as can be over `steps` (Bjorklund's way, as
@@ -1703,9 +1706,16 @@ impl SlotParser<'_, '_> {
         }
     }
 
-    /// A note name with accidentals and octave: `c4`, `f#`, `eb4`, `dó4`.
+    /// A note name with accidentals and octave: `c4`, `f#`, `eb4`, `dó4`;
+    /// or a degree of the key, `1` to `7` and on up (`8` is `1` an octave
+    /// higher), with accidentals after it (`3b`, `4#`) and a comma for
+    /// each octave down (`5,`). The tonic of the first key, in octave 4, is
+    /// `1`; the scale is major or natural minor.
     fn note(&mut self) -> Option<(i32, bool)> {
         let rest = &self.s[self.pos..];
+        if rest.starts_with(|c: char| c.is_ascii_digit()) {
+            return self.degree();
+        }
         let (pc, upper, len) = note_name(rest)?;
         let start = self.pos;
         self.pos += len;
@@ -1732,6 +1742,39 @@ impl SlotParser<'_, '_> {
         };
         *self.octave = Some(octave);
         Some((12 * (octave + 1) + pc + acc, upper))
+    }
+
+    /// A degree of the key (see [`Self::note`]).
+    fn degree(&mut self) -> Option<(i32, bool)> {
+        let start = self.pos;
+        let rest = &self.s[self.pos..];
+        let n = rest.bytes().take_while(u8::is_ascii_digit).count();
+        let d: i32 = rest[..n].parse().ok()?;
+        if !(1..=21).contains(&d) {
+            self.pos += n;
+            self.diags.push(Diagnostic::error(
+                self.at(start),
+                Message::DegreeRange { degree: d },
+            ));
+            return Some((60, false));
+        }
+        self.pos += n;
+        let (acc, alen) = accidentals(&self.s[self.pos..]);
+        self.pos += alen;
+        let down = self.s[self.pos..].chars().take_while(|c| *c == ',').count() as i32;
+        self.pos += down as usize;
+        let key = self.key.unwrap_or(crate::theory::Key {
+            tonic: 0,
+            minor: false,
+        });
+        let scale: [i32; 7] = if key.minor {
+            [0, 2, 3, 5, 7, 8, 10]
+        } else {
+            [0, 2, 4, 5, 7, 9, 11]
+        };
+        let step = (d - 1) as usize;
+        let midi = 60 + key.tonic + scale[step % 7] + 12 * (step / 7) as i32 + acc - 12 * down;
+        Some((midi, false))
     }
 }
 
