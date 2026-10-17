@@ -129,6 +129,39 @@ piano {
 > `sube y baja`, con `corcheas`, `semicorcheas`, `tresillos` y
 > `2 octavas`.
 
+## Melodías por grados
+
+Los grados también escriben melodías. Un número en lugar de la nota es un
+grado de la tonalidad: `1` es la primera nota de la tonalidad, `3` la
+tercera, `5` la quinta, y el `8` es el `1` una octava arriba. Es como
+muchos músicos cantan una melodía para aprenderla: "uno, tres, cinco,
+tres".
+
+```aratu
+key: C major
+tempo: 100
+melodia = | 1 3 5 3 | 4 6 8 _ | 7 5 2 4 | 3 _ 1 _ |
+```
+
+> Cambia la tonalidad a `key: E minor` sin tocar nada más: la misma
+> melodía, ahora en mi menor. En tonalidad menor, los grados siguen la
+> escala menor, así que la tercera ya es menor.
+
+Una alteración después del número sale de la escala: `4#` es la cuarta
+aumentada, `7b` la séptima menor, la nota del blues. Y una coma baja una
+octava: `5,` es la quinta debajo del `1`, `1,,` dos octavas abajo, para el
+bajo.
+
+```aratu
+key: A minor
+tempo: 96
+melodia = | 1 _ [3 4] 5 | 7b _ 5 _ | 4 3 2 5, | 1 _ _ _ |
+bajo    = | 1,, _ _ _ | 4,, _ _ _ | 5,, _ _ _ | 1,, _ _ _ |
+```
+
+Los grados hacen todo lo que hace una nota: corchetes (`[1 2]`), acordes
+(`1+3+5`), `_`, staccato, calderón, `x4` y grupos irregulares.
+
 ## Con el rasgueo de la guitarra
 
 Los grados funcionan en una línea de acordes de cualquier instrumento, con
@@ -205,4 +238,16 @@ arp    = up 8ths
 ```aratu answer
 chords = | Am | F | C | G |
 arp    = down 8ths
+```
+
+Escribe por grados, en do mayor: 1, 2, 3 y 5, una negra cada uno.
+
+```aratu exercise
+key: C major
+melodia = | 1 _ _ _ |
+```
+
+```aratu answer
+key: C major
+melodia = | 1 2 3 5 |
 ```

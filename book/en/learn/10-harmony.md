@@ -123,6 +123,37 @@ piano {
 > In Portuguese the line is `arpejo = sobe 16ths`, `desce`, `sobe e desce`;
 > in Spanish, `arpegio = sube`, `baja`, `sube y baja`.
 
+## Melodies by degree
+
+Degrees write melodies too. A number in place of a note is a degree of
+the key: `1` is the key's first note, `3` the third, `5` the fifth, and
+`8` is `1` an octave higher. It is how many musicians sing a tune to
+learn it: "one, three, five, three".
+
+```aratu
+key: C major
+tempo: 100
+melody = | 1 3 5 3 | 4 6 8 _ | 7 5 2 4 | 3 _ 1 _ |
+```
+
+> Change the key to `key: E minor` and nothing else: the same tune, now
+> in E minor. In a minor key the degrees follow the minor scale, so the
+> third is already minor.
+
+An accidental after the number leaves the scale: `4#` is the raised
+fourth, `7b` the flat seventh, the blue note. And a comma goes an octave
+down: `5,` is the fifth below `1`, `1,,` two octaves down, for the bass.
+
+```aratu
+key: A minor
+tempo: 96
+melody = | 1 _ [3 4] 5 | 7b _ 5 _ | 4 3 2 5, | 1 _ _ _ |
+bass   = | 1,, _ _ _ | 4,, _ _ _ | 5,, _ _ _ | 1,, _ _ _ |
+```
+
+Degrees do everything a note does: brackets (`[1 2]`), chords (`1+3+5`),
+`_`, staccato, fermatas, `x4` and tuplets.
+
 ## With the guitar strum
 
 Degrees work on the chords line of any instrument, strum and all:
@@ -197,4 +228,16 @@ arp    = up 8ths
 ```aratu answer
 chords = | Am | F | C | G |
 arp    = down 8ths
+```
+
+Write by degree, in C major: 1, 2, 3 and 5, a quarter note each.
+
+```aratu exercise
+key: C major
+melody = | 1 _ _ _ |
+```
+
+```aratu answer
+key: C major
+melody = | 1 2 3 5 |
 ```

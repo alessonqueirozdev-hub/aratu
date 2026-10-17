@@ -394,6 +394,7 @@ const TAUGHT: &[Taught] = &[
     ("build", |c| {
         c.contains("build over") || c.contains("subida e")
     }),
+    ("melodies by degree", |c| c.contains("| 1 3 5")),
     ("ready-made grooves", |c| {
         c.contains("groove house") || c.contains("levada house") || c.contains("ritmo house")
     }),

@@ -352,6 +352,17 @@ chords = | I | vi | ii7 | V7:arp |
 | `V7/V`, `V7/ii` | la dominante del grado escrito después de la barra |
 | `I:arp` | el acorde arpegiado |
 
+**Melodías por grados.** En una línea de melodía, un número es un grado de
+la tonalidad del comienzo de la pieza: `1` es la tónica en la octava 4, `8`
+una octava arriba; una alteración después del número sale de la escala
+(`3b`, `4#`), y cada coma baja una octava (`5,`, `1,,`). Los grados siguen la
+escala mayor o la menor natural.
+
+```aratu
+key: A minor
+melodia = | 1 3 5 7b | 8 _ 5, _ |
+```
+
 En una tonalidad menor los grados siguen la escala menor natural: en
 `key: A minor` (o `tonalidad: La menor`), `i` es Am, `iv` es Dm, `VI` es F,
 y la dominante con sensible se escribe `V7` (E7).
@@ -1053,6 +1064,7 @@ pad: duck by kick 60% over 3 sixteenths
 | `breakdown`, `build over 8 bars`, `drop` | gestos de escenario: sale la base, sube, vuelve todo |
 | `solo bajo`, `solo off` | solo suena una parte, y el fin del solo |
 | `ritmo house` | una batería lista, que las líneas escritas cambian |
+| `melodia = \| 1 3 5 8 \|`, `3b`, `5,` | melodía por los grados de la tonalidad; alteración; una octava abajo |
 | `b(3,8)`, `b(3,8,2)` | ritmo euclidiano; girado dos pasos hacia después |
 | `arp = up 16ths 2 octaves` | un arpegiador en los acordes de la parte |
 | `hh.fast 2`, `bajo.slow 2`, `lead.echo 1 eighth x3` | más rápido, más lento, un eco |

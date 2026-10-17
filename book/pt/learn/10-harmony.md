@@ -128,6 +128,37 @@ piano {
 > `sobe e desce`, com `colcheias`, `semicolcheias`, `tercinas` e
 > `2 oitavas`.
 
+## Melodias pelo grau
+
+Os graus também escrevem melodias. Um número no lugar da nota é um grau
+do tom: `1` é a primeira nota do tom, `3` a terça, `5` a quinta, e o `8`
+é o `1` uma oitava acima. É como muitos músicos cantam uma melodia para
+aprender: "um, três, cinco, três".
+
+```aratu
+key: C major
+tempo: 100
+melodia = | 1 3 5 3 | 4 6 8 _ | 7 5 2 4 | 3 _ 1 _ |
+```
+
+> Troque o tom para `key: E minor` sem mexer em mais nada: a mesma
+> melodia, agora em mi menor. Em tom menor, os graus seguem a escala
+> menor, então a terça já é menor.
+
+Um acidente depois do número sai da escala: `4#` é a quarta aumentada,
+`7b` a sétima menor, a nota do blues. E uma vírgula desce uma oitava:
+`5,` é a quinta abaixo do `1`, `1,,` duas oitavas abaixo, para o baixo.
+
+```aratu
+key: A minor
+tempo: 96
+melodia = | 1 _ [3 4] 5 | 7b _ 5 _ | 4 3 2 5, | 1 _ _ _ |
+baixo   = | 1,, _ _ _ | 4,, _ _ _ | 5,, _ _ _ | 1,, _ _ _ |
+```
+
+Os graus fazem tudo o que uma nota faz: colchetes (`[1 2]`), acordes
+(`1+3+5`), `_`, staccato, fermata, `x4` e quiálteras.
+
 ## Com a batida do violão
 
 Os graus funcionam numa linha de cifras de qualquer instrumento, com batida
@@ -203,4 +234,16 @@ arp    = up 8ths
 ```aratu answer
 chords = | Am | F | C | G |
 arp    = down 8ths
+```
+
+Escreva pelo grau, em dó maior: 1, 2, 3 e 5, uma semínima cada.
+
+```aratu exercise
+key: C major
+melodia = | 1 _ _ _ |
+```
+
+```aratu answer
+key: C major
+melodia = | 1 2 3 5 |
 ```

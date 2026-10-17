@@ -346,6 +346,16 @@ chords = | I | vi | ii7 | V7:arp |
 | `V7/V`, `V7/ii` | a dominante do grau escrito depois da barra |
 | `I:arp` | o acorde arpejado |
 
+**Melodias pelo grau.** Numa linha de melodia, um número é um grau do tom do
+começo da peça: `1` é a tônica na oitava 4, `8` uma oitava acima; um
+acidente depois do número sai da escala (`3b`, `4#`), e cada vírgula desce
+uma oitava (`5,`, `1,,`). Os graus seguem a escala maior ou a menor natural.
+
+```aratu
+key: A minor
+melodia = | 1 3 5 7b | 8 _ 5, _ |
+```
+
 Num tom menor os graus seguem a escala menor natural: em `key: A minor`
 (ou `tom: Lá menor`), `i` é Am, `iv` é Dm, `VI` é F, e a dominante com
 sensível se escreve `V7` (E7).
@@ -1036,6 +1046,7 @@ pad: duck by kick 60% over 3 sixteenths
 | `breakdown`, `build over 8 bars`, `drop` | gestos de palco: sai a base, sobe, volta tudo |
 | `solo baixo`, `solo off` | só uma parte toca, e o fim do solo |
 | `levada house` | uma bateria pronta, que as linhas escritas mudam |
+| `melodia = \| 1 3 5 8 \|`, `3b`, `5,` | melodia pelos graus do tom; acidente; uma oitava abaixo |
 | `b(3,8)`, `b(3,8,2)` | ritmo euclidiano; girado dois passos para depois |
 | `arp = up 16ths 2 octaves` | um arpejador nos acordes da parte |
 | `hh.fast 2`, `baixo.slow 2`, `lead.echo 1 eighth x3` | mais rápido, mais lento, um eco |

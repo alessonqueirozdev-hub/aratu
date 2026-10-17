@@ -338,6 +338,17 @@ chords = | I | vi | ii7 | V7:arp |
 | `V7/V`, `V7/ii` | the dominant of the degree after the slash |
 | `I:arp` | the chord rolled |
 
+**Melodies by degree.** In a melody line, a number is a degree of the key
+the piece starts in: `1` is the tonic in octave 4, `8` an octave higher; an
+accidental after the number leaves the scale (`3b`, `4#`), and each comma
+goes an octave down (`5,`, `1,,`). The degrees follow the major or the
+natural minor scale.
+
+```aratu
+key: A minor
+melody = | 1 3 5 7b | 8 _ 5, _ |
+```
+
 In a minor key the degrees follow the natural minor scale: in
 `key: A minor`, `i` is Am, `iv` is Dm, `VI` is F, and the dominant with
 the leading tone is written `V7` (E7).
@@ -1026,6 +1037,7 @@ pad: duck by kick 60% over 3 sixteenths
 | `breakdown`, `build over 8 bars`, `drop` | stage gestures: the beat out, the rise, all back |
 | `solo bass`, `solo off` | only one part plays, and the solo's end |
 | `groove house` | a ready-made beat, changed by the lines written |
+| `melody = \| 1 3 5 8 \|`, `3b`, `5,` | a melody by the key's degrees; an accidental; an octave down |
 | `b(3,8)`, `b(3,8,2)` | a Euclidean rhythm; turned two steps later |
 | `arp = up 16ths 2 octaves` | an arpeggiator on the part's chords |
 | `hh.fast 2`, `bass.slow 2`, `lead.echo 1 eighth x3` | faster, slower, an echo |
