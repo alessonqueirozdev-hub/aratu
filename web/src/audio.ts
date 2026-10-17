@@ -111,50 +111,6 @@ export function playsOnManguebyte(code: string, sampled: boolean): boolean {
   return sampled || code in MB_VOICES;
 }
 
-/** Each voice's level on Manguebyte, measured in the browser with its bar in
- * the Sounds panel (16 October 2026): one line of any voice peaks near 0.3
- * at mf, a kit near 0.72, as on the stand-in. */
-const MB_GAIN: Record<string, number> = {
-  "drums.kit": 0.91,
-  "drums.808": 1.03,
-  "drums.acoustic": 1.49,
-  "drums.alesson": 1.49,
-  "piano.grand": 1.54,
-  "piano.upright": 3.50,
-  "keys.epiano": 2.90,
-  "keys.organ": 3.33,
-  "keys.harpsichord": 1.98,
-  "organ.pipe": 2.77,
-  "mallets.marimba": 1.65,
-  "mallets.vibraphone": 3.53,
-  "mallets.xylophone": 1.68,
-  "mallets.glockenspiel": 1.70,
-  "mallets.kalimba": 1.78,
-  "bells.tubular": 2.03,
-  "keys.bell": 2.75,
-  "guitar.nylon": 1.88,
-  "guitar.steel": 4.00,
-  "harp": 2.19,
-  "bass.synth": 0.89,
-  "bass.finger": 1.90,
-  "bass.slap": 0.87,
-  "bass.808": 1.56,
-  "bass.acid": 1.00,
-  "sax.tenor": 2.67,
-  "harmonica": 1.58,
-  "recorder.alto": 2.94,
-  "synth.saw": 1.42,
-  "synth.square": 1.20,
-  "synth.triangle": 1.74,
-  "synth.sine": 1.69,
-  "synth.pluck": 1.42,
-  "synth.supersaw": 1.70,
-  "synth.pad": 1.02,
-  "synth.strings": 1.21,
-  "synth.brass": 1.18,
-  "synth.lead": 1.40,
-};
-
 /** The kinds that play drums by the drum map, not notes. */
 const KIT_KINDS = new Set<Instrument>(["drums", "sampler_kit", "analog_kit"]);
 
@@ -667,7 +623,8 @@ export class Engine {
     const i = part.index;
     switch (id) {
       case "volume": {
-        const level = v * (MB_GAIN[c.voice] ?? 1);
+        // Manguebyte brings every instrument to the same loudness.
+        const level = v;
         engine.setParam(i, "gain", level > 0 ? Math.max(-60, 20 * Math.log10(level)) : -60, when);
         return;
       }
