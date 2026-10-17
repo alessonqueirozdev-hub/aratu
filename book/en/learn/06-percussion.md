@@ -101,6 +101,50 @@ agogo = ag ag a- g-
 cajon = b t bb t
 ```
 
+## Strokes spread evenly
+
+Many rhythms, in Brazil and all over the world, are a few strokes spread as
+evenly as they can be over the steps of a bar. Aratu writes them just so:
+the stroke, then in parentheses how many strokes and over how many steps.
+
+```aratu
+tempo: 100
+zabumba  = o(3,8)
+triangle = fo fo fo fo
+```
+
+`o(3,8)` is three open strokes over the eight eighths of the bar, the same
+as `o- -o -- o-`: the **tresillo**, the figure of the baião's zabumba,
+heard under a great deal of the music of the Americas. Rhythms written this
+way are called **Euclidean**: the way the strokes are spread is the same as
+the Greek mathematician Euclid's way of finding the greatest common
+divisor of two numbers.
+
+Alone in its bar, the rhythm spreads over the whole bar, in any meter, the
+way a rest alone fills its bar; next to other beats it takes one beat, divided
+into that many steps.
+
+| Write | The same as | What it is |
+|---|---|---|
+| `o(3,8)` | `o- -o -- o-` | the tresillo |
+| `o(5,8)` | `o- oo -o o-` | the cinquillo, of Cuban music |
+| `b(4,16)` | `b b b b` | the bass drum on every beat |
+| `a(7,12)` in 12/8 | `a-a a-a -aa -a-` | a bell of West African music |
+
+A third number **turns** the rhythm: `o(3,8,2)` is the tresillo two steps
+later, as `.rotate 2` would turn it. Listen to the bell in 12/8, with the
+surdo marking the four beats:
+
+```aratu
+meter: 12/8
+tempo: 70
+agogo = a(7,12)
+surdo = O m O m
+```
+
+> Change `a(7,12)` to `a(7,12,1)` or to `a(5,12)` while it plays: another
+> bell of the same family.
+
 ## Exercises
 
 Write the baião triangle: closed and open in eighth notes, on all four
@@ -147,4 +191,25 @@ zabumba = | - - - - |
 
 ```aratu answer
 zabumba = | o -m b - |
+```
+
+The tresillo in one word: three open zabumba strokes spread over the eight
+eighths of the bar.
+
+```aratu exercise
+zabumba = - - - -
+```
+
+```aratu answer
+zabumba = o(3,8)
+```
+
+Now turn the tresillo, so its three strokes come two steps later.
+
+```aratu exercise
+zabumba = o(3,8)
+```
+
+```aratu answer
+zabumba = o(3,8,2)
 ```

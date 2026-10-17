@@ -84,6 +84,50 @@ tempo: 70
 chords = | I:arp | vi:arp | IV:arp | V7:arp |
 ```
 
+## O arpejador
+
+`:arp` arpeja um acorde uma vez. Um **arpejador** percorre as notas do
+acorde uma de cada vez, em passos, enquanto o acorde durar, como o
+arpejador de um sintetizador, ou os dedos de quem toca harpa. Escreva uma
+linha chamada `arp` ao lado dos acordes, com o caminho que ela faz e o
+tamanho dos passos:
+
+```aratu
+key: A minor
+tempo: 110
+piano {
+  chords = | i | VI | III | VII |
+  arp    = up 16ths
+}
+```
+
+Cada semicolcheia toca a próxima nota do acorde que está soando, de baixo
+para cima, e cada acorde recomeça da sua nota mais grave. O acorde em si
+não soa em bloco: quem o toca é o arpejador, como a batida toca os acordes
+do violão. Troque os acordes e ele toca os novos; troque uma palavra do
+`arp` e os mesmos acordes soam de outro jeito.
+
+| Escreva | O que toca |
+|---|---|
+| `arp = up 16ths` | da nota mais grave para cima, em semicolcheias |
+| `arp = down 8ths` | da nota mais aguda para baixo, em colcheias |
+| `arp = updown 16ths` | sobe e volta descendo (também `up and down`) |
+| `arp = random 16ths` | uma das notas do acorde a cada passo, por acaso |
+| `arp = up triplets` | três passos por tempo; `beats`, um por tempo |
+| `arp = up 16ths 2 octaves` | o acorde espalhado por duas oitavas |
+
+```aratu
+tempo: 120
+piano {
+  chords = | Am | F | C | G |
+  arp    = updown 8ths 2 octaves
+}
+```
+
+> Em português a linha também se escreve `arpejo = sobe 16ths`, `desce`,
+> `sobe e desce`, com `colcheias`, `semicolcheias`, `tercinas` e
+> `2 oitavas`.
+
 ## Com a batida do violão
 
 Os graus funcionam numa linha de cifras de qualquer instrumento, com batida
@@ -147,4 +191,16 @@ chords = | i | i | i | i |
 ```aratu answer
 key: A minor
 chords = | i | iv | V7 | i:arp |
+```
+
+Faça o arpejador descer em vez de subir, ainda em colcheias.
+
+```aratu exercise
+chords = | Am | F | C | G |
+arp    = up 8ths
+```
+
+```aratu answer
+chords = | Am | F | C | G |
+arp    = down 8ths
 ```

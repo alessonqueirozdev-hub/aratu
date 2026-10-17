@@ -103,7 +103,8 @@ pub fn mirror(word: &str) -> Option<(bool, bool)> {
 }
 
 /// Splits a repeat count off a word: `[e3 d3]x4`, `riffx4`. Only after a
-/// closing bracket or a motif, so `cx4` in a drum line stays a closed hat,
+/// closing bracket or parenthesis or a motif, so `cx4` in a drum line stays
+/// a closed hat,
 /// a crash and an error.
 pub fn split_times<'a>(word: &'a str, lib: &Library) -> (&'a str, u32) {
     let Some(at) = word.rfind(['x', '×']) else {
@@ -125,7 +126,8 @@ pub fn split_times<'a>(word: &'a str, lib: &Library) -> (&'a str, u32) {
             Err(_) => return (word, 1),
         }
     };
-    let after_bracket = core.ends_with(']') || core.ends_with('}');
+    // `b(3,8)x2` and `(s)x4` too: a Euclidean rhythm, a ghost note.
+    let after_bracket = core.ends_with(']') || core.ends_with('}') || core.ends_with(')');
     if n >= 1 && (after_bracket || motif_ref(core, lib).is_some()) {
         (core, n)
     } else {

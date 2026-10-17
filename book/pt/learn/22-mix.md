@@ -102,6 +102,34 @@ master.limiter.ceiling = -1
 | `master.gain` | o volume de tudo, em dB |
 | `master.limiter.ceiling` | o volume máximo, de -12 a -0,3 dB |
 
+## Abrir espaço para o bumbo
+
+Na música eletrônica quem manda é o bumbo, e as outras partes abrem espaço
+para ele: a cada batida do bumbo o volume do pad cai na hora e volta antes
+da próxima, e a música inteira parece respirar. No estúdio isso se chama
+**ducking**, ou *sidechain*. No Aratu é uma linha:
+
+```aratu
+tempo: 124
+drums { bd = b b b b; hh = -c -c -c -c }
+pad: synth.pad
+pad = | lá3+dó4+mi4 _ _ _ | fá3+lá3+dó4 _ _ _ |
+pad: duck by kick
+```
+
+`pad: duck by kick` abaixa o pad 70% a cada bumbo e traz de volta em um
+tempo. Diga quanto e em quanto tempo: `pad: duck by kick 50% over 1
+eighth`. Depois de `by` vem a parte ou a linha para a qual abrir espaço
+(`drums`, `bd`), ou um tambor pelo nome, `kick`, `snare` ou `clap`, em
+qualquer linha que o toque.
+
+> Apague a linha e escute: o pad fica parado, por cima do bumbo. Ponha de
+> volta e a música pulsa outra vez.
+
+Em português se escreve `pad: abaixa com o bumbo`, em espanhol
+`pad: agacha con el bombo`, e a palavra do estúdio, `sidechain`, vale nas
+três línguas.
+
 ## Exercícios
 
 Abaixe a bateria para 0.4, para a melodia aparecer.
@@ -172,4 +200,17 @@ reverb.mix = 0.5
 melodia = | mi4 sol lá sol |
 reverb.mix = 0.5
 master.reverb.decay = 5 s
+```
+
+Faça o pad abaixar pela metade (50%) a cada bumbo.
+
+```aratu exercise sound=1
+drums { bd = b b b b }
+pad = | dó4+mi4+sol4 _ _ _ |
+```
+
+```aratu answer
+drums { bd = b b b b }
+pad = | dó4+mi4+sol4 _ _ _ |
+pad: duck by kick 50%
 ```

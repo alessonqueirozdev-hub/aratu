@@ -142,6 +142,16 @@ pub enum StmtKind {
     Solo(Option<Name>),
     /// `groove house`: the lines of a ready-made beat.
     Groove(Name),
+    /// `pad: duck by kick 70% over 1 beat`: the part's volume dips at each
+    /// hit of another part or line and comes back over the length.
+    Duck {
+        target: Name,
+        source: Name,
+        /// How much of the volume goes at the hit, from 0 to 1.
+        amount: f64,
+        /// How long it takes to come back.
+        length: Length,
+    },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -242,6 +252,16 @@ pub enum Transform {
     RetroInvert,
     Augment,
     Diminish,
+    /// `hh.fast 2`: that many bars of the line in each bar.
+    Fast(u32),
+    /// `bass.slow 2`: each bar of the line over that many bars.
+    Slow(u32),
+    /// `lead.echo 1 eighth x3`: each sound again that much later, softer,
+    /// that many times.
+    Echo {
+        length: Length,
+        times: u32,
+    },
 }
 
 /// How the symbols of a line are read.
@@ -257,6 +277,39 @@ pub enum LineKind {
     Strum,
     /// A percussion instrument with strokes of its own: `pandeiro = pd td`.
     Percussion(Perc),
+    /// An arpeggiator on the part's chords: `arp = up 16ths`.
+    Arp,
+}
+
+/// The way an arpeggiator goes through the chord's notes.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ArpWay {
+    Up,
+    Down,
+    /// Up, then down, without playing the top and the bottom twice.
+    UpDown,
+    /// One of the chord's notes, chosen each step.
+    Random,
+}
+
+/// `arp = up 16ths 2 octaves`: the steps of an arpeggiator.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct ArpStyle {
+    pub way: ArpWay,
+    pub step: ArpStep,
+    /// Over how many octaves the chord's notes are spread.
+    pub octaves: u8,
+}
+
+/// How long an arpeggiator's step is.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ArpStep {
+    /// A note value: 8 for eighths, 16 for sixteenths, so a beat of 6/8
+    /// has three eighths and one of 4/4 two.
+    Note(u32),
+    /// So many steps a beat, whatever the meter: 1 for `beats`, 3 for
+    /// `triplets`.
+    PerBeat(u32),
 }
 
 /// Brazilian percussion, and the flamenco cajón (see [`crate::percussion`]).
@@ -319,6 +372,9 @@ pub struct Beat {
     /// (`2[c d e]`, three notes in two beats) or a group of an additive
     /// meter (`7/8 = 2+2+3`, written `cc cc ccc`).
     pub len: u32,
+    /// A Euclidean rhythm alone in its bar, `| b(3,8) |`: it spreads over
+    /// the whole bar, as a rest alone does, whatever the meter.
+    pub fill: bool,
 }
 
 /// One equal part of a beat or of a group.
@@ -375,6 +431,29 @@ pub struct Hit {
     pub dynamic: Option<Dyn>,
 }
 
+impl Hit {
+    /// A sound with no marks.
+    pub fn new(sound: Sound, span: Span) -> Hit {
+        Hit {
+            span,
+            sound,
+            accent: false,
+            marcato: false,
+            ghost: false,
+            staccato: false,
+            fermata: false,
+            hold: 2,
+            roll: false,
+            arp: false,
+            ornament: None,
+            grace: Vec::new(),
+            chance: None,
+            hairpin: None,
+            dynamic: None,
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum Sound {
     /// One or more notes sounding together, as MIDI note numbers.
@@ -382,6 +461,9 @@ pub enum Sound {
     Drum(char),
     Strum(Stroke),
     Chord(Chord),
+    /// A step of an arpeggiator: which note of the chord sounding it plays
+    /// is found where it falls.
+    Arp(ArpStyle),
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

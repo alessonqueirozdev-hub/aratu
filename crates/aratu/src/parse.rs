@@ -762,6 +762,21 @@ impl Parser {
         }
         let line_name = words[0];
         let kind = line_kind(line_name, part.map(|p| p.text.as_str()));
+        // `arp = up 16ths`: an arpeggiator; `arp = | c4 e g c5 |` is a
+        // melody like any other.
+        if crate::words::is(line_name, "arp") {
+            let whole = c.clone().rest();
+            if let Some(style) = arp_style(c)? {
+                self.end(c)?;
+                return Ok(StmtKind::Line(LineDef {
+                    name: name(line_name, pspan),
+                    kind: LineKind::Arp,
+                    bars: vec![arp_bar(style, whole.span)],
+                    music_span: whole.span,
+                    variants: Vec::new(),
+                }));
+            }
+        }
         let music = c.rest();
         let mut variants = Vec::new();
         let bars = if let Some((bars, lengths)) = self.list_melody(music.text, music.span, kind) {
@@ -920,12 +935,15 @@ impl Parser {
                     return Ok(StmtKind::Level { target, dynamic: d });
                 }
             }
-            let w = crate::words::which(&w, &["out", "in"]).map_or(w, String::from);
+            let w = crate::words::which(&w, &["out", "in", "duck"]).map_or(w, String::from);
             if (w == "out" || w == "in") && c.at_end() {
                 return Ok(StmtKind::Mute {
                     target,
                     muted: w == "out",
                 });
+            }
+            if w == "duck" {
+                return self.duck(c, target);
             }
             match w.as_str() {
                 "cresc" | "crescendo" | "dim" | "decresc" | "diminuendo" => {
@@ -1002,6 +1020,51 @@ impl Parser {
         }
     }
 
+    /// `pad: duck by kick 70% over 1 beat`: how much and for how long, 70%
+    /// and a beat when not said. `abaixa com o bumbo`, `agacha con el bombo`.
+    fn duck(&mut self, c: &mut Cursor, target: Name) -> Result<StmtKind, Fail> {
+        if !c.keyword("by") {
+            return Err(expected(c, Thing::DuckSource, "duck"));
+        }
+        // `com o bumbo`, `con el bombo`, `by the kick`.
+        {
+            let s = c.clone();
+            let article = ["the", "o", "a", "os", "as", "el", "la", "los", "las"]
+                .iter()
+                .any(|a| c.word(a));
+            if !article || c.clone().name().is_none() {
+                *c = s;
+            }
+        }
+        let (words, sspan) = c
+            .path()
+            .ok_or_else(|| expected(c, Thing::DuckSource, "duck by"))?;
+        let source = name(&words.join("."), sspan);
+        // As a mix's number is written: `70%`, or `0.7`.
+        let mut amount = 0.7;
+        if let Some((n, ns)) = c.number() {
+            amount = if c.eat("%") { n / 100.0 } else { n };
+            if !(0.0..=1.0).contains(&amount) {
+                return Err((c.span_from(ns.start), Message::DuckAmount { amount }));
+            }
+        }
+        let back = if c.keyword("over") {
+            length(c, "over")?
+        } else {
+            Length {
+                count: 1.0,
+                unit: TimeUnit::Beats,
+            }
+        };
+        self.end(c)?;
+        Ok(StmtKind::Duck {
+            target,
+            source,
+            amount,
+            length: back,
+        })
+    }
+
     fn transform(&mut self, c: &mut Cursor, verb: &str) -> Result<Option<Transform>, Fail> {
         let verb = crate::words::which(
             verb,
@@ -1012,6 +1075,9 @@ impl Parser {
                 "transpose",
                 "augment",
                 "diminish",
+                "fast",
+                "slow",
+                "echo",
             ],
         )
         .unwrap_or(verb);
@@ -1042,6 +1108,39 @@ impl Parser {
             },
             "augment" => Transform::Augment,
             "diminish" => Transform::Diminish,
+            // `hh.fast 2`, `bass.slow 3`: whole numbers, so every bar lands
+            // on a bar line.
+            "fast" | "slow" => {
+                let save = c.clone();
+                match c.number() {
+                    Some((n, _)) if n >= 1.0 && n.fract() == 0.0 && n <= 16.0 => {
+                        if verb == "fast" {
+                            Transform::Fast(n as u32)
+                        } else {
+                            Transform::Slow(n as u32)
+                        }
+                    }
+                    Some((n, ns)) => {
+                        return Err((
+                            ns,
+                            Message::BadSpeed {
+                                verb: verb.to_string(),
+                                times: n,
+                            },
+                        ));
+                    }
+                    None => {
+                        *c = save;
+                        return Err(expected(c, Thing::Number, verb));
+                    }
+                }
+            }
+            // `lead.echo 1 eighth`, `lead.echo 3 sixteenths x2`.
+            "echo" => {
+                let length = length(c, "echo")?;
+                let times = times_suffix(c).unwrap_or(1).min(8);
+                Transform::Echo { length, times }
+            }
             _ => return Ok(None),
         }))
     }
@@ -1094,6 +1193,112 @@ pub fn line_kind(line: &str, part: Option<&str>) -> LineKind {
         return LineKind::Drums;
     }
     LineKind::Pitched
+}
+
+/// `up 16ths`, `sobe e desce 8ths 2 oitavas`, `random triplets`: an
+/// arpeggiator's way, its steps (sixteenths when not said) and over how many
+/// octaves it goes. Nothing when the music does not start with a way, so a
+/// line called `arp` may still be a melody.
+fn arp_style(c: &mut Cursor) -> Result<Option<ArpStyle>, Fail> {
+    let save = c.clone();
+    let Some((w, _)) = c.name() else {
+        return Ok(None);
+    };
+    let mut way = match crate::words::which(w, &["up", "down", "updown", "random"]) {
+        Some("up") => ArpWay::Up,
+        Some("down") => ArpWay::Down,
+        Some("updown") => ArpWay::UpDown,
+        Some(_) => ArpWay::Random,
+        None => {
+            *c = save;
+            return Ok(None);
+        }
+    };
+    let mut said = w.to_string();
+    // `up and down`, `sobe e desce`, `sube y baja`, `up down`.
+    if way == ArpWay::Up {
+        let s = c.clone();
+        c.keyword("and");
+        match c.name() {
+            Some((d, _)) if crate::words::is(d, "down") => {
+                way = ArpWay::UpDown;
+                said = format!("{w} {d}");
+            }
+            _ => *c = s,
+        }
+    }
+    let mut step = ArpStep::Note(16);
+    let mut octaves = 1;
+    while !c.at_end() {
+        let here = c.clone();
+        if let Some((n, ns)) = c.integer() {
+            match c.name() {
+                // `16ths`, `8ths`, `32nds`
+                Some((u, _)) if ["ths", "th", "nds", "nd"].contains(&u) => {
+                    if ![8, 16, 32].contains(&n) {
+                        *c = here;
+                        return Err(expected(c, Thing::ArpStep, &said));
+                    }
+                    step = ArpStep::Note(n as u32);
+                }
+                Some((u, _)) if crate::words::is(u, "octaves") || crate::words::is(u, "octave") => {
+                    if !(1..=4).contains(&n) {
+                        return Err((ns, Message::ArpOctaves { count: n }));
+                    }
+                    octaves = n as u8;
+                }
+                _ => {
+                    *c = here;
+                    return Err(expected(c, Thing::ArpStep, &said));
+                }
+            }
+            continue;
+        }
+        let word = c.name().map(|(u, _)| {
+            crate::words::which(
+                u,
+                &[
+                    "eighth",
+                    "eighths",
+                    "sixteenth",
+                    "sixteenths",
+                    "triplets",
+                    "beat",
+                    "beats",
+                ],
+            )
+        });
+        step = match word {
+            Some(Some("eighth" | "eighths")) => ArpStep::Note(8),
+            Some(Some("sixteenth" | "sixteenths")) => ArpStep::Note(16),
+            Some(Some("triplets")) => ArpStep::PerBeat(3),
+            Some(Some(_)) => ArpStep::PerBeat(1),
+            _ => {
+                *c = here;
+                return Err(expected(c, Thing::ArpStep, &said));
+            }
+        };
+    }
+    Ok(Some(ArpStyle { way, step, octaves }))
+}
+
+/// The bar an arpeggiator is written as: one step, which the meter of each
+/// bar it plays in turns into as many as fit (see `model`).
+fn arp_bar(style: ArpStyle, span: Span) -> Bar {
+    Bar {
+        span,
+        content: BarContent::Beats(vec![Beat {
+            slots: vec![Slot::Hit(Hit::new(Sound::Arp(style), span))],
+            span,
+            len: 1,
+            fill: false,
+        }]),
+        repeat_start: false,
+        ending: None,
+        repeat_end: None,
+        markers: Vec::new(),
+        jump: None,
+    }
 }
 
 fn meter(c: &mut Cursor) -> Result<Meter, Fail> {

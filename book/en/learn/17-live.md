@@ -130,6 +130,42 @@ changes only the hi-hat, and the rest of the groove goes on.
 The shortcuts write what they do in the text, so the change comes in at
 the next bar line like any other, and stays if you share the piece.
 
+## Faster, slower, and an echo
+
+Three short verbs change a line while it plays, without writing it again.
+Write the line's name, a dot and the verb:
+
+```aratu
+tempo: 120
+drums {
+  hh = | cc cc cc co | cc cc c- c- |
+  bd = b - b -
+  sd = - s - s
+}
+hh.fast 2
+```
+
+`hh.fast 2` plays two bars of the hi-hat in each bar: twice as fast.
+`slow 2` stretches each bar over two. The numbers are whole numbers, so the
+line always lands on a bar line; `fast 2` and `slow 2` together cancel out.
+They work on a line or on a whole part (`drums.fast 2`). Delete the line and
+the hi-hat goes back to its own speed.
+
+`echo` plays every sound again a little later, and softer, like a voice
+coming back from a wall:
+
+```aratu
+tempo: 100
+lead: synth.pluck
+lead = | e5 - g - | a - g - |
+lead.echo 3 sixteenths x2
+```
+
+`echo 3 sixteenths` repeats each note three sixteenths later, and `x2` makes
+two echoes, each softer than the one before. The length is written as after
+`over`: `1 beat`, `1 eighth`, `3 sixteenths`. In Portuguese the verbs are
+`rapido`, `lento` and `eco`; in Spanish `rapido`, `lento` and `eco` too.
+
 ## On stage
 
 The **Stage** button, in Play, leaves only the code on the screen, full
@@ -216,4 +252,26 @@ drums { bd = b b b b }
 ```aratu answer
 drums { bd = b b b b }
 at bar 3: build over 2 bars
+```
+
+With one more line, play the hi-hat twice as fast.
+
+```aratu exercise
+hh = cc cc cc co
+```
+
+```aratu answer
+hh = cc cc cc co
+hh.fast 2
+```
+
+Give the melody an echo one beat after each note.
+
+```aratu exercise
+melody = | c5 - - - | g4 - - - |
+```
+
+```aratu answer
+melody = | c5 - - - | g4 - - - |
+melody.echo 1 beat
 ```

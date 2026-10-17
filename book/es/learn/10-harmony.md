@@ -85,6 +85,50 @@ tempo: 70
 chords = | I:arp | vi:arp | IV:arp | V7:arp |
 ```
 
+## El arpegiador
+
+`:arp` arpegia un acorde una vez. Un **arpegiador** recorre las notas del
+acorde una a una, en pasos, mientras dura el acorde, como el arpegiador de
+un sintetizador, o los dedos de quien toca el arpa. Escribe una línea
+llamada `arp` junto a los acordes, con el camino que hace y el largo de sus
+pasos:
+
+```aratu
+key: A minor
+tempo: 110
+piano {
+  chords = | i | VI | III | VII |
+  arp    = up 16ths
+}
+```
+
+Cada semicorchea toca la nota siguiente del acorde que está sonando, de
+abajo hacia arriba, y cada acorde vuelve a empezar desde su nota más grave.
+El acorde en sí no suena en bloque: lo toca el arpegiador, como el rasgueo
+toca los acordes de la guitarra. Cambia los acordes y toca los nuevos;
+cambia una palabra del `arp` y los mismos acordes suenan de otra manera.
+
+| Escribe | Qué toca |
+|---|---|
+| `arp = up 16ths` | desde la nota más grave hacia arriba, en semicorcheas |
+| `arp = down 8ths` | desde la nota más aguda hacia abajo, en corcheas |
+| `arp = updown 16ths` | sube y vuelve bajando (también `up and down`) |
+| `arp = random 16ths` | una de las notas del acorde en cada paso, al azar |
+| `arp = up triplets` | tres pasos por tiempo; `beats`, uno por tiempo |
+| `arp = up 16ths 2 octaves` | el acorde repartido en dos octavas |
+
+```aratu
+tempo: 120
+piano {
+  chords = | Am | F | C | G |
+  arp    = updown 8ths 2 octaves
+}
+```
+
+> En español la línea también se escribe `arpegio = sube 16ths`, `baja`,
+> `sube y baja`, con `corcheas`, `semicorcheas`, `tresillos` y
+> `2 octavas`.
+
 ## Con el rasgueo de la guitarra
 
 Los grados funcionan en una línea de acordes de cualquier instrumento, con
@@ -149,4 +193,16 @@ chords = | i | i | i | i |
 ```aratu answer
 key: A minor
 chords = | i | iv | V7 | i:arp |
+```
+
+Haz que el arpegiador baje en vez de subir, todavía en corcheas.
+
+```aratu exercise
+chords = | Am | F | C | G |
+arp    = up 8ths
+```
+
+```aratu answer
+chords = | Am | F | C | G |
+arp    = down 8ths
 ```

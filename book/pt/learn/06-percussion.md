@@ -86,6 +86,50 @@ agogô  = ag ag a- g-
 cajón  = b t bb t
 ```
 
+## Toques espalhados por igual
+
+Muitos ritmos, no Brasil e no mundo todo, são alguns toques espalhados o
+mais por igual possível pelos passos de um compasso. O Aratu escreve
+assim mesmo: o toque e, entre parênteses, quantos toques e em quantos
+passos.
+
+```aratu
+tempo: 100
+zabumba   = o(3,8)
+triângulo = fo fo fo fo
+```
+
+`o(3,8)` são três toques abertos nas oito colcheias do compasso, o mesmo
+que `o- -o -- o-`: o **tresillo**, a figura da zabumba no baião, que se
+ouve por baixo de muita música das Américas. Ritmos escritos assim se
+chamam **euclidianos**: o jeito de espalhar os toques é o mesmo com que o
+matemático grego Euclides achava o maior divisor comum de dois números.
+
+Sozinho no compasso, o ritmo se espalha pelo compasso inteiro, em qualquer
+fórmula de compasso, como uma pausa sozinha preenche o compasso; ao lado de
+outros tempos, ele ocupa um tempo, dividido naquele número de passos.
+
+| Escreva | O mesmo que | O que é |
+|---|---|---|
+| `o(3,8)` | `o- -o -- o-` | o tresillo |
+| `o(5,8)` | `o- oo -o o-` | o cinquillo, da música cubana |
+| `b(4,16)` | `b b b b` | o bumbo em todos os tempos |
+| `a(7,12)` em 12/8 | `a-a a-a -aa -a-` | um sino da música da África Ocidental |
+
+Um terceiro número **gira** o ritmo: `o(3,8,2)` é o tresillo dois passos
+depois, como `.rotate 2` giraria. Ouça o sino em 12/8, com o surdo
+marcando os quatro tempos:
+
+```aratu
+meter: 12/8
+tempo: 70
+agogô = a(7,12)
+surdo = O m O m
+```
+
+> Troque `a(7,12)` por `a(7,12,1)` ou por `a(5,12)` com a música tocando:
+> outro sino da mesma família.
+
 ## Exercícios
 
 Escreva o triângulo do baião: fechado e aberto em colcheias, nos quatro
@@ -132,4 +176,25 @@ zabumba = | - - - - |
 
 ```aratu answer
 zabumba = | o -m b - |
+```
+
+O tresillo numa palavra só: três toques abertos da zabumba espalhados pelas
+oito colcheias do compasso.
+
+```aratu exercise
+zabumba = - - - -
+```
+
+```aratu answer
+zabumba = o(3,8)
+```
+
+Agora gire o tresillo, para os três toques virem dois passos depois.
+
+```aratu exercise
+zabumba = o(3,8)
+```
+
+```aratu answer
+zabumba = o(3,8,2)
 ```

@@ -102,6 +102,34 @@ master.limiter.ceiling = -1
 | `master.gain` | el volumen de todo, en dB |
 | `master.limiter.ceiling` | el volumen máximo, de -12 a -0,3 dB |
 
+## Hacerle sitio al bombo
+
+En la música electrónica manda el bombo, y las otras partes le hacen sitio:
+con cada golpe del bombo el volumen del pad cae de golpe y vuelve antes del
+siguiente, y toda la música parece respirar. En el estudio eso se llama
+**ducking**, o *sidechain*. En Aratu es una línea:
+
+```aratu
+tempo: 124
+drums { bd = b b b b; hh = -c -c -c -c }
+pad: synth.pad
+pad = | la3+do4+mi4 _ _ _ | fa3+la3+do4 _ _ _ |
+pad: duck by kick
+```
+
+`pad: duck by kick` baja el pad un 70% en cada bombo y lo devuelve en un
+tiempo. Di cuánto y en cuánto tiempo: `pad: duck by kick 50% over 1
+eighth`. Después de `by` va la parte o la línea a la que hacerle sitio
+(`drums`, `bd`), o un tambor por su nombre, `kick`, `snare` o `clap`, en
+cualquier línea que lo toque.
+
+> Borra la línea y escucha: el pad se queda quieto, encima del bombo.
+> Vuelve a ponerla y la música late otra vez.
+
+En español se escribe `pad: agacha con el bombo`, en portugués
+`pad: abaixa com o bumbo`, y la palabra del estudio, `sidechain`, sirve en
+los tres idiomas.
+
 ## Ejercicios
 
 Baja la batería a 0.4, para que se escuche la melodía.
@@ -172,4 +200,17 @@ reverb.mix = 0.5
 melodia = | mi4 sol la sol |
 reverb.mix = 0.5
 master.reverb.decay = 5 s
+```
+
+Haz que el pad baje a la mitad (50%) con cada bombo.
+
+```aratu exercise sound=1
+drums { bd = b b b b }
+pad = | do4+mi4+sol4 _ _ _ |
+```
+
+```aratu answer
+drums { bd = b b b b }
+pad = | do4+mi4+sol4 _ _ _ |
+pad: duck by kick 50%
 ```

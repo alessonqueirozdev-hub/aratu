@@ -76,6 +76,10 @@ pub enum Thing {
     BarsWord,
     /// `to 16` after `from bar 9`.
     RangeEnd,
+    /// An arpeggiator's steps: `16ths`, `8ths`, `triplets`.
+    ArpStep,
+    /// What a part ducks under: `duck by kick`.
+    DuckSource,
 }
 
 impl Thing {
@@ -127,6 +131,24 @@ impl Thing {
             (Value, Es) => "un valor",
             (Length, Es) => {
                 "una duración como `over 4 bars` (compases), `over 2 beats` (tiempos), `over 8 eighths` (corcheas) o `over 16 sixteenths` (semicorcheas)"
+            }
+            (ArpStep, En) => {
+                "the steps, such as `16ths`, `8ths`, `triplets` or `beats`, and maybe `2 octaves`"
+            }
+            (ArpStep, Pt) => {
+                "os passos, como `16ths` (semicolcheias), `8ths` (colcheias), `triplets` (tercinas) ou `beats` (tempos), e talvez `2 octaves` (oitavas)"
+            }
+            (ArpStep, Es) => {
+                "los pasos, como `16ths` (semicorcheas), `8ths` (corcheas), `triplets` (tresillos) o `beats` (tiempos), y quizá `2 octaves` (octavas)"
+            }
+            (DuckSource, En) => {
+                "`by` and the part or line it makes room for, such as `duck by kick`"
+            }
+            (DuckSource, Pt) => {
+                "`by` (com) e a parte ou linha para a qual ela abre espaço, como `duck by kick`"
+            }
+            (DuckSource, Es) => {
+                "`by` (con) y la parte o línea a la que le hace sitio, como `duck by kick`"
             }
         }
     }
@@ -445,6 +467,37 @@ pub enum Message {
         beat: f64,
         beats: Ratio,
     },
+    /// `b(3)`, `b(3,x)`: a Euclidean rhythm written wrong.
+    BadEuclidForm {
+        text: String,
+    },
+    /// `b(9,8)`: more hits than steps, or steps that cannot be.
+    BadEuclid {
+        hits: i64,
+        steps: i64,
+    },
+    /// `arp = up 16ths 9 octaves`
+    ArpOctaves {
+        count: i64,
+    },
+    /// An arpeggiator in a part with no chords line.
+    ArpWithoutChords {
+        part: String,
+    },
+    /// `duck by kick 150%`
+    DuckAmount {
+        amount: f64,
+    },
+    /// `hh.fast 1.5`, `bass.slow 0`
+    BadSpeed {
+        verb: String,
+        times: f64,
+    },
+}
+
+/// A share of a volume as a percentage: 1.5 is `150%`.
+fn amount_text(amount: f64) -> String {
+    format!("{}%", (amount * 10000.0).round() / 100.0)
 }
 
 fn beats_en(n: Ratio) -> String {
@@ -868,13 +921,13 @@ impl Message {
                 format!("no conozco `{word}:`; ¿sería `{suggestion}:`?")
             }
             (BadPartCommand { part }, En) => format!(
-                "after `{part}:` comes a dynamic (`mf`), `out` or `in`, `cresc to ff over 4 bars`, `swing 60%`, or the sound and its effects (`synth.saw -> lowpass`)"
+                "after `{part}:` comes a dynamic (`mf`), `out` or `in`, `cresc to ff over 4 bars`, `swing 60%`, `duck by kick`, or the sound and its effects (`synth.saw -> lowpass`)"
             ),
             (BadPartCommand { part }, Pt) => format!(
-                "depois de `{part}:` vem uma dinâmica (`mf`), `out` ou `in`, `cresc to ff over 4 bars`, `swing 60%`, ou o som e os efeitos (`synth.saw -> lowpass`)"
+                "depois de `{part}:` vem uma dinâmica (`mf`), `out` ou `in`, `cresc to ff over 4 bars`, `swing 60%`, `duck by kick`, ou o som e os efeitos (`synth.saw -> lowpass`)"
             ),
             (BadPartCommand { part }, Es) => format!(
-                "después de `{part}:` va una dinámica (`mf`), `out` o `in`, `cresc to ff over 4 bars`, `swing 60%`, o el sonido y sus efectos (`synth.saw -> lowpass`)"
+                "después de `{part}:` va una dinámica (`mf`), `out` o `in`, `cresc to ff over 4 bars`, `swing 60%`, `duck by kick`, o el sonido y sus efectos (`synth.saw -> lowpass`)"
             ),
             (UnknownWord { word, suggestion }, En) => {
                 format!("I do not know `{word}`; did you mean `{suggestion}`?")
@@ -1197,6 +1250,72 @@ impl Message {
                     what.words(Pt)
                 )
             }
+            (BadEuclidForm { text }, En) => format!(
+                "`{text}`: write a Euclidean rhythm as the symbol and two numbers, the hits and the steps, such as `b(3,8)`, and maybe a third that turns it, `b(3,8,2)`"
+            ),
+            (BadEuclidForm { text }, Pt) => format!(
+                "`{text}`: escreva um ritmo euclidiano como o símbolo e dois números, os toques e os passos, como `b(3,8)`, e talvez um terceiro que gira o ritmo, `b(3,8,2)`"
+            ),
+            (BadEuclidForm { text }, Es) => format!(
+                "`{text}`: escribe un ritmo euclidiano como el símbolo y dos números, los golpes y los pasos, como `b(3,8)`, y quizá un tercero que lo gira, `b(3,8,2)`"
+            ),
+            (BadEuclid { steps, .. }, En) if *steps < 1 || *steps > 64 => {
+                format!("a Euclidean rhythm takes from 1 to 64 steps, not {steps}")
+            }
+            (BadEuclid { steps, .. }, Pt) if *steps < 1 || *steps > 64 => {
+                format!("um ritmo euclidiano tem de 1 a 64 passos, não {steps}")
+            }
+            (BadEuclid { steps, .. }, Es) if *steps < 1 || *steps > 64 => {
+                format!("un ritmo euclidiano tiene de 1 a 64 pasos, no {steps}")
+            }
+            (BadEuclid { hits, steps }, En) => {
+                format!("{hits} hits do not fit in {steps} steps: the first number is the hits, the second the steps")
+            }
+            (BadEuclid { hits, steps }, Pt) => {
+                format!("{hits} toques não cabem em {steps} passos: o primeiro número são os toques, o segundo os passos")
+            }
+            (BadEuclid { hits, steps }, Es) => {
+                format!("{hits} golpes no caben en {steps} pasos: el primer número son los golpes, el segundo los pasos")
+            }
+            (ArpOctaves { count }, En) => {
+                format!("an arpeggiator goes over 1 to 4 octaves, not {count}")
+            }
+            (ArpOctaves { count }, Pt) => {
+                format!("um arpejador percorre de 1 a 4 oitavas, não {count}")
+            }
+            (ArpOctaves { count }, Es) => {
+                format!("un arpegiador recorre de 1 a 4 octavas, no {count}")
+            }
+            (ArpWithoutChords { part }, En) => format!(
+                "the arpeggiator of `{part}` has no chords to play; add a line `chords = | Am | F |`"
+            ),
+            (ArpWithoutChords { part }, Pt) => format!(
+                "o arpejador de `{part}` não tem acordes para tocar; acrescente uma linha `chords = | Am | F |`"
+            ),
+            (ArpWithoutChords { part }, Es) => format!(
+                "el arpegiador de `{part}` no tiene acordes que tocar; añade una línea `chords = | Am | F |`"
+            ),
+            (DuckAmount { amount }, En) => format!(
+                "a part ducks by 0% to 100% (or 0 to 1) of its volume, not {}",
+                amount_text(*amount)
+            ),
+            (DuckAmount { amount }, Pt) => format!(
+                "uma parte abaixa de 0% a 100% (ou de 0 a 1) do seu volume, não {}",
+                amount_text(*amount)
+            ),
+            (DuckAmount { amount }, Es) => format!(
+                "una parte baja de 0% a 100% (o de 0 a 1) de su volumen, no {}",
+                amount_text(*amount)
+            ),
+            (BadSpeed { verb, times }, En) => format!(
+                "`{verb}` takes a whole number from 1 to 16, so every bar lands on a bar line: `{verb} 2`, not `{verb} {times}`"
+            ),
+            (BadSpeed { verb, times }, Pt) => format!(
+                "`{verb}` leva um número inteiro de 1 a 16, para todo compasso cair numa barra: `{verb} 2`, não `{verb} {times}`"
+            ),
+            (BadSpeed { verb, times }, Es) => format!(
+                "`{verb}` lleva un número entero de 1 a 16, para que cada compás caiga en una barra: `{verb} 2`, no `{verb} {times}`"
+            ),
         }
     }
 }

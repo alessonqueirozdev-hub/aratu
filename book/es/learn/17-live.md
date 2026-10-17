@@ -133,6 +133,43 @@ escribas con el mismo nombre toma el lugar de la línea del ritmo:
 Los atajos escriben en el texto lo que hacen, así que el cambio entra en el
 compás siguiente, como cualquier otro, y queda guardado si compartes.
 
+## Más rápido, más lento, y un eco
+
+Tres verbos cortos cambian una línea mientras suena, sin volver a
+escribirla. Escribe el nombre de la línea, un punto y el verbo:
+
+```aratu
+tempo: 120
+drums {
+  hh = | cc cc cc co | cc cc c- c- |
+  bd = b - b -
+  sd = - s - s
+}
+hh.fast 2
+```
+
+`hh.fast 2` toca dos compases del charles en cada compás: el doble de
+rápido. `slow 2` estira cada compás en dos. Los números son enteros, para
+que la línea siempre caiga en la barra de compás; `fast 2` y `slow 2`
+juntos se anulan. Sirven para una línea o para una parte entera
+(`drums.fast 2`). Borra la línea y el charles vuelve a su velocidad.
+
+`echo` toca cada sonido otra vez un poco después, y más suave, como una voz
+que vuelve de una pared:
+
+```aratu
+tempo: 100
+lead: synth.pluck
+lead = | mi5 - sol - | la - sol - |
+lead.echo 3 sixteenths x2
+```
+
+`echo 3 sixteenths` repite cada nota tres semicorcheas después, y `x2` hace
+dos ecos, cada uno más suave que el anterior. La duración se escribe como
+después de `over`: `1 beat`, `1 eighth`, `3 sixteenths`. En español los
+verbos son `rapido` (o `rápido`), `lento` y `eco`, y las duraciones
+`1 tiempo`, `1 corchea`, `3 semicorcheas`.
+
 ## En el escenario
 
 El botón **Escenario**, en Tocar, deja solo el código en la pantalla, a
@@ -219,4 +256,26 @@ drums { bd = b b b b }
 ```aratu answer
 drums { bd = b b b b }
 at bar 3: build over 2 bars
+```
+
+Con una línea más, toca el charles el doble de rápido.
+
+```aratu exercise
+hh = cc cc cc co
+```
+
+```aratu answer
+hh = cc cc cc co
+hh.fast 2
+```
+
+Dale a la melodía un eco un tiempo después de cada nota.
+
+```aratu exercise
+melodia = | do5 - - - | sol4 - - - |
+```
+
+```aratu answer
+melodia = | do5 - - - | sol4 - - - |
+melodia.echo 1 beat
 ```
