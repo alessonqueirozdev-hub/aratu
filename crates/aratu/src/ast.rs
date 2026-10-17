@@ -349,6 +349,12 @@ pub struct Hit {
     pub roll: bool,
     /// `Am:arp`, `c4+e4+g4:arp`: the notes rolled from the lowest up.
     pub arp: bool,
+    /// `c5:tr`, `c5:mord`: a trill or a mordent on the note.
+    pub ornament: Option<Ornament>,
+    /// Grace notes, played just before it in no time of their own: `` `d5 ``
+    /// written before a note, or `` `s `` (a flam) and ``` ``s ``` (a drag)
+    /// on a drum, its own stroke.
+    pub grace: Vec<Sound>,
     /// `?` (0.5) or `?30%` (0.3): the chance the hit is played.
     pub chance: Option<f64>,
     pub hairpin: Option<Hairpin>,
@@ -374,6 +380,18 @@ pub enum Stroke {
     Tap,
     /// A down strum and a golpe together, as flamenco plays its accents.
     DownTap,
+}
+
+/// A note decorated with its neighbour in the key.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Ornament {
+    /// `:tr`: the note and the one above, in turn, for its whole length;
+    /// `:tr#` and `:trb` raise or lower the one above, as the sharp or flat
+    /// over a score's `tr`.
+    Trill { alter: i32 },
+    /// `:mord`: the note, the one above and the note again, quickly, at its
+    /// start; `:mordi`, the one below.
+    Mordent { lower: bool },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

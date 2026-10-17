@@ -55,11 +55,14 @@ pub enum Problem {
         bar: i64,
         beat: Ratio,
         sound: Heard,
+        /// A grace note or stroke, just before the beat.
+        grace: bool,
     },
     Extra {
         bar: i64,
         beat: Ratio,
         sound: Heard,
+        grace: bool,
     },
     Length {
         bar: i64,
@@ -76,10 +79,7 @@ pub enum Problem {
         found: u8,
     },
     /// The piece's tempo, at its start.
-    Tempo {
-        expected: f64,
-        found: f64,
-    },
+    Tempo { expected: f64, found: f64 },
     /// A sound in its place, but early (negative) or late, in seconds.
     Time {
         bar: i64,
@@ -124,6 +124,8 @@ pub enum Problem {
 struct Key {
     bar: i64,
     beat: Ratio,
+    /// A grace note's place before its note, so a flam is two strokes.
+    grace: u8,
     sound: Heard,
 }
 
@@ -176,6 +178,7 @@ fn played(piece: &Piece, bars: i64) -> Vec<Played> {
                 key: Key {
                     bar: e.bar,
                     beat: e.beat,
+                    grace: e.grace,
                     sound,
                 },
                 beats: e.duration * bpm / 60.0,
@@ -514,6 +517,7 @@ fn missing(p: &Played) -> Problem {
         bar: p.key.bar,
         beat: p.key.beat,
         sound: p.key.sound,
+        grace: p.key.grace > 0,
     }
 }
 
@@ -522,6 +526,7 @@ fn extra(p: &Played) -> Problem {
         bar: p.key.bar,
         beat: p.key.beat,
         sound: p.key.sound,
+        grace: p.key.grace > 0,
     }
 }
 
@@ -777,22 +782,44 @@ impl Problem {
     /// The problem in words.
     pub fn text(&self, lang: Lang) -> String {
         match *self {
-            Problem::Missing { bar, beat, sound } => {
+            Problem::Missing {
+                bar,
+                beat,
+                sound,
+                grace,
+            } => {
                 let w = where_(bar, beat, lang);
                 let s = sound_name(sound, lang);
-                match lang {
-                    Lang::Pt => format!("{w}: faltou {s}."),
-                    Lang::Es => format!("{w}: falta {s}."),
-                    Lang::En => format!("{w}: {s} is missing."),
+                match (lang, grace) {
+                    (Lang::Pt, false) => format!("{w}: faltou {s}."),
+                    (Lang::Es, false) => format!("{w}: falta {s}."),
+                    (Lang::En, false) => format!("{w}: {s} is missing."),
+                    (Lang::Pt, true) => format!("{w}: faltou uma nota de graça logo antes ({s})."),
+                    (Lang::Es, true) => format!("{w}: falta una nota de adorno justo antes ({s})."),
+                    (Lang::En, true) => format!("{w}: a grace note just before ({s}) is missing."),
                 }
             }
-            Problem::Extra { bar, beat, sound } => {
+            Problem::Extra {
+                bar,
+                beat,
+                sound,
+                grace,
+            } => {
                 let w = where_(bar, beat, lang);
                 let s = sound_name(sound, lang);
-                match lang {
-                    Lang::Pt => format!("{w}: {s} não estava pedido aqui."),
-                    Lang::Es => format!("{w}: {s} no se pedía aquí."),
-                    Lang::En => format!("{w}: {s} was not asked for here."),
+                match (lang, grace) {
+                    (Lang::Pt, false) => format!("{w}: {s} não estava pedido aqui."),
+                    (Lang::Es, false) => format!("{w}: {s} no se pedía aquí."),
+                    (Lang::En, false) => format!("{w}: {s} was not asked for here."),
+                    (Lang::Pt, true) => {
+                        format!("{w}: a nota de graça logo antes ({s}) não estava pedida.")
+                    }
+                    (Lang::Es, true) => {
+                        format!("{w}: la nota de adorno justo antes ({s}) no se pedía.")
+                    }
+                    (Lang::En, true) => {
+                        format!("{w}: the grace note just before ({s}) was not asked for.")
+                    }
                 }
             }
             Problem::Length {

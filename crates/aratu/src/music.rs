@@ -224,6 +224,7 @@ fn parse_in(
         bars: Vec::new(),
         kind,
         octave: None,
+        graces: Vec::new(),
     };
     let mut words: Vec<(&str, Span)> = Vec::new();
     let mut before: Option<(BarLine, Span)> = None;
@@ -237,7 +238,35 @@ fn parse_in(
         }
     }
     seg.close(&mut words, before, None, diags, cx);
+    if let Some((_, span)) = seg.graces.first() {
+        diags.push(Diagnostic::error(*span, Message::GraceBeforeNothing));
+    }
     seg.bars
+}
+
+/// Gives the grace notes waiting from the words before to the first note
+/// of `beats`.
+fn lead_into(beats: &mut [Beat], graces: &mut Vec<(Sound, Span)>) {
+    fn first(slots: &mut [Slot]) -> Option<&mut Hit> {
+        for slot in slots {
+            let found = match slot {
+                Slot::Hit(h) => Some(h),
+                Slot::Group(inner, _) => first(inner),
+                Slot::Choice(options, _) => options.first_mut().and_then(|o| first(o)),
+                Slot::Hold(_) | Slot::Rest(_) => None,
+            };
+            if found.is_some() {
+                return found;
+            }
+        }
+        None
+    }
+    if graces.is_empty() {
+        return;
+    }
+    if let Some(h) = beats.iter_mut().find_map(|b| first(&mut b.slots)) {
+        h.grace.extend(graces.drain(..).map(|(g, _)| g));
+    }
 }
 
 /// The music of a line or of a list's melody: a plain rhythm, or one whose
@@ -419,6 +448,8 @@ struct Segments {
     kind: LineKind,
     /// The octave carried from note to note, in written order.
     octave: Option<i32>,
+    /// Grace notes at the end of a bar, leading into the next one.
+    graces: Vec<(Sound, Span)>,
 }
 
 impl Segments {
@@ -513,7 +544,15 @@ impl Segments {
             }
         }
         let span = words.iter().fold(words[0].1, |s, (_, ws)| s.join(*ws));
-        let mut bar = read_bar(words, span, self.kind, &mut self.octave, diags, cx);
+        let mut bar = read_bar(
+            words,
+            span,
+            self.kind,
+            &mut self.octave,
+            &mut self.graces,
+            diags,
+            cx,
+        );
         if let Some((bl, _)) = before {
             match bl {
                 BarLine::Start | BarLine::EndStart => bar.repeat_start = true,
@@ -561,6 +600,7 @@ fn read_bar(
     span: Span,
     kind: LineKind,
     octave: &mut Option<i32>,
+    graces: &mut Vec<(Sound, Span)>,
     diags: &mut Vec<Diagnostic>,
     cx: Cx,
 ) -> Bar {
@@ -665,7 +705,7 @@ fn read_bar(
 
     let mut beats = Vec::new();
     for &(w, s) in words.iter() {
-        beats.extend(word_beats(w, s, kind, octave, diags, cx));
+        beats.extend(word_beats(w, s, kind, octave, graces, diags, cx));
     }
     bar.content = BarContent::Beats(beats);
     bar
@@ -678,6 +718,7 @@ fn word_beats(
     s: Span,
     kind: LineKind,
     octave: &mut Option<i32>,
+    graces: &mut Vec<(Sound, Span)>,
     diags: &mut Vec<Diagnostic>,
     cx: Cx,
 ) -> Vec<Beat> {
@@ -699,7 +740,11 @@ fn word_beats(
     let (core, times) = motifs::split_times(w, cx.lib);
     let cs = Span::new(s.start, s.start + core.len());
     let once = match motifs::motif_ref(core, cx.lib) {
-        Some((name, ops)) => motif_beats(name, &ops, cs, kind, diags, cx),
+        Some((name, ops)) => {
+            let mut beats = motif_beats(name, &ops, cs, kind, diags, cx);
+            lead_into(&mut beats, graces);
+            beats
+        }
         // `riff.foo`, `temas.foo`: a motif or a list with a word it lacks.
         None if unknown_pick(core, cs, cx, diags) => vec![Beat {
             slots: vec![Slot::Rest(cs)],
@@ -724,9 +769,18 @@ fn word_beats(
                 diags,
                 pending: None,
                 placeholders: cx.placeholders,
+                graces: std::mem::take(graces),
+                in_grace: false,
             };
+            let slots = p.seq(None, false);
+            *graces = p.graces;
+            // A word of grace notes only, `` `d5 ``, is no beat: they lead
+            // into the next word's first note.
+            if slots.is_empty() && core.starts_with('`') {
+                return Vec::new();
+            }
             vec![Beat {
-                slots: p.seq(None, false),
+                slots,
                 span: cs,
                 len,
             }]
@@ -852,6 +906,51 @@ fn split_mods(w: &str) -> (&str, bool, bool, Option<f64>, Option<f64>) {
     (core, stacc, ferm, chance, bad_chance)
 }
 
+/// The words for a rolled chord, in the three languages.
+const ARP_WORDS: &[&str] = &["arp", "arpejo", "arpegio", "arpeggio"];
+
+/// The words for a trill, in the three languages.
+const TRILL_WORDS: &[&str] = &["tr", "trill", "trinado", "trino"];
+
+/// Every word a note may take after a colon, for "did you mean".
+const TECHNIQUES: &[&str] = &[
+    "arp", "arpejo", "arpegio", "arpeggio", "tr", "trill", "trinado", "trino", "mord", "mordi",
+    "mordent", "mordente",
+];
+
+/// The ornament a word after a colon names, with how much of `after` it
+/// takes: a trill's `#` (`:tr#`); `:trb` lowers the note above.
+fn ornament(word: &str, after: &str) -> Option<(Ornament, usize)> {
+    if TRILL_WORDS.contains(&word) {
+        return Some(if after.starts_with('#') {
+            (Ornament::Trill { alter: 1 }, 1)
+        } else {
+            (Ornament::Trill { alter: 0 }, 0)
+        });
+    }
+    if word
+        .strip_suffix('b')
+        .is_some_and(|w| TRILL_WORDS.contains(&w))
+    {
+        return Some((Ornament::Trill { alter: -1 }, 0));
+    }
+    match word {
+        "mord" | "mordent" | "mordente" => Some((Ornament::Mordent { lower: false }, 0)),
+        "mordi" => Some((Ornament::Mordent { lower: true }, 0)),
+        _ => None,
+    }
+}
+
+/// Whether `text` starts with the word of a technique.
+fn names_technique(text: &str) -> bool {
+    let len = text
+        .char_indices()
+        .find(|(_, c)| !c.is_alphabetic())
+        .map_or(text.len(), |(i, _)| i);
+    let word = text[..len].to_lowercase();
+    ARP_WORDS.contains(&word.as_str()) || ornament(&word, "").is_some()
+}
+
 /// `:arp` after a chord or notes, in any of the three languages.
 fn strip_arp(core: &str) -> (&str, bool) {
     for mark in [":arp", ":arpejo", ":arpegio", ":arpeggio"] {
@@ -909,6 +1008,8 @@ fn chord_beat(w: &str, s: Span, diags: &mut Vec<Diagnostic>, key: crate::theory:
             hold: 2,
             roll: false,
             arp,
+            ornament: None,
+            grace: Vec::new(),
             chance,
             hairpin: None,
             dynamic,
@@ -937,6 +1038,11 @@ struct SlotParser<'p, 'd> {
     /// A dynamic written before a group, `p:[c4 d4]`, waiting for the
     /// group's first hit.
     pending: Option<Dyn>,
+    /// Grace notes waiting for the note they lead into, maybe from the
+    /// words before: `` `d5 c5 ``.
+    graces: Vec<(Sound, Span)>,
+    /// Reading a grace note, which takes none of the waiting ones.
+    in_grace: bool,
 }
 
 impl SlotParser<'_, '_> {
@@ -971,14 +1077,17 @@ impl SlotParser<'_, '_> {
                 }
                 '_' => {
                     self.bump();
+                    self.grace_before_nothing();
                     slots.push(Slot::Hold(self.at(start)));
                 }
                 '-' => {
                     self.bump();
+                    self.grace_before_nothing();
                     slots.push(Slot::Rest(self.at(start)));
                 }
                 '.' => {
                     self.bump();
+                    self.grace_before_nothing();
                     let sp = self.at(start);
                     slots.push(Slot::Hold(sp));
                     slots.push(Slot::Hold(sp));
@@ -1046,6 +1155,50 @@ impl SlotParser<'_, '_> {
                         slots.push(Slot::Rest(sp));
                     } else {
                         slots.push(Slot::Choice(options, sp));
+                    }
+                }
+                // `` `d5 c5 ``: a grace note before a note; `` `s `` a flam
+                // and ``` ``s ``` a drag, strokes of the drum it comes before.
+                '`' => {
+                    let mut strokes = 0;
+                    while self.peek() == Some('`') {
+                        self.bump();
+                        strokes += 1;
+                    }
+                    match self.kind {
+                        LineKind::Drums | LineKind::Percussion(_) => match self.hit() {
+                            Some(Slot::Hit(mut h)) => {
+                                h.grace = vec![h.sound.clone(); strokes];
+                                h.span = self.at(start);
+                                slots.push(Slot::Hit(h));
+                            }
+                            Some(other) => slots.push(other),
+                            None => self.diags.push(Diagnostic::error(
+                                self.at(start),
+                                Message::GraceBeforeNothing,
+                            )),
+                        },
+                        LineKind::Pitched => {
+                            let placeholders = self.placeholders;
+                            self.placeholders = false;
+                            self.in_grace = true;
+                            let grace = self.hit();
+                            self.in_grace = false;
+                            self.placeholders = placeholders;
+                            match grace {
+                                Some(Slot::Hit(h)) => self.graces.push((h.sound, self.at(start))),
+                                // An unknown note is told already.
+                                Some(_) => {}
+                                None => self.diags.push(Diagnostic::error(
+                                    self.at(start),
+                                    Message::GraceBeforeNothing,
+                                )),
+                            }
+                        }
+                        _ => self.diags.push(Diagnostic::error(
+                            self.at(start),
+                            Message::UnexpectedChar { ch: '`' },
+                        )),
                     }
                 }
                 // `(s)`: a ghost note, as drum notation writes it.
@@ -1125,18 +1278,31 @@ impl SlotParser<'_, '_> {
         self.s[span.start - self.base..span.end - self.base].to_string()
     }
 
+    /// Grace notes followed by a hold or a rest lead into nothing.
+    fn grace_before_nothing(&mut self) {
+        if let Some((_, span)) = self.graces.first() {
+            self.diags
+                .push(Diagnostic::error(*span, Message::GraceBeforeNothing));
+            self.graces.clear();
+        }
+    }
+
     /// A hit with its dynamic before it and its marks after it. Returns a
     /// rest in place of an unknown symbol, so the beat still counts right.
     fn hit(&mut self) -> Option<Slot> {
         let start = self.pos;
         let mut dynamic = None;
-        // A word followed by a colon: a dynamic, or a misplaced marker.
+        // A word followed by a colon: a dynamic, or a misplaced marker;
+        // unless it is a note or a drum with its technique (`d:tr`, `s:tr`).
         let rest = &self.s[self.pos..];
         let wlen = rest
             .char_indices()
             .find(|(_, c)| !c.is_alphabetic())
             .map_or(rest.len(), |(i, _)| i);
-        if wlen > 0 && rest[wlen..].starts_with(':') {
+        let technique = wlen > 0
+            && Dyn::parse(&rest[..wlen]).is_none()
+            && rest[wlen..].strip_prefix(':').is_some_and(names_technique);
+        if wlen > 0 && rest[wlen..].starts_with(':') && !technique {
             let word = &rest[..wlen];
             self.pos += wlen + 1;
             let sp = self.at(start);
@@ -1301,6 +1467,13 @@ impl SlotParser<'_, '_> {
             hold: 2,
             roll: false,
             arp: false,
+            ornament: None,
+            // Grace notes written before it lead into it.
+            grace: if self.in_grace {
+                Vec::new()
+            } else {
+                self.graces.drain(..).map(|(g, _)| g).collect()
+            },
             chance: None,
             hairpin: None,
             dynamic: dynamic.or(self.pending.take()),
@@ -1322,6 +1495,8 @@ impl SlotParser<'_, '_> {
             hold: 2,
             roll: false,
             arp: false,
+            ornament: None,
+            grace: Vec::new(),
             chance: None,
             hairpin: None,
             dynamic: None,
@@ -1335,19 +1510,45 @@ impl SlotParser<'_, '_> {
             match c {
                 '\'' => hit.staccato = true,
                 '!' => hit.marcato = true,
+                // `:arp`, `:tr`, `:mord`: a technique, by its word.
                 ':' => {
-                    let rest = &self.s[self.pos..];
-                    let mark = [":arpeggio", ":arpegio", ":arpejo", ":arp"]
-                        .into_iter()
-                        .find(|m| rest.starts_with(m));
-                    match mark {
-                        Some(m) => {
-                            hit.arp = true;
-                            self.pos += m.len();
-                            continue;
-                        }
-                        None => break,
+                    let rest = &self.s[self.pos + 1..];
+                    let wlen = rest
+                        .char_indices()
+                        .find(|(_, c)| !c.is_alphabetic())
+                        .map_or(rest.len(), |(i, _)| i);
+                    if wlen == 0 {
+                        break;
                     }
+                    let word = rest[..wlen].to_lowercase();
+                    self.pos += 1 + wlen;
+                    if ARP_WORDS.contains(&word.as_str()) {
+                        hit.arp = true;
+                        continue;
+                    }
+                    match ornament(&word, &self.s[self.pos..]) {
+                        Some((o, len)) => {
+                            self.pos += len;
+                            if matches!(hit.sound, Sound::Notes(_)) {
+                                hit.ornament = Some(o);
+                            } else {
+                                self.diags.push(Diagnostic::error(
+                                    self.at(start),
+                                    Message::OrnamentNeedsNote { word },
+                                ));
+                            }
+                        }
+                        None => {
+                            let closest =
+                                crate::suggest::closest(&word, TECHNIQUES.iter().copied())
+                                    .map(String::from);
+                            self.diags.push(Diagnostic::error(
+                                self.at(start),
+                                Message::UnknownTechnique { word, closest },
+                            ));
+                        }
+                    }
+                    continue;
                 }
                 '^' => {
                     hit.fermata = true;

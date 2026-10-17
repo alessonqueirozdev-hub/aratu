@@ -165,7 +165,9 @@ drums {
 ```
 
 It works on any drum (`f~` on the floor tom, `x~` on a cymbal) and on
-notes, as a tremolo: `c4~ _`.
+notes, as a tremolo: `c4~ _`. A backtick before the symbol puts a light
+stroke of the same drum just before: `` `s `` is a flam and ``` ``s ``` a
+drag (see chapter 9).
 
 ## 5. Brazilian percussion
 
@@ -344,6 +346,27 @@ mark after it moves one step (from `mf` to `f`, say) by the end of the line.
 **Marcato and ghost notes.** `s!` is marcato, stronger than upper case.
 `(s)` is a ghost note, barely touched, as drum notation writes it; it works
 on notes too: `(c4)`.
+
+**Ornaments.** They go after the note, with a colon. `c5:tr` is a trill:
+the note and the one above in the key, every eighth of a beat, starting
+and ending on the note; `:tr#` and `:trb` raise or lower the one above.
+`c5:mord` is a mordent: the note, the one above and the note again, an
+eighth of a beat each (less on a short note); `c5:mordi` uses the one
+below. `:trill`, `:trinado`, `:trino`, `:mordent` and `:mordente` work
+too. The neighbour follows the key of `key:` and its changes (C major when
+there is none).
+
+**Grace notes, flams and drags.** A backtick before a note makes it a
+grace note: it takes no beat and sounds an instant before the next one
+(`` `d5 c5 ``). There may be several (`` `b4 `c5 d5 ``), glued or not, and
+from one bar into the next. On a drum, the backtick puts a lighter stroke
+of the same drum just before: `` `s `` is a flam, ``` ``s ``` a drag.
+
+```aratu
+key: G major
+melody = | g4 b4 `c5 d5 _ | d5:mord c5 b4 a4 | a4:tr _ _ _ | g4 _ _ _ |
+sd = - `S - ``S
+```
 
 ## 10. Tempo and time
 
@@ -890,6 +913,7 @@ master.limiter.ceiling = -1
 | `2[c d e]` | three notes in two beats |
 | `meter: 7/8 = 2+2+3` | an additive meter |
 | `s!`, `(s)`, `g4^3` | marcato, ghost note, a fermata three times as long |
+| `c5:tr`, `c5:mord`, `` `d5 c5 ``, `` `s `` | trill, mordent, grace note, flam |
 | a line that starts with `\|` | goes on with the line of music above |
 | `\| I \| vi \| V7/V \|`, `Am:arp` | chords by degree; a rolled chord |
 | `pandeiro = pd td pd td` | Brazilian percussion |

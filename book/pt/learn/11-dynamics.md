@@ -54,6 +54,44 @@ drums {
 > Tire os parênteses das notas fantasma e ouça como a caixa fica
 > pesada. Os parênteses fazem os toques sumirem para o fundo.
 
+## Ornamentos: trinado, mordente e nota de graça
+
+Os ornamentos enfeitam uma nota com a vizinha dela na tonalidade. Vão
+depois da nota, com dois-pontos, como o `:arp` dos acordes:
+
+| Ornamento | Escrito | Como soa |
+|---|---|---|
+| trinado | `dó5:tr` | a nota e a de cima, alternando rápido, durante toda a duração |
+| mordente | `dó5:mord` | a nota, a de cima e a nota de novo, bem rápido, no começo |
+| mordente inferior | `dó5:mordi` | o mesmo, com a de baixo |
+| nota de graça | `` `ré5 dó5 `` | uma nota pequena, colada antes da principal |
+
+A vizinha é a da tonalidade: em sol maior, o trinado de `lá4` vai a `si4`,
+e o de `mi5` a `fá#5`. Para mudar, ponha `#` ou `b` depois do `tr`, como o
+acidente em cima do *tr* na partitura: `mi5:trb` trina com fá natural.
+
+```aratu
+tempo: 80
+key: G major
+melodia = | sol4 si4 `dó5 ré5 _ | ré5:mord dó5 si4 lá4 | lá4:tr _ _ _ | sol4 _ _ _ |
+```
+
+A nota de graça não conta como tempo: ela soa um instante antes da
+principal. Num tambor, a crase faz o mesmo com o próprio tambor: `` `s `` é
+um **flam**, um toque leve logo antes, e ``` ``s ``` é um **drag**, dois:
+
+```aratu
+tempo: 90
+drums {
+  hh = cc cc cc cc
+  bd = b - b -
+  sd = - `S - ``S
+}
+```
+
+> Tire as crases e ouça a caixa seca; com elas, cada batida ganha um
+> arrasto antes.
+
 ## Mudar a parte inteira
 
 Uma linha só leva uma parte inteira a uma dinâmica, seja qual for a que
@@ -98,4 +136,37 @@ sd = s- s s- s
 
 ```aratu answer
 sd = -(s) s! -(s) s!
+```
+
+Enfeite a melodia: um **mordente** no primeiro mi5 e um **trinado** no
+último.
+
+```aratu exercise
+tempo: 80
+melodia = | mi5 ré5 dó5 ré5 | mi5 _ _ _ |
+```
+
+```aratu answer
+tempo: 80
+melodia = | mi5:mord ré5 dó5 ré5 | mi5:tr _ _ _ |
+```
+
+Uma nota de graça `ré5` antes de cada dó5.
+
+```aratu exercise
+melodia = | dó5 sol4 dó5 sol4 |
+```
+
+```aratu answer
+melodia = | `ré5 dó5 sol4 `ré5 dó5 sol4 |
+```
+
+Na caixa, um **flam** no tempo 2 e um **drag** no tempo 4.
+
+```aratu exercise
+sd = - s - s
+```
+
+```aratu answer
+sd = - `s - ``s
 ```

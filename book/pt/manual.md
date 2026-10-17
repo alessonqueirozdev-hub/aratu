@@ -170,7 +170,9 @@ drums {
 ```
 
 Vale para qualquer peça (`f~` no surdo, `x~` no prato) e para notas, como
-trêmulo: `dó4~ _`.
+trêmulo: `dó4~ _`. Uma crase antes do símbolo põe um toque leve do mesmo
+tambor logo antes: `` `s `` é um flam e ``` ``s ``` um drag (veja o
+capítulo 9).
 
 ## 5. Percussão brasileira
 
@@ -354,6 +356,27 @@ até o fim da linha.
 **Marcato e notas fantasma.** `s!` é marcato, mais forte que a maiúscula.
 `(s)` é uma nota fantasma, quase sem som, como na partitura de bateria;
 vale também para notas: `(dó4)`.
+
+**Ornamentos.** Vão depois da nota, com dois-pontos. `dó5:tr` é um
+trinado: a nota e a de cima na tonalidade, a cada oitavo de tempo,
+começando e terminando na nota; `:tr#` e `:trb` sobem ou descem a de cima.
+`dó5:mord` é um mordente: a nota, a de cima e a nota de novo, um oitavo de
+tempo cada (menos numa nota curta); `dó5:mordi` usa a de baixo. Também
+valem `:trill`, `:trinado`, `:trino`, `:mordent` e `:mordente`. A vizinha
+segue a tonalidade de `key:` e as suas mudanças (dó maior quando não há
+nenhuma).
+
+**Notas de graça, flam e drag.** Uma crase antes de uma nota faz dela uma
+nota de graça: não conta como tempo e soa um instante antes da seguinte
+(`` `ré5 dó5 ``). Podem vir várias (`` `si4 `dó5 ré5 ``), coladas ou não, e
+de um compasso para o seguinte. Num tambor, a crase põe um toque mais leve
+do próprio tambor logo antes: `` `s `` é um flam, ``` ``s ``` um drag.
+
+```aratu
+key: G major
+melodia = | sol4 si4 `dó5 ré5 _ | ré5:mord dó5 si4 lá4 | lá4:tr _ _ _ | sol4 _ _ _ |
+sd = - `S - ``S
+```
 
 ## 10. Andamento e tempo
 
@@ -900,6 +923,7 @@ master.limiter.ceiling = -1
 | `2[dó ré mi]` | três notas em dois tempos |
 | `meter: 7/8 = 2+2+3` | compasso aditivo |
 | `s!`, `(s)`, `sol4^3` | marcato, nota fantasma, fermata três vezes mais longa |
+| `dó5:tr`, `dó5:mord`, `` `ré5 dó5 ``, `` `s `` | trinado, mordente, nota de graça, flam |
 | uma linha que começa com `\|` | continua a linha de música de cima |
 | `\| I \| vi \| V7/V \|`, `Am:arp` | acordes pelo grau; acorde arpejado |
 | `pandeiro = pd td pd td` | percussão brasileira |

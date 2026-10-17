@@ -846,3 +846,32 @@ drums. Its level matches the acoustic kit's at the same gain. The stand-in
 plays one take each of kick, snare and crash and the analogue kit for the
 rest. `web/scripts/samples.mjs` now starts over only the VCSL folders it
 makes, keeps this one and credits it in `SOURCES.md`.
+
+## Ornaments, grace notes, flams and drags (16 October 2026)
+
+Proposed in this file's "Proposal for what is still missing" and approved
+by the user: a technique is a word after a colon, like `Am:arp`, and the
+small note before is a backtick.
+
+- `c5:tr` (also `:trill`, `:trinado`, `:trino`) trills with the note above
+  in the key, every eighth of a beat as a roll does, an odd number of
+  strokes so it starts and ends on the note; `:tr#` and `:trb` raise or
+  lower the note above, as the accidental over a score's tr.
+- `c5:mord` (`:mordent`, `:mordente`) plays the note, the one above and the
+  note held, an eighth of a beat each, or a third of a short note;
+  `c5:mordi` the one below. The neighbour follows `key:` and its changes.
+- A backtick before a note makes a grace note: no beat of its own, played
+  60 ms before the note it leads into, softer. Several may come in a row,
+  glued or not, and over a bar line. On a drum line the backticks count
+  strokes of the same drum, 30 ms apart and softer: `` `s `` a flam,
+  ``` ``s ``` a drag. Events carry `grace` (its place before its note) so
+  exercises tell a flam from a single stroke.
+- In motifs, grace notes move with transposition, degrees and inversion,
+  and keep their distance to their note when the motif goes backwards.
+
+Still to come: glissando, slide, bend and vibrato (`:gliss`, `:slide`,
+`:bend+2`, `:vib`), which move a note's pitch while it sounds and need
+Manguebyte's engine and its event record to carry that. The roll `~` stays
+strokes of an eighth of a beat; the user's recording of a buzz roll
+(strokes every 25 to 50 ms, with edit cuts) could not be cut into hits, and
+a clean recording would let `~` play it as a loop.

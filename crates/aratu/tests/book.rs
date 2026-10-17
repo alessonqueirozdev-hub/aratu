@@ -295,6 +295,13 @@ const TAUGHT: &[Taught] = &[
     ("a part's level", |c| c.contains("cresc to")),
     ("marcato", |c| c.contains("S!") || c.contains("s!")),
     ("ghost notes", |c| c.contains("(s)")),
+    ("trill", |c| c.contains(":tr ")),
+    ("mordent", |c| c.contains(":mord ")),
+    ("grace note", |c| {
+        c.contains("`ré5") || c.contains("`re5") || c.contains("`d5")
+    }),
+    ("flam", |c| c.contains(" `s") || c.contains(" `S")),
+    ("drag", |c| c.contains("``s") || c.contains("``S")),
     ("repeat signs", |c| c.contains("|:")),
     ("first and second endings", |c| c.contains("|1")),
     ("repeat the bar", |c| c.contains('%')),

@@ -227,6 +227,17 @@ pub enum Message {
         percent: f64,
     },
     DynamicBeforeNothing,
+    /// `c5:trem`: a word after a note that is no technique.
+    UnknownTechnique {
+        word: String,
+        closest: Option<String>,
+    },
+    /// `s:tr`: a trill or a mordent on what has no note above or below.
+    OrnamentNeedsNote {
+        word: String,
+    },
+    /// `` `d5 `` with no note after it to lead into.
+    GraceBeforeNothing,
     EmptyBrackets,
     EmptyChoice,
     MisplacedMarker {
@@ -539,6 +550,30 @@ impl Message {
             }
             (DynamicBeforeNothing, En) => "a dynamic mark goes right before a note".into(),
             (DynamicBeforeNothing, Pt) => "a marca de dinâmica vai logo antes de uma nota".into(),
+            (UnknownTechnique { word, closest }, En) => match closest {
+                Some(c) => format!("`:{word}` is not a technique I know; did you mean `:{c}`?"),
+                None => format!(
+                    "`:{word}` is not a technique I know: `:tr` trill, `:mord` and `:mordi` mordents, `:arp` a rolled chord"
+                ),
+            },
+            (UnknownTechnique { word, closest }, Pt) => match closest {
+                Some(c) => format!("não conheço a técnica `:{word}`; seria `:{c}`?"),
+                None => format!(
+                    "não conheço a técnica `:{word}`: `:tr` trinado, `:mord` e `:mordi` mordentes, `:arp` acorde arpejado"
+                ),
+            },
+            (OrnamentNeedsNote { word }, En) => format!(
+                "`:{word}` goes after a note: it plays the note's neighbour in the key, and a drum or a strum has none"
+            ),
+            (OrnamentNeedsNote { word }, Pt) => format!(
+                "`:{word}` vai depois de uma nota: ele toca a vizinha dela na tonalidade, e um tambor ou uma batida não tem vizinha"
+            ),
+            (GraceBeforeNothing, En) => {
+                "a grace note, written with a backtick (`), goes right before the note it leads into".into()
+            }
+            (GraceBeforeNothing, Pt) => {
+                "a nota de graça, escrita com crase (`), vai logo antes da nota em que ela cai".into()
+            }
             (EmptyBrackets, En) => "these brackets are empty".into(),
             (EmptyBrackets, Pt) => "estes colchetes estão vazios".into(),
             (EmptyChoice, En) => "one of the choices between { } is empty".into(),
@@ -898,6 +933,18 @@ impl Message {
                 format!("una probabilidad de {percent}% no está entre 0% y 100%")
             }
             (DynamicBeforeNothing, Es) => "la dinámica va justo antes de una nota".into(),
+            (UnknownTechnique { word, closest }, Es) => match closest {
+                Some(c) => format!("no conozco la técnica `:{word}`; ¿quisiste decir `:{c}`?"),
+                None => format!(
+                    "no conozco la técnica `:{word}`: `:tr` trino, `:mord` y `:mordi` mordentes, `:arp` acorde arpegiado"
+                ),
+            },
+            (OrnamentNeedsNote { word }, Es) => format!(
+                "`:{word}` va después de una nota: toca su vecina en la tonalidad, y un tambor o un rasgueo no tiene vecina"
+            ),
+            (GraceBeforeNothing, Es) => {
+                "la nota de adorno, escrita con acento grave (`), va justo antes de la nota en la que cae".into()
+            }
             (EmptyBrackets, Es) => "estos corchetes están vacíos".into(),
             (EmptyChoice, Es) => "una de las opciones entre { } está vacía".into(),
             (MisplacedMarker { marker }, Es) => {

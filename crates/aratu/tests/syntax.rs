@@ -952,3 +952,133 @@ fn a_part_that_plays_only_in_sections_is_set_up_from_outside() {
         .collect();
     assert_eq!(volume.len(), 1, "{problems:?}");
 }
+
+/// The notes of bars `from` to `to`, as (time, pitch, velocity).
+fn timed(src: &str, from: i64, to: i64) -> Vec<(f64, u8, u8)> {
+    events(src, from, to)
+        .iter()
+        .filter_map(|e| match e.kind {
+            EventKind::Note(n) => Some((e.time, n, e.velocity)),
+            _ => None,
+        })
+        .collect()
+}
+
+fn pitches(src: &str) -> Vec<u8> {
+    timed(src, 1, 2).iter().map(|x| x.1).collect()
+}
+
+#[test]
+fn a_trill_turns_with_the_note_above_in_the_key() {
+    // Eighths of a beat over four beats: an odd number of strokes, so it
+    // starts and ends on the note.
+    let p = pitches("key: C major\nm = | c5:tr _ _ _ |");
+    assert_eq!(p.len(), 31);
+    assert!(p.iter().step_by(2).all(|&n| n == 72));
+    assert!(p.iter().skip(1).step_by(2).all(|&n| n == 74));
+    // The note above in the key: a half step from B in C major, a whole
+    // step from B in A major.
+    assert_eq!(pitches("key: C major\nm = | b4:tr _ _ _ |")[1], 72);
+    assert_eq!(pitches("key: A major\nm = | b4:tr _ _ _ |")[1], 73);
+    // `#` and `b` move the note above, as over a score's tr.
+    assert_eq!(pitches("m = | e5:tr# _ _ _ |")[1], 78);
+    assert_eq!(pitches("m = | d5:trb _ _ _ |")[1], 75);
+    // In Portuguese and Spanish too, and the key changes the trill.
+    assert_eq!(pitches("m = | dó5:trinado _ _ _ |")[1], 74);
+    assert_eq!(pitches("m = | do5:trino _ _ _ |")[1], 74);
+    // A note with its octave carried from the one before.
+    assert_eq!(pitches("m = | c5 d:tr _ _ |")[2], 76);
+    let n = notes("m = | b4:tr _ _ _ |\nat bar 2: key A major", 1, 3);
+    assert!(n.iter().any(|x| x.0 == 1 && x.1 == 72));
+    assert!(n.iter().any(|x| x.0 == 2 && x.1 == 73));
+}
+
+#[test]
+fn a_mordent_is_the_note_its_neighbour_and_the_note() {
+    let t = timed("tempo: 60\nm = | c5:mord _ _ _ |", 1, 2);
+    let p: Vec<u8> = t.iter().map(|x| x.1).collect();
+    assert_eq!(p, [72, 74, 72]);
+    // An eighth of a beat each, then the note to the end of its length.
+    assert_eq!(t[1].0, 0.125);
+    assert_eq!(t[2].0, 0.25);
+    assert_eq!(pitches("m = | c5:mordi _ _ _ |"), [72, 71, 72]);
+    // On a short note, the three share it.
+    let t = timed("tempo: 60\nm = | [c5:mord d5 e5 f5] _ _ _ |", 1, 2);
+    assert_eq!(t[1].0, 0.25 / 3.0);
+}
+
+#[test]
+fn grace_notes_come_just_before_and_take_no_beat() {
+    let t = timed("tempo: 60\nm = | c5 `d5 c5 b4 c5 |", 1, 2);
+    let p: Vec<u8> = t.iter().map(|x| x.1).collect();
+    assert_eq!(p, [72, 74, 72, 71, 72]);
+    // The grace note is a little before the beat, and softer.
+    assert!((t[1].0 - 0.94).abs() < 1e-9, "{t:?}");
+    assert_eq!(t[2].0, 1.0);
+    assert!(t[1].2 < t[2].2);
+    // Several, glued or not, inside brackets, and over the bar line.
+    assert_eq!(pitches("m = | `b4 `c5 d5 _ _ _ |"), [71, 72, 74]);
+    assert_eq!(pitches("m = | `b4`c5 d5 _ _ _ |"), [71, 72, 74]);
+    assert_eq!(pitches("m = | [c5 `e5 d5] _ _ _ |"), [72, 76, 74]);
+    let n = notes("m = | c5 _ _ _ `b4 | c5 _ _ _ |", 1, 3);
+    assert_eq!(n, [(1, 72), (2, 71), (2, 72)]);
+    // A motif moved by degrees takes its grace notes along; backwards,
+    // each keeps its distance to its note.
+    let n = notes(
+        "key: C major\nmotif m = [`d5 c5 e5]\nmelodia = | m m+1 m.retro _ |",
+        1,
+        2,
+    );
+    let p: Vec<u8> = n.iter().map(|x| x.1).collect();
+    assert_eq!(p, [74, 72, 76, 76, 74, 77, 78, 76, 72]);
+}
+
+#[test]
+fn a_flam_and_a_drag_are_grace_strokes_of_the_same_drum() {
+    let e = events("tempo: 60\nsd = `s - ``S -", 1, 2);
+    let snares: Vec<(f64, u8)> = e
+        .iter()
+        .filter(|e| matches!(e.kind, EventKind::Drum(Drum::Snare)))
+        .map(|e| (e.time, e.velocity))
+        .collect();
+    assert_eq!(snares.len(), 5);
+    assert!((snares[0].0 + 0.03).abs() < 1e-9 && snares[1].0 == 0.0);
+    assert!(snares[0].1 < snares[1].1);
+    assert!((snares[2].0 - 1.94).abs() < 1e-9 && (snares[3].0 - 1.97).abs() < 1e-9);
+    assert_eq!(snares[4].0, 2.0);
+    // On the Brazilian drums too.
+    assert_eq!(events("alfaia = `O - - -", 1, 2).len(), 2);
+    // An exercise tells a flam from a single stroke, and says so.
+    let problems = aratu::exercise::check(
+        &compile("sd = - s - s").piece,
+        &compile("sd = - `s - s").piece,
+        aratu::exercise::CheckOptions::default(),
+    );
+    assert_eq!(problems.len(), 1);
+    assert_eq!(
+        problems[0].text(Lang::Pt),
+        "No compasso 1, tempo 2: faltou uma nota de graça logo antes (a caixa)."
+    );
+}
+
+#[test]
+fn ornaments_and_grace_notes_written_wrong_are_told() {
+    assert_eq!(first("m = | c5 _ _ _ `d5 |"), Message::GraceBeforeNothing);
+    assert_eq!(first("m = | `d5 _ _ _ |"), Message::GraceBeforeNothing);
+    assert_eq!(
+        first("m = | c5:trinadoo _ _ _ |"),
+        Message::UnknownTechnique {
+            word: "trinadoo".into(),
+            closest: Some("trinado".into())
+        }
+    );
+    assert!(matches!(
+        first("sd = s:tr - - -"),
+        Message::OrnamentNeedsNote { .. }
+    ));
+    assert!(
+        compile("m = | c5:xyz _ _ _ |").diagnostics[0]
+            .text(Lang::Pt)
+            .contains("`:tr` trinado")
+    );
+}

@@ -54,6 +54,46 @@ drums {
 > Quita los paréntesis de las notas fantasma y escucha cómo la caja se
 > vuelve pesada. Los paréntesis hacen que los toques se vayan al fondo.
 
+## Ornamentos: trino, mordente y nota de adorno
+
+Los ornamentos adornan una nota con su vecina en la tonalidad. Van después
+de la nota, con dos puntos, como el `:arp` de los acordes:
+
+| Ornamento | Escrito | Cómo suena |
+|---|---|---|
+| trino | `do5:tr` | la nota y la de arriba, alternando rápido, durante toda la duración |
+| mordente | `do5:mord` | la nota, la de arriba y la nota otra vez, muy rápido, al principio |
+| mordente inferior | `do5:mordi` | lo mismo, con la de abajo |
+| nota de adorno | `` `re5 do5 `` | una nota pequeña, pegada antes de la principal |
+
+La vecina es la de la tonalidad: en sol mayor, el trino de `la4` va a
+`si4`, y el de `mi5` a `fa#5`. Para cambiarla, pon `#` o `b` después del
+`tr`, como la alteración sobre el *tr* en la partitura: `mi5:trb` trina con
+fa natural.
+
+```aratu
+tempo: 80
+key: G major
+melodia = | sol4 si4 `do5 re5 _ | re5:mord do5 si4 la4 | la4:tr _ _ _ | sol4 _ _ _ |
+```
+
+La nota de adorno no cuenta como tiempo: suena un instante antes de la
+principal. En un tambor, el acento grave hace lo mismo con el propio
+tambor: `` `s `` es un **flam**, un toque suave justo antes, y ``` ``s ```
+es un **drag**, dos:
+
+```aratu
+tempo: 90
+drums {
+  hh = cc cc cc cc
+  bd = b - b -
+  sd = - `S - ``S
+}
+```
+
+> Quita los acentos graves y escucha la caja seca; con ellos, cada golpe
+> lleva un arrastre antes.
+
 ## Cambiar la parte entera
 
 Una sola línea lleva una parte entera a una dinámica, sea cual sea la que
@@ -98,4 +138,37 @@ sd = s- s s- s
 
 ```aratu answer
 sd = -(s) s! -(s) s!
+```
+
+Adorna la melodía: un **mordente** en el primer mi5 y un **trino** en el
+último.
+
+```aratu exercise
+tempo: 80
+melodia = | mi5 re5 do5 re5 | mi5 _ _ _ |
+```
+
+```aratu answer
+tempo: 80
+melodia = | mi5:mord re5 do5 re5 | mi5:tr _ _ _ |
+```
+
+Una nota de adorno `re5` antes de cada do5.
+
+```aratu exercise
+melodia = | do5 sol4 do5 sol4 |
+```
+
+```aratu answer
+melodia = | `re5 do5 sol4 `re5 do5 sol4 |
+```
+
+En la caja, un **flam** en el tiempo 2 y un **drag** en el tiempo 4.
+
+```aratu exercise
+sd = - s - s
+```
+
+```aratu answer
+sd = - `s - ``s
 ```

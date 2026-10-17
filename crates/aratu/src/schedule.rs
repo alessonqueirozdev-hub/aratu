@@ -9,13 +9,15 @@
 //! be rendered on its own.
 
 use crate::ast::{
-    Feel, Hit, Length, LevelTarget, LineKind, Slot, Sound, Stroke, TempoChange, TimeUnit, Transform,
+    Feel, Hit, Length, LevelTarget, LineKind, Ornament, Slot, Sound, Stroke, TempoChange, TimeUnit,
+    Transform,
 };
 use crate::dynamics::PICKUP;
 use crate::model::{Action, At, Command, Line, Motion, Part, Piece};
+use crate::motifs::by_degrees;
 use crate::ratio::Ratio;
 use crate::span::Span;
-use crate::theory::{ACCENT, Chord, Meter};
+use crate::theory::{ACCENT, Chord, Key, Meter};
 use crate::time::{BarClock, Tempo};
 use std::collections::HashMap;
 
@@ -190,6 +192,9 @@ pub struct Event {
     pub span: Span,
     /// For a strum, the chord symbol it plays, lit up with it.
     pub also: Option<Span>,
+    /// A grace note or stroke: how many come before its note from it on (1
+    /// right before); 0 for anything else.
+    pub grace: u8,
 }
 
 /// The time and frame of one bar.
@@ -335,6 +340,8 @@ struct Sounding<'p> {
     also: Option<Span>,
     humanize: f64,
     jitter: f64,
+    /// See [`Event::grace`].
+    grace: u8,
 }
 
 /// A line sounding at a bar, and where in its own loop it is.
@@ -415,6 +422,23 @@ impl<'p> Scheduler<'p> {
             }
         }
         m
+    }
+
+    /// The key at a bar, for ornaments: C major when none is written.
+    fn key_at(&self, bar: i64) -> Key {
+        let mut k = self.piece.key.unwrap_or(Key {
+            tonic: 0,
+            minor: false,
+        });
+        for (b, c) in &self.timed {
+            if *b > bar {
+                break;
+            }
+            if let Action::Key(x) = c.action {
+                k = x;
+            }
+        }
+        k
     }
 
     fn bar_beats(&self, bar: i64) -> Ratio {
@@ -615,6 +639,7 @@ impl<'p> Scheduler<'p> {
                         accent: false,
                         also: None,
                         span: c.span,
+                        grace: 0,
                     },
                 ));
             }
@@ -655,6 +680,7 @@ impl<'p> Scheduler<'p> {
                     accent: s.accent,
                     span: s.span,
                     also: s.also,
+                    grace: s.grace,
                 });
             }
             let _ = s.humanize;
@@ -865,6 +891,7 @@ impl<'p> Scheduler<'p> {
                             accent: false,
                             also: None,
                             span: c.span,
+                            grace: 0,
                         },
                     ));
                 }
@@ -1642,7 +1669,110 @@ impl<'p> Scheduler<'p> {
                 also,
                 humanize: human.unwrap_or(0.0),
                 jitter,
+                grace: 0,
             };
+            // Grace notes come just before it, in no time of the bar's own:
+            // a drum's grace strokes (a flam, a drag) closer and softer.
+            let count = h.grace.len();
+            for (i, g) in h.grace.iter().enumerate() {
+                let (gap, level, kinds) = match g {
+                    Sound::Drum(_) => (0.03, 0.45, s.kinds.clone()),
+                    Sound::Notes(ns) => (
+                        0.06,
+                        0.8,
+                        ns.iter()
+                            .filter_map(|n| pitch(*n))
+                            .map(|k| (k, 0.0))
+                            .collect(),
+                    ),
+                    _ => continue,
+                };
+                let ahead = -gap * (count - i) as f64;
+                self.done.push(Sounding {
+                    kinds: kinds.into_iter().map(|(k, _)| (k, ahead)).collect(),
+                    velocity: (s.velocity as f64 * level).round().clamp(1.0, 127.0) as u8,
+                    accent: false,
+                    staccato: false,
+                    fixed: Some(gap),
+                    grace: (count - i) as u8,
+                    ..s.clone()
+                });
+            }
+            if let (Some(o), Sound::Notes(ns)) = (h.ornament, &h.sound) {
+                let tonality = self.key_at(g);
+                let neighbour: Vec<(EventKind, f64)> = ns
+                    .iter()
+                    .map(|n| match o {
+                        Ornament::Trill { alter } => by_degrees(*n, tonality, 1) + alter,
+                        Ornament::Mordent { lower } => {
+                            by_degrees(*n, tonality, if lower { -1 } else { 1 })
+                        }
+                    })
+                    .filter_map(pitch)
+                    .map(|k| (k, 0.0))
+                    .collect();
+                let until = end_off.min(beats);
+                let len = until - p.start;
+                // A stroke of an eighth of a beat, as a roll's, or less on a
+                // short note.
+                let eighth = Ratio::new(1, 8);
+                let strokes: Vec<(Ratio, Ratio, bool)> = match o {
+                    // The note and its neighbour in turn, starting and
+                    // ending on the note.
+                    Ornament::Trill { .. } => {
+                        let mut n = (len / eighth).floor().max(1);
+                        if n % 2 == 0 {
+                            n -= 1;
+                        }
+                        let step = len / Ratio::int(n);
+                        (0..n)
+                            .map(|k| {
+                                let a = p.start + step * Ratio::int(k);
+                                (a, a + step, k % 2 == 0)
+                            })
+                            .collect()
+                    }
+                    // The note, its neighbour, then the note held.
+                    Ornament::Mordent { .. } => {
+                        let step = eighth.min(len / Ratio::int(3));
+                        vec![
+                            (p.start, p.start + step, true),
+                            (p.start + step, p.start + step * Ratio::int(2), false),
+                        ]
+                    }
+                };
+                let last = strokes.last().map_or(p.start, |x| x.1);
+                for (k, (a, b, own)) in strokes.into_iter().enumerate() {
+                    self.done.push(Sounding {
+                        start: (g, self.warp(part, g, beats, a)),
+                        end: (g, self.warp(part, g, beats, b)),
+                        written: a,
+                        kinds: if own {
+                            s.kinds.clone()
+                        } else {
+                            neighbour.clone()
+                        },
+                        accent: s.accent && k == 0,
+                        ..s.clone()
+                    });
+                }
+                if matches!(o, Ornament::Trill { .. }) {
+                    continue;
+                }
+                // The mordent's last note is the note itself, held as written.
+                let s = Sounding {
+                    start: (g, self.warp(part, g, beats, last)),
+                    written: last,
+                    accent: false,
+                    ..s
+                };
+                if p.open {
+                    self.open.insert(key, s);
+                } else {
+                    self.done.push(s);
+                }
+                continue;
+            }
             if h.roll {
                 // A roll: strokes of an eighth of a beat (thirty-seconds in
                 // 4/4) over the hit's length, the hands alternating, rising

@@ -54,6 +54,44 @@ drums {
 > Take the parentheses off the ghost notes and hear how heavy the snare
 > gets. The parentheses push those strokes into the background.
 
+## Ornaments: trill, mordent and grace note
+
+Ornaments decorate a note with its neighbour in the key. They go after the
+note, with a colon, like the chords' `:arp`:
+
+| Ornament | Written | How it sounds |
+|---|---|---|
+| trill | `c5:tr` | the note and the one above, quickly in turn, for its whole length |
+| mordent | `c5:mord` | the note, the one above and the note again, very fast, at its start |
+| lower mordent | `c5:mordi` | the same, with the one below |
+| grace note | `` `d5 c5 `` | a small note, right before the main one |
+
+The neighbour is the key's: in G major, the trill on `a4` goes to `b4`, and
+the one on `e5` to `f#5`. To change it, put `#` or `b` after the `tr`, like
+the accidental over a score's *tr*: `e5:trb` trills with F natural.
+
+```aratu
+tempo: 80
+key: G major
+melody = | g4 b4 `c5 d5 _ | d5:mord c5 b4 a4 | a4:tr _ _ _ | g4 _ _ _ |
+```
+
+A grace note takes no beat: it sounds an instant before the main note. On
+a drum, the backtick does the same with the drum itself: `` `s `` is a
+**flam**, a light stroke just before, and ``` ``s ``` is a **drag**, two:
+
+```aratu
+tempo: 90
+drums {
+  hh = cc cc cc cc
+  bd = b - b -
+  sd = - `S - ``S
+}
+```
+
+> Take the backticks off and hear the dry snare; with them, each hit is
+> dragged into.
+
 ## Changing a whole part
 
 One line takes a whole part to a dynamic, whatever is written in it:
@@ -97,4 +135,37 @@ sd = s- s s- s
 
 ```aratu answer
 sd = -(s) s! -(s) s!
+```
+
+Decorate the melody: a **mordent** on the first e5 and a **trill** on the
+last.
+
+```aratu exercise
+tempo: 80
+melody = | e5 d5 c5 d5 | e5 _ _ _ |
+```
+
+```aratu answer
+tempo: 80
+melody = | e5:mord d5 c5 d5 | e5:tr _ _ _ |
+```
+
+A grace note `d5` before each c5.
+
+```aratu exercise
+melody = | c5 g4 c5 g4 |
+```
+
+```aratu answer
+melody = | `d5 c5 g4 `d5 c5 g4 |
+```
+
+On the snare, a **flam** on beat 2 and a **drag** on beat 4.
+
+```aratu exercise
+sd = - s - s
+```
+
+```aratu answer
+sd = - `s - ``s
 ```

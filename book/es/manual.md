@@ -174,7 +174,9 @@ drums {
 ```
 
 Vale para cualquier pieza (`f~` en el tom de piso, `x~` en el platillo) y
-para notas, como trémolo: `do4~ _`.
+para notas, como trémolo: `do4~ _`. Un acento grave antes del símbolo pone
+un toque suave del mismo tambor justo antes: `` `s `` es un flam y ``` ``s ```
+un drag (mira el capítulo 9).
 
 ## 5. Percusión brasileña
 
@@ -359,6 +361,28 @@ hasta el final de la línea.
 **Marcato y notas fantasma.** `s!` es marcato, más fuerte que la mayúscula.
 `(s)` es una nota fantasma, casi sin sonido, como en la partitura de
 batería; vale también para notas: `(do4)`.
+
+**Ornamentos.** Van después de la nota, con dos puntos. `do5:tr` es un
+trino: la nota y la de arriba en la tonalidad, cada octavo de tiempo,
+empezando y terminando en la nota; `:tr#` y `:trb` suben o bajan la de
+arriba. `do5:mord` es un mordente: la nota, la de arriba y la nota otra
+vez, un octavo de tiempo cada una (menos en una nota corta); `do5:mordi`
+usa la de abajo. También valen `:trill`, `:trinado`, `:trino`, `:mordent`
+y `:mordente`. La vecina sigue la tonalidad de `key:` y sus cambios (do
+mayor cuando no hay ninguna).
+
+**Notas de adorno, flam y drag.** Un acento grave antes de una nota la
+vuelve nota de adorno: no cuenta como tiempo y suena un instante antes de
+la siguiente (`` `re5 do5 ``). Pueden ser varias (`` `si4 `do5 re5 ``),
+pegadas o no, y de un compás al siguiente. En un tambor, el acento grave
+pone un toque más suave del propio tambor justo antes: `` `s `` es un
+flam, ``` ``s ``` un drag.
+
+```aratu
+key: G major
+melodia = | sol4 si4 `do5 re5 _ | re5:mord do5 si4 la4 | la4:tr _ _ _ | sol4 _ _ _ |
+sd = - `S - ``S
+```
 
 ## 10. Tempo
 
@@ -914,6 +938,7 @@ master.limiter.ceiling = -1
 | `2[do re mi]` | tres notas en dos tiempos |
 | `meter: 7/8 = 2+2+3` | compás aditivo |
 | `s!`, `(s)`, `sol4^3` | marcato, nota fantasma, calderón tres veces más largo |
+| `do5:tr`, `do5:mord`, `` `re5 do5 ``, `` `s `` | trino, mordente, nota de adorno, flam |
 | una línea que empieza con `\|` | sigue la línea de música de arriba |
 | `\| I \| vi \| V7/V \|`, `Am:arp` | acordes por grado; acorde arpegiado |
 | `pandeiro = pd td pd td` | percusión brasileña |

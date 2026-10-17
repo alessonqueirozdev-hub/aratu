@@ -9,7 +9,7 @@
 
 use std::collections::HashMap;
 
-use crate::ast::{Bar, BarContent, Beat, Slot, Sound};
+use crate::ast::{Bar, BarContent, Beat, Hit, Slot, Sound};
 use crate::theory::{Key, accidentals, note_name};
 
 /// Written music kept by name: its text, and where that text starts in the
@@ -137,25 +137,55 @@ pub fn split_times<'a>(word: &'a str, lib: &Library) -> (&'a str, u32) {
 pub fn apply(beats: &mut [Beat], ops: &[Op], key: Key) {
     for op in ops {
         match *op {
-            Op::Semitones(n) => each_note(beats, &mut |v| v.iter_mut().for_each(|p| *p += n)),
-            Op::Degrees(k) => each_note(beats, &mut |v| {
-                v.iter_mut().for_each(|p| *p = by_degrees(*p, key, k))
-            }),
+            Op::Semitones(n) => {
+                each_note(beats, &mut |v| v.iter_mut().for_each(|p| *p += n));
+                each_grace(beats, &mut |v| v.iter_mut().for_each(|p| *p += n));
+            }
+            Op::Degrees(k) => {
+                each_note(beats, &mut |v| {
+                    v.iter_mut().for_each(|p| *p = by_degrees(*p, key, k))
+                });
+                each_grace(beats, &mut |v| {
+                    v.iter_mut().for_each(|p| *p = by_degrees(*p, key, k))
+                });
+            }
             Op::Invert => {
                 let mut pivot = None;
                 each_note(beats, &mut |v| {
                     let c = *pivot.get_or_insert(v.first().copied().unwrap_or(60));
                     v.iter_mut().for_each(|p| *p = 2 * c - *p);
                 });
+                if let Some(c) = pivot {
+                    each_grace(beats, &mut |v| v.iter_mut().for_each(|p| *p = 2 * c - *p));
+                }
             }
             Op::Retrograde => {
                 let mut all = Vec::new();
                 each_note(beats, &mut |v| all.push(v.clone()));
+                let before: Vec<i32> = all
+                    .iter()
+                    .map(|v| v.first().copied().unwrap_or(0))
+                    .collect();
                 all.reverse();
                 let mut next = all.into_iter();
                 each_note(beats, &mut |v| {
                     if let Some(n) = next.next() {
                         *v = n;
+                    }
+                });
+                // A grace note keeps its distance to the note it leads into.
+                let mut i = 0;
+                each_hit(beats, &mut |h| {
+                    let Sound::Notes(v) = &h.sound else {
+                        return;
+                    };
+                    let moved =
+                        v.first().copied().unwrap_or(0) - before.get(i).copied().unwrap_or(0);
+                    i += 1;
+                    for g in &mut h.grace {
+                        if let Sound::Notes(gv) = g {
+                            gv.iter_mut().for_each(|p| *p += moved);
+                        }
                     }
                 });
             }
@@ -165,14 +195,30 @@ pub fn apply(beats: &mut [Beat], ops: &[Op], key: Key) {
 
 /// Calls `f` on each note's pitches, in the order they are written.
 pub fn each_note(beats: &mut [Beat], f: &mut dyn FnMut(&mut Vec<i32>)) {
-    fn slots(s: &mut [Slot], f: &mut dyn FnMut(&mut Vec<i32>)) {
+    each_hit(beats, &mut |h| {
+        if let Sound::Notes(v) = &mut h.sound {
+            f(v);
+        }
+    });
+}
+
+/// Calls `f` on each grace note's pitches.
+fn each_grace(beats: &mut [Beat], f: &mut dyn FnMut(&mut Vec<i32>)) {
+    each_hit(beats, &mut |h| {
+        for g in &mut h.grace {
+            if let Sound::Notes(v) = g {
+                f(v);
+            }
+        }
+    });
+}
+
+/// Calls `f` on each hit, in the order they are written.
+fn each_hit(beats: &mut [Beat], f: &mut dyn FnMut(&mut Hit)) {
+    fn slots(s: &mut [Slot], f: &mut dyn FnMut(&mut Hit)) {
         for slot in s {
             match slot {
-                Slot::Hit(h) => {
-                    if let Sound::Notes(v) = &mut h.sound {
-                        f(v);
-                    }
-                }
+                Slot::Hit(h) => f(h),
                 Slot::Group(inner, _) => slots(inner, f),
                 Slot::Choice(options, _) => options.iter_mut().for_each(|o| slots(o, f)),
                 Slot::Hold(_) | Slot::Rest(_) => {}

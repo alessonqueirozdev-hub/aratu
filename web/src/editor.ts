@@ -113,7 +113,7 @@ const aratuLanguage = StreamLanguage.define<State>({
       const ch = stream.match(/^\p{L}/u) as RegExpMatchArray | null;
       if (ch) return /\p{Lu}/u.test(ch[0]) ? "strong" : "variableName";
     }
-    if (stream.match(/^[?'^<>+%~!]/)) return "operator";
+    if (stream.match(/^[?'^<>+%~!`]/)) return "operator";
     const word = stream.match(/^[\p{L}_][\p{L}\p{N}_#]*/u) as RegExpMatchArray | null;
     if (word) {
       const w = word[0];
