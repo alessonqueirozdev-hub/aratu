@@ -1444,7 +1444,9 @@ impl<'p> Scheduler<'p> {
         if let Some(r) = rubato {
             let len = beats.to_f64();
             if len > 0.0 {
-                let sign = if chance(self.seed, mix(part.len() as u64), g, 0x4ba7) < 0.5 {
+                // The same way for every part in a bar, whatever it is called:
+                // `all: rubato` bends the piece together, as a conductor does.
+                let sign = if chance(self.seed, 0, g, 0x4ba7) < 0.5 {
                     -1.0
                 } else {
                     1.0

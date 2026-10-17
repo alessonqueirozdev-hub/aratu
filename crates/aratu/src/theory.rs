@@ -177,7 +177,7 @@ impl Key {
         let (acc, alen) = accidentals(rest);
         let mode = rest[alen..].trim().to_lowercase();
         let minor = match mode.as_str() {
-            "" | "major" | "maior" | "maj" => false,
+            "" | "major" | "maior" | "mayor" | "maj" => false,
             "minor" | "menor" | "min" | "m" => true,
             _ => return None,
         };

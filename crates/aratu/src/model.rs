@@ -860,12 +860,20 @@ fn target_of(piece: &Piece, target: &Name, diags: &mut Vec<Diagnostic>) -> Strin
     if let Some(n) = part_named(&names, &target.text) {
         return n;
     }
-    diags.push(Diagnostic::warning(
-        target.span,
-        Message::UnknownTarget {
+    // `hh: out` names a line; out, in and levels are for its part.
+    let owner = piece
+        .all_parts()
+        .find(|p| p.lines.iter().any(|l| l.name == target.text));
+    let message = match owner {
+        Some(p) => Message::LineNotPart {
+            line: target.text.clone(),
+            part: p.name.clone(),
+        },
+        None => Message::UnknownTarget {
             name: target.text.clone(),
         },
-    ));
+    };
+    diags.push(Diagnostic::warning(target.span, message));
     target.text.clone()
 }
 

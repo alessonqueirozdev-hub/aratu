@@ -853,3 +853,40 @@ fn effects_and_numbers_for_the_whole_piece() {
     let c = compile("bass = | c2 _ _ _ |\nbass.delay.time = 375 ms");
     assert!((c.piece.parts[0].params[0].value - 0.375).abs() < 1e-9);
 }
+
+#[test]
+fn out_names_the_part_when_a_line_is_written() {
+    let c = compile("hh = c c c c\nbd = b - b -\nhh: out");
+    let texts: Vec<String> = c.diagnostics.iter().map(|d| d.text(Lang::Pt)).collect();
+    assert!(
+        texts
+            .iter()
+            .any(|t| t.starts_with("`hh` é uma linha da parte `drums`")),
+        "{texts:?}"
+    );
+}
+
+#[test]
+fn a_part_bends_the_same_whatever_it_is_called() {
+    let times = |src: &str| -> Vec<f64> {
+        let c = compile(src);
+        render(&c.piece, &Options::default(), 1, 4)
+            .events
+            .iter()
+            .map(|e| e.time)
+            .collect()
+    };
+    let a = times("melodia = | e4 d c d |\nmelodia: rubato 20%");
+    let b = times("melody = | e4 d c d |\nmelody: rubato 20%");
+    assert_eq!(a, b);
+    // And `all: rubato` bends every part together.
+    let c = compile("m = | c4 d e f |\nbass = | c2 d e f |\nall: rubato 20%");
+    let r = render(&c.piece, &Options::default(), 1, 3);
+    for e in r.events.iter().filter(|e| e.part == "m") {
+        assert!(
+            r.events
+                .iter()
+                .any(|f| f.part == "bass" && (f.time - e.time).abs() < 1e-9)
+        );
+    }
+}

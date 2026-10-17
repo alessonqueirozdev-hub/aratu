@@ -281,6 +281,11 @@ pub enum Message {
     UnknownTarget {
         name: String,
     },
+    /// `hh: out`: out, in and levels are for parts, and `hh` is a line.
+    LineNotPart {
+        line: String,
+        part: String,
+    },
     UnknownSection {
         name: String,
     },
@@ -687,6 +692,12 @@ impl Message {
             (UnknownTarget { name }, Pt) => {
                 format!("não existe parte, linha ou padrão chamado `{name}`")
             }
+            (LineNotPart { line, part }, En) => format!(
+                "`{line}` is a line of the part `{part}`; out, in and levels are for a whole part: `{part}:`"
+            ),
+            (LineNotPart { line, part }, Pt) => format!(
+                "`{line}` é uma linha da parte `{part}`; out, in e dinâmica valem para a parte inteira: `{part}:`"
+            ),
             (UnknownSection { name }, En) => format!("there is no section called `{name}`"),
             (UnknownSection { name }, Pt) => format!("não existe seção chamada `{name}`"),
             (MotifLoop { name }, En) => format!("the motif `{name}` uses itself, so it would never end"),
@@ -965,6 +976,9 @@ impl Message {
             (UnknownTarget { name }, Es) => {
                 format!("no existe una parte, línea o patrón llamado `{name}`")
             }
+            (LineNotPart { line, part }, Es) => format!(
+                "`{line}` es una línea de la parte `{part}`; out, in y los matices valen para la parte entera: `{part}:`"
+            ),
             (UnknownSection { name }, Es) => format!("no existe una sección llamada `{name}`"),
             (MotifLoop { name }, Es) => format!("el motivo `{name}` se usa a sí mismo y nunca terminaría"),
             (BracesOneOption { inner }, Es) => format!("las llaves eligen entre opciones separadas por `|`, como `{{a|b}}`; para agrupar notas en un tiempo, usa corchetes: `[{inner}]` (y `[{inner}]x4` para repetirlo)"),
