@@ -1,4 +1,4 @@
-# Dinâmica: forte e piano
+# Dinâmica e articulação
 
 As marcas de dinâmica são as da partitura: `ppp pp p mp mf f ff fff`, e
 também `sfz` e `fp`. Dentro de um compasso, a marca vai colada na nota

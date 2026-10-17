@@ -1,4 +1,4 @@
-# Dynamics: loud and soft
+# Dynamics and articulation
 
 Dynamic marks are the score's: `ppp pp p mp mf f ff fff`, and also `sfz`
 and `fp`. Inside a bar, a mark sits on its note with a colon, and holds

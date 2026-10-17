@@ -1,4 +1,4 @@
-# Matices: forte y piano
+# Matices y articulación
 
 Las marcas de dinámica son las de la partitura: `ppp pp p mp mf f ff fff`,
 y también `sfz` y `fp`. Dentro de un compás, la marca va pegada a la nota
