@@ -801,3 +801,55 @@ fn brazilian_percussion_lines_have_strokes_of_their_own() {
             .contains("p polegar, d dedos, t tapa, m abafado")
     );
 }
+
+#[test]
+fn effects_and_numbers_for_the_whole_piece() {
+    // Effects written for all go on every part, after its own.
+    let src = "bass: synth.saw -> lowpass\nbass = | c2 _ _ _ |\nhh = c c c c\nall: chorus -> delay";
+    let c = compile(src);
+    assert!(c.diagnostics.is_empty(), "{:?}", c.diagnostics);
+    let chain = |name: &str| {
+        c.piece
+            .parts
+            .iter()
+            .find(|p| p.name == name)
+            .unwrap()
+            .chain
+            .clone()
+    };
+    assert_eq!(chain("bass"), ["synth.saw", "lowpass", "chorus", "delay"]);
+    assert_eq!(chain("drums"), ["chorus", "delay"]);
+    // In Portuguese too; a number with no part is for the whole piece, and
+    // Manguebyte's master bus has its own.
+    let c = compile(
+        "baixo = | c2 _ _ _ |\ntodos: chorus\nreverb.mix = 0.5\nmaster.glue.on = 1\nmaster.reverb.decay = 3 s",
+    );
+    assert!(c.diagnostics.is_empty(), "{:?}", c.diagnostics);
+    assert_eq!(c.piece.parts[0].chain, ["chorus"]);
+    let ids: Vec<(&str, f64)> = c
+        .piece
+        .params
+        .iter()
+        .map(|p| (p.id.as_str(), p.value))
+        .collect();
+    assert_eq!(
+        ids,
+        [
+            ("reverb.mix", 0.5),
+            ("master.glue.on", 1.0),
+            ("master.reverb.decay", 3.0)
+        ]
+    );
+    // The new effects are known, and their numbers checked.
+    let c = compile(
+        "bass: synth.saw -> eq -> compressor -> phaser\nbass = | c2 _ _ _ |\nbass.eq.low_gain = 30 dB",
+    );
+    assert!(
+        c.diagnostics
+            .iter()
+            .any(|d| matches!(d.message, Message::ParamOutOfRange { .. }))
+    );
+    // A delay's time may be written in milliseconds or seconds.
+    let c = compile("bass = | c2 _ _ _ |\nbass.delay.time = 375 ms");
+    assert!((c.piece.parts[0].params[0].value - 0.375).abs() < 1e-9);
+}

@@ -1,7 +1,20 @@
 // Types for Manguebyte's js/engine.js, the part of its API Aratu uses.
 // Copied next to engine.js by scripts/manguebyte.mjs.
 
-export type Instrument = "synth" | "drums" | "sampler" | "sampler_kit";
+export type Instrument =
+  | "synth"
+  | "drums"
+  | "sampler"
+  | "sampler_kit"
+  | "plucked"
+  | "fm"
+  | "organ"
+  | "analog_kit"
+  | "kick_bass"
+  | "acid";
+
+/** The instruments that have presets (`<kind>.preset`). */
+export type PresetKind = "plucked" | "fm" | "organ" | "acid";
 
 export interface Latency {
   engineFrames: number;
@@ -17,7 +30,13 @@ export interface SfzSummary {
   warnings: string[];
 }
 
+/** An effect's settings: by name, in its parameters' order, its first
+ * parameter, `{}` as it is set, or `false` to switch it off. */
+export type EffectSettings = Record<string, number | string> | (number | string)[] | number | false;
+
 export declare const DRUM_NOTES: Readonly<Record<string, number>>;
+export declare const PRESETS: Readonly<Record<PresetKind, readonly string[]>>;
+export declare const EFFECT_ORDER: readonly string[];
 
 export declare class ManguebyteEngine {
   static create(
@@ -34,7 +53,16 @@ export declare class ManguebyteEngine {
   cancel(part: number, time?: number): boolean;
   latency(): Promise<Latency>;
   createPart(part: number, kind?: Instrument, chain?: "full" | "none" | "lowpass" | "reverb" | number): Promise<void>;
+  setInstrument(part: number, kind: Instrument): Promise<void>;
+  setPreset(part: number, kind: PresetKind, preset: string | number, time?: number): boolean;
+  setRotary(part: number, speed: "stop" | "slow" | "fast" | number, time?: number): boolean;
+  setEffect(part: number, name: string, settings?: EffectSettings, time?: number): Promise<void>;
+  setEffects(part: number, effects: Record<string, EffectSettings>, time?: number): Promise<void>;
+  removeEffect(part: number, name: string, time?: number): void;
+  setSend(part: number, amount: number, time?: number): boolean;
+  setMaster(settings: Record<string, unknown>, time?: number): void;
   loadSfz(part: number, url: string, options?: { base?: string }): Promise<SfzSummary>;
   removePart(part: number): Promise<void>;
+  limiterReduction(): Promise<number>;
   close(): Promise<void>;
 }

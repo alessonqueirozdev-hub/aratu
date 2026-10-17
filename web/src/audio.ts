@@ -1,13 +1,16 @@
-// Built-in sounds on the Web Audio API, standing in until Manguebyte runs
-// in the browser: synthesized drum kits, synths, keyboards and plucked
-// strings (Karplus-Strong, rendered once per note into a buffer), and
-// sampled voices (VCSL, CC0) fetched when a piece first uses them. Each part
-// has its own chain: high-pass, low-pass, volume, pan, and sends to a delay
-// and a reverb. A part's voice is the code at the head of its chain
+// The sound of the editor. Manguebyte's engine plays almost every voice: one
+// engine, one numbered part of it for each part of the piece, with the
+// part's effects and Manguebyte's master bus (a shared reverb, a glue
+// compressor, a true-peak limiter). Beside it, the Web Audio stand-in plays
+// what Manguebyte does not have yet (the Brazilian percussion, the golpe on a
+// guitar part), a sampled voice while its samples come, and everything when
+// Manguebyte cannot run or the Sounds panel turns it off. Each part keeps a
+// stand-in chain (high-pass, low-pass, volume, pan, delay and reverb sends)
+// for that. A part's voice is the code at the head of its chain
 // (`bass: bass.slap -> reverb`), from the catalogue in the crate.
 
-import type { AratuEvent, ParamValue, PartInfo, Program, VoiceCatalogue } from "./aratu";
-import { ManguebyteEngine } from "../public/manguebyte/engine.js";
+import type { AratuEvent, BarInfo, ParamValue, PartInfo, Program, VoiceCatalogue } from "./aratu";
+import { type Instrument, ManguebyteEngine, type PresetKind } from "../public/manguebyte/engine.js";
 import { type Loaded, Sampler } from "./sampler";
 
 /** Manguebyte's drum notes (General MIDI, and 88 for the golpe), by the
@@ -26,11 +29,150 @@ const MB_DRUMS: Record<string, number> = {
   "guitar-tap": 88,
 };
 
-/** How much a part Manguebyte plays is raised or lowered to sit with the
- * others, measured in the browser with each voice's bar in the Sounds
- * panel: a sampled instrument peaks near 0.3 like the stand-in's voices, a
- * kit near 0.72 like the stand-in's kit. */
-const MB_LEVEL: Record<string, number> = { sampler: 1.6, sampler_kit: 1.45, drums: 0.75 };
+/** What Manguebyte plays a voice with: an instrument, the preset of the
+ * instruments that have them, and knobs set when the voice is chosen. A
+ * sampled voice not named here plays as an SFZ instrument (`sampler`). */
+interface MbVoice {
+  kind: Instrument;
+  preset?: string;
+  knobs?: Record<string, number>;
+}
+
+const MB_VOICES: Record<string, MbVoice> = {
+  "drums.kit": { kind: "drums" },
+  "drums.808": { kind: "analog_kit" },
+  "drums.acoustic": { kind: "sampler_kit" },
+  "guitar.nylon": { kind: "plucked", preset: "nylon_guitar" },
+  "guitar.steel": { kind: "plucked", preset: "steel_guitar" },
+  "bass.finger": { kind: "plucked", preset: "finger_bass" },
+  "bass.slap": { kind: "plucked", preset: "slap_bass" },
+  "keys.epiano": { kind: "fm", preset: "electric_piano" },
+  "keys.bell": { kind: "fm", preset: "tubular_bell" },
+  "keys.organ": { kind: "organ", preset: "jazz" },
+  "bass.808": { kind: "kick_bass" },
+  "bass.acid": { kind: "acid", preset: "classic" },
+  // Manguebyte's synth: two detuned oscillators and a sub through a
+  // resonant low-pass, set for each of Aratu's synth voices.
+  "bass.synth": {
+    kind: "synth",
+    knobs: { "synth.wave": 0, "synth.sub": 0.7, "synth.cutoff": 500, "synth.env_amount": 2, "synth.sustain": 0.6 },
+  },
+  "synth.saw": { kind: "synth", knobs: { "synth.wave": 0, "synth.cutoff": 2500 } },
+  "synth.square": { kind: "synth", knobs: { "synth.wave": 1, "synth.cutoff": 2500 } },
+  "synth.triangle": { kind: "synth", knobs: { "synth.wave": 2, "synth.cutoff": 4000, "synth.sub": 0.2 } },
+  "synth.sine": { kind: "synth", knobs: { "synth.wave": 3, "synth.cutoff": 6000, "synth.sub": 0, "synth.detune": 0 } },
+  "synth.pluck": {
+    kind: "synth",
+    knobs: { "synth.wave": 0, "synth.cutoff": 1800, "synth.decay": 0.25, "synth.sustain": 0, "synth.release": 0.2 },
+  },
+  "synth.supersaw": { kind: "synth", knobs: { "synth.wave": 0, "synth.detune": 35, "synth.cutoff": 5000, "synth.sub": 0.2 } },
+  "synth.pad": {
+    kind: "synth",
+    knobs: {
+      "synth.wave": 0,
+      "synth.detune": 20,
+      "synth.cutoff": 1600,
+      "synth.attack": 0.4,
+      "synth.sustain": 0.8,
+      "synth.release": 1.2,
+      "synth.env_amount": 1,
+    },
+  },
+  "synth.strings": {
+    kind: "synth",
+    knobs: {
+      "synth.wave": 0,
+      "synth.detune": 15,
+      "synth.cutoff": 3200,
+      "synth.attack": 0.25,
+      "synth.sustain": 0.85,
+      "synth.release": 0.8,
+      "synth.env_amount": 0.5,
+    },
+  },
+  "synth.brass": {
+    kind: "synth",
+    knobs: {
+      "synth.wave": 0,
+      "synth.detune": 8,
+      "synth.cutoff": 1100,
+      "synth.attack": 0.06,
+      "synth.env_amount": 3,
+      "synth.filter_decay": 0.3,
+      "synth.sustain": 0.7,
+    },
+  },
+  "synth.lead": { kind: "synth", knobs: { "synth.wave": 1, "synth.detune": 6, "synth.cutoff": 3000, "synth.sub": 0.1 } },
+};
+
+/** Whether Manguebyte plays a voice, for the Sounds panel's badge. */
+export function playsOnManguebyte(code: string, sampled: boolean): boolean {
+  return sampled || code in MB_VOICES;
+}
+
+/** Each voice's level on Manguebyte, measured in the browser with its bar in
+ * the Sounds panel (16 October 2026): one line of any voice peaks near 0.3
+ * at mf, a kit near 0.72, as on the stand-in. */
+const MB_GAIN: Record<string, number> = {
+  "drums.kit": 0.91,
+  "drums.808": 1.03,
+  "drums.acoustic": 1.49,
+  "piano.grand": 1.54,
+  "piano.upright": 3.50,
+  "keys.epiano": 2.90,
+  "keys.organ": 3.33,
+  "keys.harpsichord": 1.98,
+  "organ.pipe": 2.77,
+  "mallets.marimba": 1.65,
+  "mallets.vibraphone": 3.53,
+  "mallets.xylophone": 1.68,
+  "mallets.glockenspiel": 1.70,
+  "mallets.kalimba": 1.78,
+  "bells.tubular": 2.03,
+  "keys.bell": 2.75,
+  "guitar.nylon": 1.88,
+  "guitar.steel": 4.00,
+  "harp": 2.19,
+  "bass.synth": 0.89,
+  "bass.finger": 1.90,
+  "bass.slap": 0.87,
+  "bass.808": 1.56,
+  "bass.acid": 1.00,
+  "sax.tenor": 2.67,
+  "harmonica": 1.58,
+  "recorder.alto": 2.94,
+  "synth.saw": 1.42,
+  "synth.square": 1.20,
+  "synth.triangle": 1.74,
+  "synth.sine": 1.69,
+  "synth.pluck": 1.42,
+  "synth.supersaw": 1.70,
+  "synth.pad": 1.02,
+  "synth.strings": 1.21,
+  "synth.brass": 1.18,
+  "synth.lead": 1.40,
+};
+
+/** The kinds that play drums by the drum map, not notes. */
+const KIT_KINDS = new Set<Instrument>(["drums", "sampler_kit", "analog_kit"]);
+
+/** The effects a part's chain may name, as Manguebyte has them. The reverb
+ * of a chain is Manguebyte's shared one on the master bus, which the part's
+ * `reverb.mix` sends to, as the stand-in's reverb is. */
+const MB_EFFECTS = new Set([
+  "highpass",
+  "lowpass",
+  "eq",
+  "drive",
+  "bitcrush",
+  "compressor",
+  "chorus",
+  "flanger",
+  "phaser",
+  "tremolo",
+  "autopan",
+  "delay",
+]);
 
 const mtof = (n: number) => 440 * Math.pow(2, (n - 69) / 12);
 
@@ -86,17 +228,15 @@ interface SourceVoice {
 }
 
 /** What `play` made, for `cancel`: Web Audio sources, or notes sent to a
- * part's Manguebyte engine (which cancels them itself). */
-export type Voice = SourceVoice | { mb: ManguebyteEngine };
+ * Manguebyte part (which cancels them itself). */
+export type Voice = SourceVoice | { mb: ManguebyteEngine; part: number };
 
-/** A part that Manguebyte's engine plays: its synthesized kit, a sampled
- * kit, or a sampled instrument. One engine per part, its output going into
- * the part's chain, so Aratu's effects still apply to it. */
+/** A part that Manguebyte plays, by its number in the engine. */
 interface MbPart {
   voice: string;
-  kind: "drums" | "sampler" | "sampler_kit";
-  engine: ManguebyteEngine | null;
-  /** Plays what is asked of it: the kit at once, a sampler once loaded. */
+  kind: Instrument;
+  index: number;
+  /** Plays what is asked of it: at once, or a sampler once loaded. */
   ready: boolean;
   failed: boolean;
 }
@@ -116,11 +256,15 @@ interface Chain {
   voice: string;
   attack: number;
   release: number;
+  /** The effects its chain names (`-> lowpass -> delay`). */
+  effects: string[];
   /** The value each parameter is set up with, for `from bar 9 to 16` to
    * come back to. */
   configured: Map<string, number>;
   /** Set when Manguebyte's engine plays this part. */
   mb?: MbPart;
+  /** Settles once Manguebyte has the part ready, or could not. */
+  mbStart?: Promise<void>;
 }
 
 export class Engine {
@@ -133,9 +277,18 @@ export class Engine {
   private readonly voices = new Set<SourceVoice>();
   /** The open hi-hat ringing in each part, for a closed one to choke. */
   private readonly openHats = new Map<Chain, SourceVoice>();
-  /** Manguebyte's module, compiled once for every part's engine; null when
-   * it cannot run here, and the stand-in plays everything. */
+  /** Manguebyte's module, compiled once; null when it cannot run here, and
+   * the stand-in plays everything. */
   private mbModule: Promise<WebAssembly.Module | null> | null = null;
+  /** Manguebyte's engine, made when a part first needs it. */
+  private mbEngine: Promise<ManguebyteEngine | null> | null = null;
+  private mbLive: ManguebyteEngine | null = null;
+  /** Where Manguebyte's output joins the stand-in's on the way out. */
+  private readonly mbOut: GainNode;
+  private nextMbPart = 0;
+  private readonly freeMbParts: number[] = [];
+  /** The beats played before each bar, for synced effects. */
+  private readonly beatAt = new Map<number, number>();
   /** Where each sampled voice played by Manguebyte stands, for the panel. */
   private readonly mbStates = new Map<string, "loading" | "ready" | "failed">();
   private notify: (code: string, state: "loading" | "ready" | "failed") => void = () => {};
@@ -179,6 +332,8 @@ export class Engine {
     this.master = ctx.createGain();
     this.master.gain.value = 0.7;
     this.master.connect(comp);
+    this.mbOut = ctx.createGain();
+    this.mbOut.connect(this.master);
 
     this.reverb = ctx.createConvolver();
     this.reverb.buffer = this.impulse(2.2);
@@ -250,6 +405,7 @@ export class Engine {
       voice: "synth.triangle",
       attack: 0.005,
       release: 0.15,
+      effects: [],
       configured: new Map(),
     };
     this.chains.set(part, c);
@@ -281,9 +437,9 @@ export class Engine {
             : isBass
               ? "bass.synth"
               : "synth.triangle";
-    // Samples and drum kits go to Manguebyte's engine; the rest, and
-    // everything when that engine cannot run, stays in the stand-in. A
-    // sampled voice starts on its way now, so it is ready sooner.
+    c.effects = part.chain.filter((n) => MB_EFFECTS.has(n) || n === "reverb");
+    // Manguebyte plays the part when it has the voice; a sampled voice
+    // starts on its way now, so it is ready sooner.
     this.route(c);
     // Defaults from the chain, then the numbers written in the piece.
     const now = this.ctx.currentTime;
@@ -295,7 +451,7 @@ export class Engine {
       { id: "highpass.cutoff", value: part.chain.includes("highpass") ? 300 : 10 },
       { id: "reverb.mix", value: part.chain.includes("reverb") ? 0.3 : 0.08 },
       { id: "delay.mix", value: part.chain.includes("delay") ? 0.25 : 0 },
-      { id: "delay.time", value: 250 },
+      { id: "delay.time", value: 0.25 },
       { id: "delay.feedback", value: 0.35 },
       { id: "attack", value: 5 },
       { id: "release", value: 150 },
@@ -310,6 +466,9 @@ export class Engine {
   /** Sets a parameter at `when`; with `glide`, the sound moves to it
    * smoothly over the seconds before, as a moving parameter does. */
   private setParam(c: Chain, id: string, v: number, when: number, glide = 0): void {
+    // Manguebyte plays the part: it gets the value; the stand-in's chain
+    // follows too, for what it still plays of the part.
+    if (c.mb?.ready) this.mbParam(c, c.mb, id, v, when);
     const set = (p: AudioParam, value: number): void => {
       if (glide > 0) p.setTargetAtTime(value, Math.max(when - glide, 0), glide / 3);
       else p.setTargetAtTime(value, when, 0.015);
@@ -332,7 +491,7 @@ export class Engine {
       case "delay.mix":
         return set(c.delaySend.gain, v);
       case "delay.time":
-        return set(c.delay.delayTime, v / 1000);
+        return set(c.delay.delayTime, Math.min(v, 2.5));
       case "delay.feedback":
         return set(c.feedback.gain, Math.min(v, 0.95));
       case "attack":
@@ -350,35 +509,75 @@ export class Engine {
     for (const c of targets) if (c) this.setParam(c, id, value, this.ctx.currentTime);
   }
 
-  /** What Manguebyte plays of a voice: nothing, its synthesized kit, a
-   * sampled kit or a sampled instrument. */
-  private mbKind(voice: string): MbPart["kind"] | null {
-    if (voice === "drums.kit") return "drums";
-    if (voice === "drums.acoustic") return "sampler_kit";
-    if (this.sampled.has(voice)) return "sampler";
-    return null;
+  /** What Manguebyte plays a voice with, if it has it. */
+  private mbVoice(voice: string): MbVoice | null {
+    return MB_VOICES[voice] ?? (this.sampled.has(voice) ? { kind: "sampler" } : null);
   }
 
-  /** Gives a part its Manguebyte engine when its voice is one Manguebyte
-   * plays, and takes it away when the voice changes. */
+  /** Gives a part a Manguebyte part when its voice is one Manguebyte
+   * plays, changes its instrument when the voice changes, and gives the
+   * part back when Manguebyte does not have the new voice. */
   private route(c: Chain): void {
-    const kind = this.mbKind(c.voice);
     if (c.mb && c.mb.voice === c.voice) return;
-    if (c.mb) {
-      const old = c.mb.engine;
-      c.mb = undefined;
-      if (old) {
-        old.allNotesOff(0);
-        window.setTimeout(() => {
-          old.node.disconnect();
-          void old.close();
-        }, 600);
-      }
+    const want = this.mbVoice(c.voice);
+    const had = c.mb;
+    if (!want) {
+      if (had) this.releaseMb(c);
+      return;
     }
-    if (!kind) return;
-    const part: MbPart = { voice: c.voice, kind, engine: null, ready: false, failed: false };
+    const part: MbPart = {
+      voice: c.voice,
+      kind: want.kind,
+      index: had && !had.failed ? had.index : this.takeMbPart(),
+      ready: false,
+      failed: false,
+    };
     c.mb = part;
-    void this.startMb(c, part);
+    c.mbStart = this.startMb(c, part, want, !!had && !had.failed);
+  }
+
+  /** Settles when Manguebyte has every part it plays ready (or could not),
+   * or after `ms`, so that playing starts on Manguebyte's voices rather
+   * than on the stand-in's while a part is being made or its samples come. */
+  async whenReady(ms = 4000): Promise<void> {
+    const waits = [...this.chains.values()].flatMap((c) => (c.mb && !c.mb.ready && c.mbStart ? [c.mbStart] : []));
+    if (waits.length === 0) return;
+    await Promise.race([Promise.all(waits), new Promise((done) => window.setTimeout(done, ms))]);
+  }
+
+  private takeMbPart(): number {
+    return this.freeMbParts.pop() ?? this.nextMbPart++;
+  }
+
+  /** Lets a part's Manguebyte notes go and gives its number back. */
+  private releaseMb(c: Chain): void {
+    const part = c.mb;
+    c.mb = undefined;
+    const engine = this.mbLive;
+    if (!part || !engine) return;
+    engine.allNotesOff(part.index);
+    window.setTimeout(() => {
+      void engine.removePart(part.index).then(() => this.freeMbParts.push(part.index));
+    }, 600);
+  }
+
+  /** Manguebyte's engine, made once, its output joining the stand-in's. */
+  private engineMb(): Promise<ManguebyteEngine | null> {
+    this.mbEngine ??= (async () => {
+      const module = await this.moduleOf();
+      if (!module) return null;
+      const engine = await ManguebyteEngine.create(this.ctx, {
+        wasm: module,
+        workletUrl: new URL("manguebyte/worklet.js", this.base),
+      });
+      engine.node.connect(this.mbOut);
+      this.mbLive = engine;
+      return engine;
+    })().catch((error: unknown) => {
+      console.warn("Manguebyte:", error);
+      return null;
+    });
+    return this.mbEngine;
   }
 
   private moduleOf(): Promise<WebAssembly.Module | null> {
@@ -410,30 +609,25 @@ export class Engine {
     }
   }
 
-  private async startMb(c: Chain, part: MbPart): Promise<void> {
-    const sampled = part.kind !== "drums";
-    if (part.kind === "sampler") this.setMbState(part.voice, "loading");
+  private async startMb(c: Chain, part: MbPart, want: MbVoice, had: boolean): Promise<void> {
+    const sampled = part.kind === "sampler" || part.kind === "sampler_kit";
+    if (sampled) this.setMbState(part.voice, "loading");
     try {
-      const module = await this.moduleOf();
-      if (!module) throw new Error("Manguebyte cannot run in this browser");
-      const engine = await ManguebyteEngine.create(this.ctx, {
-        wasm: module,
-        workletUrl: new URL("manguebyte/worklet.js", this.base),
-      });
-      if (c.mb !== part) {
-        void engine.close();
-        return;
-      }
-      await engine.createPart(0, part.kind, "none");
-      const level = this.ctx.createGain();
-      level.gain.value = MB_LEVEL[part.kind] ?? 1;
-      engine.node.connect(level).connect(c.input);
-      part.engine = engine;
+      const engine = await this.engineMb();
+      if (!engine) throw new Error("Manguebyte cannot run in this browser");
+      if (c.mb !== part) return;
+      // A new kind of instrument keeps the part's chain and its settings.
+      if (had) await engine.setInstrument(part.index, part.kind);
+      else await engine.createPart(part.index, part.kind, "none");
+      if (c.mb !== part) return;
+      const now = this.ctx.currentTime;
+      if (want.preset) engine.setPreset(part.index, part.kind as PresetKind, want.preset, now);
+      for (const [id, v] of Object.entries(want.knobs ?? {})) engine.setParam(part.index, id, v, now);
+      await this.mbChain(c, part);
       // A kit plays its synthesized drums while its samples come.
       if (part.kind !== "sampler") part.ready = true;
       if (sampled) {
-        if (part.kind === "sampler_kit") this.setMbState(part.voice, "loading");
-        await engine.loadSfz(0, `samples/${part.voice}/voice.sfz`, { base: this.base });
+        await engine.loadSfz(part.index, `samples/${part.voice}/voice.sfz`, { base: this.base });
         if (c.mb !== part) return;
         part.ready = true;
         this.setMbState(part.voice, "ready");
@@ -448,6 +642,62 @@ export class Engine {
     }
   }
 
+  /** The part's effects and numbers, now in Manguebyte: the effects its
+   * chain names switched on, every other one off, and each value set up. */
+  private async mbChain(c: Chain, part: MbPart): Promise<void> {
+    const engine = this.mbLive;
+    if (!engine) return;
+    const now = this.ctx.currentTime;
+    const effects = Object.fromEntries(
+      c.effects.filter((e) => MB_EFFECTS.has(e)).map((e) => [e, {}] as [string, Record<string, number>]),
+    );
+    await engine.setEffects(part.index, effects, now);
+    for (const [id, v] of c.configured) this.mbParam(c, part, id, v, now);
+  }
+
+  /** Sends a parameter to a Manguebyte part, in Manguebyte's terms: the
+   * volume as the part's gain in decibels, the reverb as the send to the
+   * shared reverb, the stand-in's envelope as the synth's. */
+  private mbParam(c: Chain, part: MbPart, id: string, v: number, when: number): void {
+    const engine = this.mbLive;
+    if (!engine) return;
+    const i = part.index;
+    switch (id) {
+      case "volume": {
+        const level = v * (MB_GAIN[c.voice] ?? 1);
+        engine.setParam(i, "gain", level > 0 ? Math.max(-60, 20 * Math.log10(level)) : -60, when);
+        return;
+      }
+      case "reverb.mix":
+        engine.setSend(i, v, when);
+        return;
+      case "attack":
+      case "release":
+        if (part.kind === "synth" && !(id in (MB_VOICES[c.voice]?.knobs ?? {}))) {
+          engine.setParam(i, `synth.${id}`, v / 1000, when);
+        }
+        return;
+      case "highpass.cutoff":
+        engine.setParam(i, id, Math.max(20, v), when);
+        return;
+      default:
+        engine.setParam(i, id, v, when);
+    }
+  }
+
+  /** Synced effects (`tremolo.sync`, `delay.sync`) follow the piece: the
+   * tempo and the beat at each bar line. */
+  bar(info: BarInfo, at: number): void {
+    const engine = this.mbLive;
+    if (!engine) return;
+    const before = this.beatAt.get(info.bar) ?? 0;
+    this.beatAt.set(info.bar + 1, before + info.beats);
+    const first = [...this.chains.values()].find((c) => c.mb?.ready)?.mb;
+    if (!first) return;
+    engine.setParam(first.index, "master.tempo", info.bpm, at);
+    engine.setParam(first.index, "master.beat", before, at);
+  }
+
   private setMbState(code: string, state: "loading" | "ready" | "failed"): void {
     this.mbStates.set(code, state);
     this.notify(code, state);
@@ -456,22 +706,25 @@ export class Engine {
   /** Sends an event to the part's Manguebyte engine, when it plays the part. */
   private playMb(c: Chain, e: AratuEvent, when: number): boolean {
     const part = c.mb;
-    const engine = part?.engine;
+    const engine = this.mbLive;
     if (!part || !engine || !part.ready) return false;
     const velocity = Math.max(0.01, Math.min(1, e.vel / 127));
     const accent = e.acc === 1;
+    const i = part.index;
     if (e.drum) {
-      const note = MB_DRUMS[e.drum];
-      if (note === undefined || part.kind === "sampler") return false;
-      engine.noteOn(0, note, velocity, when, 0, accent);
+      // The drum machine also claps; the Brazilian percussion and the
+      // golpe on a melodic part stay with the stand-in for now.
+      const note = e.drum === "clap" && part.kind === "analog_kit" ? 39 : MB_DRUMS[e.drum];
+      if (note === undefined || !KIT_KINDS.has(part.kind)) return false;
+      engine.noteOn(i, note, velocity, when, 0, accent);
     } else if (e.note !== undefined) {
-      if (part.kind !== "sampler") return false;
-      engine.noteOn(0, e.note, velocity, when, 0, accent);
-      engine.noteOff(0, e.note, when + Math.max(e.dur, 0.02));
+      if (KIT_KINDS.has(part.kind)) return false;
+      engine.noteOn(i, e.note, velocity, when, 0, accent);
+      engine.noteOff(i, e.note, when + Math.max(e.dur, 0.02));
     } else {
       return false;
     }
-    this.made.push({ mb: engine });
+    this.made.push({ mb: engine, part: i });
     return true;
   }
 
@@ -532,10 +785,10 @@ export class Engine {
   /** Silences voices scheduled but not yet sounding, as when a version of
    * the piece is replaced inside a bar. */
   cancel(voices: Voice[], from: number): void {
-    const engines = new Set<ManguebyteEngine>();
+    const parts = new Map<number, ManguebyteEngine>();
     for (const v of voices) {
       if ("mb" in v) {
-        engines.add(v.mb);
+        parts.set(v.part, v.mb);
         continue;
       }
       if (!this.voices.delete(v)) continue;
@@ -547,7 +800,7 @@ export class Engine {
       }
     }
     // Manguebyte drops what is left of the part and fades what sounds.
-    for (const engine of engines) engine.cancel(0, from);
+    for (const [part, engine] of parts) engine.cancel(part, from);
   }
 
   /** Forgets the parameter changes scheduled from `from` on. */
@@ -1464,11 +1717,11 @@ export class Engine {
     this.voices.clear();
     // Manguebyte's parts: what is scheduled dropped, what sounds let go
     // without a click.
+    const engine = this.mbLive;
     for (const c of this.chains.values()) {
-      const engine = c.mb?.engine;
-      if (engine) {
-        engine.cancel(0, now);
-        engine.allNotesOff(0, now);
+      if (engine && c.mb) {
+        engine.cancel(c.mb.index, now);
+        engine.allNotesOff(c.mb.index, now);
       }
     }
   }

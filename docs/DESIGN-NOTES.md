@@ -777,3 +777,29 @@ Still to do from the review: `feel samba`, `feel maracatu`, `feel frevo`
 (they need measured micro-timing, not guesses), techniques by word
 (`:trill`, `:gliss`, `:bend`, which need the engine), hands and pedal, and
 a choice between fragments longer than a beat.
+
+## Manguebyte plays almost everything
+
+Manguebyte's web engine (commit 4bf2b50) grew from a sampler and an
+analogue kit to ten instruments and a fourteen-stage effect chain per
+part, with a master bus (shared reverb, glue compressor, true-peak
+limiter). Aratu now runs one engine with a numbered part per Aratu part,
+and maps every voice in the Sounds panel to one of those instruments:
+guitars and fingered basses to the plucked string, the electric piano
+and the bell to FM, the organ to the drawbar organ with its rotating
+speaker, the 808 to the analogue kit and the kick bass, the acid bass to
+the acid voice, every `synth.*` to the subtractive synth with its knobs.
+Levels were measured voice by voice and calibrated with a gain per voice,
+so that a part at volume 1 sits near the others. Only the Brazilian
+percussion and the golpe stay in the stand-in, until there are samples.
+
+The parameter table now holds Manguebyte's ids, ranges, units and
+defaults, so a knob means the same in both. Volume becomes the part's
+gain in dB, `reverb.mix` the send to the shared reverb. A part's chain
+lists effects in any order; the engine runs them in its fixed order.
+
+For the whole piece: a number with no part was already for every part;
+a chain written for `all` (`todos`) now adds its effects to every part
+after its own, and `master.*` reaches the master bus. Playing and the
+previews wait (up to four seconds) for Manguebyte's parts to be ready,
+so the first notes are never the stand-in's.

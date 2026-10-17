@@ -101,6 +101,7 @@ está el parámetro ahora.
 > `every 8 bars:`, termina al final de cada ocho compases, como un
 > redoble; con `every 8 bars, first:`, empieza en el primero de cada ocho.
 
-> Los sonidos grabados y la batería analógica ya suenan con el motor de
-> Manguebyte. Los efectos también pasarán a él, y los mismos textos sonarán
-> mejor sin cambiar nada.
+> Todos estos sonidos, y los efectos, suenan con el motor de Manguebyte, el
+> motor de audio del ecosistema. Un número escrito sin parte vale para toda
+> la obra: `reverb.mix = 0.5` lo pone todo en la reverb, y `todos: chorus`
+> pone chorus en todas las partes.

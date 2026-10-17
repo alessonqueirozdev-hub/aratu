@@ -53,6 +53,9 @@ export class Player {
   private bars: BarAt[] = [];
   private sounds: Sound[] = [];
   private seed = 0;
+  /** Counts stops, so a start still waiting for the engine knows it was
+   * stopped meanwhile. */
+  private runs = 0;
   private timer: number | undefined;
 
   constructor(
@@ -71,8 +74,13 @@ export class Player {
 
   async play(program: Program): Promise<void> {
     this.stop();
+    const run = this.runs;
     await this.engine.ctx.resume();
     this.adopt(program, 1);
+    // The first bar on Manguebyte's voices, not the stand-in's while they
+    // are being made.
+    await this.engine.whenReady();
+    if (run !== this.runs) return;
     // The lines there when playing starts sound from the first bar, and keep
     // it through the edits that follow.
     this.anchors.clear();
@@ -98,6 +106,7 @@ export class Player {
   }
 
   stop(): void {
+    this.runs++;
     if (this.timer !== undefined) window.clearInterval(this.timer);
     this.timer = undefined;
     this.bars = [];
@@ -203,6 +212,7 @@ export class Player {
     const list = this.schedule(r.events, offset, program.handle);
     this.bars.push({ info: bar, at: this.nextTime });
     this.hooks.bar(bar, this.nextTime);
+    this.engine.bar(bar, this.nextTime);
     this.hooks.events(list);
     this.nextTime += Math.max(bar.end - bar.start, 0);
     this.nextBar++;

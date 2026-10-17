@@ -14,8 +14,9 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const REPO = "https://github.com/alessonqueirozdev-hub/manguebyte.git";
-// Wave 5b: sampler parts, sampler kits, cancel and soft all-notes-off.
-const COMMIT = process.argv[2] ?? "29000fd933460785e079147c7a8abdbb16690646";
+// Waves 5c and 5d: effects and the master bus, the instruments of
+// manguebyte-dsp, and the keys of the Brazilian percussion.
+const COMMIT = process.argv[2] ?? "4bf2b50593e02a4c25fe763aae499b5fdc292213";
 
 const web = join(dirname(fileURLToPath(import.meta.url)), "..");
 const cache = join(web, ".manguebyte-cache");

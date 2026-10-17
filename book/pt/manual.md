@@ -677,16 +677,21 @@ então salvar o texto salva a apresentação. Segure Shift para passos mais
 finos. Um número escrito em outra unidade a mantém: `1.2 kHz` gira em
 quilohertz, `40%` em porcentagem.
 
-| Parâmetro | Faixa |
+Os efeitos são os do Manguebyte, e entram na cadeia em qualquer ordem
+(`baixo: synth.saw -> eq -> chorus -> delay`); o motor os roda sempre na
+mesma ordem, do filtro ao delay:
+
+| Efeito | Parâmetros |
 |---|---|
-| `volume` | 0 a 1 |
-| `pan` | -1 (esquerda) a 1 (direita) |
-| `attack`, `release` | 1 a 2000 ms, 5 a 5000 ms |
-| `lowpass.cutoff`, `highpass.cutoff` | 20 a 20000 Hz |
-| `lowpass.resonance`, `highpass.resonance` | 0 a 1 |
-| `reverb.mix` | 0 a 1 |
-| `delay.time` | 10 a 2000 ms |
-| `delay.feedback`, `delay.mix` | 0 a 0,95, 0 a 1 |
+| a parte | `volume` (0 a 1), `pan` (-1 esquerda a 1 direita), `reverb.mix` (quanto vai para o reverb da mixagem, 0 a 1) |
+| `highpass`, `lowpass` | `cutoff` (20 a 20000 Hz), `resonance` (0 a 1) |
+| `eq` | `low_gain`, `mid_gain`, `high_gain` (-24 a 24 dB), `low_freq`, `mid_freq`, `high_freq`, `mid_q` |
+| `drive` | `amount` (0 a 36 dB), `output`, `mix`, `shape` (0 suave, 1 macio, 2 duro, 3 dobrado) |
+| `bitcrush` | `bits` (1 a 16), `rate` (Hz), `mix` |
+| `compressor` | `threshold`, `ratio`, `attack`, `release`, `knee`, `makeup`, `mix` |
+| `chorus`, `flanger`, `phaser` | `mix`, `rate`, `depth`, e mais: `voices`, `feedback`, `stages`… |
+| `tremolo`, `autopan` | `rate`, `depth`, `shape` (0 senoide, 1 triângulo, 2 quadrada, 3 e 4 serra), `sync` (em tempos) |
+| `delay` | `time` (em s ou ms), `feedback`, `mix`, `damping`, `pingpong`, `sync` (em tempos) |
 
 **Os sons.** Cada som tem um código, escrito no começo da cadeia:
 `baixo: bass.slap -> reverb`, `drums: drums.808`, `piano: piano.grand`. O
@@ -708,14 +713,40 @@ Community Sample Library, em domínio público (CC0), baixadas na primeira vez
 que uma peça as usa. Enquanto chegam, um som sintetizado parecido toca no
 lugar.
 
-**O motor do Manguebyte.** Os sons gravados e a bateria analógica
-(`drums.kit`) tocam pelo motor do Manguebyte, o motor de áudio do
-ecossistema, que roda no navegador; no painel Sons eles levam o selo
-**Manguebyte**. Os outros sons tocam num motor provisório, feito com o Web
-Audio do navegador, até o Manguebyte tê-los, sempre com os mesmos códigos.
-Os efeitos (`lowpass`, `highpass`, `delay`, `reverb`), o volume e o pan
-valem para todos. Se algo der errado numa apresentação, o interruptor do
-painel Sons desliga o Manguebyte e tudo passa a tocar no provisório.
+**O motor do Manguebyte.** Todos os sons do painel tocam pelo motor do
+Manguebyte, o motor de áudio do ecossistema, que roda no navegador: os
+gravados num sampler; violões e baixos (`guitar.nylon`, `guitar.steel`,
+`bass.finger`, `bass.slap`) em cordas modeladas; o piano elétrico e o sino
+(`keys.epiano`, `keys.bell`) em FM; o órgão (`keys.organ`) com a sua caixa
+rotativa, cuja velocidade é `organ.rotary` (0 parada, 1 lenta, 2 rápida); a
+808 (`drums.808`), o baixo 808 (`bass.808`), o acid (`bass.acid`) e os
+sintetizadores (`synth.*`). Cada parte tem os seus efeitos no motor, e a
+mixagem passa por um reverb compartilhado, um compressor de cola e um
+limitador. A percussão brasileira e o golpe ainda tocam num motor
+provisório, até o Manguebyte tê-los; se algo der errado numa apresentação,
+o interruptor do painel Sons desliga o Manguebyte e tudo passa a tocar no
+provisório.
+
+**Para a obra inteira.** Um número escrito sem parte vale para todas:
+`reverb.mix = 0.5` põe todas as partes no reverb da mixagem. Uma cadeia
+escrita para `todos` (ou `all`) põe os seus efeitos em todas as partes,
+depois dos de cada uma. E o próprio barramento da mixagem, o master, tem
+os seus números:
+
+```aratu
+todos: chorus -> delay
+reverb.mix = 0.5
+master.reverb.decay = 3 s
+master.glue.on = 1
+master.limiter.ceiling = -1
+```
+
+| Master | O que é |
+|---|---|
+| `master.reverb.decay`, `.size`, `.damping`, `.level` | o reverb compartilhado: duração (s), tamanho, abafamento, volume (dB) |
+| `master.glue.on`, `.threshold`, `.ratio`, `.makeup` | o compressor de cola: 1 liga; limiar (dB), razão, ganho (dB) |
+| `master.gain` | o volume antes do limitador, em dB |
+| `master.limiter.ceiling` | o teto do limitador, de -12 a -0,3 dB |
 
 Os parâmetros podem mudar por compasso como tudo mais: `at bar 16:
 baixo.reverb.mix = 0.65`.
@@ -811,6 +842,9 @@ escrito.
 | uma linha que começa com `\|` | continua a linha de música de cima |
 | `\| I \| vi \| V7/V \|`, `Am:arp` | acordes pelo grau; acorde arpejado |
 | `pandeiro = pd td pd td` | percussão brasileira |
+| `reverb.mix = 0.5` (sem parte) | vale para todas as partes |
+| `todos: chorus -> delay` | efeitos em todas as partes |
+| `master.reverb.decay = 3 s` | a mixagem: reverb, cola, limitador |
 
 ## 15. Em português, espanhol e inglês
 

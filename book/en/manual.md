@@ -668,16 +668,21 @@ number, so saving the text saves the performance. Hold Shift for finer
 steps. A number written in another unit keeps it: `1.2 kHz` turns in
 kilohertz, `40%` in percent.
 
-| Parameter | Range |
+The effects are Manguebyte's, and go in the chain in any order
+(`bass: synth.saw -> eq -> chorus -> delay`); the engine always runs them
+in the same order, from the filter to the delay:
+
+| Effect | Parameters |
 |---|---|
-| `volume` | 0 to 1 |
-| `pan` | -1 (left) to 1 (right) |
-| `attack`, `release` | 1 to 2000 ms, 5 to 5000 ms |
-| `lowpass.cutoff`, `highpass.cutoff` | 20 to 20000 Hz |
-| `lowpass.resonance`, `highpass.resonance` | 0 to 1 |
-| `reverb.mix` | 0 to 1 |
-| `delay.time` | 10 to 2000 ms |
-| `delay.feedback`, `delay.mix` | 0 to 0.95, 0 to 1 |
+| the part | `volume` (0 to 1), `pan` (-1 left to 1 right), `reverb.mix` (how much goes to the mix's reverb, 0 to 1) |
+| `highpass`, `lowpass` | `cutoff` (20 to 20000 Hz), `resonance` (0 to 1) |
+| `eq` | `low_gain`, `mid_gain`, `high_gain` (-24 to 24 dB), `low_freq`, `mid_freq`, `high_freq`, `mid_q` |
+| `drive` | `amount` (0 to 36 dB), `output`, `mix`, `shape` (0 smooth, 1 soft, 2 hard, 3 folded) |
+| `bitcrush` | `bits` (1 to 16), `rate` (Hz), `mix` |
+| `compressor` | `threshold`, `ratio`, `attack`, `release`, `knee`, `makeup`, `mix` |
+| `chorus`, `flanger`, `phaser` | `mix`, `rate`, `depth`, and more: `voices`, `feedback`, `stages`… |
+| `tremolo`, `autopan` | `rate`, `depth`, `shape` (0 sine, 1 triangle, 2 square, 3 and 4 saw), `sync` (in beats) |
+| `delay` | `time` (in s or ms), `feedback`, `mix`, `damping`, `pingpong`, `sync` (in beats) |
 
 **Sounds.** Each sound has a code, written at the head of the chain:
 `bass: bass.slap -> reverb`, `drums: drums.808`, `piano: piano.grand`. The
@@ -700,14 +705,39 @@ Versilian Community Sample Library, in the public domain (CC0), fetched the
 first time a piece uses them. While they arrive, a similar synthesized sound
 plays instead.
 
-**Manguebyte's engine.** The recorded sounds and the analogue kit
-(`drums.kit`) play through Manguebyte's engine, the ecosystem's audio
-engine, running in the browser; in the Sounds panel they carry the
-**Manguebyte** badge. The other sounds play in a stand-in made with the
-browser's Web Audio until Manguebyte has them, always under the same codes.
-The effects (`lowpass`, `highpass`, `delay`, `reverb`), volume and pan apply
-to all of them. If something goes wrong in a performance, the switch in the
-Sounds panel turns Manguebyte off and everything plays in the stand-in.
+**Manguebyte's engine.** Every sound in the panel plays through
+Manguebyte's engine, the ecosystem's audio engine, running in the browser:
+the recorded ones in a sampler; guitars and basses (`guitar.nylon`,
+`guitar.steel`, `bass.finger`, `bass.slap`) as modelled strings; the
+electric piano and the bell (`keys.epiano`, `keys.bell`) in FM; the organ
+(`keys.organ`) through its rotating speaker, whose speed is `organ.rotary`
+(0 stopped, 1 slow, 2 fast); the 808 (`drums.808`), the 808 bass
+(`bass.808`), the acid (`bass.acid`) and the synthesizers (`synth.*`). Each
+part has its effects in the engine, and the mix goes through a shared
+reverb, a glue compressor and a limiter. The Brazilian percussion and the
+golpe still play in a stand-in until Manguebyte has them; if something goes
+wrong in a performance, the switch in the Sounds panel turns Manguebyte off
+and everything plays in the stand-in.
+
+**For the whole piece.** A number written with no part is for all of
+them: `reverb.mix = 0.5` puts every part in the mix's reverb. A chain
+written for `all` puts its effects on every part, after each part's own.
+And the mix's own bus, the master, has numbers of its own:
+
+```aratu
+all: chorus -> delay
+reverb.mix = 0.5
+master.reverb.decay = 3 s
+master.glue.on = 1
+master.limiter.ceiling = -1
+```
+
+| Master | What it is |
+|---|---|
+| `master.reverb.decay`, `.size`, `.damping`, `.level` | the shared reverb: length (s), size, damping, level (dB) |
+| `master.glue.on`, `.threshold`, `.ratio`, `.makeup` | the glue compressor: 1 turns it on; threshold (dB), ratio, make-up (dB) |
+| `master.gain` | the level into the limiter, in dB |
+| `master.limiter.ceiling` | the limiter's ceiling, -12 to -0.3 dB |
 
 Parameters can change by bar like anything else: `at bar 16:
 bass.reverb.mix = 0.65`.
@@ -803,6 +833,9 @@ written value.
 | a line that starts with `\|` | goes on with the line of music above |
 | `\| I \| vi \| V7/V \|`, `Am:arp` | chords by degree; a rolled chord |
 | `pandeiro = pd td pd td` | Brazilian percussion |
+| `reverb.mix = 0.5` (no part) | for every part |
+| `all: chorus -> delay` | effects on every part |
+| `master.reverb.decay = 3 s` | the mix: reverb, glue, limiter |
 
 ## 15. In English, Portuguese and Spanish
 

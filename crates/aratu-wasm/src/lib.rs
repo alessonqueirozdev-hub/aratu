@@ -231,6 +231,7 @@ fn describe(handle: u32, program: &Program, src: &str, lang: Lang) -> String {
         j.key("unit").str(ctl.unit);
         j.key("log").bool(ctl.log);
         j.key("timed").bool(ctl.timed);
+        j.key("steps").bool(ctl.steps);
         j.close_obj();
     }
     j.close_arr();
@@ -256,6 +257,8 @@ pub struct Control {
     pub log: bool,
     /// Set at a bar (`at bar 16: ...`), so turning it changes the text only.
     pub timed: bool,
+    /// Whole numbers only (a choice or a count).
+    pub steps: bool,
 }
 
 /// Every number in the piece that sets a known parameter, plus the tempo.
@@ -275,6 +278,7 @@ pub fn controls(piece: &Piece) -> Vec<Control> {
                 unit: info.unit,
                 log: info.scale == params::Scale::Log,
                 timed,
+                steps: info.scale == params::Scale::Steps,
             });
         }
     };
@@ -328,6 +332,7 @@ pub fn controls(piece: &Piece) -> Vec<Control> {
             unit: "bpm",
             log: false,
             timed: false,
+            steps: false,
         });
     }
     out.sort_by_key(|c| c.span.start);

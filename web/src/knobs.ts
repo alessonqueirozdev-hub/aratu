@@ -19,14 +19,15 @@ function toKnob(c: Control, v: number): number {
 
 function fromKnob(c: Control, t: number): number {
   t = Math.min(Math.max(t, 0), 1);
-  return c.log ? c.min * Math.pow(c.max / c.min, t) : c.min + t * (c.max - c.min);
+  const v = c.log ? c.min * Math.pow(c.max / c.min, t) : c.min + t * (c.max - c.min);
+  return c.steps ? Math.round(v) : v;
 }
 
 /** The number as it is written back into the text. */
 function written(c: Control, value: number): string {
   const w = value * c.factor;
   const span = (c.max - c.min) * c.factor;
-  const decimals = span >= 100 ? 0 : span >= 10 ? 1 : 2;
+  const decimals = c.steps || span >= 100 ? 0 : span >= 10 ? 1 : 2;
   return w.toFixed(decimals);
 }
 

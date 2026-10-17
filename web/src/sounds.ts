@@ -2,7 +2,7 @@
 // A click on a code writes it into the piece; ▶ plays a bar of it.
 
 import type { Aratu, VoiceCatalogue, VoiceInfo } from "./aratu";
-import { Engine } from "./audio";
+import { Engine, playsOnManguebyte } from "./audio";
 import { type Lang, tr } from "./i18n";
 
 export interface SoundsOptions {
@@ -24,6 +24,8 @@ export class SoundsPanel {
   private catalogue: VoiceCatalogue | null = null;
   private filter = "";
   private stopPreview: (() => void) | null = null;
+  /** Counts previews asked for, so one still waiting knows another came. */
+  private asked = 0;
 
   constructor(
     private readonly box: HTMLElement,
@@ -107,13 +109,13 @@ export class SoundsPanel {
     row.dataset.voice = v.code;
     const play = el("button", "sound-play", "▶");
     play.title = tr("soundHear", lang);
-    play.onclick = () => this.preview(v, kit, play);
+    play.onclick = () => void this.preview(v, kit, play);
     const code = el("button", "sound-code", v.code);
     code.title = tr("soundUse", lang);
     code.onclick = () => this.o.insert(v.code);
     const name = el("span", "sound-name", v.name);
     row.append(play, code, name);
-    if ((v.sampled || v.code === "drums.kit") && Engine.manguebyteWanted()) {
+    if (playsOnManguebyte(v.code, v.sampled) && Engine.manguebyteWanted()) {
       row.append(el("span", "sound-mb", "Manguebyte"));
     }
     if (v.sampled) {
@@ -127,7 +129,7 @@ export class SoundsPanel {
   }
 
   /** Plays one bar of a voice, twice, on its own. */
-  private preview(v: VoiceInfo, kit: boolean, button: HTMLElement): void {
+  private async preview(v: VoiceInfo, kit: boolean, button: HTMLElement): Promise<void> {
     this.stopPreview?.();
     const part = kit ? "drums" : "som";
     const body = kit ? v.demo.split("\n").map((l) => `  ${l}`).join("\n") : `  melodia = ${v.demo}`;
@@ -142,9 +144,13 @@ export class SoundsPanel {
     engine.configure(program);
     const rendered = this.o.aratu.render(program.handle, 1, 3, new Map(), 1);
     this.o.aratu.release(program.handle);
+    // Heard on the voice itself, once Manguebyte has it ready.
+    button.classList.add("on");
+    const asked = ++this.asked;
+    await engine.whenReady();
+    if (asked !== this.asked) return;
     const start = engine.ctx.currentTime + 0.25;
     const voices = rendered.events.flatMap((e) => engine.play(e, start + e.time));
-    button.classList.add("on");
     const end = Math.max(0, ...rendered.events.map((e) => e.time + e.dur)) + 0.5;
     const timer = window.setTimeout(() => button.classList.remove("on"), end * 1000);
     this.stopPreview = () => {

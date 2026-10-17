@@ -40,6 +40,8 @@ export interface Control {
   log: boolean;
   /** Set at a bar: turning it changes the text, not the sound right away. */
   timed: boolean;
+  /** Whole numbers only: a choice (a wave, a shape) or a count. */
+  steps: boolean;
 }
 
 export interface Program {

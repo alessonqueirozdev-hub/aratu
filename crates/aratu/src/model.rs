@@ -395,6 +395,8 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
     let mut top = PartList::default();
     let mut groups: Vec<(Scope, Span, PartList)> = Vec::new();
     let mut global_params: Vec<(Vec<Name>, Value, Span)> = Vec::new();
+    // `all: chorus -> delay`: effects every part has.
+    let mut global_effects: Vec<String> = Vec::new();
     for s in &ast.stmts {
         let list = match &s.scope {
             Scope::Top => &mut top,
@@ -499,9 +501,19 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
                     }
                 }
                 let target = target.as_ref().or(s.part.as_ref());
-                if let Some(t) = target {
-                    list.get(&t.text, t.span).chain =
-                        units.iter().map(|u| u.text.clone()).collect();
+                match target {
+                    Some(t) if t.text == "all" => {
+                        global_effects = units
+                            .iter()
+                            .map(|u| u.text.clone())
+                            .filter(|u| crate::voices::EFFECTS.contains(&u.as_str()))
+                            .collect();
+                    }
+                    Some(t) => {
+                        list.get(&t.text, t.span).chain =
+                            units.iter().map(|u| u.text.clone()).collect();
+                    }
+                    None => {}
                 }
             }
             _ => {}
@@ -554,6 +566,21 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
             piece.patterns.push(g);
         } else {
             piece.sections.push(g);
+        }
+    }
+    // The effects written for all go on every part's chain, after its own.
+    if !global_effects.is_empty() {
+        let groups = piece.patterns.iter_mut().chain(piece.sections.iter_mut());
+        let parts = piece
+            .parts
+            .iter_mut()
+            .chain(groups.flat_map(|g| g.parts.iter_mut()));
+        for part in parts {
+            for e in &global_effects {
+                if !part.chain.contains(e) {
+                    part.chain.push(e.clone());
+                }
+            }
         }
     }
 

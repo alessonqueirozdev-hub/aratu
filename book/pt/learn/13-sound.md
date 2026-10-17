@@ -100,6 +100,7 @@ está agora.
 > termina no fim de cada oito compassos, como uma virada; com
 > `every 8 bars, first:`, começa no primeiro de cada oito.
 
-> Os sons gravados e a bateria analógica já tocam pelo motor do Manguebyte.
-> Os efeitos também vão passar para ele, e os mesmos textos vão soar melhor
-> sem mudar nada.
+> Todos esses sons, e os efeitos, tocam pelo motor do Manguebyte, o motor
+> de áudio do ecossistema. Um número escrito sem parte vale para a obra
+> inteira: `reverb.mix = 0.5` põe tudo no reverb, e `todos: chorus` põe
+> chorus em todas as partes.

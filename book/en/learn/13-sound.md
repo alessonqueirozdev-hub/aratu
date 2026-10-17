@@ -99,6 +99,7 @@ and while it plays a second needle shows where the parameter is now.
 > at the end of every eight bars, like a fill; with `every 8 bars, first:`,
 > it starts at the first of every eight.
 
-> The recorded sounds and the analog drum kit already play on Manguebyte's
-> engine. The effects will move to it too, and the same texts will sound
-> better without changing anything.
+> All these sounds, and the effects, play through Manguebyte's engine, the
+> ecosystem's audio engine. A number written with no part is for the whole
+> piece: `reverb.mix = 0.5` puts everything in the reverb, and `all: chorus`
+> puts a chorus on every part.

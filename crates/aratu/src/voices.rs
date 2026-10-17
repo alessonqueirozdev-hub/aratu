@@ -390,7 +390,22 @@ pub const ALIASES: &[(&str, &str)] = &[
 ];
 
 /// The effects a chain may pass through after its voice.
-pub const EFFECTS: &[&str] = &["lowpass", "highpass", "reverb", "delay"];
+/// The effects a chain may name: Manguebyte's, in the order it runs them.
+pub const EFFECTS: &[&str] = &[
+    "highpass",
+    "lowpass",
+    "eq",
+    "drive",
+    "bitcrush",
+    "compressor",
+    "chorus",
+    "flanger",
+    "phaser",
+    "tremolo",
+    "autopan",
+    "delay",
+    "reverb",
+];
 
 /// The voice a code names, aliases included.
 pub fn find(code: &str) -> Option<&'static Voice> {
