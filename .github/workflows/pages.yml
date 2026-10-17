@@ -19,6 +19,11 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # The site's address, for canonical links and the site map. Set the
+      # repository variable ARATU_SITE_URL (e.g. https://aratu.live/) when
+      # the site moves; without it, scripts/site.mjs uses the GitHub Pages one.
+      ARATU_SITE_URL: ${{ vars.ARATU_SITE_URL }}
     defaults:
       run:
         working-directory: web

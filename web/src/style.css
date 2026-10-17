@@ -694,6 +694,121 @@ select:hover {
   color: var(--accent-ink);
 }
 
+.page-link {
+  margin: 18px 0 0;
+  font-size: 14px;
+}
+
+.page-link a {
+  color: var(--muted);
+}
+
+/* The pages to read (scripts/site.mjs): the book without the editor, which
+   need no script, for search engines and for sharing a link. */
+
+a.btn,
+.lang a {
+  color: var(--text);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 12px;
+  text-decoration: none;
+}
+
+a.btn:hover,
+.lang a:hover {
+  border-color: var(--accent);
+}
+
+a.btn-play {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.lang a {
+  display: inline-block;
+  border-radius: 0;
+  padding: 6px 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.lang a:first-child {
+  border-radius: 8px 0 0 8px;
+}
+
+.lang a:last-child {
+  border-radius: 0 8px 8px 0;
+}
+
+.lang a + a {
+  border-left: 0;
+}
+
+.lang a.on {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+}
+
+.read-view {
+  display: flex;
+  justify-content: center;
+}
+
+.open-in {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin: 16px 0 24px;
+  color: var(--soft);
+  font-size: 16px;
+}
+
+.read-list {
+  padding-left: 1.4em;
+}
+
+.read-list li {
+  margin: 12px 0;
+}
+
+.read-list a {
+  font-weight: 600;
+}
+
+.read-list p {
+  margin: 2px 0 0;
+  color: var(--soft);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.page .read-block pre {
+  margin: 0;
+  border-radius: 0;
+  background: var(--code-bg);
+}
+
+.read-block .block-answer {
+  border-top: 1px solid var(--line);
+  padding: 8px 14px;
+}
+
+.read-block .block-answer summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--mangue);
+}
+
+.page .read-block .block-answer pre {
+  margin: 8px -14px -8px;
+  border-top: 1px solid var(--line);
+}
+
 /* A live block. */
 
 .aratu-block {
@@ -1061,6 +1176,9 @@ select:hover {
 /* The footer. */
 
 .bottom {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 24px;
   padding: 10px 20px;
   border-top: 1px solid var(--line);
   color: var(--muted);
@@ -1497,6 +1615,14 @@ body.stage .stage-msg:not([hidden]) {
   }
   .page {
     font-size: 17px;
+  }
+  /* On a phone the tabs go on two lines rather than past the screen. */
+  .tabs {
+    flex-wrap: wrap;
+  }
+  .tabs a {
+    padding: 8px 12px;
+    white-space: nowrap;
   }
   .prefs {
     margin-left: 0;

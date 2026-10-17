@@ -32,6 +32,8 @@ interface Page {
   id: string;
   title: string;
   html: string;
+  /** Its page to read, without the editor, from the site's root. */
+  path: string;
 }
 
 interface Book {
@@ -43,6 +45,17 @@ interface Book {
 }
 
 function firstLang(): Lang {
+  // The pages to read open the editor in their own language.
+  const url = new URL(location.href);
+  const asked = url.searchParams.get("lang");
+  if (asked !== null) {
+    url.searchParams.delete("lang");
+    history.replaceState(null, "", url);
+    if ((LANGS as string[]).includes(asked)) {
+      save("aratu.lang", asked);
+      return asked as Lang;
+    }
+  }
   const saved = load("aratu.lang");
   if (saved && (LANGS as string[]).includes(saved)) return saved as Lang;
   const nav = navigator.language.toLowerCase();
@@ -517,6 +530,14 @@ async function main(): Promise<void> {
       nav.append(a);
     }
     article.append(nav);
+    // The same page without the editor, at an address to share.
+    const link = document.createElement("p");
+    link.className = "page-link";
+    const share = document.createElement("a");
+    share.href = page.path;
+    share.textContent = `🔗 ${tr("pageLink", lang)}`;
+    link.append(share);
+    article.append(link);
     article.scrollTop = 0;
     window.scrollTo(0, 0);
 

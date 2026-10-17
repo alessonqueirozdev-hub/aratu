@@ -138,6 +138,41 @@ const words = {
   chapters: { pt: "Capítulos", es: "Capítulos", en: "Chapters" },
   doneCount: { pt: "exercícios feitos", es: "ejercicios hechos", en: "exercises done" },
   openInPlay: { pt: "Abrir em Tocar", es: "Abrir en Tocar", en: "Open in Play" },
+  pageLink: {
+    pt: "Endereço desta página, para ler e compartilhar",
+    es: "Dirección de esta página, para leer y compartir",
+    en: "This page's address, to read and share",
+  },
+  readWithout: { pt: "Para ler sem o editor:", es: "Para leer sin el editor:", en: "To read without the editor:" },
+
+  // The pages to read, which work without the editor (scripts/site.mjs).
+  language: { pt: "Idioma", es: "Idioma", en: "Language" },
+  openInAratu: { pt: "Abrir no Aratu", es: "Abrir en Aratu", en: "Open in Aratu" },
+  openHelp: {
+    pt: "para ouvir e mudar os exemplos",
+    es: "para escuchar y cambiar los ejemplos",
+    en: "to hear and change the examples",
+  },
+  openHelpLesson: {
+    pt: "para ouvir os exemplos, mudá-los e fazer os exercícios",
+    es: "para escuchar los ejemplos, cambiarlos y hacer los ejercicios",
+    en: "to hear the examples, change them and do the exercises",
+  },
+  openEditor: { pt: "Abrir o editor", es: "Abrir el editor", en: "Open the editor" },
+  hearInAratu: { pt: "Ouvir no Aratu", es: "Escuchar en Aratu", en: "Hear it in Aratu" },
+  courseName: { pt: "Curso de Aratu", es: "Curso de Aratu", en: "Aratu course" },
+  manualName: { pt: "Manual do Aratu", es: "Manual de Aratu", en: "Aratu manual" },
+  insideName: { pt: "Aratu por dentro", es: "Aratu por dentro", en: "Inside Aratu" },
+  siteIntro: {
+    pt: "O Aratu é uma linguagem para escrever música com o teclado do computador e ouvir na hora, do jeito que um músico pensa: em compassos, tempos, notas e cifras. Muda-se o texto enquanto toca, e a música muda junto. Tem um curso, um manual e um editor no navegador, em português, espanhol e inglês.",
+    es: "Aratu es un lenguaje para escribir música con el teclado de la computadora y oírla al momento, como piensa un músico: en compases, tiempos, notas y cifrados. Se cambia el texto mientras suena, y la música cambia con él. Tiene un curso, un manual y un editor en el navegador, en portugués, español e inglés.",
+    en: "Aratu is a language for writing music on a computer keyboard and hearing it at once, the way a musician thinks: in bars, beats, notes and chords. Change the text while it plays, and the music changes with it. It has a course, a manual and an editor in the browser, in Portuguese, Spanish and English.",
+  },
+  courseIntro: {
+    pt: "Um curso de Aratu do primeiro compasso a um maracatu: ritmo, bateria, percussão brasileira, melodia, harmonia, forma e música ao vivo. Cada lição tem exemplos para ouvir e mudar, e exercícios que o Aratu confere pelo som.",
+    es: "Un curso de Aratu del primer compás a un maracatu: ritmo, batería, percusión brasileña, melodía, armonía, forma y música en vivo. Cada lección tiene ejemplos para escuchar y cambiar, y ejercicios que Aratu comprueba por el sonido.",
+    en: "A course in Aratu from the first bar to a maracatu: rhythm, drums, Brazilian percussion, melody, harmony, form and live music. Each lesson has examples to hear and change, and exercises Aratu checks by their sound.",
+  },
 
   // Example pieces.
   "first-piece": { pt: "Primeira peça", es: "Primera pieza", en: "First piece" },

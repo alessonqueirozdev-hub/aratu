@@ -3,11 +3,29 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Aratu</title>
+    <title>Aratu · música escrita para tocar e mudar enquanto toca</title>
     <meta
       name="description"
-      content="Aratu: a live-coding language that reads like music, with a course and a manual in Portuguese, Spanish and English. Part of the Manguebyte ecosystem."
+      content="Aratu: uma linguagem de live coding que se lê como música, para escrever e tocar no navegador, com curso e manual em português, espanhol e inglês. Parte do ecossistema Manguebyte."
     />
+    <!-- The build fills in the site's address (ARATU_SITE_URL, scripts/site.mjs). -->
+    <link rel="canonical" href="%SITE_URL%" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Aratu" />
+    <meta property="og:title" content="Aratu · música escrita para tocar e mudar enquanto toca" />
+    <meta
+      property="og:description"
+      content="Uma linguagem de live coding que se lê como música, para escrever e tocar no navegador, com curso e manual em português, espanhol e inglês."
+    />
+    <meta property="og:url" content="%SITE_URL%" />
+    <meta property="og:image" content="%SITE_URL%mascot.png" />
+    <meta property="og:image:width" content="192" />
+    <meta property="og:image:height" content="192" />
+    <meta property="og:image:alt" content="Aratu" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:locale:alternate" content="es_LA" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta name="twitter:card" content="summary" />
     <link rel="icon" href="mascot.png" />
     <link rel="stylesheet" href="style.css" />
   </head>
@@ -126,6 +144,14 @@
         <a href="https://github.com/alessonqueirozdev-hub/manguebyte" target="_blank" rel="noopener">Manguebyte</a>
         ·
         <a href="https://github.com/alessonqueirozdev-hub/aratu" target="_blank" rel="noopener" data-word="source"></a>
+      </span>
+      <span class="links read-links">
+        <span data-word="readWithout"></span>
+        <a href="pt/" hreflang="pt" lang="pt-BR">Português</a>
+        ·
+        <a href="es/" hreflang="es" lang="es">Español</a>
+        ·
+        <a href="en/" hreflang="en" lang="en">English</a>
       </span>
     </footer>
     <script type="module" src="main.js"></script>

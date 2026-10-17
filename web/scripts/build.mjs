@@ -1,4 +1,5 @@
-// Builds the editor into dist/: the wasm module, the bundle, the page.
+// Builds the editor into dist/: the wasm module, the bundle, the page, and
+// the book's pages to read with the site map (site.mjs).
 import * as esbuild from "esbuild";
 import { createHash } from "node:crypto";
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -6,6 +7,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildBook } from "./book.mjs";
 import { buildWasm } from "./build-wasm.mjs";
+import { SITE_URL, buildSite } from "./site.mjs";
 
 const web = join(dirname(fileURLToPath(import.meta.url)), "..");
 const dist = join(web, "dist");
@@ -23,9 +25,11 @@ export const options = {
 export function copyStatic() {
   mkdirSync(dist, { recursive: true });
   cpSync(join(web, "public"), dist, { recursive: true });
-  cpSync(join(web, "index.html"), join(dist, "index.html"));
+  // The page's absolute links (canonical, Open Graph) need the site's address.
+  writeFileSync(join(dist, "index.html"), readFileSync(join(web, "index.html"), "utf8").replaceAll("%SITE_URL%", SITE_URL));
   cpSync(join(web, "src", "style.css"), join(dist, "style.css"));
   buildBook(dist);
+  buildSite(dist);
 }
 
 /** Stamps the page's script and style with a version made from their
