@@ -61,10 +61,12 @@ fn trimmed(text: &str, start: usize) -> Line<'_> {
     }
 }
 
-/// A line of music: a name, `=` and bars (`melody = | c4 d e f |`).
+/// A line of music: a name, `=` and bars (`melody = | c4 d e f |`), or a
+/// name and `=` with the bars on the lines below.
 fn is_music_line(text: &str) -> bool {
-    text.split_once('=')
-        .is_some_and(|(name, music)| !name.contains('.') && music.contains('|'))
+    text.split_once('=').is_some_and(|(name, music)| {
+        !name.contains('.') && (music.contains('|') || music.trim().is_empty())
+    })
 }
 
 /// Splits `text` at `;` into statements.

@@ -235,6 +235,14 @@ melodia = | dó4 ré mi fá | sol lá si dó5 |
           | si4 lá sol fá | mi ré dó _ |
 ```
 
+Os compassos também podem começar na linha de baixo do `=`:
+
+```aratu
+melodia =
+  | dó4 ré mi fá | sol lá si dó5 |
+  | si4 lá sol fá | mi ré dó _ |
+```
+
 ## 7. Cifras e batidas
 
 Uma sequência de acordes se escreve como uma cifra, numa linha chamada

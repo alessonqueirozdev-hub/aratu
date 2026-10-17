@@ -239,6 +239,14 @@ melodia = | do4 re mi fa | sol la si do5 |
           | si4 la sol fa | mi re do _ |
 ```
 
+Los compases también pueden empezar en la línea de abajo del `=`:
+
+```aratu
+melodia =
+  | do4 re mi fa | sol la si do5 |
+  | si4 la sol fa | mi re do _ |
+```
+
 ## 7. Acordes y rasgueos
 
 Una secuencia de acordes se escribe como un cifrado, en una línea llamada

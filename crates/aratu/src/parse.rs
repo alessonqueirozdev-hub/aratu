@@ -263,8 +263,16 @@ impl Parser {
 
     fn line(&mut self, line: Line, scope: &Scope, part: Option<&Name>) {
         let mut c = Cursor::new(line);
-        if let Some((kw, _, music)) = definition(&mut c) {
-            if kw == "motif" {
+        if let Some((kw, name, music)) = definition(&mut c) {
+            if music.text.is_empty() {
+                self.diags.push(Diagnostic::error(
+                    line.span,
+                    Message::EmptyDefinition {
+                        name: name.to_string(),
+                        row: kw == "row",
+                    },
+                ));
+            } else if kw == "motif" {
                 self.motif(music);
             } else {
                 self.row(music);
@@ -683,6 +691,12 @@ impl Parser {
         scope: &Scope,
         part: Option<&Name>,
     ) -> Result<StmtKind, Fail> {
+        if c.at_end() {
+            return Err((
+                Span::new(pspan.start, c.offset()),
+                nothing_after_equals(words, part),
+            ));
+        }
         let is_number = matches!(c.peek(), Some(ch) if ch.is_ascii_digit() || ch == '+' || ch == '-' && c.clone().number().is_some());
         // `hh = 2[c c c] c c` is music: a group across two beats.
         let tuplet = {
@@ -988,6 +1002,36 @@ impl Parser {
             "diminish" => Transform::Diminish,
             _ => return Ok(None),
         }))
+    }
+}
+
+/// What is missing after a bare `=`: a number for a parameter (`volume`,
+/// `reverb.mix`, `bass.volume`), the music for a line.
+fn nothing_after_equals(words: &[&str], part: Option<&Name>) -> Message {
+    let written = words.join(".");
+    let param = match crate::params::lookup(&written) {
+        Some(info) => Some((info, false)),
+        // `bass.reverb.mix`: a part's parameter.
+        None if words.len() > 1 => crate::params::lookup(&words[1..].join(".")).map(|i| (i, true)),
+        None => None,
+    };
+    match param {
+        Some((info, part_named)) => Message::MissingNumber {
+            example: Some(if info.unit.is_empty() {
+                info.default.to_string()
+            } else {
+                format!("{} {}", info.default, info.unit)
+            }),
+            every_part: !part_named && part.is_none(),
+            name: written,
+        },
+        // A path is always a parameter, if one not known.
+        None if words.len() > 1 => Message::MissingNumber {
+            name: written,
+            example: None,
+            every_part: false,
+        },
+        None => Message::EmptyLine { name: written },
     }
 }
 

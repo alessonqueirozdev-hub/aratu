@@ -229,6 +229,14 @@ melody = | c4 d e f | g a b c5 |
          | b4 a g f | e d c _ |
 ```
 
+The bars may also start on the line below the `=`:
+
+```aratu
+melody =
+  | c4 d e f | g a b c5 |
+  | b4 a g f | e d c _ |
+```
+
 ## 7. Chords and strumming
 
 A progression is written as a lead sheet, on a line called `chords`. The

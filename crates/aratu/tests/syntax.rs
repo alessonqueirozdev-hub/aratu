@@ -6,6 +6,7 @@ use aratu::compile;
 use aratu::diag::{Lang, Message};
 use aratu::ratio::Ratio;
 use aratu::schedule::{Drum, Event, EventKind, Options, render};
+use aratu::span::Span;
 
 fn events(src: &str, from: i64, to: i64) -> Vec<Event> {
     let c = compile(src);
@@ -1081,4 +1082,125 @@ fn ornaments_and_grace_notes_written_wrong_are_told() {
             .text(Lang::Pt)
             .contains("`:tr` trinado")
     );
+}
+
+#[test]
+fn a_statement_that_stops_at_the_equals_sign_says_what_is_missing() {
+    // A parameter: its number, with one that fits.
+    let volume = Message::MissingNumber {
+        name: "volume".into(),
+        example: Some("0.8".into()),
+        every_part: true,
+    };
+    let c = compile("bass = | c2 _ _ _ |\nvolume =");
+    assert!(c.has_errors());
+    assert_eq!(c.diagnostics.len(), 1);
+    assert_eq!(c.diagnostics[0].message, volume);
+    // The editor marks the whole statement.
+    assert_eq!(c.diagnostics[0].span, Span::new(20, 28));
+    assert_eq!(first("volume = "), volume);
+    assert_eq!(first("at bar 2: volume ="), volume);
+    assert_eq!(
+        volume.text(Lang::Pt),
+        "falta o número depois de `volume =`; por exemplo `volume = 0.8` (sem nome de parte, vale para todas as partes)"
+    );
+    assert_eq!(
+        volume.text(Lang::Es),
+        "falta el número después de `volume =`; por ejemplo `volume = 0.8` (sin nombre de parte, vale para todas las partes)"
+    );
+    assert_eq!(
+        volume.text(Lang::En),
+        "a number is missing after `volume =`; for example `volume = 0.8` (with no part name, it holds for every part)"
+    );
+    assert_eq!(
+        first("lowpass.cutoff ="),
+        Message::MissingNumber {
+            name: "lowpass.cutoff".into(),
+            example: Some("2000 Hz".into()),
+            every_part: true,
+        }
+    );
+    // A part named, or the part's own block: the number is for that part.
+    let part = Message::MissingNumber {
+        name: "bass.reverb.mix".into(),
+        example: Some("0.3".into()),
+        every_part: false,
+    };
+    assert_eq!(first("bass.reverb.mix ="), part);
+    assert_eq!(
+        part.text(Lang::Pt),
+        "falta o número depois de `bass.reverb.mix =`; por exemplo `bass.reverb.mix = 0.3`"
+    );
+    assert_eq!(
+        first("bass {\n  volume =\n}"),
+        Message::MissingNumber {
+            name: "volume".into(),
+            example: Some("0.8".into()),
+            every_part: false,
+        }
+    );
+
+    // A line: its music.
+    let line = Message::EmptyLine {
+        name: "bass".into(),
+    };
+    assert_eq!(first("bass ="), line);
+    assert_eq!(
+        line.text(Lang::Pt),
+        "a linha `bass` está vazia: escreva a música depois do `=`"
+    );
+    assert_eq!(
+        line.text(Lang::Es),
+        "la línea `bass` está vacía: escribe la música después del `=`"
+    );
+    assert_eq!(
+        line.text(Lang::En),
+        "the line `bass` is empty: write its music after the `=`"
+    );
+    assert_eq!(
+        first("pattern groove {\n  hh =\n}\nplay groove"),
+        Message::EmptyLine { name: "hh".into() }
+    );
+    assert_eq!(
+        first("section verse { bass = }"),
+        Message::EmptyLine {
+            name: "bass".into()
+        }
+    );
+
+    // A motif or a row: its notes.
+    assert_eq!(
+        first("motif riff ="),
+        Message::EmptyDefinition {
+            name: "riff".into(),
+            row: false,
+        }
+    );
+    assert_eq!(
+        first("row serie ="),
+        Message::EmptyDefinition {
+            name: "serie".into(),
+            row: true,
+        }
+    );
+}
+
+#[test]
+fn a_line_may_start_its_bars_below_the_equals_sign() {
+    let src = "bass =\n  | c2 _ _ _ |\n  | d2 _ _ _ |";
+    assert!(compile(src).diagnostics.is_empty());
+    assert_eq!(notes(src, 1, 3), [(1, 36), (2, 38)]);
+    // Bars below bars, as before.
+    assert_eq!(
+        notes("bass = | c2 _ _ _ | // one\n       | d2 _ _ _ |", 1, 3),
+        [(1, 36), (2, 38)]
+    );
+    // In a pattern's block.
+    assert_eq!(
+        notes("pattern p {\n  bass =\n    | c2 _ _ _ |\n}\nplay p", 1, 2),
+        [(1, 36)]
+    );
+    // In a list each line is a melody of its own.
+    let list = "list temas {\n  | c4 _ _ _ |\n  | d4 _ _ _ |\n}\n";
+    assert_eq!(notes(&format!("{list}melody = temas.2"), 1, 2), [(1, 62)]);
 }

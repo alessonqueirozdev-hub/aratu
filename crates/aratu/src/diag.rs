@@ -191,6 +191,24 @@ pub enum Message {
         beats: i64,
     },
     BarZero,
+    /// `volume =` or `bass.reverb.mix =` with no number after `=`.
+    MissingNumber {
+        /// What is written before `=`.
+        name: String,
+        /// A number that fits, with its unit: `0.8`, `2000 Hz`.
+        example: Option<String>,
+        /// No part is named, so the number would hold for every part.
+        every_part: bool,
+    },
+    /// `bass =` with no music after `=`.
+    EmptyLine {
+        name: String,
+    },
+    /// `motif riff =` or `row serie =` with nothing after `=`.
+    EmptyDefinition {
+        name: String,
+        row: bool,
+    },
 
     // Music lines.
     UnclosedBracket {
@@ -499,6 +517,58 @@ impl Message {
             }
             (BarZero, En) => "bars are counted from 1".into(),
             (BarZero, Pt) => "os compassos contam a partir de 1".into(),
+            (
+                MissingNumber {
+                    name,
+                    example,
+                    every_part,
+                },
+                En,
+            ) => {
+                let mut s = format!("a number is missing after `{name} =`");
+                if let Some(e) = example {
+                    s += &format!("; for example `{name} = {e}`");
+                }
+                if *every_part {
+                    s += " (with no part name, it holds for every part)";
+                }
+                s
+            }
+            (
+                MissingNumber {
+                    name,
+                    example,
+                    every_part,
+                },
+                Pt,
+            ) => {
+                let mut s = format!("falta o número depois de `{name} =`");
+                if let Some(e) = example {
+                    s += &format!("; por exemplo `{name} = {e}`");
+                }
+                if *every_part {
+                    s += " (sem nome de parte, vale para todas as partes)";
+                }
+                s
+            }
+            (EmptyLine { name }, En) => {
+                format!("the line `{name}` is empty: write its music after the `=`")
+            }
+            (EmptyLine { name }, Pt) => {
+                format!("a linha `{name}` está vazia: escreva a música depois do `=`")
+            }
+            (EmptyDefinition { name, row: false }, En) => {
+                format!("the motif `{name}` is empty: write its notes after the `=`")
+            }
+            (EmptyDefinition { name, row: false }, Pt) => {
+                format!("o motivo `{name}` está vazio: escreva as notas depois do `=`")
+            }
+            (EmptyDefinition { name, row: true }, En) => {
+                format!("the row `{name}` is empty: write its notes after the `=`")
+            }
+            (EmptyDefinition { name, row: true }, Pt) => {
+                format!("a série `{name}` está vazia: escreva as notas depois do `=`")
+            }
 
             (UnclosedBracket { open }, En) => format!("this {open} is never closed"),
             (UnclosedBracket { open }, Pt) => format!("este {open} nunca fecha"),
@@ -908,6 +978,32 @@ impl Message {
                 format!("un compás de {beats} tiempos no tiene un tiempo {beat} para empezar")
             }
             (BarZero, Es) => "los compases se cuentan desde 1".into(),
+            (
+                MissingNumber {
+                    name,
+                    example,
+                    every_part,
+                },
+                Es,
+            ) => {
+                let mut s = format!("falta el número después de `{name} =`");
+                if let Some(e) = example {
+                    s += &format!("; por ejemplo `{name} = {e}`");
+                }
+                if *every_part {
+                    s += " (sin nombre de parte, vale para todas las partes)";
+                }
+                s
+            }
+            (EmptyLine { name }, Es) => {
+                format!("la línea `{name}` está vacía: escribe la música después del `=`")
+            }
+            (EmptyDefinition { name, row: false }, Es) => {
+                format!("el motivo `{name}` está vacío: escribe las notas después del `=`")
+            }
+            (EmptyDefinition { name, row: true }, Es) => {
+                format!("la serie `{name}` está vacía: escribe las notas después del `=`")
+            }
             (UnclosedBracket { open }, Es) => format!("este {open} nunca se cierra"),
             (UnexpectedChar { ch }, Es) => format!("`{ch}` no significa nada aquí"),
             (UnknownNote { text }, Es) => format!(
