@@ -137,6 +137,8 @@ export function mountBlocks(root: HTMLElement, ctx: BlockContext): Session[] {
         bars,
         block.dataset.dynamics === "1",
         block.dataset.lengths !== "0",
+        block.dataset.timing === "1",
+        block.dataset.sound === "1",
       );
       result.innerHTML = "";
       result.className = "block-result";

@@ -112,6 +112,8 @@ fn options(b: &Block) -> CheckOptions {
         bars: b.attrs.get("bars").and_then(|v| v.parse().ok()),
         lengths: b.attrs.get("lengths").is_none_or(|v| v != "0"),
         dynamics: b.attrs.get("dynamics").is_some_and(|v| v == "1"),
+        timing: b.attrs.get("timing").is_some_and(|v| v == "1"),
+        sound: b.attrs.get("sound").is_some_and(|v| v == "1"),
     }
 }
 

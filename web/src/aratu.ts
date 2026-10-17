@@ -230,8 +230,17 @@ export class Aratu {
 
   /** Compares a student's piece with the answer by what they play. `bars`
    * 0 compares one time round of the answer. */
-  check(student: string, answer: string, lang: Lang, bars = 0, dynamics = false, lengths = true): Checked {
-    const flags = (dynamics ? 1 : 0) | (lengths ? 0 : 2);
+  check(
+    student: string,
+    answer: string,
+    lang: Lang,
+    bars = 0,
+    dynamics = false,
+    lengths = true,
+    timing = false,
+    sound = false,
+  ): Checked {
+    const flags = (dynamics ? 1 : 0) | (lengths ? 0 : 2) | (timing ? 4 : 0) | (sound ? 8 : 0);
     this.withText(student, (sp, sn) =>
       this.withText(answer, (ap, an) => this.x.aratu_check(sp, sn, ap, an, bars, flags, LANG_CODE[lang])),
     );

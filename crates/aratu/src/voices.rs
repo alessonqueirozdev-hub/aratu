@@ -389,7 +389,6 @@ pub const ALIASES: &[(&str, &str)] = &[
     ("drums", "drums.kit"),
 ];
 
-/// The effects a chain may pass through after its voice.
 /// The effects a chain may name: Manguebyte's, in the order it runs them.
 pub const EFFECTS: &[&str] = &[
     "highpass",

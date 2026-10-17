@@ -655,7 +655,8 @@ pub unsafe extern "C" fn aratu_render(
 
 /// Checks an exercise: the student's text against the answer's, by what
 /// they play. `bars` 0 compares one time round of the answer; `flags`
-/// bit 0 also compares dynamics, bit 1 leaves lengths out.
+/// bit 0 also compares dynamics, bit 1 leaves lengths out, bit 2 compares
+/// when the notes come, bit 3 the parts' voices, effects and numbers.
 pub fn check_json(student: &str, answer: &str, bars: i64, flags: u32, lang: Lang) -> String {
     use aratu::exercise::{CheckOptions, check};
     let s = compile(student);
@@ -670,6 +671,8 @@ pub fn check_json(student: &str, answer: &str, bars: i64, flags: u32, lang: Lang
             bars: (bars > 0).then_some(bars),
             lengths: flags & 2 == 0,
             dynamics: flags & 1 != 0,
+            timing: flags & 4 != 0,
+            sound: flags & 8 != 0,
         };
         check(&s.piece, &a.piece, opts)
             .iter()
