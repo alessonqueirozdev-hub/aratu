@@ -26,10 +26,33 @@ melodia = | p:dó4< ré mi fá | f:sol4> fá mi ré | p:dó4 _ _ _ |
 Sem uma marca depois, o crescendo sobe um degrau (de mf para f, por
 exemplo) até o fim da linha.
 
-## Acentos
+## Articulação: acento, marcato, staccato e nota fantasma
 
-Uma letra maiúscula acentua: `Dó4`, ou `S` na caixa. O acento soma
-intensidade à marca em que a música está.
+A articulação diz **como** cada nota é atacada. São quatro sinais, do mais
+forte ao mais fraco:
+
+| Sinal | Escrito | Como soa |
+|---|---|---|
+| marcato | `S!`, `dó4!` | o mais forte, bem marcado |
+| acento | `S`, `Dó4` | mais forte que as vizinhas |
+| staccato | `s'`, `dó4'` | curto, destacado |
+| nota fantasma | `(s)`, `(dó4)` | quase sem som, só sentida |
+
+O acento soma intensidade à marca em que a música está, e o marcato soma
+ainda mais. As notas fantasma são o tempero do funk e do samba na caixa:
+toques bem leves entre as batidas fortes.
+
+```aratu
+tempo: 96
+drums {
+  hh = cc cc cc cc
+  bd = b - b b
+  sd = (s)(s) S! (s)(s) S!
+}
+```
+
+> Tire os parênteses das notas fantasma e ouça como a caixa fica
+> pesada. Os parênteses fazem os toques sumirem para o fundo.
 
 ## Mudar a parte inteira
 
@@ -64,4 +87,15 @@ melodia = | p:dó4 ré mi fá | f:sol4 _ _ _ |
 
 ```aratu answer
 melodia = | p:dó4< ré mi fá | f:sol4 _ _ _ |
+```
+
+Na caixa, os tempos 2 e 4 em marcato e notas fantasma nas colcheias
+entre eles: `(s)` na segunda metade dos tempos 1 e 3.
+
+```aratu exercise dynamics=1
+sd = s- s s- s
+```
+
+```aratu answer
+sd = -(s) s! -(s) s!
 ```

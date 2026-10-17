@@ -56,6 +56,23 @@ melodia = | mi4 mi fá sol | sol fá mi ré | dó dó ré mi | mi [_ ré] ré _ 
 O último compasso: mi dura um tempo e meio (`mi` e a primeira metade de
 `[_ ré]`), ré dura meio tempo, e o último ré dura dois tempos.
 
+## Linhas longas
+
+Uma melodia de oito compassos não cabe numa linha da tela. Quebre a linha
+onde quiser: uma linha que **começa com uma barra** continua a linha de
+música de cima.
+
+```aratu
+tempo: 110
+melodia = | mi4 mi fá sol | sol fá mi ré |
+          | dó dó ré mi  | mi [_ ré] ré _ |
+          | mi mi fá sol | sol fá mi ré |
+          | dó dó ré mi  | ré [_ dó] dó _ |
+```
+
+São oito compassos de uma linha só, a mesma `melodia`. Alinhar as barras
+com espaços, como acima, deixa a música fácil de ler, como numa partitura.
+
 ## Exercícios
 
 Termine a "Ode à Alegria" com a outra frase, que acaba no dó: no último
@@ -91,4 +108,16 @@ melodia = | [dó4 ré] [dó ré] [dó ré] [dó ré] |
 
 ```aratu answer
 melodia = | [dó4' ré] [dó' ré] [dó' ré] [dó' ré] |
+```
+
+Continue a melodia na linha de baixo, com mais dois compassos:
+`| fá4 mi ré dó | ré _ _ _ |`.
+
+```aratu exercise
+melodia = | dó4 ré mi fá | sol _ _ _ |
+```
+
+```aratu answer
+melodia = | dó4 ré mi fá | sol _ _ _ |
+          | fá4 mi ré dó | ré _ _ _ |
 ```

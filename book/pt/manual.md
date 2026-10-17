@@ -79,16 +79,6 @@ ocuparia.
 | semicolcheia | `-ccc`, `c-cc` |
 | colcheia pontuada, depois semicolcheia | `-__c` ou `-.c` |
 
-**Compassos compostos.** Em 6/8 o tempo é uma semínima pontuada, então
-`ccc ccc` é um compasso de colcheias contado em dois, como o músico conta.
-
-```aratu
-meter: 6/8
-tempo: 70
-hh = ccc ccc
-bd = b__ b__
-```
-
 **Acentos.** Um símbolo maiúsculo é acentuado: `cC cc` acentua o contratempo
 do tempo 1.
 
@@ -98,6 +88,21 @@ vários compassos: `| cc cc | co cc |`. Uma linha sem barras é um compasso.
 **Grupos.** Colchetes formam um grupo que ocupa uma parte, e aceitam espaços
 dentro: `c[cc]` é uma colcheia e duas semicolcheias. O atalho `.` vale
 `__`, então `c.c` é `c__c`.
+
+## 3. Compassos compostos, aditivos e quiálteras
+
+O tempo nem sempre é uma semínima. Estas são as fórmulas em que ele muda de
+tamanho ou se agrupa de outro jeito, e as quiálteras que atravessam tempos.
+
+**Compassos compostos.** Em 6/8 o tempo é uma semínima pontuada, então
+`ccc ccc` é um compasso de colcheias contado em dois, como o músico conta.
+
+```aratu
+meter: 6/8
+tempo: 70
+hh = ccc ccc
+bd = b__ b__
+```
 
 **Quiálteras que atravessam tempos.** Um número antes dos colchetes diz
 quantos tempos o grupo ocupa: `2[dó4 ré mi]` são três notas em dois tempos
@@ -114,12 +119,9 @@ hh = cc cc ccc
 bd = b  b  b
 ```
 
-**Marcato e notas fantasma.** `s!` é marcato, mais forte que a maiúscula.
-`(s)` é uma nota fantasma, quase sem som, como na partitura de bateria;
-vale também para notas: `(dó4)`. Uma fermata dura o dobro (`sol4^`) ou
-quantas vezes se escrever: `sol4^3`.
+**Mudança de fórmula.** `at bar 17: meter 7/8`.
 
-## 3. Bateria
+## 4. Bateria
 
 Cada peça da bateria tem uma linha, e cada linha segue as regras de ritmo.
 O símbolo decide o som, seja qual for o nome da linha:
@@ -170,7 +172,7 @@ drums {
 Vale para qualquer peça (`f~` no surdo, `x~` no prato) e para notas, como
 trêmulo: `dó4~ _`.
 
-### Percussão brasileira
+## 5. Percussão brasileira
 
 Uma linha com o nome de um instrumento lê os golpes dele, com as mesmas
 regras de ritmo:
@@ -198,7 +200,7 @@ Maiúscula acentua e `(p)` é um golpe fantasma, como na bateria. Por
 enquanto esses sons são sintetizados no navegador; as gravações virão
 pelo motor do Manguebyte.
 
-## 4. Melodias
+## 6. Melodias
 
 As notas se escrevem em minúsculas, com a oitava: `dó4` (ou `c4`) é o dó
 central. Sustenidos e bemóis vêm depois do nome: `fá#4`, `mib4`. Em letras:
@@ -231,7 +233,7 @@ melodia = | dó4 ré mi fá | sol lá si dó5 |
           | si4 lá sol fá | mi ré dó _ |
 ```
 
-## 5. Cifras e batidas
+## 7. Cifras e batidas
 
 Uma sequência de acordes se escreve como uma cifra, numa linha chamada
 `chords`. A regra da divisão vale um nível acima: acordes que dividem um
@@ -250,17 +252,6 @@ As cifras mantêm a escrita de sempre: `Am`, `F`, `G7`, `Cmaj7`, `Dm7b5`,
 `E/G#`, e também a escrita brasileira: `C7M`, `Bº`, `G7(b9)`. Valem ainda
 `C6/9`, `E7alt` e a cifra com dó-ré-mi: `Lám`, `Sol7`, `Fá#m7`, `Dó/Mi`.
 `N.C.` (ou `-`) é um compasso sem acorde.
-
-**Acordes pelo grau.** Em algarismos romanos, relativos ao tom do começo
-da peça (dó maior quando não há `key:`): maiúscula é maior, minúscula é
-menor, e a qualidade vem depois. `bVII` empresta de fora do tom e `V7/V`
-é a dominante da dominante. Com `:arp` o acorde soa arpejado, da nota mais
-grave para a mais aguda; numa melodia, `dó4+mi4+sol4:arp`.
-
-```aratu
-key: C major
-chords = | I | vi | ii7 | V7:arp |
-```
 
 **A batida.** Uma linha chamada `strum` usa as regras de ritmo com símbolos
 de violão:
@@ -288,7 +279,38 @@ para baixo as cordas soam da grave para a aguda, alguns milissegundos uma
 depois da outra; na para cima, da aguda para a grave; os acentos batem mais
 forte e mais rápido. Sem batida, os acordes tocam inteiros, como um teclado.
 
-## 6. Dinâmica
+## 8. Harmonia pelo grau
+
+**Acordes pelo grau.** Em algarismos romanos, relativos ao tom do começo
+da peça (dó maior quando não há `key:`): maiúscula é maior, minúscula é
+menor, e a qualidade vem depois. `bVII` empresta de fora do tom e `V7/V`
+é a dominante da dominante. Com `:arp` o acorde soa arpejado, da nota mais
+grave para a mais aguda; numa melodia, `dó4+mi4+sol4:arp`.
+
+```aratu
+key: C major
+chords = | I | vi | ii7 | V7:arp |
+```
+
+| Escreva | Significa |
+|---|---|
+| `I` … `VII` | o grau, acorde maior |
+| `i` … `vii` | o grau, acorde menor |
+| `V7`, `ii7`, `IV7M`, `vii°` | depois do grau, o resto da cifra |
+| `bVII`, `#iv°` | um acorde de fora do tom, um semitom abaixo ou acima do grau |
+| `V7/V`, `V7/ii` | a dominante do grau escrito depois da barra |
+| `I:arp` | o acorde arpejado |
+
+Num tom menor os graus seguem a escala menor natural: em `key: A minor`
+(ou `tom: Lá menor`), `i` é Am, `iv` é Dm, `VI` é F, e a dominante com
+sensível se escreve `V7` (E7).
+
+```aratu
+key: A minor
+chords = | i | iv | VI | V7 |
+```
+
+## 9. Dinâmica e articulação
 
 As marcas de dinâmica são as da partitura: `ppp pp p mp mf f ff fff`, e
 `sfz`, `fp`.
@@ -329,7 +351,11 @@ Cada marca vale uma intensidade fixa: ppp 16, pp 33, p 49, mp 64, mf 80, f
 regulador sem marca depois anda um degrau (de `mf` para `f`, por exemplo)
 até o fim da linha.
 
-## 7. Andamento e tempo
+**Marcato e notas fantasma.** `s!` é marcato, mais forte que a maiúscula.
+`(s)` é uma nota fantasma, quase sem som, como na partitura de bateria;
+vale também para notas: `(dó4)`.
+
+## 10. Andamento e tempo
 
 ```aratu
 tempo: 96
@@ -356,16 +382,15 @@ Num ritardando ou accelerando o andamento muda aos poucos, tempo a tempo,
 como se lê numa partitura, e cada nota cai no momento exato.
 
 **Fermata.** `^` numa nota a sustenta: `sol4^` dura o dobro, e todas as
-partes esperam por ela.
+partes esperam por ela. Com um número, dura quantas vezes se escrever:
+`sol4^3` dura o triplo.
 
 **Anacruse.** `pickup: beat 4` faz a peça começar no tempo 4 de um primeiro
 compasso incompleto. A anacruse é o compasso 0, e o compasso 1 é o primeiro
 completo, como os músicos contam. Uma linha cujo primeiro compasso tem o
 tamanho da anacruse começa nela; as outras começam no compasso 1.
 
-**Mudança de fórmula.** `at bar 17: meter 7/8`.
-
-## 8. Expressão: rubato, swing e humanize
+## 11. Expressão: rubato, swing e humanize
 
 **Rubato** quer dizer tempo roubado, e o tempo roubado é devolvido.
 `piano: rubato 10%` estica e encolhe os tempos dentro de cada compasso e
@@ -384,27 +409,9 @@ bd = b - b -
 **Humanize.** `humanize` acrescenta pequenos desvios aleatórios de tempo e
 intensidade, como faria um músico; `humanize 5 ms` diz o quanto.
 
-## 9. Padrões, seções, repetições e forma
+## 12. Repetições e saltos
 
-O material é preparado antes e ganha um nome:
-
-```aratu
-pattern groove {
-  hh = cc cc co cc
-  bd = b - b -
-  sd = - s - s
-}
-
-pattern fill {
-  hh = cc cc cc cc
-  bd = bb -b bb -b
-  sd = ss ss SS SS
-}
-
-play groove
-at bar 4: play fill
-at bar 5: play groove
-```
+Os sinais de repetição e de salto da partitura, e a repetição de um tempo.
 
 ### Sinais de repetição
 
@@ -436,6 +443,37 @@ melodia = | dó4 mi sol dó5 | segno: ré4 fá lá _ | mi4 sol si _ | fine: dó4
 A peça é desenrolada como um músico a lê. Um salto sem o seu sinal é um erro
 dito com clareza: *"há um D.S. no compasso 24 de `melodia`, mas nenhum
 segno para ele"*.
+
+### Repetir um tempo
+
+Um `x` colado no colchete repete aquele tempo, cada vez no seu próprio
+tempo: `| [mi4 ré dó ré]x4 |` é o grupo quatro vezes. O `x` vai colado ao
+`]` (ou a um motivo); com espaço, `| - x8 |` continua sendo oito compassos
+de pausa. `4x` também vale: `[mi4 ré dó ré]4x`. Chaves são para o acaso
+(`{mi4|sol4}`); um grupo entre chaves sem `|` toca como grupo, com um aviso
+para trocar por colchetes.
+
+## 13. Padrões, seções e forma
+
+O material é preparado antes e ganha um nome:
+
+```aratu
+pattern groove {
+  hh = cc cc co cc
+  bd = b - b -
+  sd = - s - s
+}
+
+pattern fill {
+  hh = cc cc cc cc
+  bd = bb -b bb -b
+  sd = ss ss SS SS
+}
+
+play groove
+at bar 4: play fill
+at bar 5: play groove
+```
 
 ### Forma
 
@@ -488,14 +526,10 @@ O padrão que estava tocando continua contando os compassos enquanto isso,
 então `play groove x3, fill` não perde o lugar na frase. Com `every`, o
 padrão já toca uma vez a cada volta.
 
-### Repetir um tempo
+## 14. Motivos, séries, listas e transformações
 
-Um `x` colado no colchete repete aquele tempo, cada vez no seu próprio
-tempo: `| [mi4 ré dó ré]x4 |` é o grupo quatro vezes. O `x` vai colado ao
-`]` (ou a um motivo); com espaço, `| - x8 |` continua sendo oito compassos
-de pausa. `4x` também vale: `[mi4 ré dó ré]4x`. Chaves são para o acaso
-(`{mi4|sol4}`); um grupo entre chaves sem `|` toca como grupo, com um aviso
-para trocar por colchetes.
+Ideias curtas com nome, usadas muitas vezes: motivos, séries dodecafônicas,
+listas de melodias e as transformações que as mudam sem reescrevê-las.
 
 ### Motivos
 
@@ -567,7 +601,32 @@ Cada compasso de uma linha também pode ser uma melodia da lista:
 se quiser, e `temas.all` no lugar de um compasso põe todas, em ordem. Uma
 lista que cita a si mesma para, com uma mensagem.
 
-## 10. Tocar ao vivo
+### Transformações
+
+Verbos curtos mudam uma parte, uma linha ou um padrão sem reescrevê-lo:
+
+| Verbo | Efeito |
+|---|---|
+| `hh.rotate 1` | desloca o padrão em uma parte |
+| `hh.density 50%` | mantém cerca de metade das batidas |
+| `drums.velocity 0.8` | toca mais suave |
+| `baixo.transpose +12` | uma oitava acima |
+| `melodia.invert` | inverte os intervalos |
+| `melodia.retrograde` | toca de trás para frente |
+| `melodia.ri` | retrógrado da inversão |
+| `melodia.augment` | dobra as figuras |
+| `melodia.diminish` | divide as figuras pela metade |
+
+```aratu
+melodia = | dó4 ré mi sol | lá sol mi ré |
+melodia.transpose +7
+```
+
+Os nomes são os mesmos dos motivos e das séries: `.inv` ou `.invert`,
+`.retro` ou `.retrograde`, `.ri`. `transpose` conta semitons e aceita
+escrever `3st`, como nos motivos.
+
+## 15. Tocar ao vivo
 
 Enquanto a peça toca, você a muda; você não a reescreve.
 
@@ -602,32 +661,7 @@ quando o mouse para. Esc também sai. O botão **2 colunas** divide o código
 em duas colunas, como num jornal: a segunda continua de onde a primeira
 termina, as duas rolam juntas, e editar em qualquer uma muda o mesmo texto.
 
-## 11. Transformações
-
-Verbos curtos mudam uma parte, uma linha ou um padrão sem reescrevê-lo:
-
-| Verbo | Efeito |
-|---|---|
-| `hh.rotate 1` | desloca o padrão em uma parte |
-| `hh.density 50%` | mantém cerca de metade das batidas |
-| `drums.velocity 0.8` | toca mais suave |
-| `baixo.transpose +12` | uma oitava acima |
-| `melodia.invert` | inverte os intervalos |
-| `melodia.retrograde` | toca de trás para frente |
-| `melodia.ri` | retrógrado da inversão |
-| `melodia.augment` | dobra as figuras |
-| `melodia.diminish` | divide as figuras pela metade |
-
-```aratu
-melodia = | dó4 ré mi sol | lá sol mi ré |
-melodia.transpose +7
-```
-
-Os nomes são os mesmos dos motivos e das séries: `.inv` ou `.invert`,
-`.retro` ou `.retrograde`, `.ri`. `transpose` conta semitons e aceita
-escrever `3st`, como nos motivos.
-
-## 12. Acaso
+## 16. Acaso
 
 Um loop que se repete sempre igual logo soa mecânico. O acaso dá vida a ele:
 o computador decide, um pouco ao acaso, o que tocar a cada volta. É o *ad
@@ -655,7 +689,7 @@ jeito toda vez que é tocada do começo. `seed 7` escolhe outro improviso;
 `seed random` faz cada apresentação diferente. Mudar uma linha não muda o
 improviso das outras.
 
-## 13. Sons e efeitos
+## 17. Sons e efeitos
 
 Cada parte tem um som e uma cadeia de efeitos, escrita como o caminho do
 sinal:
@@ -727,29 +761,10 @@ provisório, até o Manguebyte tê-los; se algo der errado numa apresentação,
 o interruptor do painel Sons desliga o Manguebyte e tudo passa a tocar no
 provisório.
 
-**Para a obra inteira.** Um número escrito sem parte vale para todas:
-`reverb.mix = 0.5` põe todas as partes no reverb da mixagem. Uma cadeia
-escrita para `todos` (ou `all`) põe os seus efeitos em todas as partes,
-depois dos de cada uma. E o próprio barramento da mixagem, o master, tem
-os seus números:
-
-```aratu
-todos: chorus -> delay
-reverb.mix = 0.5
-master.reverb.decay = 3 s
-master.glue.on = 1
-master.limiter.ceiling = -1
-```
-
-| Master | O que é |
-|---|---|
-| `master.reverb.decay`, `.size`, `.damping`, `.level` | o reverb compartilhado: duração (s), tamanho, abafamento, volume (dB) |
-| `master.glue.on`, `.threshold`, `.ratio`, `.makeup` | o compressor de cola: 1 liga; limiar (dB), razão, ganho (dB) |
-| `master.gain` | o volume antes do limitador, em dB |
-| `master.limiter.ceiling` | o teto do limitador, de -12 a -0,3 dB |
-
 Os parâmetros podem mudar por compasso como tudo mais: `at bar 16:
 baixo.reverb.mix = 0.65`.
+
+## 18. Números que se movem
 
 **Parâmetros que se movem.** `baixo.lowpass.cutoff = 300 Hz -> 4000 Hz over
 4 bars` leva o cutoff de 300 a 4000 Hz em quatro compassos e o deixa lá,
@@ -780,7 +795,35 @@ números ganham knob, e enquanto toca um segundo ponteiro mostra onde o
 parâmetro está; uma versão nova do texto não o faz voltar ao valor
 escrito.
 
-## 14. Referência rápida
+## 19. Mixagem
+
+Cada parte tem `volume` (0 a 1) e `pan` (-1, toda à esquerda, a 1, toda à
+direita), como os faders e os botões de panorama de uma mesa de som:
+`drums.volume = 0.5`, `violão.pan = -0.6`. O `reverb.mix` de cada parte diz
+quanto dela vai para a sala compartilhada da mixagem.
+
+**Para a obra inteira.** Um número escrito sem parte vale para todas:
+`reverb.mix = 0.5` põe todas as partes no reverb da mixagem. Uma cadeia
+escrita para `todos` (ou `all`) põe os seus efeitos em todas as partes,
+depois dos de cada uma. E o próprio barramento da mixagem, o master, tem
+os seus números:
+
+```aratu
+todos: chorus -> delay
+reverb.mix = 0.5
+master.reverb.decay = 3 s
+master.glue.on = 1
+master.limiter.ceiling = -1
+```
+
+| Master | O que é |
+|---|---|
+| `master.reverb.decay`, `.size`, `.damping`, `.level` | o reverb compartilhado: duração (s), tamanho, abafamento, volume (dB) |
+| `master.glue.on`, `.threshold`, `.ratio`, `.makeup` | o compressor de cola: 1 liga; limiar (dB), razão, ganho (dB) |
+| `master.gain` | o volume antes do limitador, em dB |
+| `master.limiter.ceiling` | o teto do limitador, de -12 a -0,3 dB |
+
+## 20. Referência rápida
 
 | Escreva | Significa |
 |---|---|
@@ -846,7 +889,7 @@ escrito.
 | `todos: chorus -> delay` | efeitos em todas as partes |
 | `master.reverb.decay = 3 s` | a mixagem: reverb, cola, limitador |
 
-## 15. Em português, espanhol e inglês
+## 21. Em português, espanhol e inglês
 
 Toda palavra-chave do Aratu pode ser escrita em inglês, português ou
 espanhol, com ou sem acento, em maiúsculas ou minúsculas. As três versões

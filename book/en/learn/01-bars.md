@@ -54,7 +54,8 @@ hh = - c c
 ```
 
 In 6/8 the beat is a dotted quarter and is counted in two, the way a
-musician counts it. You will see this in the next lesson.
+musician counts it. You will see this in the lesson on compound meters,
+after you learn to divide the beat.
 
 ## Exercises
 

@@ -1,18 +1,13 @@
-# Sonidos, efectos y perillas
+# Sonidos y efectos
 
-Cada parte tiene un sonido y una cadena de efectos, escrita como el camino
-de la señal, de izquierda a derecha, como en un pedalboard:
+Hasta aquí cada parte sonaba con el sonido que elegía Aratu. Ahora eliges
+tú: un piano, una guitarra de acero, un bajo slap, un sintetizador. Y pasas
+el sonido por efectos, como un guitarrista pasa la guitarra por los
+pedales.
 
-```aratu
-tempo: 100
-bajo: synth.saw -> lowpass -> reverb
-bajo = | do2 _ do2 mib2 | fa2 _ sol2 sib1 |
-```
+## El sonido de una parte
 
-El sonido es el código al principio de la cadena. Hay decenas: abre el
-panel **Sonidos**, junto a los mensajes en Tocar, para escuchar cada uno y
-poner el código en el texto con un clic. Cambia `synth.saw` por
-`bass.slap`, `bass.808` o `piano.grand` y escucha:
+Escribe el nombre de la parte, dos puntos y el código del sonido:
 
 ```aratu
 tempo: 100
@@ -20,88 +15,148 @@ bajo: bass.slap
 bajo = | mi2 Mi3 mi2 Mi3 | la2 La3 la2 La3 |
 ```
 
-> En `bass.slap`, la nota en mayúscula es el *pop*: la cuerda tirada, que
-> chasquea.
+En `bass.slap`, la nota en mayúscula es el *pop*: la cuerda tirada, que
+chasquea. Los códigos tienen dos partes, la familia y el instrumento:
 
-## Los números se vuelven perillas
+| Familia | Algunos sonidos |
+|---|---|
+| teclados | `piano.grand`, `piano.upright`, `keys.epiano`, `keys.organ`, `keys.harpsichord` |
+| percusión de láminas y campanas | `mallets.marimba`, `mallets.vibraphone`, `mallets.kalimba`, `bells.tubular` |
+| cuerdas pulsadas | `guitar.nylon`, `guitar.steel`, `harp` |
+| bajos | `bass.finger`, `bass.slap`, `bass.808`, `bass.acid`, `bass.synth` |
+| vientos | `sax.tenor`, `recorder.alto` |
+| sintetizadores | `synth.saw`, `synth.square`, `synth.pad`, `synth.supersaw`, `synth.lead` |
+| baterías | `drums.kit`, `drums.808`, `drums.acoustic` |
 
-Los parámetros se ajustan con números, y cada número tiene una perilla
-redonda al lado. Arrastra la perilla hacia arriba o hacia abajo: el número
-en el texto cambia y el sonido cambia con él, al instante.
+Abre el panel **Sonidos**, junto a los mensajes en Tocar, para escuchar
+cada uno y poner el código en el texto con un clic. Todos suenan con el
+motor de **Manguebyte**, el motor de audio del ecosistema de Aratu.
+
+> Cambia `bass.slap` por `bass.808` y después por `guitar.steel`. Las notas
+> son las mismas; el instrumento cambia.
+
+## La cadena de efectos
+
+Después del sonido, unas flechas llevan la señal por los efectos, de
+izquierda a derecha, como en un pedalboard:
 
 ```aratu
 tempo: 100
 bajo: synth.saw -> lowpass -> reverb
 bajo = | do2 _ do2 mib2 | fa2 _ sol2 sib1 |
+```
+
+| Efecto | Qué hace |
+|---|---|
+| `lowpass` | apaga los agudos, como poner la mano delante de la boca |
+| `highpass` | quita los graves, como una radio pequeña |
+| `eq` | sube o baja graves, medios y agudos |
+| `drive` | distorsiona, como un amplificador al máximo |
+| `bitcrush` | sonido de videojuego antiguo |
+| `compressor` | iguala el volumen, los fuertes y los suaves |
+| `chorus` | duplica el sonido, que queda ancho y brillante |
+| `flanger`, `phaser` | el sonido "volando", como un avión que pasa |
+| `tremolo` | el volumen latiendo |
+| `autopan` | el sonido yendo de un parlante al otro |
+| `delay` | eco |
+| `reverb` | el sonido en una sala, una iglesia, un salón |
+
+## Los números se vuelven perillas
+
+Cada efecto tiene sus números, escritos como `parte.efecto.número`. Y cada
+número tiene una perilla redonda al lado: arrástrala hacia arriba o hacia
+abajo y el sonido cambia al instante.
+
+```aratu
+tempo: 100
+bajo: synth.saw -> lowpass -> delay
+bajo = | do2 _ do2 mib2 | fa2 _ sol2 sib1 |
+bajo.lowpass.cutoff = 800 Hz
+bajo.lowpass.resonance = 0.3
+bajo.delay.mix = 0.25
+```
+
+Los números de una parte también pueden ir en un bloque con su nombre, sin
+repetir el nombre:
+
+```aratu
+tempo: 100
+bajo: synth.saw -> lowpass -> delay
+bajo = | do2 _ do2 mib2 | fa2 _ sol2 sib1 |
 bajo {
   lowpass.cutoff = 800 Hz
-  lowpass.resonance = 0.3
-  reverb.mix = 0.2
+  delay.time = 375 ms
+  delay.feedback = 0.4
 }
 ```
 
-La perilla de `lowpass.cutoff` se mueve en una escala logarítmica en
-hercios, como percibe el oído; la de `reverb.mix` va de 0 a 1. Mantén
-Shift para pasos más finos.
+Los números más usados:
 
-| Parámetro | Rango |
+| Número | Qué es |
 |---|---|
-| `volume` | 0 a 1 |
-| `pan` | -1 (izquierda) a 1 (derecha) |
-| `lowpass.cutoff`, `highpass.cutoff` | 20 a 20000 Hz |
-| `lowpass.resonance` | 0 a 1 |
-| `reverb.mix` | 0 a 1 |
-| `delay.time` | 10 a 2000 ms |
-| `delay.feedback`, `delay.mix` | 0 a 0,95, 0 a 1 |
+| `lowpass.cutoff`, `highpass.cutoff` | dónde corta el filtro, de 20 a 20000 Hz |
+| `lowpass.resonance` | un pico en el corte, de 0 a 1 |
+| `drive.amount` | cuánto distorsiona, de 0 a 36 dB |
+| `chorus.mix`, `delay.mix` | cuánto del efecto se escucha, de 0 a 1 |
+| `delay.time` | el tiempo del eco, en s o ms |
+| `delay.feedback` | cuántas veces vuelve el eco, de 0 a casi 1 |
+| `tremolo.rate` | cuántas veces por segundo late el volumen |
 
-Un parámetro también puede cambiar en un compás: `at bar 9: bajo.reverb.mix = 0.6`.
+El manual tiene la lista completa. La perilla del cutoff se mueve en una
+escala de frecuencia como la percibe el oído; mantén Shift para pasos más
+finos.
 
-## Parámetros que se mueven
+## Un número que cambia en un compás
 
-Un parámetro puede ir de un valor a otro poco a poco, como en un crescendo.
-`->` va una vez y se queda; `over` dice en cuánto tiempo:
+Como cualquier cambio, un número puede cambiar en un compás:
 
 ```aratu
 tempo: 100
 bajo: synth.saw -> lowpass
-bajo = | do2 do3 do2 do3 | mib2 mib3 mib2 mib3 |
-bajo.lowpass.cutoff = 300 Hz -> 4000 Hz over 4 bars
+bajo = | do2 do3 do2 do3 |
+bajo.lowpass.cutoff = 400 Hz
+at bar 3: bajo.lowpass.cutoff = 3000 Hz
 ```
 
-Con `<->` en lugar de la flecha, va y vuelve sin parar: sube en cuatro
-compases, baja en cuatro, sube otra vez.
+## Ejercicios
 
-```aratu
-tempo: 100
+Estos ejercicios comprueban también el **sonido**: el instrumento, los
+efectos y los números.
+
+Haz que el bajo suene con el bajo slap, `bass.slap`.
+
+```aratu exercise sound=1
+bajo: synth.saw
+bajo = | mi2 Mi3 mi2 Mi3 |
+```
+
+```aratu answer
+bajo: bass.slap
+bajo = | mi2 Mi3 mi2 Mi3 |
+```
+
+Pon un delay en la cadena del teclado, después del chorus.
+
+```aratu exercise sound=1
+teclado: keys.epiano -> chorus
+teclado = | do4+mi4+sol4 _ _ _ |
+```
+
+```aratu answer
+teclado: keys.epiano -> chorus -> delay
+teclado = | do4+mi4+sol4 _ _ _ |
+```
+
+Apaga el sintetizador: el cutoff del lowpass en 600 Hz.
+
+```aratu exercise sound=1
 bajo: synth.saw -> lowpass
-bajo = | do2 do3 do2 do3 | mib2 mib3 mib2 mib3 |
-bajo.lowpass.cutoff = 300 Hz <-> 4000 Hz over 4 bars
+bajo = | do2 _ do3 _ |
+bajo.lowpass.cutoff = 5000 Hz
 ```
 
-| Escribe | Qué hace |
-|---|---|
-| `A -> B over 4 bars` | va de A a B en 4 compases y se queda en B |
-| `A <-> B over 4 bars` | va y vuelve, 4 compases para cada lado, sin parar |
-| `A -> B over 4 bars, back over 2 bars` | sube en 4, vuelve en 2, una vez |
-| `A <-> B over 4 bars, back over 1 bar` | sube en 4, vuelve en 1, sin parar |
-| `A -> B over 1 bar, loop` | sube y empieza otra vez desde A, como una rampa |
-
-La duración puede ser en compases (`bars`), tiempos (`beats`), corcheas
-(`eighths`) o semicorcheas (`sixteenths`): `over 2 beats`,
-`over 3 eighths`.
-
-El cutoff anda en la misma escala que la perilla, la del oído: a mitad de
-camino entre 300 y 4000 Hz está en unos 1100 Hz, no en 2150. Los dos
-números tienen perilla, y mientras suena una segunda aguja muestra dónde
-está el parámetro ahora.
-
-> Escrita con la música sonando, la línea empieza a moverse en el compás
-> siguiente, y girar una de las perillas cambia el camino sin hacerlo
-> empezar de nuevo. Con `at bar 9:` delante, empieza en el compás 9; con
-> `every 8 bars:`, termina al final de cada ocho compases, como un
-> redoble; con `every 8 bars, first:`, empieza en el primero de cada ocho.
-
-> Todos estos sonidos, y los efectos, suenan con el motor de Manguebyte, el
-> motor de audio del ecosistema. Un número escrito sin parte vale para toda
-> la obra: `reverb.mix = 0.5` lo pone todo en la reverb, y `todos: chorus`
-> pone chorus en todas las partes.
+```aratu answer
+bajo: synth.saw -> lowpass
+bajo = | do2 _ do3 _ |
+bajo.lowpass.cutoff = 600 Hz
+```

@@ -1,7 +1,8 @@
 # Cifras e batidas de violão
 
 Uma sequência de acordes se escreve como numa cifra, numa linha chamada
-`chords`. Cada compasso entre barras tem o seu acorde:
+`chords` (ou `acordes`, ou `cifra`). Cada compasso entre barras tem o seu
+acorde:
 
 ```aratu
 tempo: 90
@@ -29,16 +30,6 @@ um compasso sem acorde é `N.C.`:
 chords = | Lám | Fá | Dó Sol | N.C. |
 ```
 
-## Acordes pelo grau
-
-Quem estuda harmonia escreve os acordes pelo grau, em algarismos romanos.
-O Aratu entende, a partir do tom (`key:`): maiúscula é acorde maior,
-minúscula é menor. E com `:arp` o acorde soa arpejado, de baixo para cima:
-
-```aratu
-key: C major
-chords = | I | vi | IV | V7:arp |
-```
 
 ## A batida do violão
 
@@ -55,7 +46,8 @@ regras de ritmo:
 | `-` | a mão passa sem tocar |
 | maiúscula | acentuada |
 
-Ponha as duas linhas num bloco com o nome do instrumento:
+A linha também pode se chamar `batida` ou `levada`. Ponha as duas linhas
+num bloco com o nome do instrumento:
 
 ```aratu
 tempo: 90
@@ -99,6 +91,9 @@ violão {
   strum  = T-du g-du T-du g-du
 }
 ```
+
+> Na próxima lição os acordes são escritos pelo grau, em algarismos
+> romanos: `I`, `vi`, `IV`, `V7`.
 
 ## Exercícios
 

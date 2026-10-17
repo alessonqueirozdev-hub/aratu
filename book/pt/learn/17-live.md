@@ -32,7 +32,8 @@ play groove x3, fill
 ```
 
 `play groove x3, fill` toca o groove três vezes, depois a virada, e repete
-a frase de quatro compassos.
+a frase de quatro compassos. Em português: `padrão` no lugar de `pattern`
+e `toque` no lugar de `play`.
 
 ## Variar de tempos em tempos
 
@@ -51,29 +52,13 @@ every 8 bars, first: add crash
 cada quatro. `add` toca um padrão **por cima** do que está soando: aqui, um
 prato no primeiro tempo de cada oito compassos.
 
-## Programar uma mudança
+## Já, no próximo tempo
 
-`at bar 9: play fill` marca uma mudança para o compasso 9. Uma linha
-escrita sem `at bar` entra no começo da peça, ou, se você a escrever com a
-música tocando, no próximo compasso. Escrita com `now:` na frente
-(`now: play fill`), ela entra já no próximo tempo. E com `once` no fim
-(`now: play fill once`), a virada toca uma vez e o groove volta sozinho, no
-lugar em que estaria.
-
-`at bar 4 beat 3:` entra no terceiro tempo do compasso 4, e
-`from bar 5 to 6:` vale só nesses compassos; no 7 volta o que valia antes.
-Uma linha também pode mudar num compasso, a partir do começo dela:
-
-```aratu
-tempo: 110
-pattern groove { hh = cc cc cc cc; bd = b - b -; sd = - s - s }
-pattern fill   { sd = ss ss SS SS }
-baixo = | dó2 _ sol1 _ |
-play groove
-at bar 4 beat 3: play fill once
-from bar 5 to 6: drums: out
-at bar 7: baixo = | fá2 _ dó2 _ |
-```
+Uma linha escrita com a música tocando entra no próximo compasso. Com
+`now:` (ou `agora:`) na frente, ela entra já no próximo tempo:
+`now: play fill once` traz a virada na hora, e o groove volta sozinho, no
+lugar em que estaria. A lição seguinte mostra como marcar uma mudança num
+compasso e num tempo exatos.
 
 ## Tirar e trazer uma parte
 
@@ -100,7 +85,7 @@ no canto, e Esc sai do palco.
 ## Exercícios
 
 Use os padrões prontos para tocar a frase: groove três vezes, depois a
-virada.
+virada. (`x3` também pode ser escrito `3x`.)
 
 ```aratu exercise bars=4
 pattern groove { hh = cc cc cc cc; bd = b - b -; sd = - s - s }

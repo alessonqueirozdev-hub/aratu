@@ -1,7 +1,8 @@
 # Cifrados y rasgueos de guitarra
 
 Una secuencia de acordes se escribe como en un cifrado, en una línea
-llamada `chords`. Cada compás entre barras tiene su acorde:
+llamada `chords` (o `acordes`, o `cifra`). Cada compás entre barras tiene
+su acorde:
 
 ```aratu
 tempo: 90
@@ -29,18 +30,6 @@ es `N.C.`:
 chords = | Lam | Fa | Do Sol | N.C. |
 ```
 
-## Acordes por grado
-
-Quien estudia armonía escribe los acordes por grado, en números romanos.
-Aratu los entiende a partir de la tonalidad (`key:`): mayúscula es acorde
-mayor, minúscula es menor. Y con `:arp` el acorde suena arpegiado, de abajo
-hacia arriba:
-
-```aratu
-key: C major
-chords = | I | vi | IV | V7:arp |
-```
-
 ## El rasgueo de la guitarra
 
 Una línea llamada `strum` dice cómo la mano golpea las cuerdas, con las
@@ -56,7 +45,8 @@ mismas reglas de ritmo:
 | `-` | la mano pasa sin tocar |
 | mayúscula | acentuado |
 
-Pon las dos líneas en un bloque con el nombre del instrumento:
+La línea también puede llamarse `rasgueo` o `rasgueado`. Pon las dos líneas
+en un bloque con el nombre del instrumento:
 
 ```aratu
 tempo: 90
@@ -101,6 +91,9 @@ guitarra {
   strum  = T-du g-du T-du g-du
 }
 ```
+
+> En la próxima lección los acordes se escriben por grado, en números
+> romanos: `I`, `vi`, `IV`, `V7`.
 
 ## Ejercicios
 

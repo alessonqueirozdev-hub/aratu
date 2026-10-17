@@ -106,6 +106,18 @@ pub enum Problem {
         expected: f64,
         found: f64,
     },
+    /// A parameter set while playing, at a bar and beat: where it should be
+    /// (`None`: it should not change there) and where it is (`None`: it
+    /// does not change there).
+    Change {
+        bar: i64,
+        beat: Ratio,
+        /// `part.id`, or the id alone.
+        name: String,
+        id: String,
+        expected: Option<f64>,
+        found: Option<f64>,
+    },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -251,6 +263,113 @@ pub fn check(student: &Piece, answer: &Piece, opts: CheckOptions) -> Vec<Problem
     }
     if opts.sound {
         problems.extend(sound(student, answer));
+        problems.extend(changes(student, answer, bars));
+    }
+    problems
+}
+
+/// The names of a piece's parts, each once, in the order they first appear.
+fn part_names(piece: &Piece) -> Vec<&str> {
+    let mut names: Vec<&str> = Vec::new();
+    for p in piece.all_parts() {
+        if !names.contains(&p.name.as_str()) {
+            names.push(&p.name);
+        }
+    }
+    names
+}
+
+/// The student's part for one of the answer's: the part of the same name,
+/// else the part in the same place, so that the same exercise written in
+/// another language, with its parts named in it, is the same answer.
+fn counterpart<'a>(student: &'a Piece, answer: &Piece, name: &str) -> Option<&'a Part> {
+    if let Some(p) = student.all_parts().find(|p| p.name == name) {
+        return Some(p);
+    }
+    let place = part_names(answer).iter().position(|n| *n == name)?;
+    let other = *part_names(student).get(place)?;
+    student.all_parts().find(|p| p.name == other)
+}
+
+/// A parameter set while playing.
+struct Set {
+    /// Bar, beat, and the parameter with its part by place (`#0.reverb.mix`).
+    key: (i64, Ratio, String),
+    value: f64,
+    /// `part.id` as written, or the id alone.
+    name: String,
+}
+
+/// Where a parameter is set while playing: `at bar 9:`, or along the way of
+/// one that moves.
+fn set_while_playing(piece: &Piece, bars: i64) -> Vec<Set> {
+    let from = if piece.pickup.is_zero() { 1 } else { 0 };
+    let r = render(piece, &Options::default(), from, bars + 1);
+    let names = part_names(piece);
+    let mut out: Vec<Set> = r
+        .events
+        .iter()
+        .filter_map(|e| match &e.kind {
+            EventKind::Param { id, value, .. } => {
+                let (key, name) = match names.iter().position(|n| *n == e.part) {
+                    Some(i) => (format!("#{i}.{id}"), format!("{}.{id}", e.part)),
+                    None => (id.clone(), id.clone()),
+                };
+                Some(Set {
+                    key: (e.bar, e.beat, key),
+                    value: *value,
+                    name,
+                })
+            }
+            _ => None,
+        })
+        .collect();
+    out.sort_by(|a, b| a.key.cmp(&b.key));
+    out
+}
+
+/// The parameters set while playing, told once per parameter: the first
+/// place where the student's differs.
+fn changes(student: &Piece, answer: &Piece, bars: i64) -> Vec<Problem> {
+    let a = set_while_playing(answer, bars);
+    let s = set_while_playing(student, bars);
+    let mut told: Vec<String> = Vec::new();
+    let mut problems = Vec::new();
+    let mut keys: Vec<&(i64, Ratio, String)> = a.iter().chain(s.iter()).map(|x| &x.key).collect();
+    keys.sort();
+    keys.dedup();
+    for k in keys {
+        if told.contains(&k.2) {
+            continue;
+        }
+        let find = |list: &[Set]| list.iter().find(|x| &x.key == k).map(|x| x.value);
+        let (x, y) = (find(&a), find(&s));
+        // Named as the answer names it, else as the student does.
+        let name = a
+            .iter()
+            .chain(s.iter())
+            .find(|x| &x.key == k)
+            .map_or(String::new(), |x| x.name.clone());
+        // The id: the key without its part, when it has one.
+        let id = match k.2.strip_prefix('#') {
+            Some(rest) => rest.split_once('.').map_or(rest, |(_, id)| id).to_string(),
+            None => k.2.clone(),
+        };
+        let differs = match (x, y) {
+            (Some(x), Some(y)) => !same_number(&id, x, y),
+            _ => true,
+        };
+        if differs {
+            told.push(k.2.clone());
+            problems.push(Problem::Change {
+                bar: k.0,
+                beat: k.1,
+                name,
+                id,
+                expected: x,
+                found: y,
+            });
+        }
     }
     problems
 }
@@ -291,12 +410,13 @@ fn same_number(id: &str, a: f64, b: f64) -> bool {
 }
 
 /// How the two pieces sound: each part's voice, effects and numbers, and
-/// the master's. Parts are matched by name; a part the student has not
-/// written is already told by its notes.
+/// the master's. Parts are matched by name, or by place (see
+/// [`counterpart`]), in sections and patterns too; a part the student has
+/// not written is already told by its notes.
 fn sound(student: &Piece, answer: &Piece) -> Vec<Problem> {
     let mut problems = Vec::new();
-    for a in &answer.parts {
-        let Some(s) = student.parts.iter().find(|p| p.name == a.name) else {
+    for a in answer.all_parts() {
+        let Some(s) = counterpart(student, answer, &a.name) else {
             continue;
         };
         let (va, vs) = (voice_of(a), voice_of(s));
@@ -770,6 +890,38 @@ impl Problem {
                     Lang::En => format!("{name} should be {e}, but is {f}."),
                 }
             }
+            Problem::Change {
+                bar,
+                beat,
+                ref name,
+                ref id,
+                expected,
+                found,
+            } => {
+                let w = where_(bar, beat, lang);
+                let n = |x: f64| number_text(id, x);
+                match (lang, expected, found) {
+                    (Lang::Pt, Some(e), Some(f)) => {
+                        format!("{w}: {name} devia estar em {}, mas está em {}.", n(e), n(f))
+                    }
+                    (Lang::Pt, Some(e), None) => format!("{w}: {name} devia mudar para {}.", n(e)),
+                    (Lang::Pt, None, _) => format!("{w}: {name} não devia mudar aqui."),
+                    (Lang::Es, Some(e), Some(f)) => {
+                        format!(
+                            "{w}: {name} debería estar en {}, pero está en {}.",
+                            n(e),
+                            n(f)
+                        )
+                    }
+                    (Lang::Es, Some(e), None) => format!("{w}: {name} debería cambiar a {}.", n(e)),
+                    (Lang::Es, None, _) => format!("{w}: {name} no debería cambiar aquí."),
+                    (Lang::En, Some(e), Some(f)) => {
+                        format!("{w}: {name} should be at {}, but is at {}.", n(e), n(f))
+                    }
+                    (Lang::En, Some(e), None) => format!("{w}: {name} should change to {}.", n(e)),
+                    (Lang::En, None, _) => format!("{w}: {name} should not change here."),
+                }
+            }
         }
     }
 }
@@ -959,6 +1111,31 @@ mod tests {
             p[0].text(Lang::En),
             "master.reverb.decay should be 3 s, but is 2.2 s."
         );
+        // Numbers set while playing, and numbers that move.
+        let p = check_src(
+            "baixo = | c2 _ _ _ |",
+            "baixo = | c2 _ _ _ |\nat bar 2: baixo.reverb.mix = 0.6",
+            CheckOptions {
+                bars: Some(2),
+                ..opts
+            },
+        );
+        assert_eq!(
+            p[0].text(Lang::Pt),
+            "No compasso 2, tempo 1: baixo.reverb.mix devia mudar para 0.6."
+        );
+        let moving = "baixo: synth.saw -> lowpass\nbaixo = | c2 _ _ _ |\nbaixo.lowpass.cutoff = 300 Hz -> 4000 Hz over 2 bars";
+        let p = check_src(moving, moving, opts);
+        assert!(p.is_empty(), "{p:?}");
+        let p = check_src(
+            &moving.replace("4000", "2000"),
+            moving,
+            CheckOptions {
+                bars: Some(2),
+                ..opts
+            },
+        );
+        assert_eq!(p.len(), 1, "{p:?}");
     }
 
     #[test]

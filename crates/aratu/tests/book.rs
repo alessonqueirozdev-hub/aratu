@@ -230,3 +230,166 @@ fn every_exercise_sounds_the_same_in_every_language() {
     }
     assert!(failures.is_empty(), "\n{}", failures.join("\n"));
 }
+
+/// A feature, and how to tell a lesson's code shows it.
+type Taught = (&'static str, fn(&str) -> bool);
+
+/// Every piece of the language is taught in the course, in an example or an
+/// exercise, in every language: a feature only the manual shows is one that
+/// students never meet. A feature added to the language gets a line here,
+/// and a lesson.
+const TAUGHT: &[Taught] = &[
+    ("dividing a beat", |c| c.contains("cccc")),
+    ("dotted rhythm", |c| c.contains("c.c")),
+    ("bars of rest", |c| c.contains("| - x")),
+    ("compound meter", |c| c.contains("6/8")),
+    ("five beats", |c| c.contains("5/4")),
+    ("additive meter", |c| c.contains("= 2+2+3")),
+    ("tuplet across beats", |c| c.contains("2[")),
+    ("accent", |c| c.contains(" S ") || c.contains("- S")),
+    ("open hi-hat", |c| c.contains("co")),
+    ("toms", |c| c.contains("tom ")),
+    ("side stick", |c| c.contains("rim")),
+    ("roll", |c| c.contains('~')),
+    ("clap", |c| c.contains("palmas") || c.contains("clap")),
+    ("pandeiro", |c| {
+        c.contains("pandeiro") || c.contains("pandero")
+    }),
+    ("zabumba", |c| c.contains("zabumba")),
+    ("triangle", |c| {
+        c.contains("triângulo") || c.contains("triángulo") || c.contains("triangle")
+    }),
+    ("agogô", |c| {
+        c.contains("agogô") || c.contains("agogó") || c.contains("agogo")
+    }),
+    ("samba surdo", |c| c.contains("surdo")),
+    ("alfaia", |c| c.contains("alfaia")),
+    ("gonguê", |c| c.contains("gonguê") || c.contains("gongue")),
+    ("cajón", |c| c.contains("cajón") || c.contains("cajon")),
+    ("shaker", |c| {
+        c.contains("ganzá") || c.contains("agbê") || c.contains("shaker")
+    }),
+    ("notes and octaves", |c| c.contains("4 ")),
+    ("sharps", |c| c.contains('#')),
+    ("notes together", |c| c.contains("4+")),
+    ("tie over the bar", |c| c.contains("| _")),
+    ("staccato", |c| c.contains("4'")),
+    ("long lines", |c| {
+        c.lines()
+            .skip(1)
+            .any(|l| l.starts_with(' ') && l.trim_start().starts_with('|'))
+    }),
+    ("chord symbols", |c| c.contains("| Am |")),
+    ("solfège chords", |c| {
+        c.contains("Lám") || c.contains("Lam ")
+    }),
+    ("no chord", |c| c.contains("N.C.")),
+    ("strum", |c| c.contains("du")),
+    ("golpe", |c| c.contains("dgdu")),
+    ("roman numerals", |c| c.contains("| vi |")),
+    ("secondary dominant", |c| c.contains("V7/V")),
+    ("borrowed chord", |c| c.contains("bVII")),
+    ("arpeggio", |c| c.contains(":arp")),
+    ("dynamic marks", |c| c.contains("p:")),
+    ("hairpins", |c| c.contains("4<")),
+    ("a part's level", |c| c.contains("cresc to")),
+    ("marcato", |c| c.contains("S!") || c.contains("s!")),
+    ("ghost notes", |c| c.contains("(s)")),
+    ("repeat signs", |c| c.contains("|:")),
+    ("first and second endings", |c| c.contains("|1")),
+    ("repeat the bar", |c| c.contains('%')),
+    ("jumps", |c| c.contains("D.S.")),
+    ("sections", |c| {
+        c.contains("section ") || c.contains("seção ") || c.contains("sección ")
+    }),
+    ("form", |c| c.contains("form:") || c.contains("forma:")),
+    ("repeat a beat", |c| c.contains("]x4")),
+    ("motifs", |c| c.contains("motif ") || c.contains("motivo ")),
+    ("sequences", |c| c.contains("+1")),
+    ("inversion", |c| c.contains(".inv")),
+    ("twelve-tone rows", |c| {
+        c.contains(".P0") || c.contains(".R0")
+    }),
+    ("melody lists", |c| {
+        c.contains("list ") || c.contains("lista ")
+    }),
+    ("transforming a line", |c| {
+        c.contains(".transpose") || c.contains(".transpor") || c.contains(".transponer")
+    }),
+    ("ritardando", |c| c.contains("rit to")),
+    ("tempo ramp", |c| c.contains("90 -> 140")),
+    ("fermata", |c| c.contains("4^")),
+    ("fermata's length", |c| c.contains("^3")),
+    ("pickup", |c| {
+        c.contains("pickup:") || c.contains("anacruse:") || c.contains("anacrusa:")
+    }),
+    ("swing", |c| c.contains("swing")),
+    ("rubato", |c| c.contains("rubato")),
+    ("humanize", |c| {
+        c.contains("humanize") || c.contains("humanizar")
+    }),
+    ("patterns", |c| {
+        c.contains("pattern ") || c.contains("padrão ") || c.contains("patrón ")
+    }),
+    ("every", |c| c.contains("every ") || c.contains("cada ")),
+    ("once", |c| c.contains("once")),
+    ("a beat of a bar", |c| {
+        c.contains("beat 3") || c.contains("tempo 3:") || c.contains("tiempo 3")
+    }),
+    ("a stretch of bars", |c| {
+        c.contains("from bar")
+            || c.contains("do compasso")
+            || c.contains("del compás")
+            || c.contains("desde el compás")
+    }),
+    ("a line changing at a bar", |c| {
+        c.contains(": baixo = |") || c.contains(": bass = |") || c.contains(": bajo = |")
+    }),
+    ("out and in", |c| {
+        c.contains(": out") || c.contains(": fora") || c.contains(": fuera")
+    }),
+    ("sometimes", |c| c.contains("?30%")),
+    ("one or the other", |c| {
+        c.contains('{') && c.contains('|') && c.contains("}")
+    }),
+    ("seed", |c| {
+        c.contains("seed") || c.contains("semente") || c.contains("semilla")
+    }),
+    ("a voice", |c| c.contains("bass.slap")),
+    ("an effect chain", |c| c.contains("-> lowpass")),
+    ("a number with a knob", |c| c.contains(".cutoff =")),
+    ("a number that moves", |c| c.contains(" -> 4000 Hz")),
+    ("back and forth", |c| c.contains("<->")),
+    ("loop", |c| {
+        c.contains("loop") || c.contains("repete") || c.contains("repite")
+    }),
+    ("volume", |c| c.contains(".volume =")),
+    ("pan", |c| c.contains(".pan =")),
+    ("a number for every part", |c| c.contains("\nreverb.mix =")),
+    ("effects for every part", |c| {
+        c.contains("todos: chorus") || c.contains("all: chorus")
+    }),
+    ("the master", |c| c.contains("master.")),
+    ("keywords in other languages", |c| {
+        c.contains("compasso:") || c.contains("compás:")
+    }),
+];
+
+#[test]
+fn every_feature_is_taught_in_every_language() {
+    let mut failures = Vec::new();
+    for lang in LANGS {
+        let code: Vec<String> = pages(lang)
+            .into_iter()
+            .filter(|(page, _)| page != "manual")
+            .flat_map(|(_, md)| blocks(&md))
+            .flat_map(|b| [Some(b.code), b.answer].into_iter().flatten())
+            .collect();
+        for (feature, taught) in TAUGHT {
+            if !code.iter().any(|c| taught(c)) {
+                failures.push(format!("{lang}: no lesson shows {feature}"));
+            }
+        }
+    }
+    assert!(failures.is_empty(), "\n{}", failures.join("\n"));
+}

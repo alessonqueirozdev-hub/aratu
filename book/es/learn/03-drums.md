@@ -129,31 +129,8 @@ batería {
 }
 ```
 
-## Percusión brasileña
-
-Cada instrumento de percusión tiene sus golpes. Una línea con el nombre
-del instrumento lee esos golpes:
-
-| Línea | Golpes |
-|---|---|
-| `pandeiro` (`pandero`) | `p` pulgar, `d` dedos, `t` palmada, `m` apagado |
-| `zabumba` | `o` abierto, `m` apagado, `b` bacalhau (varilla) |
-| `triángulo` | `o` abierto, `f` cerrado |
-| `agogó` | `a` agudo, `g` grave |
-| `surdo` | `o` abierto, `m` apagado |
-| `tamborim`, `alfaia`, `gonguê` | `o` abierto, `m` apagado |
-| `ganzá` | `s` |
-| `cuíca` | `a` agudo, `g` grave |
-| `cajón` | `b` grave, `t` golpe agudo |
-
-Un baião, con zabumba, triángulo y agogó:
-
-```aratu
-tempo: 110
-zabumba   = | o - -o m | o - b - |
-triángulo = fo fo fo fo
-agogó     = a g ag -
-```
+> El pandeiro, la zabumba, el triángulo, el agogó y los demás instrumentos
+> de percusión brasileña tienen una lección propia, un poco más adelante.
 
 ## Redoble
 

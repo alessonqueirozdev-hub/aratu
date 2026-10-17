@@ -73,9 +73,28 @@ sd = s s s s
 In the next lesson you will see what a bar is to Aratu, and how to set the
 tempo.
 
-> Aratu's words can be written in English, Portuguese or Spanish:
-> `tempo: 100` or `andamento: 100`, `at bar 9:` or `no compasso 9:`. The
-> manual has the whole table.
+## In English, Portuguese or Spanish
+
+Aratu's words can be written in English, Portuguese or Spanish, and even
+mixed. This book uses the English words, which are the shortest and the
+ones you will see in examples from all over the world. These two pieces
+sound the same:
+
+```aratu
+meter: 3/4
+tempo: 120
+bd = b - -
+```
+
+```aratu
+compasso: 3/4
+andamento: 120
+bd = b - -
+```
+
+The second one is in Portuguese; in Spanish it would be `compás: 3/4` and
+`pulso: 120`. Note names work the same way: `c4` or `dó4`. The manual has
+the whole table of words in the three languages.
 
 > Do you program, and want to know how Aratu works underneath? The
 > [**Inside**](#/por-dentro) tab gives each thing its technical name: what a

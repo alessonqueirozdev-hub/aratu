@@ -51,29 +51,13 @@ every 8 bars, first: add crash
 every four. `add` plays a pattern **on top** of the one sounding: here, a
 crash on the first beat of every eight bars.
 
-## Scheduling a change
+## Right now, at the next beat
 
-`at bar 9: play fill` schedules a change for bar 9. A line written without
-`at bar` comes in at the start of the piece or, if you write it while the
-music plays, at the next bar. Written with `now:` in front
-(`now: play fill`), it comes in at the very next beat. And with `once` at
-the end (`now: play fill once`), the fill plays one time and the groove
-comes back by itself, where it would have been.
-
-`at bar 4 beat 3:` comes in on the third beat of bar 4, and
-`from bar 5 to 6:` holds for those bars only; at bar 7 what held before
-comes back. A line can change at a bar too, from its start:
-
-```aratu
-tempo: 110
-pattern groove { hh = cc cc cc cc; bd = b - b -; sd = - s - s }
-pattern fill   { sd = ss ss SS SS }
-bass = | c2 _ g1 _ |
-play groove
-at bar 4 beat 3: play fill once
-from bar 5 to 6: drums: out
-at bar 7: bass = | f2 _ c2 _ |
-```
+A line written while the music plays comes in at the next bar. With
+`now:` in front, it comes in at the very next beat:
+`now: play fill once` brings the fill in at once, and the groove comes
+back by itself, where it would have been. The next lesson shows how to
+mark a change at an exact bar and beat.
 
 ## Taking a part out and back in
 
@@ -100,7 +84,7 @@ get buttons in the corner, and Esc leaves the stage.
 ## Exercises
 
 Use the ready-made patterns to play the phrase: the groove three times,
-then the fill.
+then the fill. (`x3` can also be written `3x`.)
 
 ```aratu exercise bars=4
 pattern groove { hh = cc cc cc cc; bd = b - b -; sd = - s - s }

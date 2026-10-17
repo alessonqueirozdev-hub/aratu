@@ -26,10 +26,33 @@ melody = | p:c4< d e f | f:g4> f e d | p:c4 _ _ _ |
 With no mark after it, a hairpin moves one step (from mf to f, say) by the
 end of the line.
 
-## Accents
+## Articulation: accent, marcato, staccato and ghost note
 
-An upper-case letter accents: `C4`, or `S` on the snare. An accent adds
-to the dynamic the music is at.
+Articulation says **how** each note is attacked. There are four signs,
+from the strongest to the weakest:
+
+| Sign | Written | How it sounds |
+|---|---|---|
+| marcato | `S!`, `c4!` | the strongest, very marked |
+| accent | `S`, `C4` | louder than its neighbours |
+| staccato | `s'`, `c4'` | short, detached |
+| ghost note | `(s)`, `(c4)` | almost silent, felt more than heard |
+
+An accent adds to the dynamic the music is at, and a marcato adds even
+more. Ghost notes are the spice of funk and samba on the snare: very light
+strokes between the strong hits.
+
+```aratu
+tempo: 96
+drums {
+  hh = cc cc cc cc
+  bd = b - b b
+  sd = (s)(s) S! (s)(s) S!
+}
+```
+
+> Take the parentheses off the ghost notes and hear how heavy the snare
+> gets. The parentheses push those strokes into the background.
 
 ## Changing a whole part
 
@@ -63,4 +86,15 @@ melody = | p:c4 d e f | f:g4 _ _ _ |
 
 ```aratu answer
 melody = | p:c4< d e f | f:g4 _ _ _ |
+```
+
+On the snare, beats 2 and 4 marcato, with ghost notes on the eighths in
+between: `(s)` on the second half of beats 1 and 3.
+
+```aratu exercise dynamics=1
+sd = s- s s- s
+```
+
+```aratu answer
+sd = -(s) s! -(s) s!
 ```

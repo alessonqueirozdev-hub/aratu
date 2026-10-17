@@ -53,6 +53,7 @@ Um `_` sozinho num tempo segura o tempo inteiro: `c _` é uma mínima e
 
 Um número antes dos colchetes estica o grupo por mais tempos:
 `2[c c c]` são três batidas iguais em dois tempos, a tercina de semínimas.
+A lição sobre compassos compostos volta a isso com calma.
 
 ```aratu
 tempo: 80

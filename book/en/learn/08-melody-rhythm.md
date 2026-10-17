@@ -53,6 +53,24 @@ melody = | e4 e f g | g f e d | c c d e | e [_ d] d _ |
 The last bar: E lasts a beat and a half (`e` and the first half of
 `[_ d]`), D lasts half a beat, and the last D lasts two beats.
 
+## Long lines
+
+An eight-bar melody does not fit on one line of the screen. Break the line
+wherever you like: a line that **starts with a bar line** carries on the
+line of music above it.
+
+```aratu
+tempo: 110
+melody = | e4 e f g | g f e d |
+         | c c d e  | e [_ d] d _ |
+         | e e f g  | g f e d |
+         | c c d e  | d [_ c] c _ |
+```
+
+That is eight bars of one single line, the same `melody`. Lining up the
+bar lines with spaces, as above, makes the music easy to read, as on a
+score.
+
 ## Exercises
 
 End the "Ode to Joy" with the other phrase, which lands on C: in the last
@@ -86,4 +104,16 @@ melody = | [c4 d] [c d] [c d] [c d] |
 
 ```aratu answer
 melody = | [c4' d] [c' d] [c' d] [c' d] |
+```
+
+Carry the melody on to the next line, with two more bars:
+`| f4 e d c | d _ _ _ |`.
+
+```aratu exercise
+melody = | c4 d e f | g _ _ _ |
+```
+
+```aratu answer
+melody = | c4 d e f | g _ _ _ |
+         | f4 e d c | d _ _ _ |
 ```

@@ -32,7 +32,8 @@ play groove x3, fill
 ```
 
 `play groove x3, fill` toca el groove tres veces, después el redoble, y
-repite la frase de cuatro compases.
+repite la frase de cuatro compases. En español: `patrón` en lugar de
+`pattern` y `toca` en lugar de `play`.
 
 ## Variar de vez en cuando
 
@@ -51,29 +52,13 @@ every 8 bars, first: add crash
 compás de cada cuatro. `add` toca un patrón **encima** del que está
 sonando: aquí, un platillo en el primer tiempo de cada ocho compases.
 
-## Programar un cambio
+## Ya, en el tiempo siguiente
 
-`at bar 9: play fill` marca un cambio para el compás 9. Una línea escrita
-sin `at bar` entra al principio de la pieza o, si la escribes con la música
-sonando, en el compás siguiente. Escrita con `now:` delante
-(`now: play fill`), entra ya en el tiempo siguiente. Y con `once` al final
-(`now: play fill once`), el redoble suena una vez y el groove vuelve solo,
-en el lugar donde estaría.
-
-`at bar 4 beat 3:` entra en el tercer tiempo del compás 4, y
-`from bar 5 to 6:` vale solo en esos compases; en el 7 vuelve lo que valía
-antes. Una línea también puede cambiar en un compás, desde su principio:
-
-```aratu
-tempo: 110
-pattern groove { hh = cc cc cc cc; bd = b - b -; sd = - s - s }
-pattern fill   { sd = ss ss SS SS }
-bajo = | do2 _ sol1 _ |
-play groove
-at bar 4 beat 3: play fill once
-from bar 5 to 6: drums: out
-at bar 7: bajo = | fa2 _ do2 _ |
-```
+Una línea escrita con la música sonando entra en el compás siguiente. Con
+`now:` (o `ahora:`) delante, entra ya en el tiempo siguiente:
+`now: play fill once` trae el redoble en el momento, y el groove vuelve
+solo, en el lugar donde estaría. La lección siguiente muestra cómo marcar
+un cambio en un compás y un tiempo exactos.
 
 ## Sacar y traer una parte
 
@@ -101,7 +86,7 @@ listas de melodías tienen botones en la esquina, y Esc sale del escenario.
 ## Ejercicios
 
 Usa los patrones listos para tocar la frase: groove tres veces, después el
-redoble.
+redoble. (`x3` también puede escribirse `3x`.)
 
 ```aratu exercise bars=4
 pattern groove { hh = cc cc cc cc; bd = b - b -; sd = - s - s }

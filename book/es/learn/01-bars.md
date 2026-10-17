@@ -13,9 +13,9 @@ bd = b - b -
 
 `meter: 4/4` es la indicación de compás: cuatro tiempos por compás.
 `tempo: 90` es el tempo: noventa pulsos por minuto, como en un metrónomo.
-Mira la perilla redonda junto al `90`: arrástrala hacia arriba o hacia
-abajo y el número cambia. La música acelera o se frena en el compás
-siguiente.
+En español, `compás: 4/4` y `pulso: 90` dicen lo mismo. Mira la perilla
+redonda junto al `90`: arrástrala hacia arriba o hacia abajo y el número
+cambia. La música acelera o se frena en el compás siguiente.
 
 ## La primera regla: un espacio separa los tiempos
 
@@ -58,7 +58,8 @@ hh = - c c
 ```
 
 En 6/8 el tiempo es una negra con puntillo y se cuenta en dos, como cuenta
-un músico. Lo verás en la próxima lección.
+un músico. Lo verás en la lección sobre compases compuestos, después de
+aprender a dividir el tiempo.
 
 ## Ejercicios
 

@@ -51,6 +51,7 @@ A `_` alone in a beat holds the whole beat: `c _` is a half note and
 
 A number before the brackets stretches the group over more beats:
 `2[c c c]` is three even hits in two beats, quarter-note triplets.
+The lesson on compound meters comes back to this, slowly.
 
 ```aratu
 tempo: 80

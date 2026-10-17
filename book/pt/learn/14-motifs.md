@@ -84,6 +84,31 @@ piano {
 }
 ```
 
+## Transformar uma linha inteira
+
+As mesmas transformações valem para uma linha inteira, sem reescrevê-la.
+Escreva o nome da linha, um ponto e o verbo:
+
+```aratu
+tempo: 100
+melodia = | dó4 ré mi sol | lá sol mi ré |
+melodia.transpose +7
+```
+
+| Escreva | O que faz |
+|---|---|
+| `melodia.transpose +7` | sobe sete semitons (`-12` desce uma oitava) |
+| `melodia.inv`, `.retro`, `.ri` | inverte, de trás para frente, os dois |
+| `melodia.augment` | dobra as figuras: tudo fica duas vezes mais lento |
+| `melodia.diminish` | divide as figuras pela metade |
+| `hh.rotate 1` | desloca o padrão em uma parte |
+| `hh.density 50%` | toca só cerca de metade das batidas |
+| `drums.velocity 0.8` | toca mais suave |
+
+Em português: `transpor`, `aumentar`, `diminuir`, `girar`, `densidade`,
+`intensidade`. Apague a linha da transformação e a melodia volta a ser
+como foi escrita.
+
 ## Séries dodecafônicas
 
 Na música dodecafônica, uma **série** ordena as doze notas da escala
@@ -175,6 +200,18 @@ melodia = | riff riff riff riff |
 ```aratu answer
 motif riff = [dó4 ré mi]
 melodia = | riff riff+1 riff+2 riff+3 |
+```
+
+Transponha a melodia inteira uma quinta acima (sete semitons), com uma
+linha só.
+
+```aratu exercise
+melodia = | dó4 ré mi sol |
+```
+
+```aratu answer
+melodia = | dó4 ré mi sol |
+melodia.transpose +7
 ```
 
 Toque a série de trás para frente: a forma retrógrada.

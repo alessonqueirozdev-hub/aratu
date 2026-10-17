@@ -18,10 +18,22 @@ primeiro andamento da peça.
 Durante um ritardando o andamento muda aos poucos, tempo a tempo, como se
 lê numa partitura, e cada nota cai no momento exato.
 
+Um andamento novo, de uma vez, num compasso: `at bar 9: tempo 130`. E uma
+rampa entre dois andamentos quaisquer, desde o começo:
+
+```aratu
+tempo 90 -> 140 over 8 bars
+hh = cc cc cc cc
+bd = b - b -
+```
+
+A duração também pode ser em tempos: `rit to 60 over 6 beats`.
+
 ## Fermata
 
 `^` depois de uma nota é uma fermata: a nota dura o dobro, e todas as
-partes esperam por ela.
+partes esperam por ela. Com um número, ela dura quantas vezes se
+escrever: `sol4^3` dura o triplo.
 
 ```aratu
 tempo: 90
@@ -47,9 +59,11 @@ começa nela; as outras começam no compasso 1.
 
 ## Exercícios
 
+Os exercícios desta lição conferem também **quando** cada nota chega.
+
 Ponha uma fermata na última nota do primeiro compasso.
 
-```aratu exercise
+```aratu exercise timing=1
 melodia = | dó4 ré mi fá | sol _ _ _ |
 ```
 
@@ -66,4 +80,28 @@ melodia = | dó4 _ mi _ | sol _ _ _ |
 ```aratu answer
 pickup: beat 4
 melodia = | sol3 | dó4 _ mi _ | sol _ _ _ |
+```
+
+Faça um ritardando até 60, ao longo de dois compassos, a partir do
+compasso 2.
+
+```aratu exercise timing=1 bars=4
+tempo: 100
+hh = c c c c
+```
+
+```aratu answer
+tempo: 100
+hh = c c c c
+at bar 2: rit to 60 over 2 bars
+```
+
+Agora uma fermata três vezes mais longa no sol do fim.
+
+```aratu exercise timing=1
+melodia = | dó4 mi sol4^ - |
+```
+
+```aratu answer
+melodia = | dó4 mi sol4^3 - |
 ```

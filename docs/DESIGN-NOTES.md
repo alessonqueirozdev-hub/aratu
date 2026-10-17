@@ -575,7 +575,7 @@ Agreed with the user and built as described below, with two changes:
 (a whole melody drawn each time round from the seed); on stage, buttons and
 Alt+1…9 change a list reference in the text, and the side panel's Rows tab
 shows each row's 12×12 matrix. Code in `crates/aratu/src/motifs.rs`, tests in
-`crates/aratu/tests/motifs.rs`, lesson `book/*/learn/09b-motifs.md`.
+`crates/aratu/tests/motifs.rs`, lesson `book/*/learn/14-motifs.md`.
 
 1. **Repeat a beat inside a bar**: `| [mi3 ré3 dó3 ré3]x4 |` is the group
    four times, each taking its own beat. `x` glued to `]` (or `}`, or to a
@@ -803,3 +803,32 @@ a chain written for `all` (`todos`) now adds its effects to every part
 after its own, and `master.*` reaches the master bus. Playing and the
 previews wait (up to four seconds) for Manguebyte's parts to be ready,
 so the first notes are never the stand-in's.
+
+## The course grows with the language
+
+The language had grown faster than the course: additive meters, tuplets,
+Brazilian percussion, Roman numerals, articulation, motions, the timeline
+words, global effects and the master were in the manual as rows and
+paragraphs, and some (swing, rubato, sections and form, transformations)
+in no lesson at all. A student meets the language through the course, so
+the course was rebuilt around it, in 24 lessons that follow a music
+curriculum: rhythm (bars, dividing, drums, rests, compound and additive
+meters, Brazilian percussion), notes (melodies, rhythm in melodies and long
+lines, chords, harmony by degree), expression (dynamics and articulation,
+repeats, sections and form, motifs and transformations, tempo, swing and
+rubato), playing live (patterns, the timeline, chance) and sound (voices
+and effects, numbers that move, mixing), ending in a maracatu project
+written with real percussion lines, sections, dynamics and a mix.
+
+Exercises can now be checked for when the notes come (`timing=1`: tempo,
+swing, rubato, fermatas) and for how they sound (`sound=1`: voices, effects,
+numbers, numbers set while playing or moving), so the lessons on sound and
+expression have exercises too. While doing this, the checker was found to
+index a table of six drum names, so a missing tom, clap or percussion
+stroke panicked; every sound now has a name.
+
+The manual was reordered to follow the course, one chapter per subject
+instead of a grab-bag chapter 9, and a test (`every_feature_is_taught_in_
+every_language`) lists the features of the language and fails when one of
+them appears in no lesson's code, in any of the three languages. A new
+feature gets a line in that list, and a lesson.

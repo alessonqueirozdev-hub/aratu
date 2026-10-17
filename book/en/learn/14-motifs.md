@@ -83,6 +83,30 @@ piano {
 }
 ```
 
+## Transforming a whole line
+
+The same transformations work on a whole line, without writing it again.
+Write the line's name, a dot and the verb:
+
+```aratu
+tempo: 100
+melody = | c4 d e g | a g e d |
+melody.transpose +7
+```
+
+| Write | What it does |
+|---|---|
+| `melody.transpose +7` | up seven semitones (`-12` goes down an octave) |
+| `melody.inv`, `.retro`, `.ri` | inversion, backwards, or both |
+| `melody.augment` | doubles the note values: everything twice as slow |
+| `melody.diminish` | halves the note values |
+| `hh.rotate 1` | shifts the pattern by one part |
+| `hh.density 50%` | plays only about half of the hits |
+| `drums.velocity 0.8` | plays more softly |
+
+Delete the transformation line and the melody goes back to the way it was
+written.
+
 ## Twelve-tone rows
 
 In twelve-tone music a **row** orders the twelve notes of the chromatic
@@ -175,6 +199,18 @@ melody = | riff riff riff riff |
 ```aratu answer
 motif riff = [c4 d e]
 melody = | riff riff+1 riff+2 riff+3 |
+```
+
+Transpose the whole melody a fifth up (seven semitones), with a single
+line.
+
+```aratu exercise
+melody = | c4 d e g |
+```
+
+```aratu answer
+melody = | c4 d e g |
+melody.transpose +7
 ```
 
 Play the row backwards: its retrograde form.

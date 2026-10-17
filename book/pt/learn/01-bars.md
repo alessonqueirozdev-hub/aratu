@@ -13,7 +13,7 @@ bd = b - b -
 
 `meter: 4/4` diz a fórmula de compasso: quatro tempos por compasso.
 `tempo: 90` diz o andamento: noventa tempos por minuto, como num
-metrônomo. Repare no botão redondo ao lado do `90`: arraste-o para cima ou
+metrônomo. Em português, `compasso: 4/4` e `andamento: 90` dizem o mesmo. Repare no botão redondo ao lado do `90`: arraste-o para cima ou
 para baixo e o número muda. A música acelera ou desacelera no próximo
 compasso.
 
@@ -58,7 +58,8 @@ hh = - c c
 ```
 
 Em 6/8 o tempo é uma semínima pontuada e se conta em dois, como um músico
-conta. Você vai ver isso na próxima lição.
+conta. Você vai ver isso na lição sobre compassos compostos, depois de
+aprender a dividir o tempo.
 
 ## Exercícios
 

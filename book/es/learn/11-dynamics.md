@@ -26,10 +26,33 @@ melodia = | p:do4< re mi fa | f:sol4> fa mi re | p:do4 _ _ _ |
 Sin una marca después, el regulador sube un escalón (de mf a f, por
 ejemplo) hasta el final de la línea.
 
-## Acentos
+## Articulación: acento, marcato, staccato y nota fantasma
 
-Una letra mayúscula acentúa: `Do4`, o `S` en la caja. El acento suma
-intensidad a la marca en la que está la música.
+La articulación dice **cómo** se ataca cada nota. Son cuatro signos, del
+más fuerte al más débil:
+
+| Signo | Escrito | Cómo suena |
+|---|---|---|
+| marcato | `S!`, `do4!` | el más fuerte, bien marcado |
+| acento | `S`, `Do4` | más fuerte que las vecinas |
+| staccato | `s'`, `do4'` | corto, separado |
+| nota fantasma | `(s)`, `(do4)` | casi sin sonido, apenas se siente |
+
+El acento suma intensidad a la marca en la que está la música, y el
+marcato suma todavía más. Las notas fantasma son el condimento del funk y
+del samba en la caja: toques muy suaves entre los golpes fuertes.
+
+```aratu
+tempo: 96
+drums {
+  hh = cc cc cc cc
+  bd = b - b b
+  sd = (s)(s) S! (s)(s) S!
+}
+```
+
+> Quita los paréntesis de las notas fantasma y escucha cómo la caja se
+> vuelve pesada. Los paréntesis hacen que los toques se vayan al fondo.
 
 ## Cambiar la parte entera
 
@@ -64,4 +87,15 @@ melodia = | p:do4 re mi fa | f:sol4 _ _ _ |
 
 ```aratu answer
 melodia = | p:do4< re mi fa | f:sol4 _ _ _ |
+```
+
+En la caja, los tiempos 2 y 4 en marcato y notas fantasma en las corcheas
+entre ellos: `(s)` en la segunda mitad de los tiempos 1 y 3.
+
+```aratu exercise dynamics=1
+sd = s- s s- s
+```
+
+```aratu answer
+sd = -(s) s! -(s) s!
 ```

@@ -75,16 +75,6 @@ a whole note. A `_` at the start of a bar ties across the bar line.
 | sixteenth | `-ccc`, `c-cc` |
 | dotted eighth, then a sixteenth | `-__c` or `-.c` |
 
-**Compound meters.** In 6/8 the beat is a dotted quarter, so `ccc ccc` is one
-bar of eighths, counted in two, as a musician counts it.
-
-```aratu
-meter: 6/8
-tempo: 70
-hh = ccc ccc
-bd = b__ b__
-```
-
 **Accents.** An upper-case symbol is accented: `cC cc` accents the "and" of
 beat one.
 
@@ -94,6 +84,21 @@ bars: `| cc cc | co cc |`. A line with no bar line is one bar.
 **Groups.** Square brackets make a group that shares one part, and spaces
 are allowed inside them: `c[cc]` is an eighth and two sixteenths. The `.`
 shorthand stands for `__`, so `c.c` is `c__c`.
+
+## 3. Compound and additive meters, tuplets
+
+The beat is not always a quarter note. These are the meters where it changes
+size or groups another way, and the tuplets that cross beats.
+
+**Compound meters.** In 6/8 the beat is a dotted quarter, so `ccc ccc` is one
+bar of eighths, counted in two, as a musician counts it.
+
+```aratu
+meter: 6/8
+tempo: 70
+hh = ccc ccc
+bd = b__ b__
+```
 
 **Tuplets across beats.** A number before the brackets says how many beats
 the group takes: `2[c4 d e]` is three notes in two beats (quarter-note
@@ -110,12 +115,9 @@ hh = cc cc ccc
 bd = b  b  b
 ```
 
-**Marcato and ghost notes.** `s!` is marcato, stronger than upper case.
-`(s)` is a ghost note, barely touched, as drum notation writes it; it works
-on notes too: `(c4)`. A fermata lasts twice as long (`g4^`) or as many
-times as written: `g4^3`.
+**Meter changes.** `at bar 17: meter 7/8`.
 
-## 3. Drums
+## 4. Drums
 
 Each drum has a line, and each line follows the rhythm rules. The symbol
 decides the sound, whatever the line is called:
@@ -165,7 +167,7 @@ drums {
 It works on any drum (`f~` on the floor tom, `x~` on a cymbal) and on
 notes, as a tremolo: `c4~ _`.
 
-### Brazilian percussion
+## 5. Brazilian percussion
 
 A line named after an instrument reads its strokes, with the same rhythm
 rules:
@@ -193,7 +195,7 @@ Upper case accents and `(p)` is a ghost stroke, as on the drums. For now
 these sounds are drawn in the browser; recordings will come with
 Manguebyte's engine.
 
-## 4. Melodies
+## 6. Melodies
 
 Notes are written in lower case, with the octave: `c4` is middle C. Sharps
 and flats follow the letter: `f#4`, `eb4`. Solfège works too: `dó4 ré4 mi4`
@@ -225,7 +227,7 @@ melody = | c4 d e f | g a b c5 |
          | b4 a g f | e d c _ |
 ```
 
-## 5. Chords and strumming
+## 7. Chords and strumming
 
 A progression is written as a lead sheet, on a line called `chords`. The
 rule of sharing works one level up: chords that share a bar divide it
@@ -243,17 +245,6 @@ Chord symbols keep their usual spelling: `Am`, `F`, `G7`, `Cmaj7`, `Dm7b5`,
 `E/G#`, and the spellings of a Brazilian *cifra* too: `C7M`, `Bº`, `G7(b9)`.
 `C6/9`, `E7alt` and solfège roots work as well: `Lám`, `Sol7`, `Fa#m7`,
 `Dó/Mi`. `N.C.` (or `-`) is a bar with no chord.
-
-**Chords by degree.** In Roman numerals, from the key at the start of the
-piece (C major when there is no `key:`): upper case is major, lower case
-minor, and the quality follows. `bVII` borrows from outside the key and
-`V7/V` is the dominant of the dominant. With `:arp` the chord is rolled,
-from its lowest note up; in a melody, `c4+e4+g4:arp`.
-
-```aratu
-key: C major
-chords = | I | vi | ii7 | V7:arp |
-```
 
 **Strumming.** A line called `strum` uses the rhythm rules with guitar
 symbols:
@@ -281,7 +272,38 @@ strum sounds the strings from low to high a few milliseconds apart, an up
 strum from high to low; accents strum harder and faster. Without a strum,
 the chords play whole, like a keyboard.
 
-## 6. Dynamics
+## 8. Harmony by degree
+
+**Chords by degree.** In Roman numerals, from the key at the start of the
+piece (C major when there is no `key:`): upper case is major, lower case
+minor, and the quality follows. `bVII` borrows from outside the key and
+`V7/V` is the dominant of the dominant. With `:arp` the chord is rolled,
+from its lowest note up; in a melody, `c4+e4+g4:arp`.
+
+```aratu
+key: C major
+chords = | I | vi | ii7 | V7:arp |
+```
+
+| Write | Means |
+|---|---|
+| `I` … `VII` | the degree, a major chord |
+| `i` … `vii` | the degree, a minor chord |
+| `V7`, `ii7`, `IVmaj7`, `vii°` | after the degree, the rest of the chord symbol |
+| `bVII`, `#iv°` | a chord from outside the key, a semitone below or above the degree |
+| `V7/V`, `V7/ii` | the dominant of the degree after the slash |
+| `I:arp` | the chord rolled |
+
+In a minor key the degrees follow the natural minor scale: in
+`key: A minor`, `i` is Am, `iv` is Dm, `VI` is F, and the dominant with
+the leading tone is written `V7` (E7).
+
+```aratu
+key: A minor
+chords = | i | iv | VI | V7 |
+```
+
+## 9. Dynamics and articulation
 
 Dynamic marks are the score's: `ppp pp p mp mf f ff fff`, and `sfz`, `fp`.
 
@@ -319,7 +341,11 @@ Each mark stands for a fixed velocity: ppp 16, pp 33, p 49, mp 64, mf 80,
 f 96, ff 112, fff 127. An accent adds to the current one. A hairpin with no
 mark after it moves one step (from `mf` to `f`, say) by the end of the line.
 
-## 7. Tempo and time
+**Marcato and ghost notes.** `s!` is marcato, stronger than upper case.
+`(s)` is a ghost note, barely touched, as drum notation writes it; it works
+on notes too: `(c4)`.
+
+## 10. Tempo and time
 
 ```aratu
 tempo: 96
@@ -346,16 +372,15 @@ During a ritardando or accelerando the tempo changes evenly, beat by beat,
 as a score reads, and every note lands at its exact time.
 
 **Fermata.** `^` on a note holds it: `g4^` lasts twice its value, and every
-part waits for it.
+part waits for it. With a number it lasts that many times: `g4^3`
+lasts three times as long.
 
 **Pickup.** `pickup: beat 4` starts the piece on the fourth beat of an
 incomplete first bar. The pickup is bar 0, so bar 1 is the first full bar,
 as musicians number them. A line whose first bar is as long as the pickup
 starts in it; the others start at bar 1.
 
-**Meter changes.** `at bar 17: meter 7/8`.
-
-## 8. Feel: rubato, swing and humanize
+## 11. Feel: rubato, swing and humanize
 
 **Rubato** means robbed time, and robbed time is given back.
 `piano: rubato 10%` stretches and shrinks the beats inside each bar and
@@ -374,27 +399,9 @@ bd = b - b -
 **Humanize.** `humanize` adds small random deviations of timing and
 velocity, as a player would; `humanize 5 ms` sets how much.
 
-## 9. Patterns, sections, repeats and form
+## 12. Repeats and jumps
 
-Material is prepared in advance and given a name:
-
-```aratu
-pattern groove {
-  hh = cc cc co cc
-  bd = b - b -
-  sd = - s - s
-}
-
-pattern fill {
-  hh = cc cc cc cc
-  bd = bb -b bb -b
-  sd = ss ss SS SS
-}
-
-play groove
-at bar 4: play fill
-at bar 5: play groove
-```
+The repeat and jump signs of a score, and repeating a beat.
 
 ### Repeat signs
 
@@ -426,6 +433,36 @@ melody = | c4 e g c5 | segno: d4 f a _ | e4 g b _ | fine: c4 _ _ _ | g4 _ _ _ D.
 The piece is unrolled as a musician reads it. A jump without its marker is
 an error stated plainly: *"there is a D.S. at bar 24 of `melody` but no
 segno for it"*.
+
+### Repeating a beat
+
+An `x` glued to the bracket repeats that beat, each time in its own beat:
+`| [e4 d c d]x4 |` is the group four times. The `x` is glued to the `]` (or
+to a motif); with a space, `| - x8 |` is still eight bars of rest. `4x`
+works too: `[e4 d c d]4x`. Braces are for chance (`{e4|g4}`); a group in
+braces with no `|` plays as a group, with a hint to use brackets.
+
+## 13. Patterns, sections and form
+
+Material is prepared in advance and given a name:
+
+```aratu
+pattern groove {
+  hh = cc cc co cc
+  bd = b - b -
+  sd = - s - s
+}
+
+pattern fill {
+  hh = cc cc cc cc
+  bd = bb -b bb -b
+  sd = ss ss SS SS
+}
+
+play groove
+at bar 4: play fill
+at bar 5: play groove
+```
 
 ### Form
 
@@ -479,13 +516,10 @@ The pattern that was playing keeps counting its bars meanwhile, so
 `play groove x3, fill` does not lose its place in the phrase. With
 `every`, a pattern already plays once each time round.
 
-### Repeating a beat
+## 14. Motifs, rows, lists and transformations
 
-An `x` glued to the bracket repeats that beat, each time in its own beat:
-`| [e4 d c d]x4 |` is the group four times. The `x` is glued to the `]` (or
-to a motif); with a space, `| - x8 |` is still eight bars of rest. `4x`
-works too: `[e4 d c d]4x`. Braces are for chance (`{e4|g4}`); a group in
-braces with no `|` plays as a group, with a hint to use brackets.
+Short named ideas used many times: motifs, twelve-tone rows, melody lists,
+and the transformations that change them without rewriting them.
 
 ### Motifs
 
@@ -556,7 +590,32 @@ Each bar of a line can be a melody from the list too:
 like, and `temas.all` in place of a bar puts them all, in order. A list that
 names itself stops, with a message.
 
-## 10. Playing live
+### Transformations
+
+Short verbs change a part, a line or a pattern without rewriting it:
+
+| Verb | Effect |
+|---|---|
+| `hh.rotate 1` | shifts the pattern by one part |
+| `hh.density 50%` | keeps about half of the hits |
+| `drums.velocity 0.8` | plays softer |
+| `bass.transpose +12` | an octave up |
+| `melody.invert` | turns the intervals upside down |
+| `melody.retrograde` | plays it backwards |
+| `melody.ri` | the inversion backwards |
+| `melody.augment` | doubles the note values |
+| `melody.diminish` | halves the note values |
+
+The names are the ones motifs and rows take: `.inv` or `.invert`,
+`.retro` or `.retrograde`, `.ri`. `transpose` counts semitones and may say
+so with `3st`, as motifs do.
+
+```aratu
+melody = | c4 d e g | a g e d |
+melody.transpose +7
+```
+
+## 15. Playing live
 
 While a piece plays, you change it; you do not rewrite it.
 
@@ -594,32 +653,7 @@ mouse rests. Esc leaves too. The **2 columns** button splits the code in two
 columns, like a newspaper: the second goes on where the first ends, the two
 scroll together, and editing in either changes the same text.
 
-## 11. Transformations
-
-Short verbs change a part, a line or a pattern without rewriting it:
-
-| Verb | Effect |
-|---|---|
-| `hh.rotate 1` | shifts the pattern by one part |
-| `hh.density 50%` | keeps about half of the hits |
-| `drums.velocity 0.8` | plays softer |
-| `bass.transpose +12` | an octave up |
-| `melody.invert` | turns the intervals upside down |
-| `melody.retrograde` | plays it backwards |
-| `melody.ri` | the inversion backwards |
-| `melody.augment` | doubles the note values |
-| `melody.diminish` | halves the note values |
-
-The names are the ones motifs and rows take: `.inv` or `.invert`,
-`.retro` or `.retrograde`, `.ri`. `transpose` counts semitones and may say
-so with `3st`, as motifs do.
-
-```aratu
-melody = | c4 d e g | a g e d |
-melody.transpose +7
-```
-
-## 12. Chance
+## 16. Chance
 
 A loop that repeats exactly the same soon sounds mechanical. Chance gives it
 life: the computer decides, a little at random, what to play each time
@@ -647,7 +681,7 @@ played from the start. `seed 7` picks another improvisation; `seed random`
 makes every performance different. Changing one line does not change how
 the others improvise.
 
-## 13. Sound and effects
+## 17. Sound and effects
 
 Each part has a sound and a chain of effects, written as signal flow:
 
@@ -719,28 +753,10 @@ golpe still play in a stand-in until Manguebyte has them; if something goes
 wrong in a performance, the switch in the Sounds panel turns Manguebyte off
 and everything plays in the stand-in.
 
-**For the whole piece.** A number written with no part is for all of
-them: `reverb.mix = 0.5` puts every part in the mix's reverb. A chain
-written for `all` puts its effects on every part, after each part's own.
-And the mix's own bus, the master, has numbers of its own:
-
-```aratu
-all: chorus -> delay
-reverb.mix = 0.5
-master.reverb.decay = 3 s
-master.glue.on = 1
-master.limiter.ceiling = -1
-```
-
-| Master | What it is |
-|---|---|
-| `master.reverb.decay`, `.size`, `.damping`, `.level` | the shared reverb: length (s), size, damping, level (dB) |
-| `master.glue.on`, `.threshold`, `.ratio`, `.makeup` | the glue compressor: 1 turns it on; threshold (dB), ratio, make-up (dB) |
-| `master.gain` | the level into the limiter, in dB |
-| `master.limiter.ceiling` | the limiter's ceiling, -12 to -0.3 dB |
-
 Parameters can change by bar like anything else: `at bar 16:
 bass.reverb.mix = 0.65`.
+
+## 18. Numbers that move
 
 **Parameters that move.** `bass.lowpass.cutoff = 300 Hz -> 4000 Hz over 4
 bars` takes the cutoff from 300 to 4000 Hz over four bars and leaves it
@@ -771,7 +787,34 @@ numbers get a knob, and while it plays a second needle shows where the
 parameter is; a new version of the text does not send it back to the
 written value.
 
-## 14. Quick reference
+## 19. Mixing
+
+Each part has `volume` (0 to 1) and `pan` (-1, hard left, to 1, hard right),
+like the faders and pan knobs of a mixing desk: `drums.volume = 0.5`,
+`guitar.pan = -0.6`. Each part's `reverb.mix` says how much of it goes to the
+mix's shared room.
+
+**For the whole piece.** A number written with no part is for all of
+them: `reverb.mix = 0.5` puts every part in the mix's reverb. A chain
+written for `all` puts its effects on every part, after each part's own.
+And the mix's own bus, the master, has numbers of its own:
+
+```aratu
+all: chorus -> delay
+reverb.mix = 0.5
+master.reverb.decay = 3 s
+master.glue.on = 1
+master.limiter.ceiling = -1
+```
+
+| Master | What it is |
+|---|---|
+| `master.reverb.decay`, `.size`, `.damping`, `.level` | the shared reverb: length (s), size, damping, level (dB) |
+| `master.glue.on`, `.threshold`, `.ratio`, `.makeup` | the glue compressor: 1 turns it on; threshold (dB), ratio, make-up (dB) |
+| `master.gain` | the level into the limiter, in dB |
+| `master.limiter.ceiling` | the limiter's ceiling, -12 to -0.3 dB |
+
+## 20. Quick reference
 
 | Write | Means |
 |---|---|
@@ -837,7 +880,7 @@ written value.
 | `all: chorus -> delay` | effects on every part |
 | `master.reverb.decay = 3 s` | the mix: reverb, glue, limiter |
 
-## 15. In English, Portuguese and Spanish
+## 21. In English, Portuguese and Spanish
 
 Every Aratu keyword can be written in English, Portuguese or Spanish, with
 or without accents, in upper or lower case. The three versions of a piece

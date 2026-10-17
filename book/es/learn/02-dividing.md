@@ -55,6 +55,7 @@ Un `_` solo en un tiempo sostiene el tiempo entero: `c _` es una blanca y
 
 Un número antes de los corchetes estira el grupo por más tiempos:
 `2[c c c]` son tres golpes iguales en dos tiempos, el tresillo de negras.
+La lección sobre compases compuestos vuelve a esto con calma.
 
 ```aratu
 tempo: 80

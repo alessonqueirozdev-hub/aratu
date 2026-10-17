@@ -74,9 +74,27 @@ sd = s s s s
 Na próxima lição você vai ver o que é um compasso para o Aratu, e como
 escolher o andamento.
 
-> As palavras do Aratu podem ser escritas em inglês, português ou
-> espanhol: `tempo: 100` ou `andamento: 100`, `at bar 9:` ou
-> `no compasso 9:`. O manual tem a tabela completa.
+## Em português, espanhol ou inglês
+
+As palavras do Aratu podem ser escritas em português, espanhol ou inglês,
+e até misturadas. Este livro mostra as duas formas: a inglesa, que é a
+mais curta e a que você vai ver em exemplos do mundo todo, e a portuguesa.
+Estas duas peças soam iguais:
+
+```aratu
+meter: 3/4
+tempo: 120
+bd = b - -
+```
+
+```aratu
+compasso: 3/4
+andamento: 120
+bd = b - -
+```
+
+Os nomes das notas também: `c4` ou `dó4`. O manual tem a tabela completa
+das palavras nas três línguas.
 
 > Programa e quer saber como o Aratu funciona por baixo? A aba
 > [**Por dentro**](#/por-dentro) dá nome técnico a cada coisa: o que é uma
