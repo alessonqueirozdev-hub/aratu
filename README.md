@@ -15,28 +15,37 @@ Aratu is a live-coding language and environment for people who know
 music: measures, time signatures, note values and tempo come first, so that
 what you type is laid out in time the way a musician already thinks about
 it. It is built on [Manguebyte](https://github.com/alessonqueirozdev-hub/manguebyte),
-the open-source audio framework for Rust, and runs on its own or inside a
-DAW, in step with the host's transport.
+the open-source audio framework for Rust, and runs in the browser; running
+inside a DAW, in step with the host's transport, is planned.
 
 > **Status: in development.** The language crate (`crates/aratu`) reads,
-> checks and schedules every example in the manual, and the web editor plays
-> pieces with simple built-in sounds and takes edits at the next bar line.
-> The sound engine will be Manguebyte once it runs in the browser. See
-> [docs/VISION.md](docs/VISION.md) for where it is going.
+> checks and schedules every example in the book, and the web editor plays
+> through Manguebyte's browser engine: every voice in the Sounds panel, each
+> part's effects and the master bus (a shared reverb, a glue compressor and a
+> true-peak limiter). The Brazilian percussion lines, the guitar's golpe and
+> the clap (except on the 808) still play on a small Web Audio stand-in until Manguebyte has samples for
+> them; the stand-in also takes over if Manguebyte cannot start, or when it
+> is switched off in the Sounds panel. See [docs/VISION.md](docs/VISION.md)
+> for where it is going.
 
 ## Try it
 
-**<https://alessonqueirozdev-hub.github.io/aratu/>**: the editor in the
+**<https://aratu.live/>**: the editor in the
 browser, nothing to install, in Portuguese, Spanish and English. It has
 three places:
 
-- **Learn**: a course of fifteen lessons, from the first sound to a whole
-  piece, where every example plays on the page and every exercise is
-  checked by its sound, with what differs told bar by bar. Made for the
-  classroom.
-- **Manual**: the whole language, with every example playable.
-- **Play**: a free editor with a rhythm map; change the text while it
-  plays and the change comes in at the next bar line.
+- **Learn**: a course of twenty-four lessons, from the first sound to a
+  whole piece: rhythm and meters, Brazilian percussion, melody and harmony,
+  dynamics and form, tempo and feel, playing live, sound and mixing. Every
+  example plays on the page and every exercise is checked by what it plays
+  (and, where a lesson asks, by its timing or its sound), with what differs
+  told bar by bar. Made for the classroom.
+- **Manual**: the whole language in the same order, with every example
+  playable.
+- **Play**: a free editor with a rhythm map, a knob beside every number
+  that sets the tempo or the sound, and a Sounds panel; change the text while it plays and the change comes in at
+  the next bar line. A stage mode shows only the code, full screen, for
+  playing in front of an audience.
 
 ## Running the editor
 
@@ -92,9 +101,9 @@ Aratu is one of three projects that grow from the same mangue:
 
 | Project | What it is | How it meets Aratu |
 |---|---|---|
-| [Manguebyte](https://github.com/alessonqueirozdev-hub/manguebyte) | the open-source audio framework for Rust (MIT OR Apache-2.0) | Aratu's sound engine: synthesis, effects, the SFZ sampler, plugin hosting and the DAW wrappers |
+| [Manguebyte](https://github.com/alessonqueirozdev-hub/manguebyte) | the open-source audio framework for Rust (MIT OR Apache-2.0) | Aratu's sound engine: in the browser today, its instruments, effects, SFZ sampler and master bus; on the desktop, plugin hosting and the DAW wrappers (planned) |
 | **Aratu** | this language and its editor | |
-| Parabolic | a plugin and sampler generator for musicians | its instruments play in Aratu as plugins on a desktop or as SFZ in a browser |
+| Parabolic | a plugin and sampler generator for musicians | its instruments are to play in Aratu as plugins on a desktop or as SFZ in a browser (planned) |
 
 Manguebyte's website (being built) will present all three together, each
 linking to the others.
@@ -103,9 +112,13 @@ linking to the others.
 
 - [book/](book): the course and the manual shown in the editor, in
   Portuguese, Spanish and English (`book/<lang>/learn/*.md` and
-  `book/<lang>/manual.md`). A test checks that every example plays, every
-  exercise can be solved, and each exercise sounds the same in every
-  language.
+  `book/<lang>/manual.md`). The tests in
+  [crates/aratu/tests/book.rs](crates/aratu/tests/book.rs) check that every
+  example plays and every exercise can be solved
+  (`every_block_of_the_book_works`), that each exercise sounds the same in
+  every language (`every_exercise_sounds_the_same_in_every_language`), and
+  that every feature of the language is taught in some lesson
+  (`every_feature_is_taught_in_every_language`).
 - [docs/DESIGN-NOTES.md](docs/DESIGN-NOTES.md): syntax discussion and recommendations
   (no program ceremony, one pattern line per bar, numbers as controls).
 - [docs/VISION.md](docs/VISION.md): the problem with time in today's
