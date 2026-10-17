@@ -1017,9 +1017,8 @@ to write an arrangement into the piece itself.
 ## The page as a score
 
 The editor's look comes from engraved music, so it reads as a place for
-music rather than a generic web tool. The header sits on a five-line staff,
-and the tab you are on wears a note on it. The scenes are boxed like a
-score's rehearsal marks. The bar count, the tempo and the stacked meter
+music rather than a generic web tool. The scenes are boxed like a score's
+rehearsal marks. The bar count, the tempo and the stacked meter
 (6 over 8) sit in a dark display in the transport, set in Gloock, a face
 cut like an engraver's. A line crosses the display in the time of one bar,
 so a change can be timed to the bar line without counting. The colours

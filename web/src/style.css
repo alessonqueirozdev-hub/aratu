@@ -1,5 +1,5 @@
-/* Aratu: music paper. The page is a score: the header sits on a staff, the
-   scenes are rehearsal marks, the bar count is set in an engraver's face.
+/* Aratu: music paper. The scenes are boxed like a score's rehearsal marks,
+   the bar count is set in an engraver's face.
    A light theme for the classroom and the projector, a dark one for
    playing live. */
 
@@ -9,9 +9,9 @@
   --paper: #fffdf8;
   --panel: #f1ead9;
   --line: #e2d8c3;
-  --rule: #cfc2a8;
+  /* The share card (scripts/og.mjs) draws its staff with this. */
   --staff: rgba(120, 100, 70, 0.11);
-  --staff-ink: rgba(122, 102, 80, 0.3);
+  --rule: #cfc2a8;
   --text: #2a2420;
   --soft: #5b5047;
   --muted: #8a7d70;
@@ -49,9 +49,8 @@
   --paper: #1d1612;
   --panel: #221a15;
   --line: #3a2d24;
-  --rule: #4c3b2f;
   --staff: rgba(255, 220, 180, 0.05);
-  --staff-ink: rgba(201, 164, 138, 0.22);
+  --rule: #4c3b2f;
   --text: #f3e6dc;
   --soft: #d6c4b5;
   --muted: #a38e7d;
@@ -88,7 +87,7 @@
   --font-ui: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
   --font-mono: "Atkinson Hyperlegible Mono", "JetBrains Mono", "Cascadia Code", Consolas, monospace;
   --radius: 6px;
-  --top-h: 76px;
+  --top-h: 66px;
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
@@ -156,8 +155,7 @@ h3,
   background: color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
-/* The header, on a staff: five hairlines along its foot. The tab you are
-   on wears a note on them. */
+/* The header. The tab you are on is underlined in orange. */
 
 .top {
   position: sticky;
@@ -167,12 +165,8 @@ h3,
   align-items: center;
   gap: 10px 30px;
   height: var(--top-h);
-  padding: 6px clamp(14px, 3vw, 30px) 18px;
-  background-color: var(--paper);
-  background-image: repeating-linear-gradient(to bottom, var(--staff-ink) 0 1px, transparent 1px 4px);
-  background-size: 100% 17px;
-  background-position: 0 100%;
-  background-repeat: no-repeat;
+  padding: 0 clamp(14px, 3vw, 30px);
+  background: var(--paper);
   border-bottom: 1px solid var(--line);
 }
 
@@ -235,27 +229,17 @@ h3,
   color: var(--text);
 }
 
-/* The note head, on the staff's middle line. */
 .tabs a::after {
   content: "";
   position: absolute;
-  left: 50%;
-  bottom: -12px;
-  width: 11px;
-  height: 8px;
-  margin-left: -5.5px;
-  border: 1.5px solid transparent;
-  border-radius: 50%;
-  transform: rotate(-22deg) scale(0.6);
-  transition:
-    transform 220ms var(--ease),
-    background 150ms,
-    border-color 150ms;
-}
-
-.tabs a:hover::after {
-  border-color: var(--muted);
-  transform: rotate(-22deg);
+  left: 12px;
+  right: 12px;
+  bottom: -1px;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--accent);
+  transform: scaleX(0);
+  transition: transform 220ms var(--ease);
 }
 
 .tabs a.here {
@@ -263,21 +247,7 @@ h3,
 }
 
 .tabs a.here::after {
-  background: var(--accent);
-  border-color: var(--accent);
-  transform: rotate(-22deg);
-}
-
-/* And its stem. */
-.tabs a.here::before {
-  content: "";
-  position: absolute;
-  left: calc(50% + 3.5px);
-  bottom: -8px;
-  width: 1.5px;
-  height: 22px;
-  background: var(--accent);
-  border-radius: 1px;
+  transform: scaleX(1);
 }
 
 .prefs {
@@ -1283,16 +1253,9 @@ button:active {
   line-height: 1.08;
   letter-spacing: -0.005em;
   margin: 0 0 8px;
-  padding-bottom: 26px;
-  /* A staff under the title. */
-  background: repeating-linear-gradient(
-      to bottom,
-      transparent 0,
-      transparent 5px,
-      var(--staff) 5px,
-      var(--staff) 6px
-    )
-    bottom / 100% 31px no-repeat;
+  padding-bottom: 20px;
+  /* A short orange rule under the title. */
+  background: linear-gradient(var(--accent), var(--accent)) left bottom / 56px 3px no-repeat;
 }
 
 .page h2 {
@@ -2472,15 +2435,14 @@ body.stage .stage-bar .stage-list-choice.on {
 
 @media (max-width: 720px) {
   :root {
-    --top-h: 58px;
+    --top-h: 54px;
   }
   body {
     padding-bottom: calc(64px + env(safe-area-inset-bottom));
   }
   .top {
     gap: 8px;
-    padding: 5px 12px 13px;
-    background-size: 100% 13px;
+    padding: 0 12px;
   }
   .brand {
     gap: 8px;
@@ -2529,31 +2491,18 @@ body.stage .stage-bar .stage-list-choice.on {
     -webkit-mask: var(--icon) center / contain no-repeat;
     mask: var(--icon) center / contain no-repeat;
   }
-  .tabs a.here::before {
-    position: static;
-    width: 24px;
-    height: 24px;
-    background: currentColor;
-  }
-  .tabs a::after,
-  .tabs a:hover::after {
+  .tabs a::after {
     left: 50%;
+    right: auto;
     top: 0;
     bottom: auto;
     width: 26px;
     height: 3px;
     margin-left: -13px;
-    border: 0;
     border-radius: 0 0 3px 3px;
-    background: transparent;
-    transform: none;
   }
   .tabs a.here {
     color: var(--accent);
-  }
-  .tabs a.here::after {
-    background: var(--accent);
-    transform: none;
   }
   .tabs a[data-icon="play"] {
     --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linejoin='round'><circle cx='12' cy='12' r='9'/><path d='M10 8.3v7.4l6-3.7z' fill='black'/></svg>");
@@ -2679,7 +2628,7 @@ body.stage .stage-bar .stage-list-choice.on {
   }
   .page h1 {
     font-size: 32px;
-    padding-bottom: 22px;
+    padding-bottom: 16px;
   }
   .page h2 {
     font-size: 25px;
