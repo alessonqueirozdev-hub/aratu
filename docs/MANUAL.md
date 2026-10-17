@@ -1,7 +1,7 @@
 # The Aratu manual
 
 The manual now lives in the editor, in Portuguese, Spanish and English:
-open <https://alessonqueirozdev-hub.github.io/aratu/#/manual> and every
+open <https://aratu.live/#/manual> and every
 example can be heard and changed on the page.
 
 Its text is kept in the repository, one file per language:

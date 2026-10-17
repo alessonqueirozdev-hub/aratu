@@ -30,7 +30,7 @@ inside a DAW, in step with the host's transport, is planned.
 
 ## Try it
 
-**<https://alessonqueirozdev-hub.github.io/aratu/>**: the editor in the
+**<https://aratu.live/>**: the editor in the
 browser, nothing to install, in Portuguese, Spanish and English. It has
 three places:
 
