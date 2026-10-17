@@ -831,7 +831,7 @@ impl<'p> Scheduler<'p> {
                             made.push(filter(x, between(20.0, 1500.0, f, true), glide, false, c));
                             last_point = Some(x);
                         }
-                        x = x + Ratio::new(1, per);
+                        x += Ratio::new(1, per);
                     }
                     let end = total - before;
                     if (0.0..beats.to_f64()).contains(&end) {

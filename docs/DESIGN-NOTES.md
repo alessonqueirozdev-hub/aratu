@@ -897,3 +897,33 @@ sounds that were not its own. Now:
   what plays instead: the stand-in's own copy of the samples, or a
   synthesized voice like it. Manguebyte switched off in the Sounds panel
   is a choice, not a failure, and is not reported.
+
+## Stage gestures and ready-made grooves
+
+Pattern languages make live coding quick with functions over patterns.
+Aratu takes another road, the performer's: the words are the gestures of a
+set. `breakdown` takes the drums, the percussion and the bass out; `build
+over 8 bars` plays a snare roll that doubles its speed as it grows louder
+while a highpass rises on every part; `drop` brings everything back on a
+crash; `solo bass` leaves one part. They are commands like `out` and `in`,
+so `now:`, `at bar` and `from bar … to …` work with them, and they are
+taught in the live lesson with exercises the checker hears.
+
+`groove house` (`levada`, `ritmo`) writes the lines of a ready-made beat,
+read from the groove's own Aratu text, so a performer starts from a style
+and changes it line by line: a line written with the same name, in the same
+part, takes the groove's line's place, without the warning a repeated line
+gets. The groove's sounds light the word that wrote them. The grooves are
+the common shapes of each style in 4/4, Brazilian ones included (samba,
+baião, maracatu, bossa, funk carioca).
+
+In the editor, Ctrl+/ comments lines out, Alt+M writes or removes
+`part: out` for the part of the cursor's line, and Alt+S writes or removes
+`solo part`. The shortcuts write the command in the text instead of acting
+on the sound directly, so the change lands at the next bar line like any
+edit, and a shared link keeps it.
+
+A build's highpass reaches parts whose chain names no highpass: the browser
+engine switches Manguebyte's highpass on for a part the first time a
+highpass value arrives for it, starting from the value the part is set up
+with.

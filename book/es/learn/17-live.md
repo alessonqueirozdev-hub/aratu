@@ -74,6 +74,65 @@ at bar 3: drums: out
 at bar 5: drums: in
 ```
 
+## Gestos de escenario
+
+En la música electrónica, una presentación avanza por gestos: la batería
+desaparece (el *breakdown*), la tensión sube (el *build*) y todo vuelve de
+golpe (el *drop*). En Aratu, cada gesto es una palabra:
+
+| Escribe | Qué pasa |
+|---|---|
+| `breakdown` (o `quiebre`) | la batería, la percusión y el bajo salen; lo demás sigue |
+| `build over 4 bars` (o `subida en 4 compases`) | un redoble de caja que dobla su velocidad y crece, mientras un filtro le quita los graves a todo |
+| `drop` (o `caída`) | todo vuelve, con un platillo en el primer tiempo |
+| `solo bajo` | solo suena el bajo; `solo off` trae lo demás de vuelta |
+
+Con `now:` delante, el gesto entra en el tiempo siguiente; con `at bar`, en
+el compás marcado:
+
+```aratu
+tempo: 124
+drums { bd = b b b b; oh = -o -o -o -o; clap = - p - p }
+bajo = | [- do2]x4 | [- lab1]x4 |
+pad = | do4+mib4+sol4 _ _ _ | do4+mib4+lab4 _ _ _ |
+at bar 5: breakdown
+at bar 7: build over 2 bars
+at bar 9: drop
+```
+
+Escucha: cuatro compases con todo, el pad solo, la subida y la vuelta con
+el platillo. Tocando en vivo, escribe `now: drop` cuando la pista lo pida.
+
+## Ritmos listos
+
+Para empezar rápido, una palabra escribe una batería entera: `ritmo house`
+(o `groove house`). Los ritmos son: house, techno, trap, dnb, breakbeat,
+hiphop, funk, rock, reggaeton, funk carioca, bossa, samba, baião y
+maracatu.
+
+```aratu
+tempo: 124
+ritmo house
+bajo = | [- la1]x4 | [- fa1]x4 |
+```
+
+Mientras suena, la palabra `ritmo` se ilumina. Y cualquier línea que
+escribas con el mismo nombre toma el lugar de la línea del ritmo:
+`hh = c c c c` cambia solo el hi-hat, y el resto del ritmo sigue.
+
+## Atajos para tocar en vivo
+
+| Atajo | Qué hace |
+|---|---|
+| Ctrl+Enter | toca, o actualiza lo que está sonando |
+| Ctrl+. | para |
+| Ctrl+/ | comenta las líneas seleccionadas: dejan de sonar; otra vez, vuelven |
+| Alt+M | silencia la parte de la línea donde está el cursor (escribe `parte: out`); otra vez, vuelve |
+| Alt+S | pone en solo la parte de la línea del cursor (escribe `solo parte`); otra vez, lo quita |
+
+Los atajos escriben en el texto lo que hacen, así que el cambio entra en el
+compás siguiente, como cualquier otro, y queda guardado si compartes.
+
 ## En el escenario
 
 El botón **Escenario**, en Tocar, deja solo el código en la pantalla, a
@@ -122,4 +181,42 @@ drums { hh = c c c c }
 bajo = | do2 _ _ _ |
 at bar 2: drums: out
 at bar 3: drums: in
+```
+
+Haz un breakdown en el compás 3 y el drop en el compás 5.
+
+```aratu exercise bars=6
+drums { bd = b b b b }
+bajo = | do2 _ _ _ |
+pad = | do4+mib4+sol4 _ _ _ |
+```
+
+```aratu answer
+drums { bd = b b b b }
+bajo = | do2 _ _ _ |
+pad = | do4+mib4+sol4 _ _ _ |
+at bar 3: breakdown
+at bar 5: drop
+```
+
+Empieza con el ritmo house y cambia el hi-hat por corcheas cerradas.
+
+```aratu exercise
+drums { bd = b b b b }
+```
+
+```aratu answer
+ritmo house
+hh = cc cc cc cc
+```
+
+Una subida de dos compases desde el compás 3.
+
+```aratu exercise bars=5
+drums { bd = b b b b }
+```
+
+```aratu answer
+drums { bd = b b b b }
+at bar 3: build over 2 bars
 ```

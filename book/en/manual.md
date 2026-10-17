@@ -697,6 +697,29 @@ the moment it is pressed (and it starts playing, if the music is stopped)
 until it is pressed again; then the file downloads, as WAV when the browser
 can make one.
 
+**Stage gestures.** One word changes the whole arrangement, at the next bar
+line, at the next beat with `now:`, or at the bar named with `at bar`:
+
+| Write | What it does |
+|---|---|
+| `breakdown` | the drums, the percussion and the bass go out |
+| `build over 8 bars` | a snare roll in quarters, eighths, sixteenths and thirty-seconds, growing louder, while a highpass filter rises on every part and goes back at the end; with no length, 4 bars |
+| `drop` | everything comes back, with a crash on the first beat |
+| `solo bass`, `solo off` | only one part plays; `solo off` (or `all: in`) brings the rest back |
+
+`from bar 17 to 24: breakdown` holds for those bars only.
+
+**Ready-made grooves.** `groove house` writes the lines of a beat: house,
+techno, trap, dnb, breakbeat, hiphop, funk, rock, reggaeton, funk carioca,
+bossa, samba, baião, maracatu. The grooves are in 4/4. While they play,
+the word lights up; a line written with the same name, in the same part,
+takes the place of the groove's line.
+
+**Shortcuts.** Ctrl+Enter plays or updates; Ctrl+. stops; Ctrl+/ comments
+the selected lines out (they stop sounding); Alt+M writes or removes
+`part: out` for the part of the cursor's line; Alt+S writes or removes
+`solo part`.
+
 ## 16. Chance
 
 A loop that repeats exactly the same soon sounds mechanical. Chance gives it
@@ -946,6 +969,9 @@ master.limiter.ceiling = -1
 | a line that starts with `\|` | goes on with the line of music above |
 | `\| I \| vi \| V7/V \|`, `Am:arp` | chords by degree; a rolled chord |
 | `pandeiro = pd td pd td` | Brazilian percussion |
+| `breakdown`, `build over 8 bars`, `drop` | stage gestures: the beat out, the rise, all back |
+| `solo bass`, `solo off` | only one part plays, and the solo's end |
+| `groove house` | a ready-made beat, changed by the lines written |
 | `reverb.mix = 0.5` (no part) | for every part |
 | `all: chorus -> delay` | effects on every part |
 | `master.reverb.decay = 3 s` | the mix: reverb, glue, limiter |
@@ -979,6 +1005,8 @@ play exactly the same.
 | `cresc to ff` | `cresc até ff` | `cresc hasta ff` |
 | `back over 2 beats`, `loop` | `volta em 2 tempos`, `repete` | `vuelta en 2 tiempos`, `repite` |
 | `all:`, `out`, `in` | `todos:`, `fora`, `dentro` | `todos:`, `fuera`, `dentro` |
+| `breakdown`, `build`, `drop` | `quebra`, `subida`, `queda` | `quiebre`, `subida`, `caída` |
+| `groove`, `solo off` | `levada`, `solo desliga` | `ritmo`, `solo apagado` |
 | `chords`, `strum` | `acordes`, `batida` | `acordes`, `rasgueo` |
 | `.transpose`, `.invert` | `.transpor`, `.inverter` | `.transponer`, `.invertir` |
 | `drums` | `bateria` | `batería` |

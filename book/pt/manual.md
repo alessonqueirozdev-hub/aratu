@@ -703,6 +703,30 @@ endereço depois do `#`, então não passa por nenhum servidor. O botão
 apertado (e começa a tocar, se a música estiver parada) até ser apertado de
 novo; aí o arquivo é baixado, em WAV quando o navegador consegue.
 
+**Gestos de palco.** Uma palavra muda o arranjo inteiro, no próximo
+compasso, no próximo tempo com `now:`, ou no compasso marcado com
+`at bar`:
+
+| Escreva | O que faz |
+|---|---|
+| `breakdown` (`quebra`) | a bateria, a percussão e o baixo saem |
+| `build over 8 bars` (`subida em 8 compassos`) | um rufo de caixa em semínimas, colcheias, semicolcheias e fusas, crescendo, enquanto um filtro passa-altas sobe em todas as partes e volta ao fim; sem duração, 4 compassos |
+| `drop` (`queda`) | tudo volta, com um prato no primeiro tempo |
+| `solo baixo`, `solo off` | só uma parte toca; `solo off` (ou `all: in`) traz o resto |
+
+`from bar 17 to 24: breakdown` vale só nesses compassos.
+
+**Levadas prontas.** `levada house` (ou `groove`, `ritmo`) escreve as linhas
+de uma bateria: house, techno, trap, dnb, breakbeat, hiphop, funk, rock,
+reggaeton, funk carioca, bossa, samba, baião, maracatu. As levadas são em
+4/4. Enquanto tocam, a palavra acende; uma linha escrita com o mesmo nome,
+na mesma parte, toma o lugar da linha da levada.
+
+**Atalhos.** Ctrl+Enter toca ou atualiza; Ctrl+. para; Ctrl+/ comenta as
+linhas selecionadas (elas param de soar); Alt+M escreve ou apaga
+`parte: out` para a parte da linha do cursor; Alt+S escreve ou apaga
+`solo parte`.
+
 ## 16. Acaso
 
 Um loop que se repete sempre igual logo soa mecânico. O acaso dá vida a ele:
@@ -953,6 +977,9 @@ master.limiter.ceiling = -1
 | uma linha que começa com `\|` | continua a linha de música de cima |
 | `\| I \| vi \| V7/V \|`, `Am:arp` | acordes pelo grau; acorde arpejado |
 | `pandeiro = pd td pd td` | percussão brasileira |
+| `breakdown`, `build over 8 bars`, `drop` | gestos de palco: sai a base, sobe, volta tudo |
+| `solo baixo`, `solo off` | só uma parte toca, e o fim do solo |
+| `levada house` | uma bateria pronta, que as linhas escritas mudam |
 | `reverb.mix = 0.5` (sem parte) | vale para todas as partes |
 | `todos: chorus -> delay` | efeitos em todas as partes |
 | `master.reverb.decay = 3 s` | a mixagem: reverb, cola, limitador |
@@ -986,6 +1013,8 @@ da mesma peça tocam exatamente igual.
 | `cresc to ff` | `cresc até ff` | `cresc hasta ff` |
 | `back over 2 beats`, `loop` | `volta em 2 tempos`, `repete` | `vuelta en 2 tiempos`, `repite` |
 | `all:`, `out`, `in` | `todos:`, `fora`, `dentro` | `todos:`, `fuera`, `dentro` |
+| `breakdown`, `build`, `drop` | `quebra`, `subida`, `queda` | `quiebre`, `subida`, `caída` |
+| `groove`, `solo off` | `levada`, `solo desliga` | `ritmo`, `solo apagado` |
 | `chords`, `strum` | `acordes`, `batida` | `acordes`, `rasgueo` |
 | `.transpose`, `.invert` | `.transpor`, `.inverter` | `.transponer`, `.invertir` |
 | `drums` | `bateria` | `batería` |

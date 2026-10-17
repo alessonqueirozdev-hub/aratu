@@ -377,6 +377,16 @@ const TAUGHT: &[Taught] = &[
         c.contains("todos: chorus") || c.contains("all: chorus")
     }),
     ("the master", |c| c.contains("master.")),
+    ("breakdown", |c| {
+        c.contains("breakdown") || c.contains("quebra") || c.contains("quiebre")
+    }),
+    ("drop", |c| c.contains(": drop")),
+    ("build", |c| {
+        c.contains("build over") || c.contains("subida e")
+    }),
+    ("ready-made grooves", |c| {
+        c.contains("groove house") || c.contains("levada house") || c.contains("ritmo house")
+    }),
     ("keywords in other languages", |c| {
         c.contains("compasso:") || c.contains("compás:")
     }),

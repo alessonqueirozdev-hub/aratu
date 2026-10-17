@@ -474,6 +474,12 @@ export class Engine {
   private setParam(c: Chain, id: string, v: number, when: number, glide = 0): void {
     // Manguebyte plays the part: it gets the value; the stand-in's chain
     // follows too, for what it still plays of the part.
+    // A `build` opens a highpass on parts whose chain does not name one:
+    // Manguebyte switches the effect on for them first.
+    if (c.mb?.ready && id.startsWith("highpass.") && !c.effects.includes("highpass")) {
+      c.effects.push("highpass");
+      void this.mbChain(c, c.mb);
+    }
     if (c.mb?.ready) this.mbParam(c.mb, id, v, when);
     const set = (p: AudioParam, value: number): void => {
       if (glide > 0) p.setTargetAtTime(value, Math.max(when - glide, 0), glide / 3);

@@ -73,6 +73,65 @@ at bar 3: drums: out
 at bar 5: drums: in
 ```
 
+## Gestos de palco
+
+Na música eletrônica, uma apresentação se move por gestos: a bateria some
+(o *breakdown*), a tensão sobe (o *build*) e tudo volta de uma vez (o *drop*).
+No Aratu, cada gesto é uma palavra:
+
+| Escreva | O que acontece |
+|---|---|
+| `breakdown` (ou `quebra`) | a bateria, a percussão e o baixo saem; o resto continua |
+| `build over 4 bars` (ou `subida em 4 compassos`) | um rufo de caixa que dobra de velocidade e cresce, enquanto um filtro tira os graves de tudo |
+| `drop` (ou `queda`) | tudo volta, com um prato no primeiro tempo |
+| `solo baixo` | só o baixo toca; `solo off` traz o resto de volta |
+
+Com `now:` na frente, o gesto entra no próximo tempo; com `at bar`, no
+compasso marcado:
+
+```aratu
+tempo: 124
+drums { bd = b b b b; oh = -o -o -o -o; clap = - p - p }
+baixo = | [- dó2]x4 | [- láb1]x4 |
+pad = | dó4+mib4+sol4 _ _ _ | dó4+mib4+láb4 _ _ _ |
+at bar 5: breakdown
+at bar 7: build over 2 bars
+at bar 9: drop
+```
+
+Ouça: quatro compassos com tudo, o pad sozinho, a subida e a volta com o
+prato. Tocando ao vivo, escreva `now: drop` na hora em que a pista pedir.
+
+## Levadas prontas
+
+Para começar rápido, uma palavra escreve uma bateria inteira:
+`levada house` (ou `groove house`). As levadas são: house, techno, trap,
+dnb, breakbeat, hiphop, funk, rock, reggaeton, funk carioca, bossa, samba,
+baião e maracatu.
+
+```aratu
+tempo: 124
+levada house
+baixo = | [- lá1]x4 | [- fá1]x4 |
+```
+
+Enquanto toca, a palavra `levada` acende. E qualquer linha que você
+escrever com o mesmo nome toma o lugar da linha da levada: `hh = c c c c`
+troca só o chimbal, e o resto da levada continua.
+
+## Atalhos para tocar ao vivo
+
+| Atalho | O que faz |
+|---|---|
+| Ctrl+Enter | toca, ou atualiza o que está tocando |
+| Ctrl+. | para |
+| Ctrl+/ | comenta as linhas selecionadas: elas param de soar; de novo, voltam |
+| Alt+M | silencia a parte da linha onde está o cursor (escreve `parte: out`); de novo, ela volta |
+| Alt+S | põe em solo a parte da linha do cursor (escreve `solo parte`); de novo, tira |
+
+Os atalhos escrevem no texto o que fazem, então a mudança entra no próximo
+compasso, como qualquer outra, e fica guardada se você compartilhar.
+
 ## No palco
 
 O botão **Palco**, em Tocar, deixa só o código na tela, em tela cheia e com
@@ -120,4 +179,42 @@ drums { hh = c c c c }
 baixo = | dó2 _ _ _ |
 at bar 2: drums: out
 at bar 3: drums: in
+```
+
+Faça um breakdown no compasso 3 e o drop no compasso 5.
+
+```aratu exercise bars=6
+drums { bd = b b b b }
+baixo = | dó2 _ _ _ |
+pad = | dó4+mib4+sol4 _ _ _ |
+```
+
+```aratu answer
+drums { bd = b b b b }
+baixo = | dó2 _ _ _ |
+pad = | dó4+mib4+sol4 _ _ _ |
+at bar 3: breakdown
+at bar 5: drop
+```
+
+Comece com a levada house e troque o chimbal por colcheias fechadas.
+
+```aratu exercise
+drums { bd = b b b b }
+```
+
+```aratu answer
+levada house
+hh = cc cc cc cc
+```
+
+Uma subida de dois compassos a partir do compasso 3.
+
+```aratu exercise bars=5
+drums { bd = b b b b }
+```
+
+```aratu answer
+drums { bd = b b b b }
+at bar 3: build over 2 bars
 ```

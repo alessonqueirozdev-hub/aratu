@@ -717,6 +717,29 @@ dirección después del `#`, así que no pasa por ningún servidor. El botón
 empieza a tocar, si la música está parada) hasta que se pulsa de nuevo;
 entonces el archivo se descarga, en WAV cuando el navegador puede.
 
+**Gestos de escenario.** Una palabra cambia todo el arreglo, en el compás
+siguiente, en el tiempo siguiente con `now:`, o en el compás marcado con
+`at bar`:
+
+| Escribe | Qué hace |
+|---|---|
+| `breakdown` (`quiebre`) | la batería, la percusión y el bajo salen |
+| `build over 8 bars` (`subida en 8 compases`) | un redoble de caja en negras, corcheas, semicorcheas y fusas, creciendo, mientras un filtro pasa altos sube en todas las partes y vuelve al final; sin duración, 4 compases |
+| `drop` (`caída`) | todo vuelve, con un platillo en el primer tiempo |
+| `solo bajo`, `solo off` | solo suena una parte; `solo off` (o `all: in`) trae lo demás |
+
+`from bar 17 to 24: breakdown` vale solo en esos compases.
+
+**Ritmos listos.** `ritmo house` (o `groove`, `levada`) escribe las líneas
+de una batería: house, techno, trap, dnb, breakbeat, hiphop, funk, rock,
+reggaeton, funk carioca, bossa, samba, baião, maracatu. Los ritmos son en
+4/4. Mientras suenan, la palabra se ilumina; una línea escrita con el mismo
+nombre, en la misma parte, toma el lugar de la línea del ritmo.
+
+**Atajos.** Ctrl+Enter toca o actualiza; Ctrl+. para; Ctrl+/ comenta las
+líneas seleccionadas (dejan de sonar); Alt+M escribe o borra `parte: out`
+para la parte de la línea del cursor; Alt+S escribe o borra `solo parte`.
+
 ## 16. Azar
 
 Un loop que se repite siempre igual pronto suena mecánico. El azar le da
@@ -970,6 +993,9 @@ master.limiter.ceiling = -1
 | una línea que empieza con `\|` | sigue la línea de música de arriba |
 | `\| I \| vi \| V7/V \|`, `Am:arp` | acordes por grado; acorde arpegiado |
 | `pandeiro = pd td pd td` | percusión brasileña |
+| `breakdown`, `build over 8 bars`, `drop` | gestos de escenario: sale la base, sube, vuelve todo |
+| `solo bajo`, `solo off` | solo suena una parte, y el fin del solo |
+| `ritmo house` | una batería lista, que las líneas escritas cambian |
 | `reverb.mix = 0.5` (sin parte) | vale para todas las partes |
 | `todos: chorus -> delay` | efectos en todas las partes |
 | `master.reverb.decay = 3 s` | la mezcla: reverb, pegamento, limitador |
@@ -1003,6 +1029,8 @@ de la misma pieza suenan exactamente igual.
 | `cresc to ff` | `cresc até ff` | `cresc hasta ff` |
 | `back over 2 beats`, `loop` | `volta em 2 tempos`, `repete` | `vuelta en 2 tiempos`, `repite` |
 | `all:`, `out`, `in` | `todos:`, `fora`, `dentro` | `todos:`, `fuera`, `dentro` |
+| `breakdown`, `build`, `drop` | `quebra`, `subida`, `queda` | `quiebre`, `subida`, `caída` |
+| `groove`, `solo off` | `levada`, `solo desliga` | `ritmo`, `solo apagado` |
 | `chords`, `strum` | `acordes`, `batida` | `acordes`, `rasgueo` |
 | `.transpose`, `.invert` | `.transpor`, `.inverter` | `.transponer`, `.invertir` |
 | `drums` | `bateria` | `batería` |

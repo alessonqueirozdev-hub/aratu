@@ -44,6 +44,8 @@ const KEYWORDS = new Set([
   "todas", "tudo", "acaso", "aleatorio", "aleatoria", "fora", "fuera", "dentro", "tempos",
   "tiempo", "tiempos", "colcheia", "colcheias", "corchea", "corcheas", "semicolcheia",
   "semicolcheias", "semicorchea", "semicorcheas", "vez", "uma", "una", "com", "con",
+  "breakdown", "quebra", "quiebre", "drop", "queda", "caida", "build", "subida", "solo", "off",
+  "desliga", "desligado", "apagado", "apaga", "groove", "levada", "ritmo",
 ]);
 const fold = (w: string): string =>
   w
@@ -76,6 +78,8 @@ interface State {
 
 const aratuLanguage = StreamLanguage.define<State>({
   name: "aratu",
+  // Ctrl+/ comments lines out: the quickest way to silence one line.
+  languageData: { commentTokens: { line: "//" } },
   startState: () => ({ lineStart: true, depth: 0, drums: -1, opening: false, struck: false }),
   copyState: (s) => ({ ...s }),
   token(stream, state) {
@@ -219,6 +223,8 @@ export function createEditor(
         keymap.of([
           { key: "Mod-Enter", run: () => (hooks.run(), true) },
           { key: "Mod-.", run: () => (hooks.stop(), true) },
+          { key: "Alt-m", run: (v) => toggleCommand(v, "mute") },
+          { key: "Alt-s", run: (v) => toggleCommand(v, "solo") },
           indentWithTab,
           ...defaultKeymap,
           ...historyKeymap,
@@ -230,6 +236,72 @@ export function createEditor(
       ],
     }),
   });
+}
+
+// Silencing and soloing from the keyboard while playing: Alt+M writes
+// `part: out` for the part of the line the cursor is on, or takes it away;
+// Alt+S writes `solo part`, or takes it away. The text says what happens,
+// so the change comes in at the next bar line like any other, and a shared
+// link keeps it.
+
+const SECTION_WORDS = new Set(["section", "secao", "seccion", "pattern", "padrao", "patron", "list", "lista"]);
+
+/** The part a line of the text belongs to: the line's own name, the part
+ * whose block it is written in, or the drum part for a drum line. */
+export function partAt(text: string, pos: number): string | null {
+  const lineStart = text.lastIndexOf("\n", pos - 1) + 1;
+  const next = text.indexOf("\n", pos);
+  const line = text.slice(lineStart, next === -1 ? text.length : next);
+  // The blocks open where the line starts; `section verse {` is a section,
+  // not a part.
+  const blocks: { name: string; part: boolean }[] = [];
+  for (const m of text.slice(0, lineStart).matchAll(/(?:([\p{L}\w-]+)\s+)?([\p{L}\w.-]+)\s*\{|\}/gu)) {
+    if (m[0] === "}") blocks.pop();
+    else blocks.push({ name: m[2], part: !(m[1] && SECTION_WORDS.has(fold(m[1]))) });
+  }
+  const enclosing = [...blocks].reverse().find((b) => b.part)?.name ?? null;
+  // A part's block opened on this very line: `drums { hh = … }`.
+  const own = /^\s*(?:([\p{L}\w-]+)\s+)?([\p{L}\w-]+)\s*\{/u.exec(line);
+  if (own && !(own[1] && SECTION_WORDS.has(fold(own[1])))) return own[2];
+  const head = /^\s*([\p{L}\w-]+)\s*[=:.]/u.exec(line);
+  const word = head ? head[1] : null;
+  if (word && DRUM_LINES.has(word.toLowerCase())) return enclosing ?? "drums";
+  if (enclosing) return enclosing;
+  if (!word || KEYWORDS.has(fold(word))) return null;
+  return word;
+}
+
+/** Writes or takes away `part: out` (mute) or `solo part` (solo) for the
+ * part of the line the cursor is on. */
+function toggleCommand(view: EditorView, what: "mute" | "solo"): boolean {
+  const text = view.state.doc.toString();
+  const part = partAt(text, view.state.selection.main.head);
+  if (!part) return false;
+  const esc = part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const mine =
+    what === "mute"
+      ? new RegExp(`^${esc}\\s*:\\s*(out|fora|fuera|sai|sale)\\s*$`, "imu")
+      : new RegExp(`^solo\\s+${esc}\\s*$`, "imu");
+  // A line taken away goes with the line break before it.
+  const without = (index: number, length: number) => ({
+    from: Math.max(0, index - (text[index - 1] === "\n" ? 1 : 0)),
+    to: index + length,
+  });
+  const changes: { from: number; to: number; insert?: string }[] = [];
+  const found = mine.exec(text);
+  if (found) {
+    changes.push(without(found.index, found[0].length));
+  } else {
+    // One solo at a time: another part's goes.
+    if (what === "solo") {
+      for (const m of text.matchAll(/^solo\s+\S+\s*$/gimu)) changes.push(without(m.index, m[0].length));
+    }
+    const sep = text.length === 0 || text.endsWith("\n") ? "" : "\n";
+    const line = what === "mute" ? `${part}: out` : `solo ${part}`;
+    changes.push({ from: text.length, to: text.length, insert: sep + line });
+  }
+  view.dispatch({ changes });
+  return true;
 }
 
 export function showDiagnostics(view: EditorView, list: Diagnostic[]): void {

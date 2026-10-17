@@ -72,6 +72,64 @@ at bar 3: drums: out
 at bar 5: drums: in
 ```
 
+## Stage gestures
+
+In electronic music, a performance moves by gestures: the drums drop out
+(the *breakdown*), the tension rises (the *build*) and everything comes
+back at once (the *drop*). In Aratu, each gesture is a word:
+
+| Write | What happens |
+|---|---|
+| `breakdown` | the drums, the percussion and the bass go out; the rest goes on |
+| `build over 4 bars` | a snare roll that doubles its speed as it grows louder, while a filter takes the lows out of everything |
+| `drop` | everything comes back, with a crash on the first beat |
+| `solo bass` | only the bass plays; `solo off` brings the rest back |
+
+With `now:` in front, the gesture comes in at the next beat; with
+`at bar`, at the bar named:
+
+```aratu
+tempo: 124
+drums { bd = b b b b; oh = -o -o -o -o; clap = - p - p }
+bass = | [- c2]x4 | [- ab1]x4 |
+pad = | c4+eb4+g4 _ _ _ | c4+eb4+ab4 _ _ _ |
+at bar 5: breakdown
+at bar 7: build over 2 bars
+at bar 9: drop
+```
+
+Listen: four bars with everything, the pad alone, the build and the way
+back on the crash. Playing live, write `now: drop` when the floor asks.
+
+## Ready-made grooves
+
+To start fast, one word writes a whole beat: `groove house`. The grooves
+are: house, techno, trap, dnb, breakbeat, hiphop, funk, rock, reggaeton,
+funk carioca, bossa, samba, baião and maracatu.
+
+```aratu
+tempo: 124
+groove house
+bass = | [- a1]x4 | [- f1]x4 |
+```
+
+While it plays, the word `groove` lights up. And any line you write with
+the same name takes the place of the groove's line: `hh = c c c c`
+changes only the hi-hat, and the rest of the groove goes on.
+
+## Shortcuts for playing live
+
+| Shortcut | What it does |
+|---|---|
+| Ctrl+Enter | plays, or updates what is playing |
+| Ctrl+. | stops |
+| Ctrl+/ | comments the selected lines out: they stop sounding; again, they come back |
+| Alt+M | mutes the part of the line the cursor is on (writes `part: out`); again, it comes back |
+| Alt+S | solos the part of the cursor's line (writes `solo part`); again, it ends |
+
+The shortcuts write what they do in the text, so the change comes in at
+the next bar line like any other, and stays if you share the piece.
+
 ## On stage
 
 The **Stage** button, in Play, leaves only the code on the screen, full
@@ -120,4 +178,42 @@ drums { hh = c c c c }
 bass = | c2 _ _ _ |
 at bar 2: drums: out
 at bar 3: drums: in
+```
+
+Make a breakdown at bar 3 and the drop at bar 5.
+
+```aratu exercise bars=6
+drums { bd = b b b b }
+bass = | c2 _ _ _ |
+pad = | c4+eb4+g4 _ _ _ |
+```
+
+```aratu answer
+drums { bd = b b b b }
+bass = | c2 _ _ _ |
+pad = | c4+eb4+g4 _ _ _ |
+at bar 3: breakdown
+at bar 5: drop
+```
+
+Start with the house groove and change the hi-hat to closed eighths.
+
+```aratu exercise
+drums { bd = b b b b }
+```
+
+```aratu answer
+groove house
+hh = cc cc cc cc
+```
+
+A build of two bars from bar 3.
+
+```aratu exercise bars=5
+drums { bd = b b b b }
+```
+
+```aratu answer
+drums { bd = b b b b }
+at bar 3: build over 2 bars
 ```
