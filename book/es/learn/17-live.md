@@ -85,6 +85,13 @@ pantalla, y las dos se desplazan juntas. Se puede editar en cualquiera. Con
 que la pieza entera quepa sin desplazar. Las listas de melodías tienen
 botones en la esquina, y Esc sale del escenario.
 
+## Compartir y grabar
+
+¿Te gustó lo que hiciste? **Compartir** copia un enlace con tu música
+adentro: mándalo a alguien, y quien lo abra oye y puede cambiar la misma
+pieza. **Grabar** graba lo que está sonando, hasta que lo pulses de nuevo;
+entonces el archivo de audio se descarga, para guardarlo o mostrarlo.
+
 ## Ejercicios
 
 Usa los patrones listos para tocar la frase: groove tres veces, después el

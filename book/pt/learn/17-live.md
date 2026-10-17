@@ -83,6 +83,13 @@ juntas. Dá para editar em qualquer uma. Com **Caber na tela**, a letra
 encolhe conforme a música cresce, para a peça inteira caber sem rolar. As
 listas de melodias ganham botões no canto, e Esc sai do palco.
 
+## Compartilhar e gravar
+
+Gostou do que fez? **Compartilhar** copia um link com a sua música dentro:
+mande para alguém, e quem abrir ouve e pode mexer na mesma peça. **Gravar**
+grava o que está tocando, até você apertar de novo; aí o arquivo de áudio é
+baixado, para guardar ou mostrar a quem quiser.
+
 ## Exercícios
 
 Use os padrões prontos para tocar a frase: groove três vezes, depois a

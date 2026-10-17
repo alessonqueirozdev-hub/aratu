@@ -8,6 +8,7 @@ import { RhythmMap } from "./rhythm";
 import { examples } from "./examples";
 import { LANGS, type Lang, isWord, tr } from "./i18n";
 import { Session } from "./session";
+import { codeInAddress, decodePiece, encodePiece, linkFor } from "./share";
 import { SoundsPanel } from "./sounds";
 import { RowMatrix } from "./matrix";
 
@@ -591,6 +592,75 @@ async function main(): Promise<void> {
     if (ex) playground.text = ex.text;
   };
 
+  // Share: the piece goes in a link, in the part after #, so it never
+  // reaches a server; whoever opens the link gets it in the editor.
+  const note = (text: string, ms = 6000) => {
+    $("note").textContent = text;
+    window.setTimeout(() => {
+      if ($("note").textContent === text) $("note").textContent = "";
+    }, ms);
+  };
+  $("share").onclick = async () => {
+    const link = linkFor(await encodePiece(playground.text));
+    const long = link.length > 8000 ? ` ${tr("shareLong", lang)}` : "";
+    try {
+      await navigator.clipboard.writeText(link);
+      note(tr("shareCopied", lang) + long);
+    } catch {
+      window.prompt(tr("shareShown", lang) + long, link);
+    }
+  };
+  const openShared = async () => {
+    const code = codeInAddress();
+    if (!code) return;
+    // The address goes back to the editor alone, so a reload does not open
+    // the link again over what was written since.
+    history.replaceState(null, "", `${location.pathname}${location.search}#/tocar`);
+    const text = await decodePiece(code);
+    if (text === null) return note(tr("sharedBroken", lang), 10000);
+    if (text === playground.text) return;
+    // Set as an edit, so Ctrl+Z brings back the piece that was here.
+    playground.text = text;
+    note(tr("sharedOpened", lang), 10000);
+  };
+  window.addEventListener("hashchange", () => void openShared());
+
+  // Record: what reaches the speakers, until pressed again; then the file
+  // downloads, as WAV when the browser can make one.
+  let recordTimer = 0;
+  const recordShown = (on: boolean) => {
+    $("record").classList.toggle("on", on);
+    $("record-word").dataset.word = on ? "recordStop" : "record";
+    $("record-word").textContent = tr(on ? "recordStop" : "record", lang);
+  };
+  const download = (blob: Blob, name: string) => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.append(a);
+    a.click();
+    a.remove();
+    window.setTimeout(() => URL.revokeObjectURL(a.href), 60_000);
+  };
+  $("record").onclick = async () => {
+    const engine = getEngine();
+    if (engine.recording) {
+      window.clearInterval(recordTimer);
+      recordShown(false);
+      const made = await engine.stopRecording();
+      if (!made) return;
+      const stamp = new Date().toISOString().slice(0, 19).replace(/[T:]/g, "-");
+      const ext = made.wav ? "wav" : made.recorded.type.includes("ogg") ? "ogg" : made.recorded.type.includes("mp4") ? "m4a" : "webm";
+      download(made.wav ?? made.recorded, `aratu-${stamp}.${ext}`);
+      note(tr("recordSaved", lang));
+      return;
+    }
+    await engine.ctx.resume();
+    if (!engine.startRecording()) return note(tr("recordUnsupported", lang));
+    recordShown(true);
+    if (!playground.playing) void playground.play();
+  };
+
   // The book: the course, the manual and the page for developers.
   let book: Book | null = null;
   const loadBook = async () => {
@@ -703,7 +773,7 @@ async function main(): Promise<void> {
   }
 
   const route = () => {
-    const [, view = "aprender", id] = location.hash.replace(/^#/, "").split("/");
+    const [, view = "aprender", id] = location.hash.replace(/^#/, "").split("?")[0].split("/");
     const which =
       view === "tocar" ? "play" : view === "manual" ? "manual" : view === "por-dentro" ? "inside" : "learn";
     for (const v of ["play", "learn", "manual", "inside"]) {
@@ -742,6 +812,7 @@ async function main(): Promise<void> {
   $("theme-dark").onclick = () => setTheme("dark");
 
   playground.compile();
+  await openShared();
   await loadBook();
   window.addEventListener("hashchange", route);
   route();

@@ -1727,3 +1727,15 @@ body.stage .stage-msg:not([hidden]) {
   font-size: 1rem;
   padding: 0 2px;
 }
+
+/* Recording: the button glows while it records. */
+.btn.record.on {
+  color: var(--error);
+  border-color: var(--error);
+  animation: record-pulse 1.2s ease-in-out infinite;
+}
+@keyframes record-pulse {
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--error) 25%, transparent);
+  }
+}

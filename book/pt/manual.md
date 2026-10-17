@@ -695,6 +695,14 @@ termina, as duas rolam juntas, e editar em qualquer uma muda o mesmo texto.
 sem rolar, até um tamanho ainda legível; daí em diante, as colunas rolam.
 Desligado, a letra fica do tamanho escolhido com A− e A+, e você rola.
 
+**Compartilhar e gravar.** O botão **Compartilhar**, em Tocar, copia um
+link com a música dentro: quem abrir o link ouve e edita a mesma peça, e o
+Ctrl+Z traz de volta o que estava no editor dela. A música vai na parte do
+endereço depois do `#`, então não passa por nenhum servidor. O botão
+**Gravar** grava tudo o que sai nas caixas de som, desde o momento em que é
+apertado (e começa a tocar, se a música estiver parada) até ser apertado de
+novo; aí o arquivo é baixado, em WAV quando o navegador consegue.
+
 ## 16. Acaso
 
 Um loop que se repete sempre igual logo soa mecânico. O acaso dá vida a ele:

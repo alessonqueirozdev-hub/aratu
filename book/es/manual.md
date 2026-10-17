@@ -709,6 +709,14 @@ todo quepa sin desplazar, hasta un tamaño todavía legible; a partir de ahí,
 las columnas se desplazan. Apagado, la letra queda del tamaño elegido con A−
 y A+, y se desplaza.
 
+**Compartir y grabar.** El botón **Compartir**, en Tocar, copia un enlace
+con la música adentro: quien abra el enlace oye y edita la misma pieza, y
+Ctrl+Z le devuelve lo que tenía en el editor. La música va en la parte de la
+dirección después del `#`, así que no pasa por ningún servidor. El botón
+**Grabar** graba todo lo que sale por los altavoces, desde que se pulsa (y
+empieza a tocar, si la música está parada) hasta que se pulsa de nuevo;
+entonces el archivo se descarga, en WAV cuando el navegador puede.
+
 ## 16. Azar
 
 Un loop que se repite siempre igual pronto suena mecánico. El azar le da

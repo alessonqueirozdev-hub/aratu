@@ -13,6 +13,7 @@ import type { AratuEvent, BarInfo, ParamValue, PartInfo, Program, VoiceCatalogue
 import { type Instrument, ManguebyteEngine, type PresetKind } from "../public/manguebyte/engine.js";
 import { detailOf, limited } from "./download";
 import { type Loaded, Sampler } from "./sampler";
+import { encodeWav } from "./wav";
 
 /** Manguebyte's drum notes (General MIDI, and 88 for the golpe), by the
  * names Aratu's events give drums. */
@@ -259,6 +260,9 @@ interface Chain {
 export class Engine {
   readonly ctx: AudioContext;
   private readonly master: GainNode;
+  /** The last node before the speakers: what a recording takes. */
+  private readonly output: AudioNode;
+  private recorder: { rec: MediaRecorder; dest: MediaStreamAudioDestinationNode; chunks: Blob[] } | null = null;
   private readonly reverb: ConvolverNode;
   private readonly noise: AudioBuffer;
   private readonly chains = new Map<string, Chain>();
@@ -326,6 +330,7 @@ export class Engine {
     limit.attack.value = 0.001;
     limit.release.value = 0.08;
     comp.connect(out).connect(limit).connect(ctx.destination);
+    this.output = limit;
     this.master = ctx.createGain();
     this.master.gain.value = 0.7;
     this.master.connect(comp);
@@ -1805,6 +1810,51 @@ export class Engine {
   }
 
   /** Silences everything that sounds or is scheduled. */
+  /** Whether what plays is being recorded. */
+  get recording(): boolean {
+    return this.recorder !== null;
+  }
+
+  /** Starts recording everything that reaches the speakers, Manguebyte
+   * and the stand-in alike. False when this browser cannot record. */
+  startRecording(): boolean {
+    if (this.recorder || typeof MediaRecorder === "undefined") return false;
+    const dest = this.ctx.createMediaStreamDestination();
+    this.output.connect(dest);
+    const type = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus", "audio/mp4"].find((t) =>
+      MediaRecorder.isTypeSupported(t),
+    );
+    const rec = new MediaRecorder(dest.stream, type ? { mimeType: type } : undefined);
+    const chunks: Blob[] = [];
+    rec.ondataavailable = (e) => {
+      if (e.data.size > 0) chunks.push(e.data);
+    };
+    rec.start(1000);
+    this.recorder = { rec, dest, chunks };
+    return true;
+  }
+
+  /** Stops recording: the recording as the browser made it, and as a WAV
+   * file when the browser can read its own recording back. */
+  async stopRecording(): Promise<{ recorded: Blob; wav: Blob | null } | null> {
+    const r = this.recorder;
+    if (!r) return null;
+    this.recorder = null;
+    await new Promise<void>((done) => {
+      r.rec.onstop = () => done();
+      r.rec.stop();
+    });
+    this.output.disconnect(r.dest);
+    const recorded = new Blob(r.chunks, { type: r.rec.mimeType || "audio/webm" });
+    let wav: Blob | null = null;
+    try {
+      wav = encodeWav(await this.ctx.decodeAudioData(await recorded.arrayBuffer()));
+    } catch {
+      // This browser cannot read its own recording: it is offered as made.
+    }
+    return { recorded, wav };
+  }
+
   allOff(): void {
     const now = this.ctx.currentTime;
     for (const v of this.voices) {

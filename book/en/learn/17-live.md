@@ -83,6 +83,13 @@ scrolling, and the two scroll together. You can edit in either. With
 piece shows without scrolling. Melody lists get buttons in the corner, and
 Esc leaves the stage.
 
+## Sharing and recording
+
+Like what you made? **Share** copies a link with your piece inside: send it
+to someone, and whoever opens it hears it and can change the same piece.
+**Record** records what is playing until you press it again; then the audio
+file downloads, to keep or to show anyone.
+
 ## Exercises
 
 Use the ready-made patterns to play the phrase: the groove three times,

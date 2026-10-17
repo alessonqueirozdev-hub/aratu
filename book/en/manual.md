@@ -688,6 +688,15 @@ of it shows without scrolling, down to a size still easy to read; past
 that, the columns scroll. Off, the letters keep the size set with A− and A+,
 and you scroll.
 
+**Sharing and recording.** The **Share** button, in Play, copies a link
+with the piece inside it: whoever opens the link hears and edits the same
+piece, and Ctrl+Z brings back what was in their editor. The piece travels
+in the part of the address after `#`, so it never passes through a server.
+The **Record** button records everything that reaches the speakers, from
+the moment it is pressed (and it starts playing, if the music is stopped)
+until it is pressed again; then the file downloads, as WAV when the browser
+can make one.
+
 ## 16. Chance
 
 A loop that repeats exactly the same soon sounds mechanical. Chance gives it
