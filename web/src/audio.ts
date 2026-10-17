@@ -106,6 +106,9 @@ const MB_VOICES: Record<string, MbVoice> = {
   "synth.lead": { kind: "synth", knobs: { "synth.wave": 1, "synth.detune": 6, "synth.cutoff": 3000, "synth.sub": 0.1 } },
 };
 
+/** Decibels added to the master gain written in the piece (0 when none). */
+const MB_LIFT = 5;
+
 /** Whether Manguebyte plays a voice, for the Sounds panel's badge. */
 export function playsOnManguebyte(code: string, sampled: boolean): boolean {
   return sampled || code in MB_VOICES;
@@ -291,11 +294,7 @@ export class Engine {
     this.master = ctx.createGain();
     this.master.gain.value = 0.7;
     this.master.connect(comp);
-    // Manguebyte plays every instrument at -24 LUFS, about 5 dB under where
-    // the stand-in's voices sit; this brings the two level, and the limiter
-    // after the master holds the peaks.
     this.mbOut = ctx.createGain();
-    this.mbOut.gain.value = 1.78;
     this.mbOut.connect(this.master);
 
     this.reverb = ctx.createConvolver();
@@ -418,6 +417,7 @@ export class Engine {
       { id: "delay.feedback", value: 0.35 },
       { id: "attack", value: 5 },
       { id: "release", value: 150 },
+      { id: "master.gain", value: 0 },
     ];
     for (const p of [...defaults, ...globals, ...part.params]) {
       c.configured.set(p.id, p.value);
@@ -643,6 +643,12 @@ export class Engine {
         return;
       case "highpass.cutoff":
         engine.setParam(i, id, Math.max(20, v), when);
+        return;
+      case "master.gain":
+        // Manguebyte plays every instrument at -24 LUFS, about 5 dB under
+        // where the stand-in's voices sit: the lift goes before its
+        // true-peak limiter, which keeps holding the peaks.
+        engine.setParam(i, id, Math.min(12, v + MB_LIFT), when);
         return;
       default:
         engine.setParam(i, id, v, when);
