@@ -85,6 +85,23 @@ bars: `| cc cc | co cc |`. A line with no bar line is one bar.
 are allowed inside them: `c[cc]` is an eighth and two sixteenths. The `.`
 shorthand stands for `__`, so `c.c` is `c__c`.
 
+**Euclidean rhythms.** A symbol followed by two numbers in parentheses
+spreads that many hits as evenly as can be over that many steps:
+`b(3,8)` is `b- -b -- b-`, the tresillo, and `b(5,8)` is `b- bb -b b-`, the
+cinquillo. Alone in its bar it spreads over the whole bar, in any meter, as
+a rest alone does; next to other beats it is one beat, and `2[b(3,8)]`
+spans two. A third number turns it later by that many steps, as `rotate`
+does: `b(3,8,2)`. Marks count for every hit (`S(2,4)`, `c(5,8)?`), and it
+works on drums, percussion strokes, strums and notes (`c2(3,8)`).
+
+```aratu
+drums {
+  bd = b(4,16)
+  hh = c(5,8,1)
+  sd = - s - s
+}
+```
+
 ## 3. Compound and additive meters, tuplets
 
 The beat is not always a quarter note. These are the meters where it changes
@@ -281,6 +298,23 @@ The strum repeats every bar and the chords change on their own. A down
 strum sounds the strings from low to high a few milliseconds apart, an up
 strum from high to low; accents strum harder and faster. Without a strum,
 the chords play whole, like a keyboard.
+
+**The arpeggiator.** A line called `arp` beside the chords plays their
+notes one at a time, in steps, as long as each chord lasts; the chords
+then sound only through it, as through a strum. It says the way, the steps
+and, if more than one, the octaves: `arp = up 16ths`, `down 8ths`,
+`updown 16ths` (or `up and down`), `random 16ths`, `up triplets`,
+`up beats`, `up 16ths 2 octaves`. The steps follow the meter (in 6/8 an
+eighth is a third of a beat), and each chord starts again from its lowest
+note. A line called `arp` with notes (`arp = | c4 e g c5 |`) is still a
+melody.
+
+```aratu
+piano {
+  chords = | Am | F | C | G |
+  arp    = updown 16ths 2 octaves
+}
+```
 
 ## 8. Harmony by degree
 
@@ -636,10 +670,15 @@ Short verbs change a part, a line or a pattern without rewriting it:
 | `melody.ri` | the inversion backwards |
 | `melody.augment` | doubles the note values |
 | `melody.diminish` | halves the note values |
+| `hh.fast 2` | two bars of the line in each bar |
+| `bass.slow 2` | each bar of the line over two |
+| `lead.echo 1 eighth x3` | each sound again an eighth later, three times, softer each time |
 
 The names are the ones motifs and rows take: `.inv` or `.invert`,
 `.retro` or `.retrograde`, `.ri`. `transpose` counts semitones and may say
-so with `3st`, as motifs do.
+so with `3st`, as motifs do. `fast` and `slow` take whole numbers and
+multiply: `augment` is `slow 2`, `diminish` is `fast 2`, and `fast 2` with
+`slow 2` plays the line as written. `echo` takes a length as `over` does.
 
 ```aratu
 melody = | c4 d e g | a g e d |
@@ -883,6 +922,21 @@ master.limiter.ceiling = -1
 | `master.gain` | the level into the limiter, in dB |
 | `master.limiter.ceiling` | the limiter's ceiling, -12 to -0.3 dB |
 
+**Ducking.** `pad: duck by kick` makes room for the kick: at each of its
+hits the pad's volume drops by 70% and comes back over a beat, the pumping
+a sidechain gives in the studio. `pad: duck by kick 50% over 1 eighth` says
+how much and how fast. After `by` comes a part (`drums`), a line (`bd`), or
+a drum by its name (`kick`, `snare`, `clap`, `hat`) from whatever line plays
+it; `all: duck by kick` ducks every other part. It moves the part's volume
+from the value written for it, and works with `at bar`, `from bar … to …`
+and `every`.
+
+```aratu
+drums { bd = b b b b }
+pad = | a3+c4+e4 _ _ _ |
+pad: duck by kick 60% over 3 sixteenths
+```
+
 ## 20. Quick reference
 
 | Write | Means |
@@ -946,6 +1000,10 @@ master.limiter.ceiling = -1
 | a line that starts with `\|` | goes on with the line of music above |
 | `\| I \| vi \| V7/V \|`, `Am:arp` | chords by degree; a rolled chord |
 | `pandeiro = pd td pd td` | Brazilian percussion |
+| `b(3,8)`, `b(3,8,2)` | a Euclidean rhythm; turned two steps later |
+| `arp = up 16ths 2 octaves` | an arpeggiator on the part's chords |
+| `hh.fast 2`, `bass.slow 2`, `lead.echo 1 eighth x3` | faster, slower, an echo |
+| `pad: duck by kick 70% over 1 beat` | the pad makes room for the kick |
 | `reverb.mix = 0.5` (no part) | for every part |
 | `all: chorus -> delay` | effects on every part |
 | `master.reverb.decay = 3 s` | the mix: reverb, glue, limiter |
@@ -981,6 +1039,9 @@ play exactly the same.
 | `all:`, `out`, `in` | `todos:`, `fora`, `dentro` | `todos:`, `fuera`, `dentro` |
 | `chords`, `strum` | `acordes`, `batida` | `acordes`, `rasgueo` |
 | `.transpose`, `.invert` | `.transpor`, `.inverter` | `.transponer`, `.invertir` |
+| `.fast`, `.slow`, `.echo` | `.rapido`, `.lento`, `.eco` | `.rapido`, `.lento`, `.eco` |
+| `arp = up and down`, `down`, `triplets`, `octaves` | `arpejo = sobe e desce`, `desce`, `tercinas`, `oitavas` | `arpegio = sube y baja`, `baja`, `tresillos`, `octavas` |
+| `duck by kick` | `abaixa com o bumbo` | `agacha con el bombo` |
 | `drums` | `bateria` | `batería` |
 
 The names of dynamics (`mf`, `cresc`), tempo changes (`rit`, `a tempo`) and

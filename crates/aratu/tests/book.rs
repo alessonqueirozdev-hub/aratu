@@ -269,6 +269,8 @@ const TAUGHT: &[Taught] = &[
     ("shaker", |c| {
         c.contains("ganzá") || c.contains("agbê") || c.contains("shaker")
     }),
+    ("euclidean rhythm", |c| c.contains("(3,8)")),
+    ("turning a euclidean rhythm", |c| c.contains("(3,8,2)")),
     ("notes and octaves", |c| c.contains("4 ")),
     ("sharps", |c| c.contains('#')),
     ("notes together", |c| c.contains("4+")),
@@ -290,6 +292,10 @@ const TAUGHT: &[Taught] = &[
     ("secondary dominant", |c| c.contains("V7/V")),
     ("borrowed chord", |c| c.contains("bVII")),
     ("arpeggio", |c| c.contains(":arp")),
+    ("arpeggiator", |c| {
+        c.contains("= up 16ths") || c.contains("= sobe") || c.contains("= sube")
+    }),
+    ("arpeggiator going down", |c| c.contains("= down 8ths")),
     ("dynamic marks", |c| c.contains("p:")),
     ("hairpins", |c| c.contains("4<")),
     ("a part's level", |c| c.contains("cresc to")),
@@ -323,6 +329,10 @@ const TAUGHT: &[Taught] = &[
     ("transforming a line", |c| {
         c.contains(".transpose") || c.contains(".transpor") || c.contains(".transponer")
     }),
+    ("faster and slower", |c| {
+        c.contains(".fast ") || c.contains(".slow ") || c.contains(".rapido ")
+    }),
+    ("echo", |c| c.contains(".echo ") || c.contains(".eco ")),
     ("ritardando", |c| c.contains("rit to")),
     ("tempo ramp", |c| c.contains("90 -> 140")),
     ("fermata", |c| c.contains("4^")),
@@ -377,6 +387,9 @@ const TAUGHT: &[Taught] = &[
         c.contains("todos: chorus") || c.contains("all: chorus")
     }),
     ("the master", |c| c.contains("master.")),
+    ("ducking", |c| {
+        c.contains("duck by") || c.contains("abaixa com") || c.contains("agacha con")
+    }),
     ("keywords in other languages", |c| {
         c.contains("compasso:") || c.contains("compás:")
     }),

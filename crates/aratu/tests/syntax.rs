@@ -1204,3 +1204,364 @@ fn a_line_may_start_its_bars_below_the_equals_sign() {
     let list = "list temas {\n  | c4 _ _ _ |\n  | d4 _ _ _ |\n}\n";
     assert_eq!(notes(&format!("{list}melody = temas.2"), 1, 2), [(1, 62)]);
 }
+
+/// Where each drum starts in bar 1, in beats.
+fn starts(src: &str) -> Vec<f64> {
+    hits(src, 1, 2)
+        .iter()
+        .map(|(_, beat, _)| beat.to_f64())
+        .collect()
+}
+
+#[test]
+fn a_euclidean_rhythm_spreads_its_hits_over_the_bar() {
+    // Alone in its bar it fills the bar, as a rest alone does: eight
+    // eighths in 4/4, the tresillo.
+    assert_eq!(starts("bd = b(3,8)"), [0.0, 1.5, 3.0]);
+    assert_eq!(starts("bd = | b(3,8) |"), [0.0, 1.5, 3.0]);
+    // The cinquillo, and the same turned two steps later.
+    assert_eq!(starts("bd = b(5,8)"), [0.0, 1.0, 1.5, 2.5, 3.0]);
+    assert_eq!(starts("bd = b(3,8,2)"), [0.0, 1.0, 2.5]);
+    assert_eq!(starts("bd = b(3,8,-1)"), [1.0, 2.5, 3.5]);
+    // Spaces inside are allowed.
+    assert_eq!(starts("bd = b(3, 8)"), starts("bd = b(3,8)"));
+    // In any meter: the steps share whatever the bar has.
+    assert_eq!(starts("meter: 3/4\nbd = b(3,6)"), [0.0, 1.0, 2.0]);
+    assert_eq!(starts("meter: 6/8\nrd = r(7,12)").len(), 7);
+    assert_eq!(starts("meter: 7/8 = 2+2+3\nbd = b(3,7)").len(), 3);
+    // Beside other beats it is one beat, divided in its steps; with a
+    // number before brackets, it spans that many beats.
+    assert_eq!(starts("bd = | b(2,4) - - - |"), [0.0, 0.5]);
+    assert_eq!(
+        starts("bd = | 2[b(3,8)] 2[b(3,8)] |"),
+        [0.0, 0.75, 1.5, 2.0, 2.75, 3.5]
+    );
+    // Upper case accents every hit; a repeat count after the parenthesis.
+    let e = events("sd = S(2,4)", 1, 2);
+    assert!(e.iter().all(|e| e.accent) && e.len() == 2);
+    assert_eq!(starts("bd = | b(1,2)x4 |"), [0.0, 1.0, 2.0, 3.0]);
+    // On percussion, a strum, and a note.
+    assert_eq!(hits("alfaia = o(3,8)", 1, 2)[0].2, Drum::AlfaiaOpen);
+    assert_eq!(notes("bass = c2(3,8)", 1, 2), [(1, 36), (1, 36), (1, 36)]);
+    let bass = events("bass = c2(3,8)", 1, 2);
+    assert!((bass[0].duration - 0.25).abs() < 1e-9, "an eighth at 120");
+    // The two lines of a groove line up.
+    let src = "drums {\n  bd = b(4,16)\n  hh = c(3,8,1)\n}";
+    assert_eq!(hits(src, 1, 2).len(), 7);
+    // Each hit draws its own chance: never all or none, bar after bar.
+    let counts: Vec<usize> = (1..9)
+        .map(|b| hits("hh = c(8,8)?", b, b + 1).len())
+        .collect();
+    assert!(counts.iter().any(|n| (1..8).contains(n)), "{counts:?}");
+}
+
+#[test]
+fn a_euclidean_rhythm_written_wrong_is_told() {
+    assert_eq!(
+        first("bd = b(9,8)"),
+        Message::BadEuclid { hits: 9, steps: 8 }
+    );
+    assert_eq!(
+        first("bd = b(1,0)"),
+        Message::BadEuclid { hits: 1, steps: 0 }
+    );
+    assert!(matches!(first("bd = b(3)"), Message::BadEuclidForm { .. }));
+    assert!(matches!(
+        first("bd = b(3,x)"),
+        Message::BadEuclidForm { .. }
+    ));
+    assert!(matches!(first("bd = b(3,8"), Message::BadEuclidForm { .. }));
+    let m = Message::BadEuclid { hits: 9, steps: 8 };
+    assert_eq!(
+        m.text(Lang::Pt),
+        "9 toques não cabem em 8 passos: o primeiro número são os toques, o segundo os passos"
+    );
+    assert!(m.text(Lang::Es).starts_with("9 golpes no caben en 8 pasos"));
+    assert!(m.text(Lang::En).starts_with("9 hits do not fit in 8 steps"));
+    // A ghost note is still a ghost note.
+    assert_eq!(starts("sd = (s) s (s) s").len(), 4);
+}
+
+/// The notes of bars `from` to `to`, as (bar, beat, pitch).
+fn placed(src: &str, from: i64, to: i64) -> Vec<(i64, f64, u8)> {
+    events(src, from, to)
+        .iter()
+        .filter_map(|e| match e.kind {
+            EventKind::Note(n) => Some((e.bar, e.beat.to_f64(), n)),
+            _ => None,
+        })
+        .collect()
+}
+
+#[test]
+fn an_arpeggiator_plays_the_chords_in_steps() {
+    let src = "chords = | Am | F |\narp = up 16ths";
+    let bar1: Vec<u8> = placed(src, 1, 2).iter().map(|n| n.2).collect();
+    // A3 C4 E4 again and again, sixteen sixteenths; the chord itself does
+    // not sound, as under a strum.
+    assert_eq!(bar1.len(), 16);
+    assert_eq!(&bar1[..7], [57, 60, 64, 57, 60, 64, 57]);
+    let bar2: Vec<u8> = placed(src, 2, 3).iter().map(|n| n.2).collect();
+    assert_eq!(&bar2[..3], [53, 57, 60]);
+    let way = |w: &str| -> Vec<u8> {
+        placed(&format!("chords = | Am |\narp = {w}"), 1, 2)
+            .iter()
+            .map(|n| n.2)
+            .collect()
+    };
+    assert_eq!(way("down 8ths"), [64, 60, 57, 64, 60, 57, 64, 60]);
+    assert_eq!(way("updown 8ths"), [57, 60, 64, 60, 57, 60, 64, 60]);
+    assert_eq!(way("up and down 8ths"), way("updown 8ths"));
+    assert_eq!(way("up 8ths 2 octaves"), [57, 60, 64, 69, 72, 76, 57, 60]);
+    assert_eq!(way("up triplets").len(), 12);
+    assert_eq!(way("up 32nds").len(), 32);
+    assert_eq!(way("up beats"), [57, 60, 64, 57]);
+    assert_eq!(way("up").len(), 16, "sixteenths when not said");
+    assert!(way("random 16ths").iter().all(|n| [57, 60, 64].contains(n)));
+    // In Portuguese and Spanish.
+    assert_eq!(
+        placed("acordes = | Am |\narpejo = sobe e desce 8ths", 1, 2),
+        placed("chords = | Am |\narp = updown 8ths", 1, 2)
+    );
+    assert_eq!(
+        placed("acordes = | Am |\narpegio = baja corcheas", 1, 2),
+        placed("chords = | Am |\narp = down eighths", 1, 2)
+    );
+    // In 6/8 an eighth is a third of a beat: six a bar.
+    assert_eq!(
+        placed("meter: 6/8\nchords = | Am |\narp = up 8ths", 1, 2).len(),
+        6
+    );
+    // Each chord starts from its root.
+    let two: Vec<u8> = placed("chords = | C G |\narp = up 8ths", 1, 2)
+        .iter()
+        .map(|n| n.2)
+        .collect();
+    assert_eq!(two, [48, 52, 55, 48, 55, 59, 62, 55]);
+    // In a part, with the part's transformations.
+    let piano = "piano {\n  chords = | Am |\n  arp = up 8ths\n}\npiano.transpose +12";
+    assert_eq!(placed(piano, 1, 2)[0].2, 69);
+    // A line called `arp` with notes is a melody, as before.
+    assert_eq!(
+        notes("arp = | c4 e g c5 |", 1, 2),
+        [(1, 60), (1, 64), (1, 67), (1, 72)]
+    );
+}
+
+#[test]
+fn an_arpeggiator_written_wrong_is_told() {
+    assert_eq!(
+        first("piano { arp = up 16ths }"),
+        Message::ArpWithoutChords {
+            part: "piano".into()
+        }
+    );
+    assert!(matches!(
+        first("chords = | Am |\narp = up 12ths"),
+        Message::Expected {
+            what: aratu::diag::Thing::ArpStep,
+            ..
+        }
+    ));
+    assert_eq!(
+        first("chords = | Am |\narp = up 9 octaves"),
+        Message::ArpOctaves { count: 9 }
+    );
+    assert!(
+        Message::ArpWithoutChords {
+            part: "piano".into()
+        }
+        .text(Lang::Pt)
+        .starts_with("o arpejador de `piano` não tem acordes")
+    );
+}
+
+/// The volume of `part` set while bar 1 plays, as (beat, value).
+fn volume(src: &str, part: &str) -> Vec<(f64, f64)> {
+    events(src, 1, 2)
+        .iter()
+        .filter_map(|e| match &e.kind {
+            EventKind::Param { id, value, .. } if id == "volume" && e.part == part => {
+                Some((e.beat.to_f64(), *value))
+            }
+            _ => None,
+        })
+        .collect()
+}
+
+fn near(a: f64, b: f64) -> bool {
+    (a - b).abs() < 1e-6
+}
+
+#[test]
+fn a_part_ducks_under_the_kick() {
+    let base = "drums { bd = b - b -; hh = cc cc cc cc }\npad = | c4 _ _ _ |\n";
+    let v = volume(&format!("{base}pad: duck by kick"), "pad");
+    // Down by 70% at each kick, back over a beat, from the written 0.8.
+    assert!(near(v[0].0, 0.0) && near(v[0].1, 0.8 * 0.3), "{v:?}");
+    assert!(v.iter().any(|(b, x)| near(*b, 1.0) && near(*x, 0.8)));
+    assert!(v.iter().any(|(b, x)| near(*b, 2.0) && near(*x, 0.24)));
+    // Halfway back it has come most of the way: the curve eases in.
+    let half = v.iter().find(|(b, _)| near(*b, 0.5)).unwrap().1;
+    assert!(half > 0.24 + (0.8 - 0.24) / 2.0, "{half}");
+    // Never below the dip, never above the volume.
+    assert!(v.iter().all(|(_, x)| *x >= 0.24 - 1e-9 && *x <= 0.8 + 1e-9));
+    // How much and how fast, and the volume the part is set to.
+    let v = volume(
+        &format!("{base}pad.volume = 0.5\npad: duck by bd 50% over 1 eighth"),
+        "pad",
+    );
+    assert!(near(v[0].1, 0.25), "{v:?}");
+    assert!(v.iter().any(|(b, x)| near(*b, 0.5) && near(*x, 0.5)));
+    // The line's name, the part's, and only the kicks: not the hi-hat.
+    assert_eq!(
+        volume(&format!("{base}pad: duck by bd"), "pad"),
+        volume(&format!("{base}pad: duck by kick"), "pad")
+    );
+    let all = volume(&format!("{base}pad: duck by drums"), "pad");
+    assert!(all.iter().any(|(b, x)| near(*b, 0.5) && near(*x, 0.24)));
+    // In Portuguese and Spanish.
+    let en = volume(&format!("{base}pad: duck by kick 50%"), "pad");
+    assert_eq!(
+        volume(&format!("{base}pad: abaixa com o bumbo 50%"), "pad"),
+        en
+    );
+    assert_eq!(
+        volume(&format!("{base}pad: agacha con el bombo 50%"), "pad"),
+        en
+    );
+    assert_eq!(
+        volume(&format!("{base}pad: sidechain by kick 50%"), "pad"),
+        en
+    );
+    // Only where it is in force.
+    let later = format!("{base}from bar 2 to 3: pad: duck by kick");
+    assert!(volume(&later, "pad").is_empty());
+    assert!(!params(&later, 2, 3).is_empty());
+    // The drums themselves do not move.
+    assert!(volume(&format!("{base}pad: duck by kick"), "drums").is_empty());
+    // `all:` ducks every other part; `every` only in its bars.
+    let both = format!("{base}lead = | e5 _ _ _ |\nall: duck by kick");
+    assert_eq!(volume(&both, "pad"), volume(&both, "lead"));
+    assert!(!volume(&both, "pad").is_empty());
+    assert!(volume(&both, "drums").is_empty());
+    let every = format!("{base}every 2 bars: pad: duck by kick");
+    assert!(volume(&every, "pad").is_empty());
+    assert!(!params(&every, 2, 3).is_empty());
+    // A drum by its name in Portuguese, from a line of another name.
+    assert_eq!(
+        volume(&format!("{base}pad: duck by caixa"), "pad"),
+        volume(&format!("{base}pad: duck by snare"), "pad")
+    );
+}
+
+#[test]
+fn ducking_written_wrong_is_told() {
+    let base = "drums { bd = b - b - }\npad = | c4 _ _ _ |\n";
+    assert_eq!(
+        first(&format!("{base}pad: duck by kick 150%")),
+        Message::DuckAmount { amount: 1.5 }
+    );
+    assert!(matches!(
+        first(&format!("{base}pad: duck kick")),
+        Message::Expected {
+            what: aratu::diag::Thing::DuckSource,
+            ..
+        }
+    ));
+    assert_eq!(
+        first(&format!("{base}pad: duck by tuba")),
+        Message::UnknownTarget {
+            name: "tuba".into()
+        }
+    );
+}
+
+#[test]
+fn fast_and_slow_play_a_line_in_more_or_fewer_bars() {
+    let hh = "hh = | c - - - | o - - - |\n";
+    let fast = hits(&format!("{hh}hh.fast 2"), 1, 2);
+    assert_eq!(
+        fast,
+        [
+            (1, Ratio::ZERO, Drum::ClosedHat),
+            (1, Ratio::int(2), Drum::OpenHat)
+        ]
+    );
+    assert_eq!(hits(&format!("{hh}hh.fast 3"), 1, 2).len(), 3);
+    // `diminish` is `fast 2`, and the two together are `fast 4`.
+    assert_eq!(
+        hits(&format!("{hh}hh.diminish"), 1, 3),
+        hits(&format!("{hh}hh.fast 2"), 1, 3)
+    );
+    assert_eq!(hits(&format!("{hh}hh.fast 2\nhh.diminish"), 1, 2).len(), 4);
+    // Slow: each bar over two, held across the bar line.
+    let bass = "bass = | c2 _ _ _ | g1 _ _ _ |\n";
+    assert_eq!(
+        notes(&format!("{bass}bass.slow 2"), 1, 5),
+        [(1, 36), (3, 31)]
+    );
+    let held = events(&format!("{bass}bass.slow 2"), 1, 3);
+    assert!(
+        (held[0].duration - 4.0).abs() < 1e-6,
+        "{}",
+        held[0].duration
+    );
+    assert_eq!(
+        notes(&format!("{bass}bass.slow 2"), 1, 5),
+        notes(&format!("{bass}bass.augment"), 1, 5)
+    );
+    // They cancel, and they take a whole part.
+    assert_eq!(
+        hits(&format!("{hh}hh.fast 2\nhh.slow 2"), 1, 3),
+        hits(hh, 1, 3)
+    );
+    let drums = "drums { bd = b - - -; sd = - - s - }\ndrums.fast 2";
+    assert_eq!(hits(drums, 1, 2).len(), 4);
+    // In Portuguese and Spanish.
+    assert_eq!(
+        hits(&format!("{hh}hh.rápido 2"), 1, 3),
+        hits(&format!("{hh}hh.fast 2"), 1, 3)
+    );
+    assert_eq!(
+        notes(&format!("{bass}bass.lento 2"), 1, 5),
+        notes(&format!("{bass}bass.slow 2"), 1, 5)
+    );
+    // Whole numbers only.
+    assert_eq!(
+        first(&format!("{hh}hh.fast 1.5")),
+        Message::BadSpeed {
+            verb: "fast".into(),
+            times: 1.5
+        }
+    );
+}
+
+#[test]
+fn an_echo_plays_each_sound_again_softer() {
+    let lead = "lead = | c4 - - - |\n";
+    let e = placed(&format!("{lead}lead.echo 1 beat"), 1, 2);
+    assert_eq!(e, [(1, 0.0, 60), (1, 1.0, 60)]);
+    let v: Vec<u8> = events(&format!("{lead}lead.echo 1 beat x3"), 1, 2)
+        .iter()
+        .map(|e| e.velocity)
+        .collect();
+    assert_eq!(v.len(), 4);
+    assert!(v.windows(2).all(|w| w[1] < w[0]), "{v:?}");
+    // In eighths, and over the bar line.
+    let e = placed(&format!("{lead}lead.echo 3 eighths x2"), 1, 2);
+    assert_eq!(e, [(1, 0.0, 60), (1, 1.5, 60), (1, 3.0, 60)]);
+    let late = "lead = | - - - c4 |\nlead.echo 1 beat";
+    // The echo of bar 1 opens bar 2, before bar 2's own note.
+    assert_eq!(placed(late, 2, 3), [(2, 0.0, 60), (2, 3.0, 60)]);
+    // Drums echo too, and in Portuguese and Spanish.
+    assert_eq!(hits("sd = - s - -\nsd.echo 1 eighth", 1, 2).len(), 2);
+    assert_eq!(
+        placed(&format!("{lead}lead.eco 1 tempo"), 1, 2),
+        placed(&format!("{lead}lead.echo 1 beat"), 1, 2)
+    );
+    assert_eq!(
+        placed(&format!("{lead}lead.eco 2 corcheas"), 1, 2),
+        placed(&format!("{lead}lead.echo 1 beat"), 1, 2)
+    );
+}

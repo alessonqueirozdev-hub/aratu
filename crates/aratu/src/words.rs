@@ -75,6 +75,21 @@ pub const SYNONYMS: &[(&str, &[&str])] = &[
     // Lines that read their own symbols.
     ("chords", &["acordes", "cifra", "cifras"]),
     ("strum", &["batida", "levada", "rasgueo", "rasgueado"]),
+    ("arp", &["arpejo", "arpegio", "arpeggio"]),
+    // The arpeggiator's way and steps.
+    ("up", &["sobe", "subindo", "sube", "subiendo"]),
+    ("down", &["desce", "descendo", "baja", "bajando"]),
+    ("updown", &["sobedesce", "subeybaja"]),
+    ("and", &["e", "y"]),
+    ("triplets", &["tercinas", "quialteras", "tresillos"]),
+    ("octaves", &["oitavas", "octavas"]),
+    // Making room for another part: the producers' word, `sidechain`, is
+    // the same in every language.
+    (
+        "duck",
+        &["abaixa", "abaixar", "agacha", "agachar", "sidechain"],
+    ),
+    ("by", &["com", "pelo", "pela", "por", "con"]),
     // Transformations.
     ("rotate", &["girar", "gira", "rotar", "rodar"]),
     ("density", &["densidade", "densidad"]),
@@ -82,6 +97,9 @@ pub const SYNONYMS: &[(&str, &[&str])] = &[
     ("transpose", &["transpor", "transponer", "transporta"]),
     ("augment", &["aumentar", "aumenta"]),
     ("diminish", &["diminuir", "diminui", "disminuir"]),
+    ("fast", &["rapido", "depressa", "deprisa"]),
+    ("slow", &["lento", "devagar", "despacio"]),
+    ("echo", &["eco"]),
 ];
 
 /// Whether `word` is the keyword `kw` in any of the three languages.

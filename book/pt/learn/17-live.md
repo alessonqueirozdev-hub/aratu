@@ -73,6 +73,43 @@ at bar 3: drums: out
 at bar 5: drums: in
 ```
 
+## Mais rápido, mais lento, e um eco
+
+Três verbos curtos mudam uma linha enquanto ela toca, sem escrevê-la de
+novo. Escreva o nome da linha, um ponto e o verbo:
+
+```aratu
+tempo: 120
+drums {
+  hh = | cc cc cc co | cc cc c- c- |
+  bd = b - b -
+  sd = - s - s
+}
+hh.fast 2
+```
+
+`hh.fast 2` toca dois compassos do chimbal em cada compasso: duas vezes mais
+rápido. `slow 2` estica cada compasso por dois. Os números são inteiros,
+para a linha sempre cair na barra de compasso; `fast 2` e `slow 2` juntos se
+anulam. Valem para uma linha ou para uma parte inteira (`drums.fast 2`).
+Apague a linha e o chimbal volta à velocidade dele.
+
+`echo` toca cada som de novo um pouco depois, e mais baixo, como uma voz que
+volta de uma parede:
+
+```aratu
+tempo: 100
+lead: synth.pluck
+lead = | mi5 - sol - | lá - sol - |
+lead.echo 3 sixteenths x2
+```
+
+`echo 3 sixteenths` repete cada nota três semicolcheias depois, e `x2` faz
+dois ecos, cada um mais baixo que o anterior. A duração se escreve como
+depois de `over`: `1 beat`, `1 eighth`, `3 sixteenths`. Em português os
+verbos são `rapido` (ou `rápido`), `lento` e `eco`, e as durações
+`1 tempo`, `1 colcheia`, `3 semicolcheias`.
+
 ## No palco
 
 O botão **Palco**, em Tocar, deixa só o código na tela, em tela cheia e com
@@ -120,4 +157,26 @@ drums { hh = c c c c }
 baixo = | dó2 _ _ _ |
 at bar 2: drums: out
 at bar 3: drums: in
+```
+
+Com mais uma linha, toque o chimbal duas vezes mais rápido.
+
+```aratu exercise
+hh = cc cc cc co
+```
+
+```aratu answer
+hh = cc cc cc co
+hh.fast 2
+```
+
+Dê à melodia um eco um tempo depois de cada nota.
+
+```aratu exercise
+melodia = | dó5 - - - | sol4 - - - |
+```
+
+```aratu answer
+melodia = | dó5 - - - | sol4 - - - |
+melodia.echo 1 beat
 ```

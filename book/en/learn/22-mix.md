@@ -103,6 +103,34 @@ master.limiter.ceiling = -1
 | `master.gain` | the volume of everything, in dB |
 | `master.limiter.ceiling` | the highest volume, from -12 to -0.3 dB |
 
+## Making room for the kick
+
+In electronic music the bass drum leads, and the other parts make room for
+it: at each kick the pad's volume drops at once and comes back before the
+next one, and the whole track seems to breathe. In the studio that is
+called **ducking**, or *sidechain*. In Aratu it is one line:
+
+```aratu
+tempo: 124
+drums { bd = b b b b; hh = -c -c -c -c }
+pad: synth.pad
+pad = | a3+c4+e4 _ _ _ | f3+a3+c4 _ _ _ |
+pad: duck by kick
+```
+
+`pad: duck by kick` lowers the pad by 70% at each kick and brings it back
+over one beat. Say how much and how fast: `pad: duck by kick 50% over 1
+eighth`. After `by` comes the part or the line to make room for (`drums`,
+`bd`), or a drum by its name, `kick`, `snare` or `clap`, whichever line
+plays it.
+
+> Delete the line and listen: the pad stands still, on top of the kick. Put
+> it back and the music pumps again.
+
+In Portuguese it is `pad: abaixa com o bumbo`, in Spanish
+`pad: agacha con el bombo`, and the studio's word, `sidechain`, works in
+all three.
+
 ## Exercises
 
 Turn the drums down to 0.4, so the melody stands out.
@@ -173,4 +201,17 @@ reverb.mix = 0.5
 melody = | e4 g a g |
 reverb.mix = 0.5
 master.reverb.decay = 5 s
+```
+
+Make the pad duck by half (50%) at each kick.
+
+```aratu exercise sound=1
+drums { bd = b b b b }
+pad = | c4+e4+g4 _ _ _ |
+```
+
+```aratu answer
+drums { bd = b b b b }
+pad = | c4+e4+g4 _ _ _ |
+pad: duck by kick 50%
 ```

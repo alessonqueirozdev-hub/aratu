@@ -120,7 +120,7 @@ impl Line {
     /// of the meter, since chords share the bar).
     pub fn beats(&self, i: usize, meter: Meter) -> Ratio {
         match (&self.bars[i].content, self.kind) {
-            (_, LineKind::Chords) => meter.beats(),
+            (_, LineKind::Chords | LineKind::Arp) => meter.beats(),
             (BarContent::Beats(b), _) => Ratio::int(b.iter().map(|x| x.len as i64).sum()),
             (BarContent::Simile(_) | BarContent::Rest(_), _) => meter.beats(),
         }
@@ -213,6 +213,34 @@ pub enum Action {
         target: String,
         transform: Transform,
     },
+    /// `pad: duck by kick`: the part's volume dips at the source's hits.
+    Duck {
+        target: String,
+        source: DuckSource,
+        amount: f64,
+        length: Length,
+    },
+}
+
+/// What a part ducks under.
+#[derive(Clone, Debug, PartialEq)]
+pub enum DuckSource {
+    /// A part or a line, by its name: every sound it plays.
+    Named(String),
+    /// A drum by its name, from any line that plays it: `duck by kick`
+    /// when the kick's line is called `bd`.
+    Drum(char),
+}
+
+/// The drum a word names, for `duck by kick`, in the three languages.
+pub fn drum_named(word: &str) -> Option<char> {
+    Some(match crate::words::fold(word).as_str() {
+        "kick" | "bd" | "bumbo" | "bombo" => 'b',
+        "snare" | "sd" | "caixa" | "caja" => 's',
+        "clap" | "cp" | "palma" | "palmas" => 'p',
+        "hat" | "hihat" | "hh" | "chimbal" | "charles" => 'c',
+        _ => return None,
+    })
 }
 
 /// Parts by name in the order they first appear.
@@ -241,7 +269,7 @@ impl PartList {
 fn loose_part(line: &str, kind: LineKind) -> String {
     match kind {
         LineKind::Drums => "drums".into(),
-        LineKind::Chords | LineKind::Strum => "chords".into(),
+        LineKind::Chords | LineKind::Strum | LineKind::Arp => "chords".into(),
         LineKind::Pitched | LineKind::Percussion(_) => line.to_string(),
     }
 }
@@ -721,6 +749,17 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
                     transform: *transform,
                 }
             }
+            StmtKind::Duck {
+                target,
+                source,
+                amount,
+                length,
+            } => Action::Duck {
+                target: target_of(&piece, target, diags),
+                source: duck_source(&piece, source, diags),
+                amount: *amount,
+                length: *length,
+            },
             // A parameter that moves is a command even without a time: it
             // starts moving where it is written while playing live.
             StmtKind::Param { path, value, sweep } if s.when != When::Bare || sweep.is_some() => {
@@ -868,6 +907,14 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
                         },
                     ));
                 }
+                if line.kind == LineKind::Arp && !has_chords {
+                    diags.push(Diagnostic::error(
+                        line.span,
+                        Message::ArpWithoutChords {
+                            part: part.name.clone(),
+                        },
+                    ));
+                }
             }
         }
     };
@@ -903,6 +950,33 @@ fn target_of(piece: &Piece, target: &Name, diags: &mut Vec<Diagnostic>) -> Strin
     };
     diags.push(Diagnostic::warning(target.span, message));
     target.text.clone()
+}
+
+/// What `duck by …` names: a part or a line of the piece, else a drum by
+/// its name, with a warning when it is neither.
+fn duck_source(piece: &Piece, source: &Name, diags: &mut Vec<Diagnostic>) -> DuckSource {
+    let names: Vec<&str> = piece.all_parts().map(|p| p.name.as_str()).collect();
+    if let Some(n) = part_named(&names, &source.text) {
+        return DuckSource::Named(n);
+    }
+    let line = piece.all_parts().any(|p| {
+        p.lines
+            .iter()
+            .any(|l| l.name == source.text || format!("{}.{}", p.name, l.name) == source.text)
+    });
+    if line {
+        return DuckSource::Named(source.text.clone());
+    }
+    if let Some(d) = drum_named(&source.text) {
+        return DuckSource::Drum(d);
+    }
+    diags.push(Diagnostic::warning(
+        source.span,
+        Message::UnknownTarget {
+            name: source.text.clone(),
+        },
+    ));
+    DuckSource::Named(source.text.clone())
 }
 
 /// The part a name stands for among `names`: the part of that name, or,
@@ -971,9 +1045,13 @@ fn prepare_line(
     if line.bars.is_empty() {
         return;
     }
+    // A Euclidean rhythm alone in its bar spreads over the whole bar.
+    for bar in &mut line.bars {
+        fill_bar(bar, meters.first);
+    }
     let first_beats = line.beats(0, meters.first);
     let has_pickup = !pickup.is_zero()
-        && line.kind != LineKind::Chords
+        && !matches!(line.kind, LineKind::Chords | LineKind::Arp)
         && first_beats == pickup
         && line.bars.len() > 1;
     let has_pickup = has_pickup && line.variants.is_empty();
@@ -1017,6 +1095,7 @@ fn prepare_line(
             meters.first
         };
         let groups = meter.groups();
+        fill_bar(&mut line.bars[i], meter);
         if let BarContent::Beats(beats) = &mut line.bars[i].content {
             if !groups.is_empty()
                 && line.kind != LineKind::Chords
@@ -1071,11 +1150,26 @@ fn prepare_line(
     }
 }
 
+/// Gives a bar that is a Euclidean rhythm alone the length of the meter.
+fn fill_bar(bar: &mut Bar, meter: Meter) {
+    if let BarContent::Beats(beats) = &mut bar.content {
+        if let [only] = beats.as_mut_slice() {
+            if only.fill {
+                only.len = meter.beats().floor().max(1) as u32;
+            }
+        }
+    }
+}
+
 /// Why bar `i` does not fit `meter`, if it does not.
 fn bar_fits(line: &Line, i: usize, meter: Meter, number: usize) -> Option<Message> {
     let BarContent::Beats(beats) = &line.bars[i].content else {
         return None;
     };
+    // An arpeggiator's steps fill whatever bar it plays in.
+    if line.kind == LineKind::Arp {
+        return None;
+    }
     if line.kind == LineKind::Chords {
         // Each chord must start on a beat.
         let n = beats.len() as i64;

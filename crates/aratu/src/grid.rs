@@ -252,8 +252,21 @@ fn grid_bar(line: &Line, index: usize, position: i64, beats: i64, src: &str) -> 
             }
         }
     }
+    // A sound written once that plays several times, as a Euclidean
+    // rhythm's `b(3,8)`, cannot be moved one hit at a time.
+    let mut written: Vec<usize> = parts
+        .iter()
+        .filter_map(|(_, _, p)| match p {
+            Part::Hit(h) => Some(h.span.start),
+            _ => None,
+        })
+        .collect();
+    let hits = written.len();
+    written.sort_unstable();
+    written.dedup();
     let editable = exact
         && !choice
+        && written.len() == hits
         && span.is_some()
         && matches!(
             line.kind,
@@ -274,7 +287,8 @@ pub fn grid(piece: &Piece, src: &str, max_bars: usize) -> Vec<GridLine> {
     let beats = piece.meter.beats().floor().max(1);
     let mut out = Vec::new();
     for part in piece.all_parts() {
-        for line in &part.lines {
+        // An arpeggiator's steps are not written: nothing to draw.
+        for line in part.lines.iter().filter(|l| l.kind != LineKind::Arp) {
             let mut bars = Vec::new();
             if let Some(p) = line.pickup {
                 let b = line.beats(p, piece.meter).floor().max(1);

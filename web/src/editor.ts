@@ -44,6 +44,12 @@ const KEYWORDS = new Set([
   "todas", "tudo", "acaso", "aleatorio", "aleatoria", "fora", "fuera", "dentro", "tempos",
   "tiempo", "tiempos", "colcheia", "colcheias", "corchea", "corcheas", "semicolcheia",
   "semicolcheias", "semicorchea", "semicorcheas", "vez", "uma", "una", "com", "con",
+  // The arpeggiator, ducking, and the quick transformations.
+  "up", "down", "updown", "triplets", "octaves", "sobe", "subindo", "sube", "subiendo", "desce",
+  "descendo", "baja", "bajando", "sobedesce", "subeybaja", "tercinas", "quialteras", "tresillos",
+  "oitavas", "octavas", "duck", "by", "sidechain", "abaixa", "abaixar", "agacha", "agachar",
+  "pelo", "pela", "fast", "slow", "echo", "rapido", "depressa", "deprisa", "lento", "devagar",
+  "despacio", "eco",
 ]);
 const fold = (w: string): string =>
   w

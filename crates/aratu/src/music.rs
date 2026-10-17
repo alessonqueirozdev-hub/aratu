@@ -129,6 +129,12 @@ fn tokenize<'a>(text: &'a str, base: usize, diags: &mut Vec<Diagnostic>) -> Vec<
         }
         match c {
             '[' | '{' => opens.push((c, i)),
+            // `b(3, 8)`: a Euclidean rhythm keeps its spaces; a ghost
+            // note's `(s)` has none.
+            '(' if text[i + 1..].starts_with(|d: char| d.is_ascii_digit()) => opens.push((c, i)),
+            ')' if opens.last().is_some_and(|&(o, _)| o == '(') => {
+                opens.pop();
+            }
             ']' | '}' => {
                 let want = if c == ']' { '[' } else { '{' };
                 if opens.last().is_some_and(|&(o, _)| o == want) {
@@ -143,7 +149,8 @@ fn tokenize<'a>(text: &'a str, base: usize, diags: &mut Vec<Diagnostic>) -> Vec<
         }
         i += clen;
     }
-    if let Some(&(open, at)) = opens.first() {
+    // An open parenthesis is told when its rhythm is read.
+    if let Some(&(open, at)) = opens.iter().find(|(o, _)| *o != '(') {
         diags.push(Diagnostic::error(
             Span::new(base + at, base + at + 1),
             Message::UnclosedBracket { open },
@@ -707,6 +714,11 @@ fn read_bar(
     for &(w, s) in words.iter() {
         beats.extend(word_beats(w, s, kind, octave, graces, diags, cx));
     }
+    // A Euclidean rhythm fills the bar only alone in it, as a rest does.
+    let alone = beats.len() == 1;
+    for b in &mut beats {
+        b.fill &= alone;
+    }
     bar.content = BarContent::Beats(beats);
     bar
 }
@@ -735,6 +747,7 @@ fn word_beats(
             ),
             span: s,
             len: 1,
+            fill: false,
         }];
     }
     let (core, times) = motifs::split_times(w, cx.lib);
@@ -750,6 +763,7 @@ fn word_beats(
             slots: vec![Slot::Rest(cs)],
             span: cs,
             len: 1,
+            fill: false,
         }],
         None => {
             // `2[c d e]`: a group across that many beats.
@@ -771,6 +785,7 @@ fn word_beats(
                 placeholders: cx.placeholders,
                 graces: std::mem::take(graces),
                 in_grace: false,
+                euclid: None,
             };
             let slots = p.seq(None, false);
             *graces = p.graces;
@@ -779,10 +794,14 @@ fn word_beats(
             if slots.is_empty() && core.starts_with('`') {
                 return Vec::new();
             }
+            // A Euclidean rhythm and nothing else may fill its bar.
+            let fill = body == 0
+                && matches!(slots.as_slice(), [Slot::Group(_, sp)] if Some(*sp) == p.euclid);
             vec![Beat {
                 slots,
                 span: cs,
                 len,
+                fill,
             }]
         }
     };
@@ -839,6 +858,7 @@ fn motif_beats(
             slots: vec![Slot::Rest(s)],
             span: s,
             len: 1,
+            fill: false,
         }];
     }
     let src = &cx.lib.motifs[name];
@@ -1043,6 +1063,33 @@ struct SlotParser<'p, 'd> {
     graces: Vec<(Sound, Span)>,
     /// Reading a grace note, which takes none of the waiting ones.
     in_grace: bool,
+    /// Where the last Euclidean rhythm read is written: one alone in its
+    /// bar fills the bar.
+    euclid: Option<Span>,
+}
+
+/// `hits` spread as evenly as can be over `steps` (Bjorklund's way, as
+/// Toussaint describes the Euclidean rhythms): (3, 8) is `x..x..x.`, the
+/// tresillo.
+pub fn euclid(hits: usize, steps: usize) -> Vec<bool> {
+    if hits >= steps {
+        return vec![true; steps];
+    }
+    if hits == 0 {
+        return vec![false; steps];
+    }
+    let mut a: Vec<Vec<bool>> = vec![vec![true]; hits];
+    let mut b: Vec<Vec<bool>> = vec![vec![false]; steps - hits];
+    while b.len() > 1 {
+        let m = a.len().min(b.len());
+        let rest_a = a.split_off(m);
+        let rest_b = b.split_off(m);
+        for (x, y) in a.iter_mut().zip(b) {
+            x.extend(y);
+        }
+        b = if rest_a.is_empty() { rest_b } else { rest_a };
+    }
+    a.into_iter().chain(b).flatten().collect()
 }
 
 impl SlotParser<'_, '_> {
@@ -1454,6 +1501,7 @@ impl SlotParser<'_, '_> {
                 (Sound::Notes(notes), accent)
             }
             LineKind::Chords => unreachable!("chord lines are read word by word"),
+            LineKind::Arp => unreachable!("an arpeggiator is read by its words"),
         };
 
         let mut hit = Hit {
@@ -1480,7 +1528,68 @@ impl SlotParser<'_, '_> {
         };
         self.mods(&mut hit);
         hit.span = self.at(start);
+        if self.s[self.pos..].starts_with('(') {
+            if let Some(group) = self.euclid(hit.clone(), start) {
+                return Some(group);
+            }
+        }
         Some(Slot::Hit(hit))
+    }
+
+    /// `b(3,8)` after a hit: three of it spread over eight steps, `b(3,8,2)`
+    /// turned two steps later, as `rotate` turns a line. Nothing when the
+    /// parenthesis holds no number (a ghost note follows).
+    fn euclid(&mut self, mut hit: Hit, start: usize) -> Option<Slot> {
+        let inner = &self.s[self.pos + 1..];
+        if !inner.trim_start().starts_with(|c: char| c.is_ascii_digit()) {
+            return None;
+        }
+        let close = inner.find(')');
+        let body = &inner[..close.unwrap_or(inner.len())];
+        self.pos += 1 + body.len() + usize::from(close.is_some());
+        let numbers: Vec<Option<i64>> = body.split(',').map(|n| n.trim().parse().ok()).collect();
+        let sp = self.at(start);
+        let (hits, steps, turn) = match numbers.as_slice() {
+            [Some(h), Some(s)] if close.is_some() => (*h, *s, 0),
+            [Some(h), Some(s), Some(t)] if close.is_some() => (*h, *s, *t),
+            _ => {
+                self.diags.push(Diagnostic::error(
+                    sp,
+                    Message::BadEuclidForm {
+                        text: self.text(sp),
+                    },
+                ));
+                return Some(Slot::Rest(sp));
+            }
+        };
+        if hits < 0 || !(1..=64).contains(&steps) || hits > steps {
+            self.diags
+                .push(Diagnostic::error(sp, Message::BadEuclid { hits, steps }));
+            return Some(Slot::Rest(sp));
+        }
+        // Marks after the parenthesis count for every hit too: `c(5,8)'`.
+        self.mods(&mut hit);
+        let sp = self.at(start);
+        hit.span = sp;
+        let pattern = euclid(hits as usize, steps as usize);
+        let n = steps;
+        let mut first = true;
+        let slots = (0..n)
+            .map(|i| {
+                if pattern[(i - turn).rem_euclid(n) as usize] {
+                    let mut h = hit.clone();
+                    // Grace notes lead into the first hit only.
+                    if !std::mem::take(&mut first) {
+                        h.grace.clear();
+                    }
+                    Slot::Hit(h)
+                } else {
+                    Slot::Rest(sp)
+                }
+            })
+            .collect();
+        self.euclid = Some(sp);
+        Some(Slot::Group(slots, sp))
     }
 
     fn skip_mods(&mut self) {
@@ -1925,6 +2034,24 @@ mod tests {
                 marker: "segno".into()
             }
         );
+    }
+
+    #[test]
+    fn euclidean_rhythms_as_toussaint_lists_them() {
+        let show = |k, n| -> String {
+            euclid(k, n)
+                .into_iter()
+                .map(|h| if h { 'x' } else { '.' })
+                .collect()
+        };
+        assert_eq!(show(3, 8), "x..x..x.");
+        assert_eq!(show(5, 8), "x.xx.xx.");
+        assert_eq!(show(2, 5), "x.x..");
+        assert_eq!(show(3, 4), "xxx.");
+        assert_eq!(show(7, 12), "x.xx.x.xx.x.");
+        assert_eq!(show(5, 16), "x..x..x..x..x...");
+        assert_eq!(show(0, 4), "....");
+        assert_eq!(show(4, 4), "xxxx");
     }
 
     #[test]

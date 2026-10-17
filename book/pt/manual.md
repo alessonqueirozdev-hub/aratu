@@ -89,6 +89,24 @@ vários compassos: `| cc cc | co cc |`. Uma linha sem barras é um compasso.
 dentro: `c[cc]` é uma colcheia e duas semicolcheias. O atalho `.` vale
 `__`, então `c.c` é `c__c`.
 
+**Ritmos euclidianos.** Um símbolo seguido de dois números entre parênteses
+espalha aquele número de toques o mais por igual possível por aquele número
+de passos: `b(3,8)` é `b- -b -- b-`, o tresillo, e `b(5,8)` é
+`b- bb -b b-`, o cinquillo. Sozinho no compasso, ele se espalha pelo
+compasso inteiro, em qualquer fórmula de compasso, como uma pausa sozinha;
+ao lado de outros tempos, é um tempo, e `2[b(3,8)]` ocupa dois. Um terceiro
+número o gira para depois, naquele número de passos, como `rotate`:
+`b(3,8,2)`. As marcas valem para todos os toques (`S(2,4)`, `c(5,8)?`), e
+ele funciona em bateria, toques de percussão, batidas e notas (`dó2(3,8)`).
+
+```aratu
+drums {
+  bd = b(4,16)
+  hh = c(5,8,1)
+  sd = - s - s
+}
+```
+
 ## 3. Compassos compostos, aditivos e quiálteras
 
 O tempo nem sempre é uma semínima. Estas são as fórmulas em que ele muda de
@@ -288,6 +306,23 @@ A batida se repete em cada compasso e os acordes trocam sozinhos. Na batida
 para baixo as cordas soam da grave para a aguda, alguns milissegundos uma
 depois da outra; na para cima, da aguda para a grave; os acentos batem mais
 forte e mais rápido. Sem batida, os acordes tocam inteiros, como um teclado.
+
+**O arpejador.** Uma linha chamada `arp` ao lado dos acordes toca as notas
+deles uma de cada vez, em passos, enquanto cada acorde durar; os acordes
+então só soam por ela, como por uma batida. Ela diz o caminho, os passos e,
+se for mais de uma, as oitavas: `arp = up 16ths`, `down 8ths`,
+`updown 16ths` (ou `up and down`), `random 16ths`, `up triplets`,
+`up beats`, `up 16ths 2 octaves`. Os passos seguem o compasso (em 6/8 uma
+colcheia é um terço de tempo), e cada acorde recomeça da sua nota mais
+grave. Uma linha chamada `arp` com notas (`arp = | dó4 mi sol dó5 |`)
+continua sendo uma melodia.
+
+```aratu
+piano {
+  chords = | Am | F | C | G |
+  arp    = updown 16ths 2 octaves
+}
+```
 
 ## 8. Harmonia pelo grau
 
@@ -647,6 +682,9 @@ Verbos curtos mudam uma parte, uma linha ou um padrão sem reescrevê-lo:
 | `melodia.ri` | retrógrado da inversão |
 | `melodia.augment` | dobra as figuras |
 | `melodia.diminish` | divide as figuras pela metade |
+| `hh.fast 2` | dois compassos da linha em cada compasso |
+| `baixo.slow 2` | cada compasso da linha em dois |
+| `lead.echo 1 eighth x3` | cada som de novo uma colcheia depois, três vezes, cada vez mais baixo |
 
 ```aratu
 melodia = | dó4 ré mi sol | lá sol mi ré |
@@ -655,7 +693,10 @@ melodia.transpose +7
 
 Os nomes são os mesmos dos motivos e das séries: `.inv` ou `.invert`,
 `.retro` ou `.retrograde`, `.ri`. `transpose` conta semitons e aceita
-escrever `3st`, como nos motivos.
+escrever `3st`, como nos motivos. `fast` e `slow` levam números inteiros e
+se multiplicam: `augment` é `slow 2`, `diminish` é `fast 2`, e `fast 2` com
+`slow 2` toca a linha como foi escrita. `echo` leva uma duração, como
+`over`.
 
 ## 15. Tocar ao vivo
 
@@ -890,6 +931,21 @@ master.limiter.ceiling = -1
 | `master.gain` | o volume antes do limitador, em dB |
 | `master.limiter.ceiling` | o teto do limitador, de -12 a -0,3 dB |
 
+**Ducking.** `pad: duck by kick` abre espaço para o bumbo: a cada batida
+dele o volume do pad cai 70% e volta em um tempo, o pulsar que o sidechain
+dá no estúdio. `pad: duck by kick 50% over 1 eighth` diz quanto e em quanto
+tempo. Depois de `by` vem uma parte (`drums`), uma linha (`bd`), ou um
+tambor pelo nome (`kick`, `snare`, `clap`, `hat`, ou `bumbo`, `caixa`,
+`palmas`, `chimbal`) em qualquer linha que o toque; `all: duck by kick`
+abaixa todas as outras partes. Ele move o volume da parte a partir do valor
+escrito para ela, e funciona com `at bar`, `from bar … to …` e `every`.
+
+```aratu
+drums { bd = b b b b }
+pad = | lá3+dó4+mi4 _ _ _ |
+pad: duck by kick 60% over 3 sixteenths
+```
+
 ## 20. Referência rápida
 
 | Escreva | Significa |
@@ -953,6 +1009,10 @@ master.limiter.ceiling = -1
 | uma linha que começa com `\|` | continua a linha de música de cima |
 | `\| I \| vi \| V7/V \|`, `Am:arp` | acordes pelo grau; acorde arpejado |
 | `pandeiro = pd td pd td` | percussão brasileira |
+| `b(3,8)`, `b(3,8,2)` | ritmo euclidiano; girado dois passos para depois |
+| `arp = up 16ths 2 octaves` | um arpejador nos acordes da parte |
+| `hh.fast 2`, `baixo.slow 2`, `lead.echo 1 eighth x3` | mais rápido, mais lento, um eco |
+| `pad: duck by kick 70% over 1 beat` | o pad abre espaço para o bumbo |
 | `reverb.mix = 0.5` (sem parte) | vale para todas as partes |
 | `todos: chorus -> delay` | efeitos em todas as partes |
 | `master.reverb.decay = 3 s` | a mixagem: reverb, cola, limitador |
@@ -988,6 +1048,9 @@ da mesma peça tocam exatamente igual.
 | `all:`, `out`, `in` | `todos:`, `fora`, `dentro` | `todos:`, `fuera`, `dentro` |
 | `chords`, `strum` | `acordes`, `batida` | `acordes`, `rasgueo` |
 | `.transpose`, `.invert` | `.transpor`, `.inverter` | `.transponer`, `.invertir` |
+| `.fast`, `.slow`, `.echo` | `.rapido`, `.lento`, `.eco` | `.rapido`, `.lento`, `.eco` |
+| `arp = up and down`, `down`, `triplets`, `octaves` | `arpejo = sobe e desce`, `desce`, `tercinas`, `oitavas` | `arpegio = sube y baja`, `baja`, `tresillos`, `octavas` |
+| `duck by kick` | `abaixa com o bumbo` | `agacha con el bombo` |
 | `drums` | `bateria` | `batería` |
 
 Os nomes das dinâmicas (`mf`, `cresc`), do andamento (`rit`, `a tempo`) e

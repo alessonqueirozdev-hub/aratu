@@ -81,6 +81,48 @@ tempo: 70
 chords = | I:arp | vi:arp | IV:arp | V7:arp |
 ```
 
+## The arpeggiator
+
+`:arp` rolls a chord once. An **arpeggiator** goes through the chord's notes
+one at a time, in steps, for as long as the chord lasts, the way a
+synthesizer's arpeggiator does, or a harpist's fingers. Write a line called
+`arp` beside the chords, with the way it goes and the length of its steps:
+
+```aratu
+key: A minor
+tempo: 110
+piano {
+  chords = | i | VI | III | VII |
+  arp    = up 16ths
+}
+```
+
+Each sixteenth plays the next note of the chord that is sounding, from the
+bottom up, and each chord starts again from its lowest note. The chord
+itself is not heard as a block: the arpeggiator plays it, the way the strum
+plays the guitar's chords. Change the chords and it plays the new ones;
+change one word of the `arp` and the same chords sound another way.
+
+| Write | What it plays |
+|---|---|
+| `arp = up 16ths` | from the lowest note up, in sixteenths |
+| `arp = down 8ths` | from the highest note down, in eighths |
+| `arp = updown 16ths` | up and back down (also `up and down`) |
+| `arp = random 16ths` | one of the chord's notes each step, by chance |
+| `arp = up triplets` | three steps a beat; `beats`, one a beat |
+| `arp = up 16ths 2 octaves` | the chord spread over two octaves |
+
+```aratu
+tempo: 120
+piano {
+  chords = | Am | F | C | G |
+  arp    = updown 8ths 2 octaves
+}
+```
+
+> In Portuguese the line is `arpejo = sobe 16ths`, `desce`, `sobe e desce`;
+> in Spanish, `arpegio = sube`, `baja`, `sube y baja`.
+
 ## With the guitar strum
 
 Degrees work on the chords line of any instrument, strum and all:
@@ -143,4 +185,16 @@ chords = | i | i | i | i |
 ```aratu answer
 key: A minor
 chords = | i | iv | V7 | i:arp |
+```
+
+Make the arpeggiator go down instead of up, still in eighths.
+
+```aratu exercise
+chords = | Am | F | C | G |
+arp    = up 8ths
+```
+
+```aratu answer
+chords = | Am | F | C | G |
+arp    = down 8ths
 ```

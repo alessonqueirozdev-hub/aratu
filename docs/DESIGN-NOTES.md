@@ -897,3 +897,73 @@ sounds that were not its own. Now:
   what plays instead: the stand-in's own copy of the samples, or a
   synthesized voice like it. Manguebyte switched off in the Sounds panel
   is a choice, not a failure, and is not reported.
+
+## Quick tools for playing live (17 October 2026)
+
+Set beside Strudel and TidalCycles, Aratu won on notation and teaching and
+lost on the small generators that make a pattern language fun to play:
+Euclidean rhythms, an arpeggiator, sidechain, `fast` and `slow`, an echo.
+Each now has a form that follows the rules already decided, so a musician
+reads it as a score word and a live coder finds what they expect.
+
+- **Euclidean rhythms, `b(3,8)`.** A symbol and, in parentheses, the hits
+  and the steps, Bjorklund's spreading (Toussaint's Euclidean rhythms):
+  `(3,8)` is the tresillo, `(5,8)` the cinquillo, `(7,12)` a West African
+  bell. The beat rules decide its length, with no new rule: alone in its
+  bar it fills the bar in any meter, as `| - |` does; beside other beats it
+  is one beat divided in its steps; `2[b(3,8)]` spans two beats. A third
+  number turns it later by that many steps, the way `rotate` turns a line,
+  so the language has one direction of turning; Tidal's `(3,8,2)` turns the
+  other way, starting two steps into the pattern, and gives another
+  rotation of the same necklace. Marks after the symbol count for every hit
+  (`S(2,4)`, `c(5,8)?`), and it works on drums, percussion strokes, strums
+  and notes (`c2(3,8)`). Spaces inside the parentheses are allowed;
+  `b(3,8)x2` repeats it like a bracket. The rhythm map does not redraw it,
+  since its hits are written once.
+- **Chance on a hit written once and played many times** (a Euclidean
+  rhythm, but also `[c?]x4` and a motif used twice in a bar) was drawn once
+  for all of them, so they all played or none did. Each time the same hit
+  comes round in a bar now draws anew; the first draws exactly as before, so
+  no piece written until now changes what it improvises.
+- **The arpeggiator, `arp = up 16ths`.** A line like the strum, beside a
+  `chords` line, so the chords change on their own and one word changes how
+  they are played: `up`, `down`, `updown` (or `up and down`), `random`; the
+  steps `8ths`, `16ths`, `32nds`, `triplets`, `beats` (sixteenths when not
+  said), and `2 octaves`. The steps follow the meter of the bar they play
+  in (a sixteenth in 6/8 is a sixth of a beat), so the line has no beats of
+  its own to count. As under a strum, the chords then sound only through
+  it. Each chord starts again from its lowest note, and the notes are the
+  chord's from the third octave, where the keyboard chord sits; `.transpose`
+  moves them. A line called `arp` is an arpeggiator only when its music
+  starts with a way, so the melodies already called `arp` in the examples
+  stay melodies. In Portuguese `arpejo = sobe e desce 8ths`, in Spanish
+  `arpegio = sube y baja corcheas`. Still proposed: chord-tone numbers with
+  the beat rules, `arp = 1535 1535`, for patterns an arpeggiator's ways do
+  not give (an Alberti bass).
+- **Ducking, `pad: duck by kick 70% over 1 beat`.** A part command, like
+  `out` and `cresc`, so it takes `at bar`, `from bar … to …`, `every` and
+  `now:`. The scheduler turns each hit of the source into volume points on
+  the part: down by the amount at the hit, then back over the length along
+  `1 - a(1 - t)²` (quick at first, landing softly), a point every sixteenth
+  of a beat with `glide`, as moving parameters do, and the written volume
+  again at the end; a new hit before the way back ends starts again from
+  the bottom. The volume it comes back to is the part's as written (`volume
+  =`, or set at a bar). The source is a part, a line, or a drum by its name
+  in any language (`kick`, `bumbo`, `bombo`; `snare`, `clap`, `hat`) from
+  whatever line plays it, since a producer means the kick, not the line
+  called `bd`; `all: duck by kick` ducks every other part. The defaults,
+  70% and a beat, are the pumping of house music. `sidechain` is the
+  studio's word in all three languages; `abaixa com o bumbo` and `agacha
+  con el bombo` read as Portuguese and Spanish. Manguebyte lists sidechain
+  ducking among its effects; when it is in, the same line can drive it and
+  the points can go.
+- **`hh.fast 2`, `bass.slow 2`.** Verbs like `rotate`, on a line, a part or
+  a pattern. Whole numbers only, so every bar of the line lands on a bar
+  line; they multiply, `augment` being `slow 2` and `diminish` `fast 2`, so
+  `fast 2` and `slow 2` cancel. The scheduler fits any speed: each bar plays
+  the stretch of the line's bars it covers.
+- **`lead.echo 1 eighth x3`.** Each sound again that much later, each echo
+  at 60% of the one before, over bar lines; the length is written as after
+  `over`, and `x3` counts the echoes as `play groove x3` counts the times.
+  Tidal's `off` (a shifted copy, often transposed) is this with one echo;
+  a transposed echo is left for later.

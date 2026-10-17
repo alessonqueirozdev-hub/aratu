@@ -9,11 +9,11 @@
 //! be rendered on its own.
 
 use crate::ast::{
-    Feel, Hit, Length, LevelTarget, LineKind, Ornament, Slot, Sound, Stroke, TempoChange, TimeUnit,
-    Transform,
+    ArpStep, ArpWay, Feel, Hit, Length, LevelTarget, LineKind, Ornament, Slot, Sound, Stroke,
+    TempoChange, TimeUnit, Transform,
 };
 use crate::dynamics::PICKUP;
-use crate::model::{Action, At, Command, Line, Motion, Part, Piece};
+use crate::model::{Action, At, Command, DuckSource, Line, Motion, Part, Piece};
 use crate::motifs::by_degrees;
 use crate::ratio::Ratio;
 use crate::span::Span;
@@ -23,6 +23,9 @@ use std::collections::HashMap;
 
 /// How long notes tied over bar lines are followed past the last bar asked for.
 const TIE_LOOKAHEAD: i64 = 8;
+
+/// How loud each echo is against the sound before it.
+const ECHO: f64 = 0.6;
 
 #[derive(Clone, Debug)]
 pub struct Options {
@@ -342,6 +345,9 @@ struct Sounding<'p> {
     jitter: f64,
     /// See [`Event::grace`].
     grace: u8,
+    /// `echo 1 eighth x3`: played again that much later, softer, so many
+    /// times.
+    echo: Option<(Length, u32)>,
 }
 
 /// A line sounding at a bar, and where in its own loop it is.
@@ -649,6 +655,8 @@ impl<'p> Scheduler<'p> {
         // Whatever is still held ends where rendering stopped.
         let open: Vec<Sounding<'p>> = self.open.drain().map(|(_, s)| s).collect();
         self.done.extend(open);
+        self.echoes();
+        self.ducks(from, to, from_beat);
 
         let mut events = Vec::new();
         for s in std::mem::take(&mut self.done) {
@@ -717,6 +725,236 @@ impl<'p> Scheduler<'p> {
         Rendered { events, bars }
     }
 
+    /// A place in the piece moved `by` beats later, over bar lines.
+    fn later(&self, (bar, offset): (i64, Ratio), by: Ratio) -> (i64, Ratio) {
+        let (mut b, mut x) = (bar, offset + by);
+        while let Some(c) = self.clocks.get(b.max(0) as usize) {
+            if x < c.beats {
+                break;
+            }
+            x -= c.beats;
+            b += 1;
+        }
+        (b, x)
+    }
+
+    /// `lead.echo 1 eighth x3`: every sound played again, each echo that
+    /// much after the one before and softer.
+    fn echoes(&mut self) {
+        let mut more = Vec::new();
+        for s in &self.done {
+            let Some((length, times)) = s.echo else {
+                continue;
+            };
+            let gap = beats_of(length, self.meter_at(s.start.0.max(1)));
+            for k in 1..=times {
+                let by = Ratio::new((gap * f64::from(k) * 1920.0).round() as i64, 1920);
+                let start = self.later(s.start, by);
+                let written = self.later((s.start.0, s.written), by).1;
+                more.push(Sounding {
+                    start,
+                    end: self.later(s.end, by),
+                    written,
+                    velocity: (f64::from(s.velocity) * ECHO.powi(k as i32))
+                        .round()
+                        .clamp(1.0, 127.0) as u8,
+                    accent: false,
+                    echo: None,
+                    ..s.clone()
+                });
+            }
+        }
+        self.done.extend(more);
+    }
+
+    /// The volume of a part that ducks, at its points: down at each hit of
+    /// what it ducks under, then back over its length, a point every
+    /// sixteenth of a beat for the sound to glide between, and the written
+    /// volume again at the end.
+    fn ducks(&mut self, from: i64, to: i64, from_beat: Ratio) {
+        let piece = self.piece;
+        let commands: Vec<(Option<i64>, &'p Command)> = self
+            .timed
+            .iter()
+            .map(|(b, c)| (Some(*b), *c))
+            .chain(self.every.iter().map(|c| (None, *c)))
+            .filter(|(_, c)| matches!(c.action, Action::Duck { .. }))
+            .collect();
+        if commands.is_empty() {
+            return;
+        }
+        // The duck in force for `target` at a place, the last one written.
+        let in_force = |target: &str, g: i64, x: Ratio| -> Option<&'p Command> {
+            let mut found = None;
+            for (b, c) in &commands {
+                let Action::Duck { target: t, .. } = &c.action else {
+                    continue;
+                };
+                if t != target && t != "all" {
+                    continue;
+                }
+                let on = match (b, c.at) {
+                    (Some(b), _) => c.in_force(*b, g, x),
+                    (None, At::Every { bars, first }) => {
+                        let pos = (g - 1).rem_euclid(bars.max(1));
+                        if first { pos == 0 } else { pos == bars - 1 }
+                    }
+                    _ => false,
+                };
+                if on {
+                    found = Some(*c);
+                }
+            }
+            found
+        };
+        let mut names: Vec<&str> = Vec::new();
+        for p in piece.all_parts() {
+            if !names.contains(&p.name.as_str()) {
+                names.push(&p.name);
+            }
+        }
+        let step = Ratio::new(1, 16);
+        for target in names {
+            // Its hits: where, how deep, how long back, from what volume.
+            let mut hits: Vec<(Ratio, f64, Ratio, f64, &'p Command)> = Vec::new();
+            for s in &self.done {
+                // A part never ducks under itself; hits long before what is
+                // asked for are back up already.
+                if s.grace > 0 || s.part == target || s.start.0 < from - 8 || s.start.0 >= to {
+                    continue;
+                }
+                let Some(c) = in_force(target, s.start.0, s.written) else {
+                    continue;
+                };
+                let Action::Duck {
+                    source,
+                    amount,
+                    length,
+                    ..
+                } = &c.action
+                else {
+                    continue;
+                };
+                let from_it = match source {
+                    DuckSource::Named(n) => {
+                        s.part == n || s.line == n || s.line.ends_with(&format!(".{n}"))
+                    }
+                    DuckSource::Drum(ch) => s.kinds.iter().any(
+                        |(k, _)| matches!(k, EventKind::Drum(d) if Some(*d) == Drum::from_symbol(*ch)),
+                    ),
+                };
+                let Some(clock) = self.clocks.get(s.start.0.max(0) as usize) else {
+                    continue;
+                };
+                if !from_it {
+                    continue;
+                }
+                let back = beats_of(*length, self.meter_at(s.start.0.max(1)));
+                let back = Ratio::new((back * 1920.0).round() as i64, 1920).max(step);
+                let at = clock.start_beat + s.start.1;
+                let volume = self.volume(target, s.start.0, s.written);
+                hits.push((at, *amount, back, volume, c));
+            }
+            hits.sort_by_key(|h| h.0);
+            hits.dedup_by_key(|h| h.0);
+            let mut last_time: Option<f64> = None;
+            for (i, &(at, amount, back, volume, c)) in hits.iter().enumerate() {
+                let end = at + back;
+                let until = hits.get(i + 1).map_or(end, |h| h.0.min(end));
+                let mut points = Vec::new();
+                let mut x = at;
+                while x < until {
+                    let t = ((x - at) / back).to_f64();
+                    points.push((x, volume * (1.0 - amount * (1.0 - t) * (1.0 - t))));
+                    x += step;
+                }
+                if until == end {
+                    points.push((end, volume));
+                }
+                for (k, (x, value)) in points.into_iter().enumerate() {
+                    let Some((bar, beat)) = self.place(x) else {
+                        continue;
+                    };
+                    let time = self.clocks[bar as usize].time(beat);
+                    // Down at once at the hit; along the curve after it.
+                    let glide = match last_time {
+                        Some(t) if k > 0 => (time - t).max(0.0),
+                        _ => 0.0,
+                    };
+                    last_time = Some(time);
+                    if bar < from || bar >= to || (bar == from && beat < from_beat) {
+                        continue;
+                    }
+                    self.params.push((
+                        bar,
+                        Event {
+                            bar,
+                            beat,
+                            time,
+                            duration: 0.0,
+                            part: target.to_string(),
+                            line: String::new(),
+                            kind: EventKind::Param {
+                                id: "volume".into(),
+                                value,
+                                glide,
+                                reset: false,
+                            },
+                            velocity: 0,
+                            accent: false,
+                            also: None,
+                            span: c.span,
+                            grace: 0,
+                        },
+                    ));
+                }
+            }
+        }
+    }
+
+    /// The bar and offset of a place counted in beats from the piece's
+    /// start.
+    fn place(&self, at: Ratio) -> Option<(i64, Ratio)> {
+        self.clocks
+            .iter()
+            .find(|c| c.start_beat <= at && at < c.start_beat + c.beats)
+            .map(|c| (c.bar, at - c.start_beat))
+    }
+
+    /// A part's volume as written at a place: the last set at a bar, else
+    /// its own, else the one for every part.
+    fn volume(&self, part: &str, g: i64, x: Ratio) -> f64 {
+        let mut set = None;
+        for (b, c) in &self.timed {
+            if let Action::Param {
+                part: Some(p),
+                id,
+                value,
+                motion: None,
+                ..
+            } = &c.action
+            {
+                if p == part && id == "volume" && c.in_force(*b, g, x) {
+                    set = Some(*value);
+                }
+            }
+        }
+        let last = |list: &[crate::model::ParamSet]| {
+            list.iter()
+                .rev()
+                .find(|p| p.id == "volume")
+                .map(|p| p.value)
+        };
+        set.or_else(|| {
+            self.piece
+                .all_parts()
+                .filter(|p| p.name == part)
+                .find_map(|p| last(&p.params))
+        })
+        .or_else(|| last(&self.piece.params))
+        .unwrap_or(0.8)
+    }
+
     fn time_of(&self, (bar, offset): (i64, Ratio)) -> f64 {
         match self.clocks.get(bar as usize) {
             Some(c) => c.time(offset),
@@ -724,8 +962,27 @@ impl<'p> Scheduler<'p> {
         }
     }
 
+    /// Whether a strum or an arpeggiator plays the part's chords, which then
+    /// sound only through it.
     fn has_strum(&self, part: &Part) -> bool {
-        part.lines.iter().any(|l| l.kind == LineKind::Strum)
+        part.lines
+            .iter()
+            .any(|l| matches!(l.kind, LineKind::Strum | LineKind::Arp))
+    }
+
+    /// How long an arpeggiator's step is in bar `g`, in its beats.
+    fn arp_step(&self, h: &Hit, g: i64) -> Ratio {
+        let Sound::Arp(style) = &h.sound else {
+            return Ratio::ONE;
+        };
+        match style.step {
+            ArpStep::PerBeat(n) => Ratio::new(1, i64::from(n.max(1))),
+            // A note value, in beats of the meter: in 6/8 an eighth is a
+            // third of a beat.
+            ArpStep::Note(d) => {
+                Ratio::new(1, i64::from(d.max(1))) / self.meter_at(g.max(1)).beat_unit()
+            }
+        }
     }
 
     /// The points of the parameters moving in bar `g`, one every sixteenth
@@ -1111,12 +1368,26 @@ impl<'p> Scheduler<'p> {
         }
         let has = |f: &dyn Fn(&Transform) -> bool| transforms.iter().any(f);
         let retro = has(&|t| matches!(t, Transform::Retrograde | Transform::RetroInvert));
-        let augment = has(&|t| matches!(t, Transform::Augment));
-        let diminish = has(&|t| matches!(t, Transform::Diminish));
+        // How many bars of the line go by in one bar: `fast 2` two, `slow 2`
+        // half of one; `diminish` and `augment` are `fast 2` and `slow 2`,
+        // and every one in force counts, so `fast 2` and `slow 2` cancel.
+        let (mut quick, mut long) = (1i64, 1i64);
+        for t in &transforms {
+            match t {
+                Transform::Fast(n) => quick *= i64::from(*n),
+                Transform::Diminish => quick *= 2,
+                Transform::Slow(n) => long *= i64::from(*n),
+                Transform::Augment => long *= 2,
+                _ => {}
+            }
+        }
+        let speed = Ratio::new(quick, long);
 
         // Which bars of the line, and how each is fitted into this bar:
-        // (place in order, written bar, offset, scale, window start).
-        let mut pieces: Vec<(usize, usize, Ratio, Ratio, Option<Ratio>)> = Vec::new();
+        // (place in order, written bar, offset, scale, window), the window
+        // being the stretch of the scaled bar that sounds here.
+        type Piece = (usize, usize, Ratio, Ratio, Option<(Ratio, Ratio)>);
+        let mut pieces: Vec<Piece> = Vec::new();
         match inst.local {
             None => pieces.push((PICKUP, line.pickup.unwrap(), Ratio::ZERO, Ratio::ONE, None)),
             Some(j) => {
@@ -1127,19 +1398,29 @@ impl<'p> Scheduler<'p> {
                     let k = n.rem_euclid(len);
                     (if retro { len - 1 - k } else { k }) as usize
                 };
-                if augment && !diminish {
-                    let k = pick(j / 2);
-                    let half = Ratio::new(j.rem_euclid(2), 1) * beats;
-                    pieces.push((k, line.order[k], Ratio::ZERO, Ratio::int(2), Some(half)));
-                } else if diminish && !augment {
-                    let half = beats / Ratio::int(2);
-                    for (n, off) in [(2 * j, Ratio::ZERO), (2 * j + 1, half)] {
-                        let k = pick(n);
-                        pieces.push((k, line.order[k], off, Ratio::new(1, 2), None));
-                    }
-                } else {
+                if speed == Ratio::ONE {
                     let k = pick(j);
                     pieces.push((k, line.order[k], Ratio::ZERO, Ratio::ONE, None));
+                } else {
+                    // This bar plays the line from bar `a` to bar `b` of
+                    // its own, counted in bars.
+                    let scale = Ratio::ONE / speed;
+                    let a = Ratio::int(j) * speed;
+                    let b = Ratio::int(j + 1) * speed;
+                    let first = a.floor();
+                    let last = -((-b).floor());
+                    for m in first..last {
+                        let lo = a.max(Ratio::int(m));
+                        let hi = b.min(Ratio::int(m + 1));
+                        if lo >= hi {
+                            continue;
+                        }
+                        let k = pick(m);
+                        let from = (lo - Ratio::int(m)) * beats * scale;
+                        let to = (hi - Ratio::int(m)) * beats * scale;
+                        let offset = (lo - a) * beats * scale;
+                        pieces.push((k, line.order[k], offset, scale, Some((from, to))));
+                    }
                 }
             }
         }
@@ -1157,7 +1438,18 @@ impl<'p> Scheduler<'p> {
                 Ratio::ONE
             };
             let mut at = Ratio::ZERO;
-            for beat in written {
+            if line.kind == LineKind::Arp {
+                // An arpeggiator's steps, as many as fit in this bar's meter.
+                if let Some(Slot::Hit(h)) = written.first().and_then(|b| b.slots.first()) {
+                    let step = self.arp_step(h, g);
+                    while at < beats {
+                        let len = step.min(beats - at);
+                        flats.push((at, len, Flat::Hit(h)));
+                        at += len;
+                    }
+                }
+            }
+            for beat in written.iter().filter(|_| line.kind != LineKind::Arp) {
                 let len = share * Ratio::int(beat.len as i64);
                 self.flatten(
                     &beat.slots,
@@ -1190,14 +1482,20 @@ impl<'p> Scheduler<'p> {
             let mut protos: Vec<Proto<'p>> = Vec::new();
             let mut cur: Option<Proto<'p>> = None;
             let mut started = false;
+            // A hit written once and played several times in the bar (a
+            // Euclidean rhythm, `[c?]x4`) draws its chance anew each time.
+            let mut again: HashMap<usize, u64> = HashMap::new();
             for (start, plen, f) in flats {
                 match f {
                     Flat::Hit(h) => {
                         protos.extend(cur.take());
                         started = true;
-                        let mut keep = h.chance.is_none_or(|p| {
-                            chance(self.seed, line.seed_key, g, 0x5eed ^ h.span.start as u64) < p
-                        });
+                        let times = again.entry(h.span.start).or_insert(0);
+                        let what = 0x5eed ^ h.span.start as u64 ^ (*times << 40);
+                        *times += 1;
+                        let mut keep = h
+                            .chance
+                            .is_none_or(|p| chance(self.seed, line.seed_key, g, what) < p);
                         for t in &transforms {
                             if let Transform::Density(p) = t {
                                 let r = chance(
@@ -1259,21 +1557,20 @@ impl<'p> Scheduler<'p> {
             for mut p in protos {
                 p.start = p.start * scale;
                 p.len = p.len * scale;
-                if let Some(w) = window {
-                    let (s, e) = (p.start.max(w), (p.start + p.len).min(w + beats));
+                if let Some((w0, w1)) = window {
+                    let (s, e) = (p.start.max(w0), (p.start + p.len).min(w1));
                     if s >= e {
                         continue;
                     }
                     if s > p.start {
                         p.hit = None;
                     }
-                    p.start = s - w;
+                    p.start = s - w0;
                     p.len = e - s;
-                    p.open = p.start + p.len >= beats;
                 }
                 p.start += offset;
-                if scale != Ratio::ONE && window.is_none() {
-                    p.open = p.open && offset + bar_len * scale >= beats;
+                if window.is_some() {
+                    p.open = p.start + p.len >= beats;
                 }
                 if retro {
                     p.start = beats - p.start - p.len;
@@ -1547,11 +1844,13 @@ impl<'p> Scheduler<'p> {
             }
             let mut transpose = 0;
             let mut invert = false;
+            let mut echo = None;
             for t in &self.transforms(&inst, g, p.start) {
                 match t {
                     Transform::Velocity(x) => velocity *= x,
                     Transform::Transpose(n) => transpose += *n as i32,
                     Transform::Invert | Transform::RetroInvert => invert = true,
+                    Transform::Echo { length, times } => echo = Some((*length, *times)),
                     _ => {}
                 }
             }
@@ -1604,6 +1903,40 @@ impl<'p> Scheduler<'p> {
                         .filter_map(pitch)
                         .map(|k| (k, 0.0)),
                 ),
+                // A step of an arpeggiator: the next note of the chord
+                // sounding there, counted from where the chord starts.
+                Sound::Arp(style) => {
+                    let region = chords
+                        .iter()
+                        .find(|(s, e, _, _)| p.start >= *s && p.start < *e);
+                    let Some((from, _, Some(chord), at)) = region else {
+                        continue;
+                    };
+                    also = *at;
+                    let tones = arp_tones(chord, style.octaves);
+                    let n = tones.len();
+                    let step = p.len.max(Ratio::new(1, 1920));
+                    let i = ((p.start - *from) / step).floor().max(0) as usize;
+                    let pick = match style.way {
+                        ArpWay::Up => i % n,
+                        ArpWay::Down => n - 1 - i % n,
+                        ArpWay::UpDown if n < 2 => 0,
+                        ArpWay::UpDown => {
+                            let k = i % (2 * n - 2);
+                            if k < n { k } else { 2 * n - 2 - k }
+                        }
+                        ArpWay::Random => {
+                            let r = chance(
+                                self.seed,
+                                inst.line.seed_key,
+                                g,
+                                0xa4b ^ (p.start.num() as u64) << 16 ^ p.start.den() as u64,
+                            );
+                            ((r * n as f64) as usize).min(n - 1)
+                        }
+                    };
+                    kinds.extend(pitch(tones[pick]).map(|k| (k, 0.0)));
+                }
                 // A tap sounds the top, not the strings, so it needs no chord.
                 Sound::Strum(Stroke::Tap) => kinds.push((EventKind::Drum(Drum::GuitarTap), 0.0)),
                 Sound::Strum(stroke) => {
@@ -1670,6 +2003,7 @@ impl<'p> Scheduler<'p> {
                 humanize: human.unwrap_or(0.0),
                 jitter,
                 grace: 0,
+                echo,
             };
             // Grace notes come just before it, in no time of the bar's own:
             // a drum's grace strokes (a flam, a drag) closer and softer.
@@ -1863,6 +2197,22 @@ fn push_group<'p>(
             });
         }
     }
+}
+
+/// The notes an arpeggiator goes through, low to high: the chord's notes
+/// from the third octave, as a keyboard's chord sits, over `octaves`.
+fn arp_tones(chord: &Chord, octaves: u8) -> Vec<i32> {
+    let mut tones: Vec<i32> = (0..i32::from(octaves.max(1)))
+        .flat_map(|o| {
+            chord
+                .intervals
+                .iter()
+                .map(move |i| 48 + chord.root + i + 12 * o)
+        })
+        .collect();
+    tones.sort_unstable();
+    tones.dedup();
+    tones
 }
 
 /// The first written pitch of a line, the axis of `invert`.

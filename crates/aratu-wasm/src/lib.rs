@@ -466,7 +466,7 @@ pub fn grid_json(handle: u32, max_bars: usize) -> String {
             j.key("kind").str(match line.kind {
                 LineKind::Drums | LineKind::Percussion(_) => "drums",
                 LineKind::Strum => "strum",
-                LineKind::Pitched => "pitched",
+                LineKind::Pitched | LineKind::Arp => "pitched",
                 LineKind::Chords => "chords",
             });
             j.key("bars").open_arr();
