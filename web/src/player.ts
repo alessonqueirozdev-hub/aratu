@@ -77,9 +77,9 @@ export class Player {
     const run = this.runs;
     await this.engine.ctx.resume();
     this.adopt(program, 1);
-    // The first bar on Manguebyte's voices, not the stand-in's while they
-    // are being made.
-    await this.engine.whenReady();
+    // Nothing sounds before it has been downloaded: playing starts once
+    // every part has its voice (or, if a download failed, its fallback).
+    await this.engine.ready(program.parts.map((p) => p.name));
     if (run !== this.runs) return;
     // The lines there when playing starts sound from the first bar, and keep
     // it through the edits that follow.

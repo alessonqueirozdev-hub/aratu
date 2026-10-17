@@ -144,10 +144,10 @@ export class SoundsPanel {
     engine.configure(program);
     const rendered = this.o.aratu.render(program.handle, 1, 3, new Map(), 1);
     this.o.aratu.release(program.handle);
-    // Heard on the voice itself, once Manguebyte has it ready.
+    // Heard on the voice itself, once it has been downloaded.
     button.classList.add("on");
     const asked = ++this.asked;
-    await engine.whenReady();
+    await engine.ready([part]);
     if (asked !== this.asked) return;
     const start = engine.ctx.currentTime + 0.25;
     const voices = rendered.events.flatMap((e) => engine.play(e, start + e.time));

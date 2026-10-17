@@ -805,6 +805,14 @@ aún suenan con un motor provisional, hasta que Manguebyte los tenga; si
 algo sale mal en una presentación, el interruptor del panel Sonidos apaga
 Manguebyte y todo pasa al provisional.
 
+**Un sonido solo suena después de descargado.** Al pulsar **Tocar** o **Escuchar**,
+Aratu espera a que lleguen los sonidos de la pieza, y un aviso abajo de la
+pantalla muestra cuáles se están descargando. Un sonido cambiado con la
+música sonando entra cuando llega; hasta entonces sigue el anterior. Si una
+descarga falla, o no responde en 60 segundos, el mismo aviso dice qué
+sonido, por qué, y qué suena en su lugar: la copia del motor provisional o
+un sonido parecido.
+
 Los parámetros pueden cambiar por compás como todo lo demás: `at bar 16:
 bajo.reverb.mix = 0.65`.
 

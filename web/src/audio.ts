@@ -11,6 +11,7 @@
 
 import type { AratuEvent, BarInfo, ParamValue, PartInfo, Program, VoiceCatalogue } from "./aratu";
 import { type Instrument, ManguebyteEngine, type PresetKind } from "../public/manguebyte/engine.js";
+import { detailOf, limited } from "./download";
 import { type Loaded, Sampler } from "./sampler";
 
 /** Manguebyte's drum notes (General MIDI, and 88 for the golpe), by the
@@ -163,7 +164,7 @@ const VOICE_GAIN: Record<string, number> = {
   "synth.lead": 1.8,
 };
 
-/** What a sampled voice plays while its recordings are on their way. */
+/** What a sampled voice plays when its recordings could not be downloaded. */
 const STAND_IN: Record<string, string> = {
   "drums.acoustic": "drums.kit",
   "drums.alesson": "drums.kit",
@@ -198,9 +199,24 @@ interface MbPart {
   voice: string;
   kind: Instrument;
   index: number;
-  /** Plays what is asked of it: at once, or a sampler once loaded. */
+  /** Everything it plays has been downloaded and set up. */
   ready: boolean;
   failed: boolean;
+  /** The engine has the part, so it must be removed when let go. */
+  made: boolean;
+}
+
+/** A sound that could not be downloaded, and what plays instead. */
+export interface SoundProblem {
+  /** The voice; "" for Manguebyte's engine itself. */
+  voice: string;
+  /** "engine": Manguebyte did not start, the stand-in plays every voice;
+   * "copy": the stand-in plays the voice from its own copy of the samples;
+   * "synth": a synthesized voice like it plays, `instead`. */
+  fallback: "engine" | "copy" | "synth";
+  instead?: string;
+  /** What went wrong (see `detailOf`). */
+  detail: string;
 }
 
 interface Chain {
@@ -223,10 +239,21 @@ interface Chain {
   /** The value each parameter is set up with, for `from bar 9 to 16` to
    * come back to. */
   configured: Map<string, number>;
-  /** Set when Manguebyte's engine plays this part. */
+  /** The Manguebyte part that sounds now, ready. */
   mb?: MbPart;
-  /** Settles once Manguebyte has the part ready, or could not. */
-  mbStart?: Promise<void>;
+  /** The Manguebyte part being made for a new voice: until it is ready,
+   * the voice before it goes on sounding. */
+  next?: MbPart;
+  /** The voice asked for last, ready or on its way. */
+  wanted: string;
+  /** The voice the part sounds with now; "" while the first one is still
+   * downloading, and the part is silent. */
+  heard: string;
+  /** Settles when the voice asked for has arrived, or has failed and its
+   * fallback has taken over. */
+  loading?: Promise<void>;
+  /** The effects last set up in Manguebyte, to know when they change. */
+  effectsSet: string;
 }
 
 export class Engine {
@@ -254,6 +281,14 @@ export class Engine {
   /** Where each sampled voice played by Manguebyte stands, for the panel. */
   private readonly mbStates = new Map<string, "loading" | "ready" | "failed">();
   private notify: (code: string, state: "loading" | "ready" | "failed") => void = () => {};
+  /** Why Manguebyte's engine could not start, when it could not (and was
+   * not switched off). */
+  private mbFailure: string | null = null;
+  private mbFailureTold = false;
+  /** The sounds that could not be downloaded, for the editor to say. */
+  readonly problems: SoundProblem[] = [];
+  private tellProblem: (p: SoundProblem) => void = () => {};
+  private tellLoading: (voices: string[]) => void = () => {};
   private readonly sampler: Sampler;
   private readonly sampled: Set<string>;
   private readonly aliases: Record<string, string>;
@@ -369,6 +404,9 @@ export class Engine {
       release: 0.15,
       effects: [],
       configured: new Map(),
+      wanted: "",
+      heard: "",
+      effectsSet: "",
     };
     this.chains.set(part, c);
     return c;
@@ -400,9 +438,9 @@ export class Engine {
               ? "bass.synth"
               : "synth.triangle";
     c.effects = part.chain.filter((n) => MB_EFFECTS.has(n) || n === "reverb");
-    // Manguebyte plays the part when it has the voice; a sampled voice
-    // starts on its way now, so it is ready sooner.
+    // The voice starts on its way now; it sounds once it has arrived.
     this.route(c);
+    if (c.mb?.ready && c.effectsSet !== c.effects.join(">")) void this.mbChain(c, c.mb);
     // Defaults from the chain, then the numbers written in the piece.
     const now = this.ctx.currentTime;
     const defaults: ParamValue[] = [
@@ -431,7 +469,7 @@ export class Engine {
   private setParam(c: Chain, id: string, v: number, when: number, glide = 0): void {
     // Manguebyte plays the part: it gets the value; the stand-in's chain
     // follows too, for what it still plays of the part.
-    if (c.mb?.ready) this.mbParam(c, c.mb, id, v, when);
+    if (c.mb?.ready) this.mbParam(c.mb, id, v, when);
     const set = (p: AudioParam, value: number): void => {
       if (glide > 0) p.setTargetAtTime(value, Math.max(when - glide, 0), glide / 3);
       else p.setTargetAtTime(value, when, 0.015);
@@ -477,51 +515,108 @@ export class Engine {
     return MB_VOICES[voice] ?? (this.sampled.has(voice) ? { kind: "sampler" } : null);
   }
 
-  /** Gives a part a Manguebyte part when its voice is one Manguebyte
-   * plays, changes its instrument when the voice changes, and gives the
-   * part back when Manguebyte does not have the new voice. */
+  /** Starts a part's voice on its way when it changes: in a Manguebyte
+   * part of its own when Manguebyte plays it, else in the stand-in. A
+   * voice sounds only once it has been downloaded; until then the voice
+   * before it goes on sounding, or, for a new part, nothing. */
   private route(c: Chain): void {
-    if (c.mb && c.mb.voice === c.voice) return;
+    if (c.wanted === c.voice) return;
+    c.wanted = c.voice;
+    // A part still being made for a voice no longer wanted: `startMb` sees
+    // it is not `next` any more and lets it go.
+    c.next = undefined;
     const want = this.mbVoice(c.voice);
-    const had = c.mb;
-    if (!want) {
-      if (had) this.releaseMb(c);
-      return;
-    }
-    const part: MbPart = {
-      voice: c.voice,
-      kind: want.kind,
-      index: had && !had.failed ? had.index : this.takeMbPart(),
-      ready: false,
-      failed: false,
-    };
-    c.mb = part;
-    c.mbStart = this.startMb(c, part, want, !!had && !had.failed);
+    const loading = (want ? this.startMb(c, c.voice, want) : this.startStandIn(c, c.voice)).finally(() => {
+      if (c.loading === loading) c.loading = undefined;
+      this.loadingChanged();
+    });
+    c.loading = loading;
+    this.loadingChanged();
   }
 
-  /** Settles when Manguebyte has every part it plays ready (or could not),
-   * or after `ms`, so that playing starts on Manguebyte's voices rather
-   * than on the stand-in's while a part is being made or its samples come. */
-  async whenReady(ms = 4000): Promise<void> {
-    const waits = [...this.chains.values()].flatMap((c) => (c.mb && !c.mb.ready && c.mbStart ? [c.mbStart] : []));
-    if (waits.length === 0) return;
-    await Promise.race([Promise.all(waits), new Promise((done) => window.setTimeout(done, ms))]);
+  /** Settles when every part named (every part, when none are) sounds with
+   * the voice asked for: downloaded, or failed with its fallback playing.
+   * There is no time limit here; each download has its own. */
+  async ready(parts?: string[]): Promise<void> {
+    const chains = () =>
+      parts ? parts.flatMap((n) => this.chains.get(n) ?? []) : [...this.chains.values()];
+    for (;;) {
+      const waits = chains().flatMap((c) => (c.loading ? [c.loading] : []));
+      if (waits.length === 0) return;
+      await Promise.allSettled(waits);
+    }
+  }
+
+  /** The voices on their way now, each once. */
+  loadingVoices(): string[] {
+    return [...new Set([...this.chains.values()].filter((c) => c.loading).map((c) => c.wanted))];
+  }
+
+  private loadingChanged(): void {
+    this.tellLoading(this.loadingVoices());
+  }
+
+  /** Tells the editor which voices are downloading, whenever that changes. */
+  set onLoading(f: (voices: string[]) => void) {
+    this.tellLoading = f;
+  }
+
+  /** Tells the editor about a sound that could not be downloaded. */
+  set onProblem(f: (p: SoundProblem) => void) {
+    this.tellProblem = f;
+  }
+
+  private problem(p: SoundProblem): void {
+    console.warn("Aratu: a sound could not be downloaded", p);
+    this.problems.push(p);
+    this.tellProblem(p);
   }
 
   private takeMbPart(): number {
     return this.freeMbParts.pop() ?? this.nextMbPart++;
   }
 
-  /** Lets a part's Manguebyte notes go and gives its number back. */
-  private releaseMb(c: Chain): void {
-    const part = c.mb;
-    c.mb = undefined;
+  /** Lets a Manguebyte part go: its notes, then the part itself, and gives
+   * its number back. Only `startMb` drops a part it is still making. */
+  private dropPart(part: MbPart): void {
     const engine = this.mbLive;
-    if (!part || !engine) return;
+    if (!engine || !part.made) {
+      this.freeMbParts.push(part.index);
+      return;
+    }
+    part.made = false;
     engine.allNotesOff(part.index);
     window.setTimeout(() => {
       void engine.removePart(part.index).then(() => this.freeMbParts.push(part.index));
     }, 600);
+  }
+
+  /** The part sounds with `voice` from now on, in the stand-in. */
+  private hear(c: Chain, voice: string): void {
+    if (c.mb) {
+      this.dropPart(c.mb);
+      c.mb = undefined;
+    }
+    c.heard = voice;
+  }
+
+  /** The stand-in takes a voice: its own voices are made on the spot, a
+   * recorded one sounds once its samples have arrived, and if they cannot
+   * be downloaded, a synthesized voice like it plays, and the editor says
+   * so. `after` is what Manguebyte could not do first, if anything. */
+  private async startStandIn(c: Chain, voice: string, after?: string): Promise<void> {
+    if (!this.sampled.has(voice)) {
+      if (c.wanted === voice) this.hear(c, voice);
+      return;
+    }
+    const loaded = await this.sampler.load(voice);
+    if (c.wanted !== voice) return;
+    if (loaded && after) this.problem({ voice, fallback: "copy", detail: after });
+    if (!loaded) {
+      const instead = STAND_IN[voice] ?? "synth.triangle";
+      this.problem({ voice, fallback: "synth", instead, detail: after ?? this.sampler.error(voice) ?? "network" });
+    }
+    this.hear(c, voice);
   }
 
   /** Manguebyte's engine, made once, its output joining the stand-in's. */
@@ -529,15 +624,18 @@ export class Engine {
     this.mbEngine ??= (async () => {
       const module = await this.moduleOf();
       if (!module) return null;
-      const engine = await ManguebyteEngine.create(this.ctx, {
-        wasm: module,
-        workletUrl: new URL("manguebyte/worklet.js", this.base),
-      });
+      const engine = await limited(
+        ManguebyteEngine.create(this.ctx, {
+          wasm: module,
+          workletUrl: new URL("manguebyte/worklet.js", this.base),
+        }),
+      );
       engine.node.connect(this.mbOut);
       this.mbLive = engine;
       return engine;
     })().catch((error: unknown) => {
       console.warn("Manguebyte:", error);
+      this.mbFailure = detailOf(error);
       return null;
     });
     return this.mbEngine;
@@ -545,17 +643,21 @@ export class Engine {
 
   private moduleOf(): Promise<WebAssembly.Module | null> {
     this.mbModule ??= (async () => {
-      if (typeof AudioWorkletNode === "undefined" || !this.ctx.audioWorklet) return null;
+      if (typeof AudioWorkletNode === "undefined" || !this.ctx.audioWorklet) {
+        this.mbFailure = "text:AudioWorklet";
+        return null;
+      }
       // The Sounds panel can turn Manguebyte off: everything then plays in
       // the stand-in, a way out on stage if something goes wrong.
       if (!Engine.manguebyteWanted()) return null;
       try {
         const version = new URL(import.meta.url).searchParams.get("v");
         const url = new URL(`manguebyte/manguebyte_web.wasm${version ? `?v=${version}` : ""}`, this.base);
-        const r = await fetch(url);
-        if (!r.ok) return null;
-        return await WebAssembly.compile(await r.arrayBuffer());
-      } catch {
+        const r = await limited(fetch(url));
+        if (!r.ok) throw new Error(`${url.pathname}: ${r.status}`);
+        return await WebAssembly.compile(await limited(r.arrayBuffer()));
+      } catch (error) {
+        this.mbFailure = detailOf(error);
         return null;
       }
     })();
@@ -572,36 +674,61 @@ export class Engine {
     }
   }
 
-  private async startMb(c: Chain, part: MbPart, want: MbVoice, had: boolean): Promise<void> {
+  /** Makes a Manguebyte part for `voice`, downloads what it plays, and
+   * only then lets it sound in place of the voice before it. If
+   * Manguebyte cannot start, or the voice cannot be downloaded, the
+   * stand-in takes the voice and the editor says what happened. */
+  private async startMb(c: Chain, voice: string, want: MbVoice): Promise<void> {
+    const part: MbPart = { voice, kind: want.kind, index: this.takeMbPart(), ready: false, failed: false, made: false };
+    c.next = part;
     const sampled = part.kind === "sampler" || part.kind === "sampler_kit";
-    if (sampled) this.setMbState(part.voice, "loading");
+    if (sampled) this.setMbState(voice, "loading");
+    const engine = await this.engineMb();
+    if (!engine) {
+      if (c.next === part) c.next = undefined;
+      this.dropPart(part);
+      if (sampled) this.setMbState(voice, "failed");
+      // Switched off in the Sounds panel, the stand-in simply plays; when
+      // Manguebyte could not start, the editor says so, once.
+      if (this.mbFailure && !this.mbFailureTold) {
+        this.mbFailureTold = true;
+        this.problem({ voice: "", fallback: "engine", detail: this.mbFailure });
+      }
+      if (c.wanted === voice) await this.startStandIn(c, voice);
+      return;
+    }
     try {
-      const engine = await this.engineMb();
-      if (!engine) throw new Error("Manguebyte cannot run in this browser");
-      if (c.mb !== part) return;
-      // A new kind of instrument keeps the part's chain and its settings.
-      if (had) await engine.setInstrument(part.index, part.kind);
-      else await engine.createPart(part.index, part.kind, "none");
-      if (c.mb !== part) return;
+      await engine.createPart(part.index, part.kind, "none");
+      part.made = true;
+      if (c.next !== part) return this.dropPart(part);
       const now = this.ctx.currentTime;
       if (want.preset) engine.setPreset(part.index, part.kind as PresetKind, want.preset, now);
       for (const [id, v] of Object.entries(want.knobs ?? {})) engine.setParam(part.index, id, v, now);
-      await this.mbChain(c, part);
-      // A kit plays its synthesized drums while its samples come.
-      if (part.kind !== "sampler") part.ready = true;
       if (sampled) {
-        await engine.loadSfz(part.index, `samples/${part.voice}/voice.sfz`, { base: this.base });
-        if (c.mb !== part) return;
-        part.ready = true;
-        this.setMbState(part.voice, "ready");
+        await limited(engine.loadSfz(part.index, `samples/${voice}/voice.sfz`, { base: this.base }));
+        if (c.next !== part) return this.dropPart(part);
       }
+      // Its effects and numbers as they are now, then it takes over.
+      await this.mbChain(c, part);
+      if (c.next !== part) return this.dropPart(part);
+      part.ready = true;
+      c.next = undefined;
+      const old = c.mb;
+      c.mb = part;
+      c.heard = voice;
+      if (old) this.dropPart(old);
+      if (sampled) this.setMbState(voice, "ready");
     } catch (error) {
       console.warn("Manguebyte:", error);
-      part.failed = true;
-      part.ready = false;
-      if (sampled) this.setMbState(part.voice, "failed");
-      // The stand-in, with its own copy of the samples, takes over.
-      if (this.sampled.has(part.voice)) void this.sampler.load(part.voice);
+      if (c.next === part) c.next = undefined;
+      this.dropPart(part);
+      if (sampled) this.setMbState(voice, "failed");
+      if (c.wanted !== voice) return;
+      // The stand-in takes the voice; it says what Manguebyte could not do.
+      const detail = detailOf(error);
+      if (this.sampled.has(voice)) return this.startStandIn(c, voice, detail);
+      this.problem({ voice, fallback: "synth", instead: voice, detail });
+      this.hear(c, voice);
     }
   }
 
@@ -614,14 +741,15 @@ export class Engine {
     const effects = Object.fromEntries(
       c.effects.filter((e) => MB_EFFECTS.has(e)).map((e) => [e, {}] as [string, Record<string, number>]),
     );
+    c.effectsSet = c.effects.join(">");
     await engine.setEffects(part.index, effects, now);
-    for (const [id, v] of c.configured) this.mbParam(c, part, id, v, now);
+    for (const [id, v] of c.configured) this.mbParam(part, id, v, now);
   }
 
   /** Sends a parameter to a Manguebyte part, in Manguebyte's terms: the
    * volume as the part's gain in decibels, the reverb as the send to the
    * shared reverb, the stand-in's envelope as the synth's. */
-  private mbParam(c: Chain, part: MbPart, id: string, v: number, when: number): void {
+  private mbParam(part: MbPart, id: string, v: number, when: number): void {
     const engine = this.mbLive;
     if (!engine) return;
     const i = part.index;
@@ -637,7 +765,7 @@ export class Engine {
         return;
       case "attack":
       case "release":
-        if (part.kind === "synth" && !(id in (MB_VOICES[c.voice]?.knobs ?? {}))) {
+        if (part.kind === "synth" && !(id in (MB_VOICES[part.voice]?.knobs ?? {}))) {
           engine.setParam(i, `synth.${id}`, v / 1000, when);
         }
         return;
@@ -711,6 +839,8 @@ export class Engine {
       return this.made;
     }
     const c = this.chain(e.part);
+    // Its first voice is still downloading: the part waits in silence.
+    if (!c.heard) return this.made;
     if (this.playMb(c, e, when)) return this.made;
     // Loudness grows faster than velocity, so the step from mf to an
     // accent is heard; mf itself stays where it was.
@@ -724,7 +854,8 @@ export class Engine {
   sampleState(code: string): "idle" | "loading" | "ready" | "failed" {
     const mb = this.mbStates.get(code);
     if (mb === "ready" || mb === "loading") return mb;
-    return this.sampler.state(code);
+    const own = this.sampler.state(code);
+    return own === "idle" && mb === "failed" ? "failed" : own;
   }
 
   /** Tells the Sounds panel when a sampled voice arrives. */
@@ -740,16 +871,15 @@ export class Engine {
     return "stand-in";
   }
 
-  /** The voice that sounds now for a chain: a sampled one still on its way
-   * plays its stand-in. */
+  /** The voice the stand-in plays a part with: the one it sounds with
+   * now, from its samples when they have arrived; a recorded voice whose
+   * samples could not be downloaded plays a synthesized voice like it. */
   private sounding(c: Chain): { voice: string; loaded?: Loaded } {
-    if (!this.sampled.has(c.voice)) return { voice: c.voice };
-    const loaded = this.sampler.get(c.voice);
-    if (loaded) return { voice: c.voice, loaded };
-    // Manguebyte is bringing it: a synthesized stand-in meanwhile. Only
-    // when Manguebyte cannot play it does the stand-in fetch the samples.
-    if (!c.mb || c.mb.failed) void this.sampler.load(c.voice);
-    return { voice: STAND_IN[c.voice] ?? "synth.triangle" };
+    const voice = c.heard;
+    if (!this.sampled.has(voice)) return { voice };
+    const loaded = this.sampler.get(voice);
+    if (loaded) return { voice, loaded };
+    return { voice: STAND_IN[voice] ?? "synth.triangle" };
   }
 
   /** Silences voices scheduled but not yet sounding, as when a version of

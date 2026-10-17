@@ -1,8 +1,10 @@
 // Sampled voices: recordings from the Versilian Community Sample Library
 // (CC0), prepared by scripts/samples.mjs into samples/<voice>/, and kits
-// recorded for Aratu, kept beside them. A voice is
-// fetched the first time a piece uses it; until it arrives, the engine plays
-// a synthesized stand-in.
+// recorded for Aratu, kept beside them. The stand-in fetches a voice when
+// Manguebyte cannot play it; the voice sounds once it has arrived, and only
+// if it cannot be downloaded does a synthesized voice like it play instead.
+
+import { detailOf, limited } from "./download";
 
 interface PitchedIndex {
   kind: "pitched";
@@ -31,6 +33,8 @@ export interface Loaded {
 export class Sampler {
   private readonly loaded = new Map<string, Loaded>();
   private readonly pending = new Map<string, Promise<Loaded | null>>();
+  /** Why a voice could not be downloaded (see `detailOf`). */
+  private readonly errors = new Map<string, string>();
   /** Told when a voice arrives or fails, for the Sounds panel. */
   onChange: (code: string, state: "loading" | "ready" | "failed") => void = () => {};
 
@@ -46,7 +50,13 @@ export class Sampler {
   state(code: string): "idle" | "loading" | "ready" | "failed" {
     if (this.loaded.has(code)) return "ready";
     if (this.pending.has(code)) return "loading";
+    if (this.errors.has(code)) return "failed";
     return "idle";
+  }
+
+  /** Why a voice could not be downloaded, if it could not. */
+  error(code: string): string | undefined {
+    return this.errors.get(code);
   }
 
   /** Starts fetching a voice; resolves when it can play. */
@@ -55,16 +65,18 @@ export class Sampler {
     if (done) return Promise.resolve(done);
     let p = this.pending.get(code);
     if (p) return p;
+    this.errors.delete(code);
     this.onChange(code, "loading");
-    p = this.fetchVoice(code).then(
+    p = limited(this.fetchVoice(code)).then(
       (v) => {
         this.loaded.set(code, v);
         this.pending.delete(code);
         this.onChange(code, "ready");
         return v;
       },
-      () => {
+      (error: unknown) => {
         this.pending.delete(code);
+        this.errors.set(code, detailOf(error));
         this.onChange(code, "failed");
         return null;
       },

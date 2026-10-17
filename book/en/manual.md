@@ -782,6 +782,14 @@ golpe still play in a stand-in until Manguebyte has them; if something goes
 wrong in a performance, the switch in the Sounds panel turns Manguebyte off
 and everything plays in the stand-in.
 
+**A sound plays only once it has been downloaded.** When you press **Play** or
+**Listen**, Aratu waits for the piece's sounds to arrive, and a notice at
+the bottom of the screen shows which are downloading. A sound changed while
+the music plays comes in when it arrives; until then the one before goes
+on. If a download fails, or gets no answer in 60 seconds, the same notice
+says which sound, why, and what plays instead: the stand-in engine's copy
+or a similar sound.
+
 Parameters can change by bar like anything else: `at bar 16:
 bass.reverb.mix = 0.65`.
 

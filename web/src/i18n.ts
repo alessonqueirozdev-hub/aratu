@@ -76,6 +76,36 @@ const words = {
   soundSampled: { pt: "gravado", es: "grabado", en: "recorded" },
   soundLoading: { pt: "baixando…", es: "descargando…", en: "loading…" },
   soundReady: { pt: "pronto", es: "listo", en: "ready" },
+  soundsDownloading: { pt: "Baixando sons:", es: "Descargando sonidos:", en: "Downloading sounds:" },
+  problemEngine: {
+    pt: "O motor de som Manguebyte não carregou ({detail}). Todos os sons estão tocando no motor provisório.",
+    es: "El motor de sonido Manguebyte no cargó ({detail}). Todos los sonidos suenan con el motor provisional.",
+    en: "Manguebyte's sound engine did not load ({detail}). Every sound is playing on the stand-in engine.",
+  },
+  problemCopy: {
+    pt: "As amostras de {voice} não carregaram no Manguebyte ({detail}). Ele está tocando com a cópia do motor provisório.",
+    es: "Las muestras de {voice} no cargaron en Manguebyte ({detail}). Suena con la copia del motor provisional.",
+    en: "{voice}'s samples did not load in Manguebyte ({detail}). It is playing from the stand-in engine's copy.",
+  },
+  problemSynth: {
+    pt: "Não foi possível baixar {voice} ({detail}). No lugar dele toca um som provisório parecido, {instead}.",
+    es: "No se pudo descargar {voice} ({detail}). En su lugar suena un sonido provisional parecido, {instead}.",
+    en: "{voice} could not be downloaded ({detail}). A similar stand-in sound, {instead}, is playing instead.",
+  },
+  problemStandIn: {
+    pt: "Não foi possível preparar {voice} no Manguebyte ({detail}). Ele está tocando no motor provisório.",
+    es: "No se pudo preparar {voice} en Manguebyte ({detail}). Suena con el motor provisional.",
+    en: "{voice} could not be set up in Manguebyte ({detail}). It is playing on the stand-in engine.",
+  },
+  detailTimeout: { pt: "sem resposta em {n} s", es: "sin respuesta en {n} s", en: "no answer in {n} s" },
+  detailStatus: { pt: "o servidor respondeu {code}", es: "el servidor respondió {code}", en: "the server answered {code}" },
+  detailNetwork: { pt: "falha de rede", es: "fallo de red", en: "a network failure" },
+  detailWorklet: {
+    pt: "este navegador não tem AudioWorklet",
+    es: "este navegador no tiene AudioWorklet",
+    en: "this browser has no AudioWorklet",
+  },
+  soundClose: { pt: "Fechar", es: "Cerrar", en: "Close" },
   mbSwitch: {
     pt: "Tocar amostras e baterias pelo motor do Manguebyte",
     es: "Tocar muestras y baterías con el motor de Manguebyte",

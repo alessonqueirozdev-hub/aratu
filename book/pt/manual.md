@@ -791,6 +791,13 @@ provisório, até o Manguebyte tê-los; se algo der errado numa apresentação,
 o interruptor do painel Sons desliga o Manguebyte e tudo passa a tocar no
 provisório.
 
+**Um som só toca depois de baixado.** Ao apertar **Tocar** ou **Ouvir**, o Aratu espera
+os sons da peça chegarem, e um aviso embaixo da tela mostra quais estão
+baixando. Um som trocado com a música tocando entra quando chega; até lá
+continua o anterior. Se um download falhar, ou não responder em 60
+segundos, o mesmo aviso diz qual som, por quê, e o que toca no lugar: a
+cópia do motor provisório ou um som parecido.
+
 Os parâmetros podem mudar por compasso como tudo mais: `at bar 16:
 baixo.reverb.mix = 0.65`.
 

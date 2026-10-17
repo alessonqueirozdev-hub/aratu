@@ -875,3 +875,25 @@ Manguebyte's engine and its event record to carry that. The roll `~` stays
 strokes of an eighth of a beat; the user's recording of a buzz roll
 (strokes every 25 to 50 ms, with edit cuts) could not be cut into hits, and
 a clean recording would let `~` play it as a loop.
+
+## A sound plays only once it has been downloaded
+
+Playing used to wait up to four seconds for Manguebyte's parts and then
+start anyway, on the stand-in's synthesized voices; a sampled kit played
+synthesized drums while its samples came; a voice changed while playing
+was heard on a stand-in until it arrived. That let a piece be heard with
+sounds that were not its own. Now:
+
+- A part sounds only with a voice that has arrived. Playing (the editor,
+  the book's examples, the Sounds panel) waits, with no time limit of its
+  own, until every part has its voice, and a notice at the bottom of every
+  view says which voices are downloading.
+- A voice changed while the music plays is made in a Manguebyte part of
+  its own; the voice before it goes on sounding until the new one is
+  ready, then hands over. A new part waits in silence.
+- The stand-in is only a fallback for a download that failed (an HTTP
+  error, a network failure, or no answer in 60 seconds) or for a browser
+  where Manguebyte cannot run. The notice then says which sound, why, and
+  what plays instead: the stand-in's own copy of the samples, or a
+  synthesized voice like it. Manguebyte switched off in the Sounds panel
+  is a choice, not a failure, and is not reported.

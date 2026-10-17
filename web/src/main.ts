@@ -1,7 +1,7 @@
 // Aratu in the browser: play, learn, look things up.
 
 import { Aratu, type Program } from "./aratu";
-import { Engine } from "./audio";
+import { Engine, type SoundProblem } from "./audio";
 import { mountBlocks } from "./blocks";
 import { RhythmMap } from "./rhythm";
 import { examples } from "./examples";
@@ -100,10 +100,69 @@ async function main(): Promise<void> {
   const version = new URL(import.meta.url).searchParams.get("v");
   const aratu = await Aratu.load(version ? `aratu.wasm?v=${version}` : "aratu.wasm");
   let engine: Engine | null = null;
+  // What is downloading, and the sounds that could not be downloaded, in
+  // a box every view shows (the course, the manual, the stage).
+  const dismissed = new Set<number>();
+  const detailText = (d: string): string => {
+    const [kind, ...rest] = d.split(":");
+    const value = rest.join(":");
+    if (kind === "timeout") return tr("detailTimeout", lang).replace("{n}", value);
+    if (kind === "status") return tr("detailStatus", lang).replace("{code}", value);
+    if (kind === "network") return tr("detailNetwork", lang);
+    if (value === "AudioWorklet") return tr("detailWorklet", lang);
+    return value || d;
+  };
+  const problemText = (p: SoundProblem): string => {
+    const word =
+      p.fallback === "engine"
+        ? "problemEngine"
+        : p.fallback === "copy"
+          ? "problemCopy"
+          : p.instead === p.voice
+            ? "problemStandIn"
+            : "problemSynth";
+    return tr(word, lang)
+      .replace("{voice}", p.voice)
+      .replace("{instead}", p.instead ?? "")
+      .replace("{detail}", detailText(p.detail));
+  };
+  const soundStatus = (): void => {
+    const box = $("sound-status");
+    box.innerHTML = "";
+    if (engine) {
+      const loading = engine.loadingVoices();
+      if (loading.length > 0) {
+        const line = document.createElement("p");
+        line.className = "sound-loading";
+        line.textContent = `${tr("soundsDownloading", lang)} ${loading.join(", ")}`;
+        box.append(line);
+      }
+      engine.problems.forEach((p, i) => {
+        if (dismissed.has(i)) return;
+        const line = document.createElement("p");
+        line.className = "sound-problem";
+        const text = document.createElement("span");
+        text.textContent = problemText(p);
+        const close = document.createElement("button");
+        close.textContent = "✕";
+        close.title = tr("soundClose", lang);
+        close.setAttribute("aria-label", tr("soundClose", lang));
+        close.onclick = () => {
+          dismissed.add(i);
+          soundStatus();
+        };
+        line.append(text, close);
+        box.append(line);
+      });
+    }
+    box.hidden = box.childElementCount === 0;
+  };
   const getEngine = (): Engine => {
     if (!engine) {
       engine = new Engine(aratu.voices("en"));
       engine.onSample = (code, state) => sounds.mark(code, state);
+      engine.onLoading = () => soundStatus();
+      engine.onProblem = () => soundStatus();
     }
     return engine;
   };
@@ -582,6 +641,7 @@ async function main(): Promise<void> {
     lang = l;
     save("aratu.lang", l);
     applyWords();
+    soundStatus();
     playground.compile();
     if (!$("side-sounds").hidden) sounds.render();
     if (!$("side-rows").hidden) matrix.render(playground.latest ?? null);
