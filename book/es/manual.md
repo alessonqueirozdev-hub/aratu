@@ -792,6 +792,12 @@ nombre, en la misma parte, toma el lugar de la línea del ritmo.
 líneas seleccionadas (dejan de sonar); Alt+M escribe o borra `parte: out`
 para la parte de la línea del cursor; Alt+S escribe o borra `solo parte`.
 
+**Escenas.** Ocho lugares, en Tocar y en el escenario, guardan la música del
+editor y la traen de vuelta: clic en una escena vacía para guardar, en una
+guardada (o Ctrl+Shift+1 a 8) para traerla, y Shift+clic para guardar
+encima. Con la música sonando, la escena entra en el compás siguiente, y
+Ctrl+Z lo deshace. Las escenas quedan en este navegador.
+
 ## 16. Azar
 
 Un loop que se repite siempre igual pronto suena mecánico. El azar le da

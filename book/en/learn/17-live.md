@@ -126,6 +126,7 @@ changes only the hi-hat, and the rest of the groove goes on.
 | Ctrl+/ | comments the selected lines out: they stop sounding; again, they come back |
 | Alt+M | mutes the part of the line the cursor is on (writes `part: out`); again, it comes back |
 | Alt+S | solos the part of the cursor's line (writes `solo part`); again, it ends |
+| Ctrl+Shift+1 to 8 | brings back a kept scene |
 
 The shortcuts write what they do in the text, so the change comes in at
 the next bar line like any other, and stays if you share the piece.
@@ -165,6 +166,19 @@ lead.echo 3 sixteenths x2
 two echoes, each softer than the one before. The length is written as after
 `over`: `1 beat`, `1 eighth`, `3 sixteenths`. In Portuguese the verbs are
 `rapido`, `lento` and `eco`; in Spanish `rapido`, `lento` and `eco` too.
+
+## Scenes
+
+Built a good moment of the piece? Keep it: in Play and on stage there are
+eight **scenes**, numbered 1 to 8. Click an empty scene and the editor's
+piece is kept in it; click a kept scene, or press Ctrl+Shift and the
+number, and it comes back into the editor. While the music plays, the
+change comes in at the next bar line, like any change, and Ctrl+Z undoes
+it. Shift+click keeps the current piece over a scene.
+
+So you prepare the intro, the groove, the breakdown and the drop as
+scenes, and on stage go from one to the next with one key. The scenes are
+kept in this browser.
 
 ## On stage
 

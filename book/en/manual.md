@@ -770,6 +770,12 @@ the selected lines out (they stop sounding); Alt+M writes or removes
 `part: out` for the part of the cursor's line; Alt+S writes or removes
 `solo part`.
 
+**Scenes.** Eight places, in Play and on stage, keep the editor's piece and
+bring it back: click an empty scene to keep it, a kept one (or Ctrl+Shift+1
+to 8) to bring it back, and Shift+click to keep over it. While the music
+plays, the scene comes in at the next bar line, and Ctrl+Z undoes it. The
+scenes are kept in this browser.
+
 ## 16. Chance
 
 A loop that repeats exactly the same soon sounds mechanical. Chance gives it

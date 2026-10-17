@@ -70,6 +70,24 @@ const words = {
     es: "Grabación lista: el archivo se descargó.",
     en: "Recording done: the file was downloaded.",
   },
+  scenes: { pt: "Cenas", es: "Escenas", en: "Scenes" },
+  sceneEmpty: {
+    pt: "Vazia: clique para guardar aqui a música do editor",
+    es: "Vacía: haz clic para guardar aquí la música del editor",
+    en: "Empty: click to keep the editor's piece here",
+  },
+  sceneHint: {
+    pt: "Clique (ou Ctrl+Shift+{n}) traz esta cena; Shift+clique guarda a música atual aqui",
+    es: "Clic (o Ctrl+Shift+{n}) trae esta escena; Shift+clic guarda aquí la música actual",
+    en: "Click (or Ctrl+Shift+{n}) brings this scene back; Shift+click keeps the current piece here",
+  },
+  sceneSaved: { pt: "Cena {n} guardada.", es: "Escena {n} guardada.", en: "Scene {n} kept." },
+  sceneRecalled: { pt: "Cena {n} no editor.", es: "Escena {n} en el editor.", en: "Scene {n} is in the editor." },
+  sceneComing: {
+    pt: "Cena {n}: entra no próximo compasso. Ctrl+Z volta.",
+    es: "Escena {n}: entra en el compás siguiente. Ctrl+Z vuelve.",
+    en: "Scene {n}: it comes in at the next bar line. Ctrl+Z goes back.",
+  },
   recordUnsupported: {
     pt: "Este navegador não consegue gravar o som.",
     es: "Este navegador no puede grabar el sonido.",

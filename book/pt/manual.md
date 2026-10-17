@@ -778,6 +778,12 @@ linhas selecionadas (elas param de soar); Alt+M escreve ou apaga
 `parte: out` para a parte da linha do cursor; Alt+S escreve ou apaga
 `solo parte`.
 
+**Cenas.** Oito lugares, em Tocar e no palco, guardam a música do editor e
+a trazem de volta: clique numa cena vazia para guardar, numa guardada (ou
+Ctrl+Shift+1 a 8) para trazer, e Shift+clique para guardar por cima. Com a
+música tocando, a cena entra no próximo compasso, e o Ctrl+Z desfaz. As
+cenas ficam neste navegador.
+
 ## 16. Acaso
 
 Um loop que se repete sempre igual logo soa mecânico. O acaso dá vida a ele:

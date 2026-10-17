@@ -128,6 +128,7 @@ troca só o chimbal, e o resto da levada continua.
 | Ctrl+/ | comenta as linhas selecionadas: elas param de soar; de novo, voltam |
 | Alt+M | silencia a parte da linha onde está o cursor (escreve `parte: out`); de novo, ela volta |
 | Alt+S | põe em solo a parte da linha do cursor (escreve `solo parte`); de novo, tira |
+| Ctrl+Shift+1 a 8 | traz de volta uma cena guardada |
 
 Os atalhos escrevem no texto o que fazem, então a mudança entra no próximo
 compasso, como qualquer outra, e fica guardada se você compartilhar.
@@ -168,6 +169,19 @@ dois ecos, cada um mais baixo que o anterior. A duração se escreve como
 depois de `over`: `1 beat`, `1 eighth`, `3 sixteenths`. Em português os
 verbos são `rapido` (ou `rápido`), `lento` e `eco`, e as durações
 `1 tempo`, `1 colcheia`, `3 semicolcheias`.
+
+## Cenas
+
+Montou um momento bom da música? Guarde: em Tocar e no palco há oito
+**cenas**, numeradas de 1 a 8. Clique numa cena vazia e a música do editor
+fica guardada nela; clique numa cena guardada, ou aperte Ctrl+Shift e o
+número, e ela volta para o editor. Com a música tocando, a troca entra no
+próximo compasso, como qualquer mudança, e o Ctrl+Z desfaz. Shift+clique
+guarda a música atual por cima de uma cena.
+
+Assim você prepara a introdução, o groove, o breakdown e o drop como cenas,
+e no palco passa de uma para outra com uma tecla. As cenas ficam guardadas
+neste navegador.
 
 ## No palco
 

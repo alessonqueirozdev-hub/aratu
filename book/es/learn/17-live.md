@@ -129,6 +129,7 @@ escribas con el mismo nombre toma el lugar de la línea del ritmo:
 | Ctrl+/ | comenta las líneas seleccionadas: dejan de sonar; otra vez, vuelven |
 | Alt+M | silencia la parte de la línea donde está el cursor (escribe `parte: out`); otra vez, vuelve |
 | Alt+S | pone en solo la parte de la línea del cursor (escribe `solo parte`); otra vez, lo quita |
+| Ctrl+Shift+1 a 8 | trae de vuelta una escena guardada |
 
 Los atajos escriben en el texto lo que hacen, así que el cambio entra en el
 compás siguiente, como cualquier otro, y queda guardado si compartes.
@@ -169,6 +170,19 @@ dos ecos, cada uno más suave que el anterior. La duración se escribe como
 después de `over`: `1 beat`, `1 eighth`, `3 sixteenths`. En español los
 verbos son `rapido` (o `rápido`), `lento` y `eco`, y las duraciones
 `1 tiempo`, `1 corchea`, `3 semicorcheas`.
+
+## Escenas
+
+¿Armaste un buen momento de la música? Guárdalo: en Tocar y en el escenario
+hay ocho **escenas**, numeradas del 1 al 8. Haz clic en una escena vacía y
+la música del editor queda guardada en ella; haz clic en una escena
+guardada, o pulsa Ctrl+Shift y el número, y vuelve al editor. Con la música
+sonando, el cambio entra en el compás siguiente, como cualquier cambio, y
+Ctrl+Z lo deshace. Shift+clic guarda la música actual encima de una escena.
+
+Así preparas la introducción, el groove, el breakdown y el drop como
+escenas, y en el escenario pasas de una a otra con una tecla. Las escenas
+quedan guardadas en este navegador.
 
 ## En el escenario
 

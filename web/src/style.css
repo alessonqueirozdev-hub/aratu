@@ -1739,3 +1739,29 @@ body.stage .stage-msg:not([hidden]) {
     box-shadow: 0 0 0 4px color-mix(in srgb, var(--error) 25%, transparent);
   }
 }
+
+/* Scenes: eight places for the piece, in the toolbar and on stage. */
+.scenes {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.scenes-label {
+  margin-right: 4px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.btn.scene {
+  min-width: 28px;
+  padding: 4px 7px;
+  opacity: 0.55;
+}
+.btn.scene.filled {
+  opacity: 1;
+  border-color: var(--accent);
+}
+.btn.scene.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}

@@ -661,6 +661,73 @@ async function main(): Promise<void> {
     if (!playground.playing) void playground.play();
   };
 
+  // Scenes: the piece as it is, kept in one of eight places and brought back
+  // with one click (or Ctrl+Shift+1 to 8) while playing; the change comes in
+  // at the next bar line, like any edit, and Ctrl+Z undoes it. Kept in this
+  // browser.
+  const SCENES = 8;
+  const loadScenes = (): (string | null)[] => {
+    try {
+      const v = JSON.parse(load("aratu.scenes") ?? "[]") as unknown;
+      if (Array.isArray(v)) {
+        return Array.from({ length: SCENES }, (_, i) => (typeof v[i] === "string" ? (v[i] as string) : null));
+      }
+    } catch {
+      // A broken entry starts empty.
+    }
+    return Array<string | null>(SCENES).fill(null);
+  };
+  const scenes = loadScenes();
+  let sceneOn = -1;
+  const renderScenes = () => {
+    for (const id of ["scenes", "stage-scenes"]) {
+      const box = $(id);
+      box.innerHTML = "";
+      const label = document.createElement("span");
+      label.className = "scenes-label";
+      label.textContent = tr("scenes", lang);
+      box.append(label);
+      scenes.forEach((text, i) => {
+        const b = document.createElement("button");
+        b.className = "btn scene";
+        b.textContent = String(i + 1);
+        b.classList.toggle("filled", text !== null);
+        b.classList.toggle("on", i === sceneOn);
+        const first = text?.split("\n").find((l) => l.trim()) ?? "";
+        b.title =
+          text === null
+            ? tr("sceneEmpty", lang)
+            : `${first.slice(0, 60)}\n${tr("sceneHint", lang).replace("{n}", String(i + 1))}`;
+        b.onclick = (e) => (e.shiftKey || text === null ? saveScene(i) : recallScene(i));
+        box.append(b);
+      });
+    }
+  };
+  const saveScene = (i: number) => {
+    scenes[i] = playground.text;
+    sceneOn = i;
+    save("aratu.scenes", JSON.stringify(scenes));
+    note(tr("sceneSaved", lang).replace("{n}", String(i + 1)));
+    renderScenes();
+  };
+  const recallScene = (i: number) => {
+    const text = scenes[i];
+    if (text === null) return;
+    sceneOn = i;
+    if (text !== playground.text) playground.text = text;
+    note(tr(playground.playing ? "sceneComing" : "sceneRecalled", lang).replace("{n}", String(i + 1)));
+    renderScenes();
+  };
+  document.addEventListener("keydown", (e) => {
+    if (!e.ctrlKey || !e.shiftKey || e.altKey || !location.hash.startsWith("#/tocar")) return;
+    const n = Number(e.code.replace(/^(Digit|Numpad)/, ""));
+    if (Number.isInteger(n) && n >= 1 && n <= SCENES) {
+      e.preventDefault();
+      recallScene(n - 1);
+    }
+  });
+  renderScenes();
+
   // The book: the course, the manual and the page for developers.
   let book: Book | null = null;
   const loadBook = async () => {
@@ -795,6 +862,7 @@ async function main(): Promise<void> {
     save("aratu.lang", l);
     applyWords();
     soundStatus();
+    renderScenes();
     playground.compile();
     if (!$("side-sounds").hidden) sounds.render();
     if (!$("side-rows").hidden) matrix.render(playground.latest ?? null);

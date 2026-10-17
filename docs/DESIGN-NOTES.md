@@ -996,3 +996,20 @@ reads it as a score word and a live coder finds what they expect.
   `over`, and `x3` counts the echoes as `play groove x3` counts the times.
   Tidal's `off` (a shifted copy, often transposed) is this with one echo;
   a transposed echo is left for later.
+
+## Melodies by degree, and scenes
+
+A number in a melody line is a degree of the piece's first key, as many
+musicians sing a tune to learn it ("one, three, five"): `1` is the tonic
+in octave 4 and `8` an octave higher, the accidental comes after the number
+(`3b`, `4#`, where a note's `b3` would be the note B), and a comma goes an
+octave down (`5,`, as in ABC notation; the apostrophe is staccato already).
+The same tune moves to another key by changing `key:` alone, which is what
+a singer's transposition needs.
+
+Scenes are eight places in the editor that keep the whole text of the piece
+and bring it back with a click or Ctrl+Shift+1 to 8. A scene is the text,
+not a sound: brought back while playing, it lands at the next bar line like
+any edit, and Ctrl+Z undoes it, so nothing new had to be taught to the
+player. They are kept in the browser; sections and patterns remain the way
+to write an arrangement into the piece itself.
