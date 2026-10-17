@@ -1,0 +1,77 @@
+// Trance in C minor: i - VI - III - V, the pad's voices moving as little as
+// they can. Eight bars of drums, a breakdown where the pad and the arpeggio
+// sing alone, a build with a snare roll, then the drop with the lead. The
+// pad and the bass breathe with the kick (a sidechain, written as a volume
+// that rises in every beat), and the arpeggio's filter opens over the build.
+tempo: 138
+key: C minor
+
+pad: synth.pad -> reverb
+arp: synth.pluck -> lowpass -> delay -> reverb
+lead: synth.supersaw -> delay -> reverb
+bass: bass.synth -> lowpass
+
+section intro {
+  drums {
+    bd = b b b b
+    oh = -o -o -o -o
+    hh = cccc cccc cccc cccc
+  }
+  bass = | [- c2 c c]x4 | [- ab1 ab ab]x4 | [- eb2 eb eb]x4 | [- g1 g g]x4 |
+}
+
+section breakdown {
+  pad = | c4+eb4+g4 _ _ _ | c4+eb4+ab4 _ _ _ | bb3+eb4+g4 _ _ _ | b3+d4+g4 _ _ _ |
+  arp = | [c5 g4 eb5 g4]x4 | [c5 ab4 eb5 ab4]x4 | [bb4 g4 eb5 g4]x4 | [b4 g4 d5 g4]x4 |
+}
+
+section build {
+  pad = | c4+eb4+g4 _ _ _ | c4+eb4+ab4 _ _ _ | bb3+eb4+g4 _ _ _ | b3+d4+g4 _ _ _ |
+  arp = | [c5 g4 eb5 g4]x4 | [c5 ab4 eb5 ab4]x4 | [bb4 g4 eb5 g4]x4 | [b4 g4 d5 g4]x4 |
+  bass = | [- c2 c c]x4 | [- ab1 ab ab]x4 | [- eb2 eb eb]x4 | [- g1 g g]x4 |
+  drums {
+    bd = | b - b - | b - b - | b b b b | b b b b |
+    sd = | p:s - s - | s s s s | ss< ss ss ss | ssss ssss f:s~ _ |
+  }
+}
+
+section drop {
+  drums {
+    bd = b b b b
+    oh = -o -o -o -o
+    hh = cccc cccc cccc cccc
+    clap = - p - p
+    cr = | x - - - | - | - | - |
+  }
+  pad = | c4+eb4+g4 _ _ _ | c4+eb4+ab4 _ _ _ | bb3+eb4+g4 _ _ _ | b3+d4+g4 _ _ _ |
+  arp = | [c5 g4 eb5 g4]x4 | [c5 ab4 eb5 ab4]x4 | [bb4 g4 eb5 g4]x4 | [b4 g4 d5 g4]x4 |
+  bass = | [- c2 c c]x4 | [- ab1 ab ab]x4 | [- eb2 eb eb]x4 | [- g1 g g]x4 |
+  lead = | g5 _ [_ eb5] c5 | ab5 _ [_ g5] eb5 | g5 _ [_ f5] eb5 | d5 _ b4 _ |
+}
+
+form: intro x2 breakdown build drop x2
+
+// The sidechain: pad and bass dip on every kick and come back up.
+pad.volume = 0.15 -> 0.8 over 1 beat, loop
+bass.volume = 0.3 -> 0.9 over 1 beat, loop
+bass.lowpass.cutoff = 700 Hz
+
+// The arpeggio: a dotted-eighth echo from side to side, its filter opening
+// over the breakdown and the build.
+arp.volume = 0.55
+arp.delay.sync = 0.75
+arp.delay.pingpong = 1
+arp.delay.feedback = 0.45
+arp.delay.mix = 0.3
+arp.reverb.mix = 0.45
+at bar 9: arp.lowpass.cutoff = 400 Hz -> 9000 Hz over 8 bars
+
+lead.volume = 0.6
+lead.delay.sync = 0.75
+lead.delay.mix = 0.25
+lead.reverb.mix = 0.4
+pad.reverb.mix = 0.6
+
+// A big room for the whole mix, glued together.
+master.reverb.decay = 3.5 s
+master.glue.on = 1

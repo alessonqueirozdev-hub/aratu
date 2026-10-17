@@ -1,5 +1,6 @@
 // Aratu in the browser: play, learn, look things up.
 
+import { EditorView } from "@codemirror/view";
 import { Aratu, type Program } from "./aratu";
 import { Engine, type SoundProblem } from "./audio";
 import { mountBlocks } from "./blocks";
@@ -238,7 +239,10 @@ async function main(): Promise<void> {
     engine: getEngine,
     lang: () => lang,
     onCompile: messages,
-    onChange: (t) => save("aratu.text", t),
+    onChange: (t) => {
+      save("aratu.text", t);
+      if (document.body.classList.contains("stage")) requestAnimationFrame(() => fitFont());
+    },
     onBar: (info, at) => {
       map.bar(info, at);
       const ctx = getEngine().ctx;
@@ -379,37 +383,108 @@ async function main(): Promise<void> {
   let stageFont = Number(load("aratu.stageFont") ?? 30) || 30;
   let idleTimer = 0;
   const onStage = () => document.body.classList.contains("stage");
-  const setStageFont = (px: number) => {
-    stageFont = Math.min(72, Math.max(16, px));
-    document.body.style.setProperty("--stage-font", `${stageFont}px`);
-    save("aratu.stageFont", String(stageFont));
+  // The size the person chose with A− and A+; "fit the screen" may make
+  // the letters smaller than that, never larger.
+  let shownFont = stageFont;
+  const showFont = (px: number) => {
+    shownFont = px;
+    document.body.style.setProperty("--stage-font", `${px}px`);
     playground.view.requestMeasure();
     playground.mirror?.requestMeasure();
-    requestAnimationFrame(followColumn);
+  };
+  const setStageFont = (px: number) => {
+    stageFont = Math.min(72, Math.max(16, px));
+    save("aratu.stageFont", String(stageFont));
+    showFont(stageFont);
+    requestAnimationFrame(() => fitFont());
   };
   // Two columns on stage: a second view of the code that goes on where
   // the first ends, like a newspaper's columns, so more of the piece shows
   // without scrolling. Scrolling either moves both.
   let split = load("aratu.stageSplit") === "on";
   let linking = false;
+  // The right column starts with the first line the left one does not
+  // show whole, so no line is cut in two and none is left out. The left
+  // view knows exactly where its last line is; the right one is asked to
+  // bring that line to its top, measuring as it goes. Scrolling one column
+  // moves the other; the move it causes is not taken for the person's.
+  let mirrorQuiet = 0;
+  let leftQuiet = 0;
   const followColumn = () => {
     const m = playground.mirror;
     if (!m || linking) return;
     linking = true;
-    const v = playground.view.scrollDOM;
-    m.scrollDOM.scrollTop = v.scrollTop + v.clientHeight;
+    const v = playground.view;
+    const s = v.scrollDOM;
+    const bottom = Math.max(0, s.scrollTop + s.clientHeight - v.documentPadding.top);
+    const block = v.lineBlockAtHeight(bottom);
+    const pos = block.bottom > bottom + 1 ? block.from : Math.min(block.to + 1, v.state.doc.length);
+    mirrorQuiet = performance.now() + 250;
+    m.dispatch({ effects: EditorView.scrollIntoView(pos, { y: "start", yMargin: 8 }) });
     linking = false;
   };
   const leadColumn = () => {
     const m = playground.mirror;
-    if (!m || linking) return;
+    if (!m || linking || performance.now() < mirrorQuiet) return;
     linking = true;
-    const v = playground.view.scrollDOM;
-    v.scrollTop = Math.max(0, m.scrollDOM.scrollTop - v.clientHeight);
+    const v = playground.view;
+    const s = v.scrollDOM;
+    const top = m.lineBlockAtHeight(Math.max(0, m.scrollDOM.scrollTop - m.documentPadding.top));
+    leftQuiet = performance.now() + 250;
+    s.scrollTop = Math.max(0, v.lineBlockAt(top.from).top + v.documentPadding.top - s.clientHeight);
     linking = false;
   };
-  playground.view.scrollDOM.addEventListener("scroll", followColumn);
-  window.addEventListener("resize", () => requestAnimationFrame(followColumn));
+  // "Fit the screen": the letters shrink as the piece grows, so that all
+  // of it shows in the columns without scrolling, down to a size still
+  // readable; past that, the columns scroll. Off, the size stays and the
+  // columns scroll.
+  let fit = load("aratu.stageFit") === "on";
+  const SMALLEST = 14;
+  let fitting = 0;
+  const fitFont = () => {
+    if (!onStage()) return;
+    const run = ++fitting;
+    if (!fit) {
+      if (shownFont !== stageFont) showFont(stageFont);
+      requestAnimationFrame(followColumn);
+      return;
+    }
+    let steps = 0;
+    let grew = false;
+    const step = () => {
+      if (run !== fitting) return;
+      const v = playground.view;
+      const s = v.scrollDOM;
+      const pad = v.documentPadding;
+      const text = v.contentHeight - pad.top - pad.bottom;
+      const columns = playground.mirror ? 2 : 1;
+      const room = columns * (s.clientHeight - pad.top - window.innerHeight * 0.04);
+      let next = shownFont;
+      if (text > room && grew) {
+        next = shownFont - 1;
+        steps = 99;
+      } else if (text > room && shownFont > SMALLEST) {
+        next = Math.max(SMALLEST, Math.floor(shownFont * Math.min(0.97, Math.sqrt(room / text))));
+      } else if (text < room * 0.85 && shownFont < stageFont) {
+        next = shownFont + 1;
+        grew = true;
+      }
+      if (next !== shownFont && steps++ < 40) {
+        showFont(next);
+        requestAnimationFrame(() => requestAnimationFrame(step));
+      } else {
+        if (next !== shownFont) showFont(next);
+        // Once the letters have their size and the lines their places.
+        requestAnimationFrame(() => requestAnimationFrame(followColumn));
+        window.setTimeout(followColumn, 300);
+      }
+    };
+    requestAnimationFrame(() => requestAnimationFrame(step));
+  };
+  playground.view.scrollDOM.addEventListener("scroll", () => {
+    if (performance.now() >= leftQuiet) followColumn();
+  });
+  window.addEventListener("resize", () => fitFont());
   const applySplit = () => {
     const on = split && onStage();
     document.body.classList.toggle("stage-split", on);
@@ -420,10 +495,12 @@ async function main(): Promise<void> {
       m.scrollDOM.addEventListener("scroll", leadColumn);
     }
     if (!on && playground.mirror) playground.unmirror();
+    $("stage-fit").classList.toggle("on", fit);
     playground.view.requestMeasure();
     // Once the second view has laid itself out, it starts where the first
     // ends.
-    for (const ms of [50, 250, 600]) window.setTimeout(followColumn, ms);
+    fitFont();
+    for (const ms of [250, 600]) window.setTimeout(followColumn, ms);
   };
   // The controls fade when the mouse rests, and come back when it moves.
   const wake = () => {
@@ -457,6 +534,12 @@ async function main(): Promise<void> {
     split = !split;
     save("aratu.stageSplit", split ? "on" : "off");
     applySplit();
+  };
+  $("stage-fit").onclick = () => {
+    fit = !fit;
+    save("aratu.stageFit", fit ? "on" : "off");
+    $("stage-fit").classList.toggle("on", fit);
+    fitFont();
   };
   $("stage-play").onclick = () => void playground.play();
   $("stage-stop").onclick = () => playground.stop();

@@ -704,6 +704,10 @@ ritmo abajo y salen del escenario; desaparecen cuando el ratón se queda
 quieto. Esc también sale. El botón **2 columnas** divide el código en dos
 columnas, como en un periódico: la segunda sigue donde termina la primera,
 las dos se desplazan juntas, y editar en cualquiera cambia el mismo texto.
+**Caber en pantalla** achica la letra a medida que la música crece, para que
+todo quepa sin desplazar, hasta un tamaño todavía legible; a partir de ahí,
+las columnas se desplazan. Apagado, la letra queda del tamaño elegido con A−
+y A+, y se desplaza.
 
 ## 16. Azar
 

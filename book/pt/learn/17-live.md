@@ -79,8 +79,9 @@ O botão **Palco**, em Tocar, deixa só o código na tela, em tela cheia e com
 letra grande, para tocar diante de uma plateia. O botão **2 colunas** divide
 o código em duas colunas, como num jornal: a segunda continua de onde a
 primeira termina, então cabe o dobro sem rolar a tela, e as duas rolam
-juntas. Dá para editar em qualquer uma. As listas de melodias ganham botões
-no canto, e Esc sai do palco.
+juntas. Dá para editar em qualquer uma. Com **Caber na tela**, a letra
+encolhe conforme a música cresce, para a peça inteira caber sem rolar. As
+listas de melodias ganham botões no canto, e Esc sai do palco.
 
 ## Exercícios
 

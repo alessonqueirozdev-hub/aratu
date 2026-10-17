@@ -10,6 +10,7 @@ import patterns from "../../examples/patterns.aratu";
 import setlist from "../../examples/setlist.aratu";
 import sound from "../../examples/sound.aratu";
 import sweeps from "../../examples/sweeps.aratu";
+import trance from "../../examples/trance.aratu";
 import twelveTone from "../../examples/twelve-tone.aratu";
 import waltz from "../../examples/waltz.aratu";
 
@@ -25,4 +26,5 @@ export const examples = [
   { id: "waltz", text: waltz },
   { id: "sound", text: sound },
   { id: "sweeps", text: sweeps },
+  { id: "trance", text: trance },
 ] as const;
