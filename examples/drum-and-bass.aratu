@@ -1,0 +1,31 @@
+// Drum and bass at 174: the break is written in sixteenths, with marcato on
+// the backbeat (s!) and ghost notes, (s), quiet hits between the loud ones.
+// The reese bass growls through a filter that keeps moving, and the pad and
+// the bell float at half the speed of the drums.
+tempo: 174
+key: F minor
+
+drums: drums.acoustic -> compressor
+drums {
+  bd = | b--- ---- --b- ---- | b--- ---- --bb ---- |
+  sd = | ---- s!--(s) -(s)-- s!-(s)- | ---- s!--(s) ---(s) s!(s)(s)(s) |
+  hh = cCcc cCcc cCcc cCcc
+}
+
+reese: synth.supersaw -> lowpass -> drive
+reese = | f1 _ _ _ | _ _ [- db1] _ | db1 _ _ _ | eb1 _ [c1 -] _ |
+reese.lowpass.cutoff = 200 Hz <-> 1400 Hz over 2 bars
+reese.drive.amount = 8 dB
+reese.volume = 0.7
+
+pad: synth.pad -> reverb
+pad { chords = | Fm9 | _ | Dbmaj7 | Eb | }
+pad.volume = 0.4
+pad.reverb.mix = 0.6
+
+bell: keys.bell -> delay -> reverb
+bell = | c6 _ _ _ | ab5 _ _ _ | f5 _ _ _ | g5 _ eb5 _ |
+bell.volume = 0.35
+bell.delay.sync = 0.75
+bell.delay.mix = 0.4
+bell.reverb.mix = 0.5

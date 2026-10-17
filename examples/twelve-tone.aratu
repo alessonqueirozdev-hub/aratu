@@ -1,9 +1,31 @@
-// A twelve-tone row and its forms, each poured into a rhythm. The Rows tab
-// shows the row's matrix; click a form's name to write it here.
-tempo: 72
+// A twelve-tone row, in IDM: the row and its forms poured into glitchy
+// rhythms. The pluck plays the row (P0), the bell answers with its
+// retrograde inversion (RI5), the 808 bass walks its inversion (I0), and the
+// drums stutter through a bitcrusher. The lines are of different lengths,
+// so they meet in a new way every time round. The Rows tab shows the row's
+// matrix; click a form's name to write it here.
+tempo: 88
 
 row serie = 0 11 3 4 8 7 9 5 6 1 2 10
 
-melody = | o o [o o] o | o _ [o o] o | O o o o | from serie.P0 octave 4
-answer = | - o - o | [o o] o _ o | o - O _ | from serie.RI5 octave 3
-pulse = | o _ _ _ | o _ _ _ | o _ _ _ | from serie.I0 octave 2
+pluck: synth.pluck -> delay -> reverb
+pluck = | o [o o] - [o o o] | [- o] o [o o] _ | o _ [o o] o | from serie.P0 octave 5
+pluck.delay.sync = 0.75
+pluck.delay.mix = 0.35
+
+bell: keys.bell -> reverb
+bell = | - o - [o o] | - [o o] o _ | O _ - o | from serie.RI5 octave 4
+bell.volume = 0.5
+bell.reverb.mix = 0.5
+
+bass: bass.808
+bass = | o _ _ [- o] | o _ [- o] _ | from serie.I0 octave 2
+
+drums: drums.808 -> bitcrush
+drums {
+  bd = | b - [- b] - | [b b] - - [- b] |
+  sd = - s - [(s) s]
+  hh = cccc ccc cc cccccc
+}
+drums.bitcrush.bits = 6
+drums.bitcrush.mix = 0.4

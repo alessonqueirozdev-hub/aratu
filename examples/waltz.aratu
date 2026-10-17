@@ -1,7 +1,29 @@
-// A waltz in 3/4 that starts on a pickup and ends on a bar of rest.
+// An electronic waltz in 3/4, downtempo: it starts on a pickup (the melody's
+// first note comes before bar 1), the kick falls on one and the hi-hats on
+// two and three, the glockenspiel floats over a string pad, and the 808 bass
+// holds each bar.
 meter: 3/4
-tempo: 132
+tempo: 96
 pickup: beat 3
+key: C major
 
-melody = | g4 | c5 _ e5 | d5 _ c5 | b4 _ a4 | g4 _ _ | a4 _ c5 | b4 _ d5 | c5 _ _ | - |
-bass   = | c3 g3 e3 | g2 g3 f3 | g2 g3 f3 | c3 g3 e3 | f2 c3 a3 | g2 d3 b3 | c3 g3 e3 | - |
+lead: mallets.glockenspiel -> delay -> reverb
+lead = | g4 | c5 _ e5 | d5 _ c5 | b4 _ a4 | g4 _ _ | a4 _ c5 | b4 _ d5 | c5 _ _ | - |
+lead.delay.sync = 1.5
+lead.delay.mix = 0.3
+lead.reverb.mix = 0.5
+
+pad: synth.strings -> reverb
+pad { chords = | C | G7 | G | C | F | G | C | C | }
+pad.volume = 0.45
+
+bass: bass.808
+bass = | c2 _ _ | g1 _ _ | g1 _ _ | c2 _ _ | f1 _ _ | g1 _ _ | c2 _ _ | c2 _ _ |
+
+drums: drums.808 -> reverb
+drums {
+  bd = b - -
+  hh = - c c
+  rim = - - [- k]
+}
+drums.reverb.mix = 0.25

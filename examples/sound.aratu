@@ -1,22 +1,38 @@
-// Sounds and knobs: every number that sets a parameter has a knob beside it.
-// Drag a knob up or down; the number changes and so does the sound.
+// Sounds and knobs, in acid house: every number that sets a parameter has a
+// knob beside it. Drag the acid's cutoff and resonance while it plays, the
+// gesture of the 303; the capitals are its accents. The 808 kit, the FM bell
+// and the organ, with its rotating speaker, each have knobs of their own.
 meter: 4/4
-tempo: 100
+tempo: 124
 
-bass: synth.saw -> lowpass -> reverb
-bass = | c2 _ c2 eb2 | f2 _ g2 bb1 |
-bass {
-  lowpass.cutoff = 800 Hz
-  lowpass.resonance = 0.3
-  reverb.mix = 0.2
+drums: drums.808 -> compressor
+drums {
+  bd   = b b b b
+  oh   = -o -o -o -o
+  clap = - p - p
+  hh   = cc cc cc cc
 }
 
-lead: synth.square -> delay
-lead = | g4 _ bb4 c5 | eb5 _ d5 c5 |
-lead {
-  delay.time = 375 ms
-  delay.mix = 0.3
-  volume = 0.5
+acid: bass.acid -> drive -> lowpass -> delay
+acid = | [a1 A1 a2 a1] [c2 a1 A2 a1] [e2 a1 g2 a1] [A1 c2 a1 e2] |
+acid {
+  lowpass.cutoff = 900 Hz
+  lowpass.resonance = 0.75
+  drive.amount = 12 dB
+  delay.sync = 0.75
+  delay.mix = 0.15
 }
 
-drums { hh = cc cc cc cc; bd = b - b -; sd = - s - s }
+bell: keys.bell -> delay -> reverb
+bell = | e5 _ _ _ | - - c5 _ | d5 _ _ _ | - - a4 _ |
+bell {
+  volume = 0.45
+  delay.sync = 0.75
+  delay.mix = 0.35
+  reverb.mix = 0.5
+}
+
+hammond: keys.organ -> reverb
+hammond = | - [- a3+c4+e4] - [- a3+c4+e4] |
+hammond.organ.rotary = 2
+hammond.volume = 0.35

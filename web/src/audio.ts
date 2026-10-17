@@ -1223,7 +1223,9 @@ export class Engine {
       }
       // Brazilian percussion and the cajón, drawn from simple parts until
       // recordings come: skins are falling sines, bells a few partials,
-      // jingles and shakers filtered noise.
+      // jingles and shakers filtered noise. The deep drums (alfaia, surdo,
+      // zabumba, the cajón's bass) were measured against Manguebyte's kits:
+      // one line of them peaks about as high as a whole kit's beat.
       case "pandeiro-thumb":
         this.tom(c, when, g * 0.9, bright, 95, 0.12);
         this.noiseHit(c.input, when + 0.004, "highpass", 6500, 0.8, g * 0.25, 0.06);
@@ -1240,11 +1242,11 @@ export class Engine {
         this.tom(c, when, g * 0.7, bright, 120, 0.035);
         return;
       case "zabumba-open":
-        this.tom(c, when, g * 1.3, bright, 70, 0.32);
+        this.tom(c, when, g * 0.8, bright, 70, 0.32);
         this.noiseHit(c.input, when, "lowpass", 600, 0.7, g * 0.3, 0.03);
         return;
       case "zabumba-muted":
-        this.tom(c, when, g * 1.1, bright, 80, 0.06);
+        this.tom(c, when, g * 0.65, bright, 80, 0.06);
         return;
       case "zabumba-stick":
         this.noiseHit(c.input, when, "bandpass", 3200, 2, g * 0.7, 0.012);
@@ -1263,10 +1265,10 @@ export class Engine {
         this.ring(c, when, g * 0.35, [720, 1830, 2900], 0.4);
         return;
       case "surdo-open":
-        this.tom(c, when, g * 1.4, bright, 58, 0.55);
+        this.tom(c, when, g * 0.8, bright, 58, 0.55);
         return;
       case "surdo-muted":
-        this.tom(c, when, g * 1.1, bright, 62, 0.08);
+        this.tom(c, when, g * 0.65, bright, 62, 0.08);
         return;
       case "tamborim-open":
         this.tom(c, when, g * 0.6, bright, 620, 0.06);
@@ -1277,11 +1279,11 @@ export class Engine {
         this.noiseHit(c.input, when, "bandpass", 3500, 1.2, g * 0.4, 0.008);
         return;
       case "alfaia-open":
-        this.tom(c, when, g * 1.4, bright, 75, 0.45);
+        this.tom(c, when, g * 0.8, bright, 75, 0.45);
         this.noiseHit(c.input, when, "lowpass", 900, 0.7, g * 0.35, 0.04);
         return;
       case "alfaia-muted":
-        this.tom(c, when, g * 1.2, bright, 85, 0.07);
+        this.tom(c, when, g * 0.7, bright, 85, 0.07);
         return;
       case "gongue-open":
         this.ring(c, when, g * 0.4, [330, 790, 1270], 0.7);
@@ -1311,7 +1313,7 @@ export class Engine {
         return;
       }
       case "cajon-bass":
-        this.tom(c, when, g * 1.2, bright, 90, 0.16);
+        this.tom(c, when, g * 0.8, bright, 90, 0.16);
         this.noiseHit(c.input, when, "lowpass", 800, 0.7, g * 0.25, 0.02);
         return;
       case "cajon-slap":

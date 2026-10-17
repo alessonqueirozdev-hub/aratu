@@ -1,20 +1,34 @@
-// Motifs: one idea, moved through the key, turned upside down and
-// played backwards, over an ostinato.
-tempo: 96
+// Motifs, in synthwave: one four-note idea, riff, climbs the key a degree at
+// a time (riff+1, riff+2), turns upside down (riff.inv), runs backwards
+// (riff.retro) and both (riff.ri). The bass is a motif too, moved by
+// semitones to each chord's root; the snare rings in a big room, and the
+// toms roll into every fourth bar.
+tempo: 100
 key: A minor
 
 motif riff = [e4 d c d]
-motif ost = [a2 e3 a3 e3]
+motif oct = [a1 a2]
 
-melody = | riff riff+1 riff+2 riff+3 | riff.inv riff.retro riff.ri e4 |
-bass = | ost ost ost ost |
+arp: synth.square -> delay -> reverb
+arp = | riff riff riff+1 riff+1 | riff+2 riff+2 riff+3 riff+3 |
+      | riff.inv riff.inv riff.retro riff.retro | riff.ri riff.ri riff riff |
+arp.volume = 0.45
+arp.delay.sync = 0.75
+arp.delay.mix = 0.3
 
-piano {
-  chords = | Am | F |
-}
+bass: bass.synth
+bass = | oct oct oct oct | oct-4st oct-4st oct-4st oct-4st |
+       | oct+3st oct+3st oct+3st oct+3st | oct-2st oct-2st oct-2st oct-2st |
 
+pad: synth.strings -> chorus -> reverb
+pad { chords = | Am | F | C | G | }
+pad.volume = 0.45
+
+drums: drums.kit -> reverb
 drums {
-  hh = [cc]x4
-  bd = b - b -
-  sd = - s - s
+  bd  = b - b -
+  sd  = - S - S
+  hh  = cc cc cc cc
+  tom = | - | - | - | - - tm ff |
 }
+drums.reverb.mix = 0.45

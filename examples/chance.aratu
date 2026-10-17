@@ -1,12 +1,28 @@
-// Chance: the loop plays a little differently every time round.
+// Chance, in minimal techno: no two bars play alike. A ? plays a hit only
+// sometimes (?30%: three times in ten), braces choose one of two each time
+// round, and the acid line picks some of its notes as it goes. seed 7 gives
+// the same jam every time it starts; write seed random for a new one.
 meter: 4/4
-tempo: 104
+tempo: 128
 seed 7
 
+drums: drums.808
 drums {
-  hh = cc cc c?30% {cc|co}
-  bd = b - b? -
-  sd = - s - s?80%
+  bd   = b b b b
+  oh   = -o -o -o -o?70%
+  hh   = cc c?c cc? c?c
+  clap = - p - {p|pp}
+  rim  = {-k|k-} -k? - {k-|-k}
 }
 
-bass = | {a1|e2} _ a2 c3 | d2 _ {e2|g2} _ |
+acid: bass.acid -> lowpass -> delay
+acid = | [c2 c3? c2 eb2] [c2 {g2|bb2} c2 c3?] [C2 c3? {eb3|f3} c2] [{g2|bb2} c2 c3 c2?50%] |
+acid.lowpass.cutoff = 500 Hz <-> 3500 Hz over 8 bars
+acid.lowpass.resonance = 0.7
+acid.delay.sync = 0.75
+acid.delay.mix = 0.2
+
+pad: synth.pad -> reverb
+pad = | c4+eb4+g4 _ _ _ | {c4+eb4+ab4|bb3+eb4+g4} _ _ _ |
+pad.volume = 0.15 -> 0.6 over 1 beat, loop
+pad.reverb.mix = 0.5

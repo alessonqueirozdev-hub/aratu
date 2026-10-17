@@ -1,0 +1,36 @@
+// Electronic manguebeat, from the mangue of Recife: the alfaias of maracatu
+// against an electronic kick and an 808 bass, the caixa rolling, the gonguê
+// ringing the time and the agbê shaking, under a distorted guitar riff, the
+// way manguebeat mixed the mangue with the world.
+meter: 4/4
+tempo: 98
+key: E minor
+
+alfaia = | O -o o_oo o | O -o o_oo O |
+caixa  = Ssss Ssss Ssss Ssss
+gonguê = o -o -m o
+agbê   = Ss Ss Ss Ss
+
+eletro: drums.808 -> compressor
+eletro {
+  bd   = b [- b] b -
+  clap = - p - p
+}
+
+bass: bass.808
+bass = | e1 _ [- e1] g1 | a1 _ [- g1] d2 |
+
+guitar: guitar.steel -> drive -> reverb
+guitar = | [e3 e3] [- g3] [a3 -] [b3 a3] | [g3 e3] [- d3] e3 _ |
+guitar.drive.amount = 20 dB
+guitar.reverb.mix = 0.25
+guitar.volume = 0.4
+
+// The mix: the alfaias in front, the rest around them.
+alfaia.volume = 0.6
+drums.volume = 0.5
+gonguê.volume = 0.55
+agbê.volume = 0.45
+eletro.volume = 0.7
+bass.volume = 0.75
+reverb.mix = 0.2

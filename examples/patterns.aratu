@@ -1,23 +1,39 @@
-// Patterns for playing live: change a line while it plays,
-// and the change lands at the next bar line. Write a line
-// such as `now: play fill once` and it lands at the next beat.
+// Patterns for playing live, in techno: the groove, a fill and a crash are
+// each prepared under a name, and play chooses what sounds. Change a line
+// while it plays and the change lands at the next bar line; write
+// `now: play fill once` and the fill lands at the next beat, then the groove
+// comes back; try `play breakdown` for the hi-hats alone.
 meter: 4/4
-tempo: 112
+tempo: 130
 
 pattern groove {
-  hh = cc cc co cc
-  bd = b - b b
-  sd = - s - s
+  bd   = b b b b
+  oh   = -o -o -o -o
+  hh   = cccc cCcc cccc cCcc
+  clap = - p - p
 }
 pattern fill {
-  hh = cc cc cc cc
-  sd = ss ss SS SS
-  bd = b - - -
+  bd = b b b b
+  hh = cccc cccc cccc cccc
+  sd = ss ss SS S!S!
+}
+pattern breakdown {
+  hh = -c -c -c -c
 }
 pattern crash { cr = x - - - }
 
-play groove x3, fill
-every 8 bars, first: add crash
+play groove x7, fill
+every 16 bars, first: add crash
 
-bass = | c2 _ c2 eb2 | f2 _ g2 bb1 |
-swing 58%
+rumble: bass.synth -> lowpass -> reverb
+rumble = | [- f1 f1 f1]x4 | [- f1 f1 f1]x3 [- ab1 ab1 c2] |
+rumble.lowpass.cutoff = 320 Hz
+rumble.reverb.mix = 0.3
+
+stab: synth.saw -> lowpass -> delay -> reverb
+stab = | - [- f3+ab3+c4] - - | - - [- f3+ab3+c4] [- eb3+g3+c4] |
+stab.lowpass.cutoff = 600 Hz <-> 3200 Hz over 16 bars
+stab.delay.sync = 0.75
+stab.delay.feedback = 0.5
+stab.delay.mix = 0.35
+stab.volume = 0.5

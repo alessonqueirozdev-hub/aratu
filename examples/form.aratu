@@ -1,19 +1,42 @@
-// Sections and a form.
+// A piano house track in sections: an intro of drums, the groove with the
+// bass, a breakdown where the piano and the pad play alone, the drop with
+// everything, and an outro. Each section is written once; the form line
+// says the order, and when it ends it starts again.
 meter: 4/4
-tempo: 100
+tempo: 124
+key: F minor
+
+piano: piano.grand -> reverb
+pad: synth.strings -> reverb
+bass: bass.synth -> lowpass
 
 section intro {
-  keys { chords = | Am | F | }
+  drums { bd = b b b b; hh = -c -c -c -c }
 }
-section verse {
-  bass = | a2 _ e2 _ | f2 _ c3 _ |
-  drums { hh = cc cc co cc; bd = b - b -; sd = - s - s }
-  keys { chords = | Am | F | }
+section groove {
+  drums { bd = b b b b; oh = -o -o -o -o; clap = - p - p; hh = cccc cccc cccc cccc }
+  bass = | f1 [- f2] [- f1] [f2 eb2] | db1 [- db2] [- db1] [db2 c2] | ab1 [- ab2] [- ab1] [ab2 bb1] | eb1 [- eb2] [- eb1] [g1 eb1] |
 }
-section chorus {
-  bass = | c3 _ g2 _ | g2 _ d3 _ |
-  drums { hh = cc cc cc cc; bd = b - b b; sd = - s - S }
-  guitar { chords = | C | G |; strum = D du -u du }
+section breakdown {
+  piano = | f3+ab3+c4 [- f3+ab3+c4] - [- f3+ab3+c4] | f3+ab3+db4 [- f3+ab3+db4] - [- f3+ab3+db4] |
+          | eb3+ab3+c4 [- eb3+ab3+c4] - [- eb3+ab3+c4] | eb3+g3+bb3 [- eb3+g3+bb3] - [- eb3+g3+bb3] |
+  pad { chords = | Fm | Db | Ab | Eb | }
+}
+section drop {
+  drums { bd = b b b b; oh = -o -o -o -o; clap = - p - p; hh = cccc cccc cccc cccc; cr = | x - - - | - | - | - | }
+  bass = | f1 [- f2] [- f1] [f2 eb2] | db1 [- db2] [- db1] [db2 c2] | ab1 [- ab2] [- ab1] [ab2 bb1] | eb1 [- eb2] [- eb1] [g1 eb1] |
+  piano = | f3+ab3+c4 [- f3+ab3+c4] - [- f3+ab3+c4] | f3+ab3+db4 [- f3+ab3+db4] - [- f3+ab3+db4] |
+          | eb3+ab3+c4 [- eb3+ab3+c4] - [- eb3+ab3+c4] | eb3+g3+bb3 [- eb3+g3+bb3] - [- eb3+g3+bb3] |
+  pad { chords = | Fm | Db | Ab | Eb | }
+}
+section outro {
+  drums { bd = b b b b; oh = -o -o -o -o }
+  pad { chords = | Fm | _ | Db | _ | }
 }
 
-form: intro verse x2 chorus x2
+form: intro x8 groove x2 breakdown drop x2 outro
+
+piano.reverb.mix = 0.35
+pad.volume = 0.4
+pad.reverb.mix = 0.6
+bass.lowpass.cutoff = 1200 Hz

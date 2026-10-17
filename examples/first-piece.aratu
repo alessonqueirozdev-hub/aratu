@@ -1,17 +1,24 @@
-// The first piece of the manual.
+// A first piece: deep house in A minor. Each drum has its line: b the kick
+// on every beat, o the open hi-hat between them, p the clap on two and four,
+// c the closed hi-hat in sixteenths. The bass jumps to its octave off the
+// beat, and the electric piano holds one chord per bar. Change any line while
+// it plays: the change comes in at the next bar line.
 meter: 4/4
-tempo: 96
+tempo: 122
 key: A minor
 
 drums {
-  hh = cc cc co cc
-  bd = b - b -
-  sd = - s - s
+  bd   = b b b b
+  oh   = -o -o -o -o
+  clap = - p - p
+  hh   = cccc cccc cccc cccc
 }
 
-bass = | a2 _ e2 _ | f2 _ c3 _ |
+bass: bass.synth -> lowpass
+bass = | a1 [- a2] [- a1] [a2 g2] | f1 [- f2] [- f1] [f2 e2] |
+       | c2 [- c3] [- c2] [c3 d3] | g1 [- g2] [- g1] [g2 b1] |
+bass.lowpass.cutoff = 900 Hz
 
-guitar {
-  chords = | Am | F | C G | G |
-  strum  = D du -u du
-}
+keys: keys.epiano -> chorus -> reverb
+keys { chords = | Am9 | Fmaj7 | C7M | G6 | }
+keys.reverb.mix = 0.4

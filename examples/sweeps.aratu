@@ -1,19 +1,37 @@
-// Parameters that move, like crescendos of the sound: the bass filter opens
-// and closes every four bars, the lead's echo grows and starts again, and a
-// reverb swells into every eighth bar. Turn a knob while it plays: the
-// motion goes on from where it is.
+// Parameters that move, in progressive house: the bass filter opens and
+// closes every eight bars (<->), the pad pumps with the kick (a volume that
+// rises in every beat), the pluck's echo grows into each phrase and starts
+// again, and every sixteen bars the drums thin out through a highpass and
+// drop back in on the one (-> ..., back over 1 beat). Turn a knob while it
+// plays: the motion goes on from where it is.
 meter: 4/4
-tempo: 112
+tempo: 124
+key: D minor
 
-bass: synth.saw -> lowpass
-bass = | a1 a2 a1 a2 | f1 f2 f1 f2 | c2 c3 c2 c3 | g1 g2 g1 g2 |
-bass.lowpass.cutoff = 250 Hz <-> 3000 Hz over 4 bars
+bass: bass.synth -> lowpass
+bass = | [- d2]x4 | [- bb1]x4 | [- f1]x4 | [- c2]x4 |
+bass.lowpass.cutoff = 300 Hz <-> 2500 Hz over 8 bars
 bass.lowpass.resonance = 0.4
 
-lead: synth.square -> delay -> reverb
-lead = | e4 _ c5 b4 | a4 _ _ _ | g4 _ e4 g4 | d4 _ _ _ |
-lead.volume = 0.45
-lead.delay.mix = 0 -> 0.5 over 2 bars, loop
-every 8 bars: lead.reverb.mix = 0.1 -> 0.6 over 3 bars, back over 1 bar
+pad: synth.pad -> reverb
+pad { chords = | Dm | Bb | F | C | }
+pad.volume = 0.1 -> 0.7 over 1 beat, loop
+pad.reverb.mix = 0.5
 
-drums { hh = cc cc cc cc; bd = b - b -; sd = - s - s }
+pluck: synth.pluck -> delay -> reverb
+pluck = | [d5 a4] [- f5] [- a4] [e5 d5] | [d5 bb4] [- f5] [- bb4] [d5 c5] |
+        | [c5 a4] [- f5] [- a4] [c5 a4] | [c5 g4] [- e5] [- g4] [c5 e5] |
+pluck.volume = 0.5
+pluck.delay.sync = 0.75
+pluck.delay.mix = 0 -> 0.5 over 4 bars, loop
+every 8 bars: pluck.reverb.mix = 0.1 -> 0.6 over 3 bars, back over 1 bar
+
+drums: drums.kit -> highpass
+drums {
+  bd   = b b b b
+  oh   = -o -o -o -o
+  clap = - p - p
+  hh   = cccc cCcc cccc cCcc
+}
+drums.highpass.cutoff = 20 Hz
+every 16 bars: drums.highpass.cutoff = 20 Hz -> 1500 Hz over 4 bars, back over 1 beat

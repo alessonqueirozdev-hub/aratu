@@ -211,18 +211,21 @@ const words = {
   },
 
   // Example pieces.
-  "first-piece": { pt: "Primeira peça", es: "Primera pieza", en: "First piece" },
-  chance: { pt: "Acaso", es: "Azar", en: "Chance" },
-  melody: { pt: "Melodia com dinâmica", es: "Melodía con dinámica", en: "Melody with dynamics" },
-  patterns: { pt: "Padrões ao vivo", es: "Patrones en vivo", en: "Live patterns" },
-  form: { pt: "Seções e forma", es: "Secciones y forma", en: "Sections and form" },
-  waltz: { pt: "Valsa com anacruse", es: "Vals con anacrusa", en: "Waltz with a pickup" },
-  sound: { pt: "Sons e knobs", es: "Sonidos y perillas", en: "Sounds and knobs" },
-  motifs: { pt: "Motivos e sequências", es: "Motivos y secuencias", en: "Motifs and sequences" },
-  "twelve-tone": { pt: "Série dodecafônica", es: "Serie dodecafónica", en: "Twelve-tone row" },
-  setlist: { pt: "Lista de melodias no palco", es: "Lista de melodías en el escenario", en: "A melody list on stage" },
-  sweeps: { pt: "Efeitos que se movem", es: "Efectos que se mueven", en: "Effects that move" },
+  "first-piece": { pt: "Primeira peça: deep house", es: "Primera pieza: deep house", en: "First piece: deep house" },
+  chance: { pt: "Acaso: techno generativo", es: "Azar: techno generativo", en: "Chance: generative techno" },
+  melody: { pt: "Melodia com dinâmica: chillout", es: "Melodía con matices: chillout", en: "Melody with dynamics: chillout" },
+  patterns: { pt: "Padrões ao vivo: techno", es: "Patrones en vivo: techno", en: "Live patterns: techno" },
+  form: { pt: "Seções e forma: piano house", es: "Secciones y forma: piano house", en: "Sections and form: piano house" },
+  waltz: { pt: "Valsa eletrônica com anacruse", es: "Vals electrónico con anacrusa", en: "Electronic waltz with a pickup" },
+  sound: { pt: "Sons e knobs: acid house", es: "Sonidos y perillas: acid house", en: "Sounds and knobs: acid house" },
+  motifs: { pt: "Motivos: synthwave", es: "Motivos: synthwave", en: "Motifs: synthwave" },
+  "twelve-tone": { pt: "Série dodecafônica: IDM", es: "Serie dodecafónica: IDM", en: "Twelve-tone row: IDM" },
+  setlist: { pt: "Listas no palco: electro house", es: "Listas en el escenario: electro house", en: "Lists on stage: electro house" },
+  sweeps: { pt: "Efeitos que se movem: progressive house", es: "Efectos que se mueven: progressive house", en: "Effects that move: progressive house" },
   trance: { pt: "Trance em dó menor", es: "Trance en do menor", en: "Trance in C minor" },
+  manguebeat: { pt: "Manguebeat eletrônico", es: "Manguebeat electrónico", en: "Electronic manguebeat" },
+  "drum-and-bass": { pt: "Drum and bass: notas fantasma", es: "Drum and bass: notas fantasma", en: "Drum and bass: ghost notes" },
+  "g-funk": { pt: "G-funk da Costa Oeste", es: "G-funk de la Costa Oeste", en: "West Coast G-funk" },
 } as const;
 
 export type Word = keyof typeof words;

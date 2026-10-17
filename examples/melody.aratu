@@ -1,9 +1,32 @@
-// A melody with dynamics, a repeat, a ritardando and a fermata.
+// A melody with dynamics, in a chillout groove: the bell lead grows from p to
+// f and comes back (< and >), the first four bars repeat (|: :|), and at the
+// end the music slows down (rit) and holds its last note (a fermata, ^).
 meter: 4/4
-tempo: 84
+tempo: 92
+key: A minor
 
-melody = |: p:c4< e g c5 | b4 g e d | f:c4 e4 g4 a4 :| g4> e c d | p:c4^ _ _ _ |
-bass   = |: c3 _ g2 _ | g2 _ _ _ | c3 _ f2 _ :| g2 _ _ _ | c2 _ _ _ |
+lead: keys.bell -> delay -> reverb
+lead = |: p:e5< _ [d5 c5] a4 | g4 _ [a4 c5] _ | f:d5 _ [c5 a4] g4 | e4 _ _ _ :| e5> d5 c5 g4 | p:a4^ _ _ _ |
+lead.delay.sync = 0.75
+lead.delay.mix = 0.3
+lead.reverb.mix = 0.5
 
-at bar 7: rit to 60 over 2 bars
-at bar 9: tempo primo
+pad: synth.strings -> chorus -> reverb
+pad { chords = |: Am7 | Dm7 | Fmaj7 | E7 :| Fmaj7 | Am9 | }
+pad.volume = 0.5
+pad.reverb.mix = 0.6
+
+bass: bass.finger
+bass = |: a1 _ [- a1] e2 | d2 _ [- d2] a1 | f1 _ [- f2] c2 | e1 _ [- e2] b1 :| f1 _ c2 _ | a1 _ _ _ |
+
+drums: drums.acoustic -> reverb
+drums {
+  bd = b [- b] - -
+  sd = - s - s
+  hh = cc cc cc co
+}
+drums.reverb.mix = 0.2
+swing 56%
+
+at bar 9: rit to 70 over 2 bars
+at bar 11: tempo primo

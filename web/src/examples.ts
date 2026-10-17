@@ -2,8 +2,11 @@
 // the language crate checks that each compiles without a single warning).
 
 import chance from "../../examples/chance.aratu";
+import drumAndBass from "../../examples/drum-and-bass.aratu";
 import firstPiece from "../../examples/first-piece.aratu";
 import form from "../../examples/form.aratu";
+import gFunk from "../../examples/g-funk.aratu";
+import manguebeat from "../../examples/manguebeat.aratu";
 import melody from "../../examples/melody.aratu";
 import motifs from "../../examples/motifs.aratu";
 import patterns from "../../examples/patterns.aratu";
@@ -27,4 +30,7 @@ export const examples = [
   { id: "sound", text: sound },
   { id: "sweeps", text: sweeps },
   { id: "trance", text: trance },
+  { id: "manguebeat", text: manguebeat },
+  { id: "drum-and-bass", text: drumAndBass },
+  { id: "g-funk", text: gFunk },
 ] as const;
