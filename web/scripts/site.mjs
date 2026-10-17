@@ -15,10 +15,7 @@ const web = join(dirname(fileURLToPath(import.meta.url)), "..");
 /** The site's address, the one setting to change when it moves. Only what
  * must be absolute comes from it (canonical links, alternates, the site
  * map); the pages reach each other and the editor by relative links. */
-export const SITE_URL = (process.env.ARATU_SITE_URL || "https://alessonqueirozdev-hub.github.io/aratu/").replace(
-  /\/*$/,
-  "/",
-);
+export const SITE_URL = (process.env.ARATU_SITE_URL || "https://aratu.live/").replace(/\/*$/, "/");
 
 const HTML_LANG = { pt: "pt-BR", es: "es", en: "en" };
 const LOCALE = { pt: "pt_BR", es: "es_LA", en: "en_US" };

@@ -55,7 +55,7 @@ The build also writes the book as plain pages to read, which need no
 script: one per lesson and chapter in each language (`pt/`, `es/`, `en/`),
 with `sitemap.xml` and `robots.txt`, for search engines and for sharing a
 link. Their absolute links (canonical, alternates, the site map) come from
-`ARATU_SITE_URL`, by default the GitHub Pages address.
+`ARATU_SITE_URL`, by default <https://aratu.live/>.
 
 ## A taste
 
