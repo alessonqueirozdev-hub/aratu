@@ -131,7 +131,7 @@ function head(p, { title, description, type }, alternates, style) {
     .join("\n    ");
   return `<head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>${escape(title)}</title>
     <meta name="description" content="${escape(description)}" />
     <link rel="canonical" href="${url}" />
@@ -154,6 +154,9 @@ function head(p, { title, description, type }, alternates, style) {
     <meta name="twitter:image" content="${image}" />
     <meta name="twitter:image:alt" content="${escape(tr("shareImageAlt", p.lang))}" />
     <link rel="icon" href="${up(p.path)}mascot.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="${FONTS}" />
     <link rel="stylesheet" href="${up(p.path)}style.css?v=${style}" />
     <script>
       // The editor's dark theme, if chosen there; the page reads the same without it.
@@ -164,11 +167,15 @@ function head(p, { title, description, type }, alternates, style) {
   </head>`;
 }
 
+// The editor's faces (index.html loads the same).
+const FONTS =
+  "https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:ital,wght@0,400;0,600;1,400&family=Atkinson+Hyperlegible+Next:ital,wght@0,400;0,600;0,700;1,400&family=Gloock&display=swap";
+
 function header(p, alternates, homes) {
   const lang = p.lang;
   const top = up(p.path);
   const tab = (kind, word, href) =>
-    `<a href="${href}"${p.kind === kind ? ' class="here"' : ""}>${escape(tr(word, lang))}</a>`;
+    `<a href="${href}" data-icon="${kind}"${p.kind === kind ? ' class="here"' : ""}>${escape(tr(word, lang))}</a>`;
   const langs = LANGS.map(
     (l) =>
       `<a href="${top}${alternates[l] ?? homes[l]}" hreflang="${l}" lang="${HTML_LANG[l]}" title="${LANG_NAME[l]}"${

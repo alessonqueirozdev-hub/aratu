@@ -7,7 +7,7 @@ import { ChangeSet } from "@codemirror/state";
 import type { EditorView } from "@codemirror/view";
 import type { Aratu, BarInfo, Lang, Program } from "./aratu";
 import type { Engine } from "./audio";
-import { createEditor, setWrapping, showDiagnostics, showPlaying } from "./editor";
+import { createEditor, narrowScreen, setWrapping, showDiagnostics, showPlaying } from "./editor";
 import { knobs, showKnobs, showMoving } from "./knobs";
 import { Player, type Scheduled } from "./player";
 
@@ -263,6 +263,6 @@ export class Session {
     if (!this.mirror) return;
     this.mirror.destroy();
     this.mirror = null;
-    setWrapping(this.view, false);
+    setWrapping(this.view, narrowScreen());
   }
 }

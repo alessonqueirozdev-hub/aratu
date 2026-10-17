@@ -1013,3 +1013,29 @@ not a sound: brought back while playing, it lands at the next bar line like
 any edit, and Ctrl+Z undoes it, so nothing new had to be taught to the
 player. They are kept in the browser; sections and patterns remain the way
 to write an arrangement into the piece itself.
+
+## The page as a score
+
+The editor's look comes from engraved music, so it reads as a place for
+music rather than a generic web tool. The header sits on a five-line staff,
+and the tab you are on wears a note on it. The scenes are boxed like a
+score's rehearsal marks. The bar count, the tempo and the stacked meter
+(6 over 8) sit in a dark display in the transport, set in Gloock, a face
+cut like an engraver's. A line crosses the display in the time of one bar,
+so a change can be timed to the bar line without counting. The colours
+stayed. The text and the code are set in Atkinson Hyperlegible, which the
+Braille Institute drew so that letters easily confused (I, l and 1, O and
+0) stay apart. That matters in a classroom and in code. The faces come from
+Google Fonts and are not kept in the repository. Without them the page
+falls back to the system's serif, sans and mono.
+
+The stage is a full-screen sheet of code under a rail that always shows the
+bar, the beats and the tempo, and the bar's line along its foot. The
+controls on the rail fade while the mouse rests, and stay on a touch screen,
+which has no resting mouse. A problem in the piece shows at the foot,
+never over the line being written. On a phone the stage has one column and
+its own letter size, and the button that leaves it stays in reach.
+
+On a phone the tabs go to the foot of the screen, under the thumb. Long
+lines wrap. The course's contents fold into a bar that names the page you
+are on.

@@ -2,7 +2,7 @@
 <html lang="pt-BR" data-theme="light">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Aratu · música escrita para tocar e mudar enquanto toca</title>
     <meta
       name="description"
@@ -37,9 +37,34 @@
       content="O caranguejo do Aratu, de fones, tocando num laptop, ao lado do nome Aratu, do lema e de um maracatu escrito em Aratu."
     />
     <link rel="icon" href="mascot.png" />
+    <!-- The faces: Gloock for titles and numbers, Atkinson Hyperlegible for
+         reading and for code. Without them the page falls back to the
+         system's serif, sans and mono, and reads the same. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:ital,wght@0,400;0,600;1,400&family=Atkinson+Hyperlegible+Next:ital,wght@0,400;0,600;0,700;1,400&family=Gloock&display=swap"
+    />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    <!-- Icons, drawn once and used by the buttons. -->
+    <svg class="sprite" aria-hidden="true">
+      <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.2v13.6L18.8 12z" fill="currentColor" /></symbol>
+      <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="1.2" fill="currentColor" /></symbol>
+      <symbol id="i-rec" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5.6" fill="currentColor" /></symbol>
+      <symbol id="i-stage" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="1.5" /><path d="M12 16v4M8 20h8M7 8.5h6M7 11.5h9" /></symbol>
+      <symbol id="i-share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1" /><path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1" /></symbol>
+      <symbol id="i-cols" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="1.5" /><path d="M12 4v16M6 8h3M6 11h3M6 14h2M15 8h3M15 11h3" /></symbol>
+      <symbol id="i-fit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></symbol>
+      <symbol id="i-map" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 7h18M3 12h18M3 17h18" /><circle cx="7" cy="7" r="1.7" fill="currentColor" /><circle cx="15" cy="12" r="1.7" fill="currentColor" /><circle cx="10" cy="17" r="1.7" fill="currentColor" /></symbol>
+      <symbol id="i-exit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></symbol>
+      <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4" /><path d="M12 2.8v2M12 19.2v2M2.8 12h2M19.2 12h2M5.5 5.5l1.4 1.4M17.1 17.1l1.4 1.4M5.5 18.5l1.4-1.4M17.1 6.9l1.4-1.4" /></symbol>
+      <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M19.5 14.6A7.8 7.8 0 1 1 9.4 4.5a6.3 6.3 0 0 0 10.1 10.1z" /></symbol>
+      <symbol id="i-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6" /></symbol>
+    </svg>
+
     <header class="top">
       <a class="brand" href="#/aprender">
         <img src="mascot.png" alt="" width="44" height="44" />
@@ -49,38 +74,54 @@
         </span>
       </a>
       <nav class="tabs" aria-label="Aratu">
-        <a href="#/tocar" id="tab-play" data-word="navPlay"></a>
-        <a href="#/aprender" id="tab-learn" data-word="navLearn"></a>
-        <a href="#/manual" id="tab-manual" data-word="navManual"></a>
-        <a href="#/por-dentro" id="tab-inside" data-word="navInside"></a>
+        <a href="#/tocar" id="tab-play" data-icon="play" data-word="navPlay"></a>
+        <a href="#/aprender" id="tab-learn" data-icon="learn" data-word="navLearn"></a>
+        <a href="#/manual" id="tab-manual" data-icon="manual" data-word="navManual"></a>
+        <a href="#/por-dentro" id="tab-inside" data-icon="inside" data-word="navInside"></a>
       </nav>
       <div class="prefs">
         <div class="lang" role="group" aria-label="Idioma / Idioma / Language">
           <button id="lang-pt">PT</button><button id="lang-es">ES</button><button id="lang-en">EN</button>
         </div>
-        <div class="lang theme-switch" role="group" id="theme-switch">
-          <button id="theme-light">☀ <span data-word="light"></span></button><button id="theme-dark">☾ <span data-word="dark"></span></button>
+        <div class="theme-switch" role="group" id="theme-switch">
+          <button id="theme-light" data-title="light"><svg class="i"><use href="#i-sun" /></svg></button
+          ><button id="theme-dark" data-title="dark"><svg class="i"><use href="#i-moon" /></svg></button>
         </div>
       </div>
     </header>
 
     <main id="view-play" class="view play-view" hidden>
       <div class="toolbar">
-        <button id="play" class="btn btn-play big">▶ <span data-word="play"></span></button>
-        <button id="stop" class="btn big">■ <span data-word="stop"></span></button>
-        <button id="stage" class="btn big stage-open">⛶ <span data-word="stage"></span></button>
-        <button id="record" class="btn big record">⏺ <span id="record-word" data-word="record"></span></button>
-        <button id="share" class="btn big">🔗 <span data-word="share"></span></button>
-        <span id="scenes" class="scenes"></span>
-        <label class="examples">
-          <span data-word="examples"></span>
-          <select id="examples"></select>
-        </label>
-        <div class="status" id="status" aria-live="polite">
-          <span><b data-word="bar"></b> <span id="bar">–</span></span>
-          <span><b data-word="tempo"></b> <span id="bpm">–</span></span>
-          <span><b data-word="meter"></b> <span id="meter">–</span></span>
+        <div class="transport">
+          <button id="play" class="btn btn-play big" data-title="play">
+            <svg class="i"><use href="#i-play" /></svg><span data-word="play"></span>
+          </button>
+          <button id="stop" class="btn big btn-stop" data-title="stop">
+            <svg class="i"><use href="#i-stop" /></svg><span data-word="stop"></span>
+          </button>
+          <button id="record" class="btn big record" data-title="record">
+            <svg class="i"><use href="#i-rec" /></svg><span id="record-word" data-word="record"></span>
+          </button>
+        </div>
+        <div class="status" id="status">
+          <span class="stat stat-bar"><b data-word="bar"></b><span id="bar">–</span></span>
           <span id="beat" class="beat"></span>
+          <span class="stat stat-tempo"><b data-word="tempo"></b><span id="bpm">–</span></span>
+          <span class="stat stat-meter"><b data-word="meter"></b><span id="meter">–</span></span>
+          <span id="bar-progress" class="bar-progress"></span>
+        </div>
+        <div class="tools">
+          <button id="stage" class="btn stage-open" data-title="stage">
+            <svg class="i"><use href="#i-stage" /></svg><span data-word="stage"></span>
+          </button>
+          <button id="share" class="btn" data-title="share">
+            <svg class="i"><use href="#i-share" /></svg><span data-word="share"></span>
+          </button>
+          <span id="scenes" class="scenes"></span>
+          <label class="examples">
+            <span data-word="examples"></span>
+            <select id="examples"></select>
+          </label>
         </div>
       </div>
       <div class="work">
@@ -103,7 +144,7 @@
       <section class="rhythm sheet">
         <div class="rhythm-head">
           <h2 data-word="rhythmMap"></h2>
-          <div class="lang quantum" id="quantum" role="group">
+          <div class="seg quantum" id="quantum" role="group">
             <span class="quantum-label" data-word="grid"></span>
             <button data-q="1" data-word="gridAuto"></button><button data-q="2">♪ <span data-word="eighths"></span></button><button data-q="4">♬ <span data-word="sixteenths"></span></button><button data-q="3">3 <span data-word="triplets"></span></button>
           </div>
@@ -112,24 +153,46 @@
         <div id="play-grid" class="rhythm-grid"></div>
       </section>
       <p class="hint" data-word="hint"></p>
+      <!-- The stage's rail: where the piece is, always; the controls, which
+           fade while the mouse rests. -->
       <div class="stage-bar" id="stage-bar">
-        <button id="stage-play" class="btn btn-play">▶</button>
-        <button id="stage-stop" class="btn">■</button>
-        <span class="stage-count"><span id="stage-bar-n">–</span><span id="stage-beat" class="beat"></span></span>
-        <button id="stage-smaller" class="btn">A−</button>
-        <button id="stage-bigger" class="btn">A+</button>
-        <span id="stage-lists" class="stage-lists"></span>
-        <span id="stage-scenes" class="scenes"></span>
-        <button id="stage-split" class="btn">⫼ <span data-word="stageSplit"></span></button>
-        <button id="stage-fit" class="btn">⤢ <span data-word="stageFit"></span></button>
-        <button id="stage-map" class="btn" data-word="rhythmMap"></button>
-        <button id="stage-exit" class="btn">✕ <span data-word="stageExit"></span></button>
+        <div class="stage-hud">
+          <span class="stage-count"><span id="stage-bar-n">–</span><span id="stage-beat" class="beat"></span></span>
+          <span class="stage-tempo" id="stage-bpm"></span>
+        </div>
+        <div class="stage-controls">
+          <button id="stage-play" class="btn btn-play" data-title="play"><svg class="i"><use href="#i-play" /></svg></button>
+          <button id="stage-stop" class="btn" data-title="stop"><svg class="i"><use href="#i-stop" /></svg></button>
+          <span id="stage-lists" class="stage-lists"></span>
+          <span id="stage-scenes" class="scenes"></span>
+          <span class="stage-tools">
+            <button id="stage-smaller" class="btn font-step" data-title="fontSmaller">A<small>−</small></button>
+            <button id="stage-bigger" class="btn font-step" data-title="fontBigger">A<small>+</small></button>
+            <button id="stage-split" class="btn" data-title="stageSplit">
+              <svg class="i"><use href="#i-cols" /></svg><span data-word="stageSplit"></span>
+            </button>
+            <button id="stage-fit" class="btn" data-title="stageFit">
+              <svg class="i"><use href="#i-fit" /></svg><span data-word="stageFit"></span>
+            </button>
+            <button id="stage-map" class="btn" data-title="rhythmMap">
+              <svg class="i"><use href="#i-map" /></svg><span data-word="rhythmMap"></span>
+            </button>
+          </span>
+        </div>
+        <button id="stage-exit" class="btn stage-exit" data-title="stageExit">
+          <svg class="i"><use href="#i-exit" /></svg><span data-word="stageExit"></span>
+        </button>
+        <span id="stage-progress" class="bar-progress"></span>
       </div>
       <p id="stage-msg" class="stage-msg" hidden></p>
     </main>
 
     <main id="view-learn" class="view book-view" hidden>
       <aside class="toc">
+        <button class="toc-toggle" aria-expanded="false">
+          <span class="toc-kind" data-word="lessons"></span><span class="toc-here"></span
+          ><svg class="i"><use href="#i-down" /></svg>
+        </button>
         <h2 data-word="lessons"></h2>
         <p class="progress" id="learn-progress"></p>
         <ol id="learn-toc"></ol>
@@ -139,6 +202,10 @@
 
     <main id="view-manual" class="view book-view" hidden>
       <aside class="toc">
+        <button class="toc-toggle" aria-expanded="false">
+          <span class="toc-kind" data-word="chapters"></span><span class="toc-here"></span
+          ><svg class="i"><use href="#i-down" /></svg>
+        </button>
         <h2 data-word="chapters"></h2>
         <ol id="manual-toc"></ol>
       </aside>
@@ -147,6 +214,10 @@
 
     <main id="view-inside" class="view book-view" hidden>
       <aside class="toc">
+        <button class="toc-toggle" aria-expanded="false">
+          <span class="toc-kind" data-word="chapters"></span><span class="toc-here"></span
+          ><svg class="i"><use href="#i-down" /></svg>
+        </button>
         <h2 data-word="chapters"></h2>
         <ol id="inside-toc"></ol>
       </aside>

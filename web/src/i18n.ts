@@ -37,6 +37,8 @@ const words = {
   stageExit: { pt: "Sair", es: "Salir", en: "Exit" },
   stageSplit: { pt: "2 colunas", es: "2 columnas", en: "2 columns" },
   stageFit: { pt: "Caber na tela", es: "Caber en pantalla", en: "Fit the screen" },
+  fontSmaller: { pt: "Letra menor", es: "Letra más pequeña", en: "Smaller letters" },
+  fontBigger: { pt: "Letra maior", es: "Letra más grande", en: "Bigger letters" },
   share: { pt: "Compartilhar", es: "Compartir", en: "Share" },
   shareCopied: {
     pt: "Link copiado: cole onde quiser. Quem abrir ouve esta música.",

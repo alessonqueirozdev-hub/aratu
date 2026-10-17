@@ -1,6 +1,7 @@
 // Aratu in the browser: play, learn, look things up.
 
 import { EditorView } from "@codemirror/view";
+import { narrowScreen, setWrapping } from "./editor";
 import { Aratu, type Program } from "./aratu";
 import { Engine, type SoundProblem } from "./audio";
 import { mountBlocks } from "./blocks";
@@ -28,6 +29,43 @@ function save(key: string, value: string): void {
   } catch {
     // Private windows may refuse storage; everything works without it.
   }
+}
+
+/** The beats of the bar as dots: the first bigger, the one now lit. */
+function beatPips(el: HTMLElement, beats: number, now: number): void {
+  const n = Math.max(1, Math.min(beats, 16));
+  while (el.childElementCount > n) el.lastElementChild?.remove();
+  while (el.childElementCount < n) el.append(document.createElement("i"));
+  [...el.children].forEach((dot, i) => {
+    dot.classList.toggle("now", i === now);
+    dot.classList.toggle("hit", i === now);
+  });
+}
+
+/** The meter stacked, as a score writes it: 6 over 8. */
+function showMeter(el: HTMLElement, meter: string): void {
+  const m = /^(\d+)\/(\d+)$/.exec(meter);
+  if (!m) {
+    el.textContent = meter;
+    return;
+  }
+  const sig = document.createElement("span");
+  sig.className = "sig";
+  for (const part of [m[1], m[2]]) {
+    const s = document.createElement("span");
+    s.textContent = part;
+    sig.append(s);
+  }
+  el.replaceChildren(sig);
+}
+
+/** A line that crosses the display in the time of one bar. */
+function runProgress(el: HTMLElement, seconds: number | null): void {
+  el.classList.remove("run");
+  if (seconds === null) return;
+  el.style.setProperty("--bar-len", `${seconds}s`);
+  void el.offsetWidth;
+  el.classList.add("run");
 }
 
 interface Page {
@@ -80,6 +118,13 @@ async function main(): Promise<void> {
     for (const el of document.querySelectorAll<HTMLElement>("[data-word]")) {
       const w = el.dataset.word ?? "";
       if (isWord(w)) el.textContent = tr(w, lang);
+    }
+    // Buttons that may show only their icon say what they do.
+    for (const el of document.querySelectorAll<HTMLElement>("[data-title]")) {
+      const w = el.dataset.title ?? "";
+      if (!isWord(w)) continue;
+      el.title = tr(w, lang);
+      el.setAttribute("aria-label", tr(w, lang));
     }
     for (const l of LANGS) $(`lang-${l}`).classList.toggle("on", l === lang);
     const select = $<HTMLSelectElement>("examples");
@@ -248,24 +293,27 @@ async function main(): Promise<void> {
       map.bar(info, at);
       const ctx = getEngine().ctx;
       const delay = Math.max(0, (at - ctx.currentTime) * 1000);
+      const length = info.end - info.start;
       window.setTimeout(() => {
         $("bar").textContent = String(info.bar);
         $("stage-bar-n").textContent = String(info.bar);
         $("bpm").textContent = String(Math.round(info.bpm));
-        $("meter").textContent = info.meter;
+        showMeter($("meter"), info.meter);
+        $("stage-bpm").textContent = `${Math.round(info.bpm)} bpm · ${info.meter}`;
+        for (const id of ["bar-progress", "stage-progress"]) runProgress($(id), length);
       }, delay);
-      const beatLen = (info.end - info.start) / Math.max(info.beats, 1);
       for (let b = 0; b < info.beats; b++) {
+        // Beats may be uneven (2+2+3): each lights when it starts.
+        const offset = (info.beatTimes?.[b] ?? info.start + (b * length) / Math.max(info.beats, 1)) - info.start;
         window.setTimeout(() => {
-          const dots = [$("beat"), $("stage-beat")];
-          for (const dot of dots) dot.classList.add("on");
+          for (const id of ["beat", "stage-beat"]) beatPips($(id), info.beats, b);
           // On stage, the first beat of each bar lights the frame.
           if (b === 0) document.body.classList.add("downbeat");
           window.setTimeout(() => {
-            for (const dot of dots) dot.classList.remove("on");
+            for (const id of ["beat", "stage-beat"]) $(id).querySelector(".hit")?.classList.remove("hit");
             document.body.classList.remove("downbeat");
           }, 120);
-        }, delay + b * beatLen * 1000);
+        }, delay + offset * 1000);
       }
     },
     onSwap: (bar, beat) => {
@@ -275,10 +323,16 @@ async function main(): Promise<void> {
     },
     onPlaying: (on) => {
       $("play").classList.toggle("on", on);
+      $("stage-play").classList.toggle("on", on);
+      if (!on) {
+        for (const id of ["bar-progress", "stage-progress"]) runProgress($(id), null);
+        for (const id of ["beat", "stage-beat"]) beatPips($(id), $(id).childElementCount, -1);
+      }
       if (on) map.start();
       else map.stop();
     },
   });
+  for (const id of ["beat", "stage-beat"]) beatPips($(id), 4, -1);
   // Melody lists in the piece: `temas.2`, `temas.all`, `temas.random`,
   // where the number can be changed by a button or Alt+1…9 while it plays.
   interface ListRef {
@@ -381,7 +435,10 @@ async function main(): Promise<void> {
   $("stop").onclick = () => playground.stop();
   // The stage: only the code, full screen and big enough for a projector,
   // for playing live in front of people.
-  let stageFont = Number(load("aratu.stageFont") ?? 30) || 30;
+  // A phone keeps its own size: what reads on a projector is too big there.
+  const fontKey = () => (narrowScreen() ? "aratu.stageFontPhone" : "aratu.stageFont");
+  const savedFont = () => Number(load(fontKey())) || (narrowScreen() ? 18 : 30);
+  let stageFont = savedFont();
   let idleTimer = 0;
   const onStage = () => document.body.classList.contains("stage");
   // The size the person chose with A− and A+; "fit the screen" may make
@@ -394,8 +451,8 @@ async function main(): Promise<void> {
     playground.mirror?.requestMeasure();
   };
   const setStageFont = (px: number) => {
-    stageFont = Math.min(72, Math.max(16, px));
-    save("aratu.stageFont", String(stageFont));
+    stageFont = Math.min(72, Math.max(narrowScreen() ? 12 : 16, px));
+    save(fontKey(), String(stageFont));
     showFont(stageFont);
     requestAnimationFrame(() => fitFont());
   };
@@ -487,7 +544,8 @@ async function main(): Promise<void> {
   });
   window.addEventListener("resize", () => fitFont());
   const applySplit = () => {
-    const on = split && onStage();
+    // A phone is too narrow for two columns.
+    const on = split && onStage() && !narrowScreen();
     document.body.classList.toggle("stage-split", on);
     $("editor-mirror").hidden = !on;
     $("stage-split").classList.toggle("on", split);
@@ -513,7 +571,7 @@ async function main(): Promise<void> {
     if (!location.hash.startsWith("#/tocar")) location.hash = "#/tocar";
     document.body.classList.add("stage");
     document.documentElement.dataset.theme = "dark";
-    setStageFont(stageFont);
+    setStageFont(savedFont());
     applySplit();
     document.documentElement.requestFullscreen?.().catch(() => {
       // Without full screen (an iframe, an old browser) the stage still works.
@@ -555,6 +613,16 @@ async function main(): Promise<void> {
     if (!document.fullscreenElement && onStage()) leaveStage();
   });
   document.addEventListener("mousemove", wake);
+  document.addEventListener("pointerdown", wake);
+  // Turning a tablet, or narrowing the window: long lines wrap on a phone,
+  // and the stage goes to one column.
+  window.matchMedia("(max-width: 720px)").addEventListener("change", () => {
+    if (!playground.mirror) setWrapping(playground.view, narrowScreen());
+    if (onStage()) {
+      setStageFont(savedFont());
+      applySplit();
+    }
+  });
   window.addEventListener(
     "keydown",
     (e) => {
@@ -632,6 +700,9 @@ async function main(): Promise<void> {
     $("record").classList.toggle("on", on);
     $("record-word").dataset.word = on ? "recordStop" : "record";
     $("record-word").textContent = tr(on ? "recordStop" : "record", lang);
+    $("record").dataset.title = on ? "recordStop" : "record";
+    $("record").title = tr(on ? "recordStop" : "record", lang);
+    $("record").setAttribute("aria-label", tr(on ? "recordStop" : "record", lang));
   };
   const download = (blob: Blob, name: string) => {
     const a = document.createElement("a");
@@ -753,23 +824,48 @@ async function main(): Promise<void> {
 
   const exerciseIds = (html: string) => [...html.matchAll(/data-kind="exercise" data-id="([^"]+)"/g)].map((m) => m[1]);
 
+  const tocLink = (href: string, title: string, n: string, here: boolean): HTMLAnchorElement => {
+    const a = document.createElement("a");
+    a.href = href;
+    const num = document.createElement("span");
+    num.className = "toc-n";
+    num.textContent = n;
+    const text = document.createElement("span");
+    text.textContent = title;
+    a.append(num, text);
+    if (here) a.classList.add("here");
+    return a;
+  };
+  for (const toc of document.querySelectorAll<HTMLElement>(".toc")) {
+    const toggle = toc.querySelector<HTMLButtonElement>(".toc-toggle");
+    if (!toggle) continue;
+    toggle.onclick = () => {
+      const open = !toc.classList.contains("open");
+      toc.classList.toggle("open", open);
+      toggle.setAttribute("aria-expanded", String(open));
+      const ol = toc.querySelector("ol");
+      const here = toc.querySelector("a.here");
+      if (open && ol && here) {
+        ol.scrollTop += here.getBoundingClientRect().top - ol.getBoundingClientRect().top - ol.clientHeight / 3;
+      }
+    };
+  }
+
   function renderLearnToc(current?: string): void {
     if (!book) return;
     const ol = $("learn-toc");
     ol.innerHTML = "";
     let total = 0;
     let solved = 0;
-    for (const p of book.learn) {
+    for (const [i, p] of book.learn.entries()) {
       const ids = exerciseIds(p.html);
       total += ids.length;
       const n = ids.filter((id) => done.has(id)).length;
       solved += n;
       const li = document.createElement("li");
-      const a = document.createElement("a");
-      a.href = `#/aprender/${p.id}`;
-      a.textContent = p.title;
-      if (p.id === (current ?? currentLearn)) a.classList.add("here");
-      li.append(a);
+      // The welcome page has no number; the lessons count from 1.
+      const number = i === 0 ? "" : String(i).padStart(2, "0");
+      li.append(tocLink(`#/aprender/${p.id}`, p.title, number, p.id === (current ?? currentLearn)));
       if (ids.length > 0 && n === ids.length) li.classList.add("done");
       ol.append(li);
     }
@@ -790,6 +886,15 @@ async function main(): Promise<void> {
     for (const s of pageSessions) s.destroy();
     const article = $(`${kind}-page`);
     article.innerHTML = page.html;
+    article.classList.remove("turn");
+    void article.offsetWidth;
+    article.classList.add("turn");
+    // On a narrow screen the contents fold away, showing where you are.
+    const toc = $(`view-${kind}`).querySelector(".toc");
+    toc?.classList.remove("open");
+    toc?.querySelector(".toc-toggle")?.setAttribute("aria-expanded", "false");
+    const hereLabel = toc?.querySelector(".toc-here");
+    if (hereLabel) hereLabel.textContent = page.title;
     pageSessions = mountBlocks(article, blockContext);
 
     const nav = document.createElement("nav");
@@ -814,7 +919,7 @@ async function main(): Promise<void> {
     link.className = "page-link";
     const share = document.createElement("a");
     share.href = page.path;
-    share.textContent = `🔗 ${tr("pageLink", lang)}`;
+    share.textContent = `${tr("pageLink", lang)} ↗`;
     link.append(share);
     article.append(link);
     article.scrollTop = 0;
@@ -829,11 +934,9 @@ async function main(): Promise<void> {
       ol.innerHTML = "";
       for (const p of pages) {
         const li = document.createElement("li");
-        const a = document.createElement("a");
-        a.href = base + p.id;
-        a.textContent = p.title;
-        if (p.id === page.id) a.classList.add("here");
-        li.append(a);
+        // "3. Drums": the number goes in its own column.
+        const m = /^(\d+)\.\s+(.*)$/.exec(p.title);
+        li.append(tocLink(base + p.id, m ? m[2] : p.title, m ? m[1].padStart(2, "0") : "", p.id === page.id));
         ol.append(li);
       }
     }

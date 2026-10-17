@@ -197,7 +197,12 @@ export interface EditorHooks {
   stop(): void;
 }
 
-/** Long lines wrapped or not; on in the stage's two columns. */
+/** A phone's width: long lines wrap there, and the stage has one column. */
+export function narrowScreen(): boolean {
+  return typeof window !== "undefined" && window.matchMedia("(max-width: 720px)").matches;
+}
+
+/** Long lines wrapped or not; on in the stage's two columns and on phones. */
 const wrapping = new Compartment();
 
 export function setWrapping(view: EditorView, on: boolean): void {
@@ -216,7 +221,7 @@ export function createEditor(
     state: EditorState.create({
       doc,
       extensions: [
-        wrapping.of([]),
+        wrapping.of(narrowScreen() ? EditorView.lineWrapping : []),
         compact ? [] : [lineNumbers(), highlightActiveLineGutter()],
         history(),
         drawSelection(),
