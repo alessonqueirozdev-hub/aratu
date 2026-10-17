@@ -1310,7 +1310,16 @@ a.btn-play {
 body.stage.stage-split .work {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  /* One row, the height of the screen: each column scrolls inside it, so
+     the second can start where the first ends. */
+  grid-template-rows: minmax(0, 1fr);
   gap: 0;
+}
+
+body.stage.stage-split #editor,
+body.stage.stage-split #editor-mirror {
+  min-height: 0;
+  height: 100%;
 }
 
 body.stage #editor-mirror {

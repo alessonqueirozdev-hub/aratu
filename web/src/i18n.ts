@@ -36,6 +36,7 @@ const words = {
   stage: { pt: "Palco", es: "Escenario", en: "Stage" },
   stageExit: { pt: "Sair", es: "Salir", en: "Exit" },
   stageSplit: { pt: "2 colunas", es: "2 columnas", en: "2 columns" },
+  stageFit: { pt: "Caber na tela", es: "Caber en pantalla", en: "Fit the screen" },
   examples: { pt: "Exemplos", es: "Ejemplos", en: "Examples" },
   messages: { pt: "Mensagens", es: "Mensajes", en: "Messages" },
   allGood: { pt: "Tudo certo. Pode tocar.", es: "Todo bien. Puedes tocar.", en: "All good. Ready to play." },
@@ -221,6 +222,7 @@ const words = {
   "twelve-tone": { pt: "Série dodecafônica", es: "Serie dodecafónica", en: "Twelve-tone row" },
   setlist: { pt: "Lista de melodias no palco", es: "Lista de melodías en el escenario", en: "A melody list on stage" },
   sweeps: { pt: "Efeitos que se movem", es: "Efectos que se mueven", en: "Effects that move" },
+  trance: { pt: "Trance em dó menor", es: "Trance en do menor", en: "Trance in C minor" },
 } as const;
 
 export type Word = keyof typeof words;

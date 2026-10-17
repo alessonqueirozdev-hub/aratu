@@ -683,6 +683,9 @@ canto. Os botões do canto tocam e param, mudam o tamanho da letra
 quando o mouse para. Esc também sai. O botão **2 colunas** divide o código
 em duas colunas, como num jornal: a segunda continua de onde a primeira
 termina, as duas rolam juntas, e editar em qualquer uma muda o mesmo texto.
+**Caber na tela** encolhe a letra conforme a música cresce, para tudo caber
+sem rolar, até um tamanho ainda legível; daí em diante, as colunas rolam.
+Desligado, a letra fica do tamanho escolhido com A− e A+, e você rola.
 
 ## 16. Acaso
 

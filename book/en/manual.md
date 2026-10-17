@@ -675,6 +675,10 @@ and A+), show the rhythm map below and leave the stage; they fade when the
 mouse rests. Esc leaves too. The **2 columns** button splits the code in two
 columns, like a newspaper: the second goes on where the first ends, the two
 scroll together, and editing in either changes the same text.
+**Fit the screen** makes the letters smaller as the piece grows, so that all
+of it shows without scrolling, down to a size still easy to read; past
+that, the columns scroll. Off, the letters keep the size set with A− and A+,
+and you scroll.
 
 ## 16. Chance
 
