@@ -16,8 +16,9 @@ import { fileURLToPath } from "node:url";
 const REPO = "https://github.com/alessonqueirozdev-hub/manguebyte.git";
 // Waves 5c and 5d (effects, the master bus, the instruments of
 // manguebyte-dsp, the keys of the Brazilian percussion), and every
-// instrument and preset brought to the same loudness, -24 LUFS.
-const COMMIT = process.argv[2] ?? "c5835bfa656b2a746eebdff8c033ba855b54ae6b";
+// instrument and preset brought to the same loudness, -24 LUFS, with a
+// sampled instrument playing as soon as its samples are decoded.
+const COMMIT = process.argv[2] ?? "bb31a669b50597761381c0d15821990e37f507d8";
 
 const web = join(dirname(fileURLToPath(import.meta.url)), "..");
 const cache = join(web, ".manguebyte-cache");
