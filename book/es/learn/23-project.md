@@ -109,12 +109,18 @@ form: llamada x2 baque x4
 at bar 3: all: cresc to ff over 4 bars
 reverb.mix = 0.35
 master.reverb.decay = 2.5 s
+alfaia.volume = 1
 ```
+
+Las alfaias solo existen dentro del `baque`, pero se mezclan desde aquí
+afuera, como cualquier parte: `alfaia.volume = 1` las pone al frente donde
+sea que toquen.
 
 ## 8. Ejercicio final
 
-Arma tu versión: la llamada una sola vez, el baque ocho veces, y todo el
-grupo en la sala, con `reverb.mix` en 0.35.
+Arma tu versión: la llamada una sola vez, el baque ocho veces, todo el
+grupo en la sala, con `reverb.mix` en 0.35, y las alfaias al frente, con
+`volume` en 1.
 
 ```aratu exercise sound=1 bars=9
 tempo: 92
@@ -137,6 +143,7 @@ section baque {
 }
 form: llamada baque x8
 reverb.mix = 0.35
+alfaia.volume = 1
 ```
 
 ## ¿Y ahora?

@@ -520,9 +520,15 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
         }
     }
 
-    // Parameters written as `bass.reverb.mix = 0.42` outside the block.
+    // Parameters written as `bass.reverb.mix = 0.42` outside the block, for
+    // a part of the piece or of its patterns and sections.
     for (path, value, _) in global_params {
-        let names: Vec<&str> = top.parts.iter().map(|p| p.name.as_str()).collect();
+        let names: Vec<&str> = top
+            .parts
+            .iter()
+            .chain(groups.iter().flat_map(|(_, _, l)| l.parts.iter()))
+            .map(|p| p.name.as_str())
+            .collect();
         let part = (path.len() > 1)
             .then(|| part_named(&names, &path[0].text))
             .flatten();
@@ -549,6 +555,28 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
             }
         }
     }
+
+    // A part set up outside the patterns and sections it plays in (its
+    // numbers, its chain) is set up so wherever it plays; a chain written
+    // for it inside stays.
+    for (_, _, list) in &mut groups {
+        for part in &mut list.parts {
+            let Some(outside) = top.parts.iter().find(|p| p.name == part.name) else {
+                continue;
+            };
+            part.params.extend(outside.params.iter().cloned());
+            if part.chain.is_empty() {
+                part.chain = outside.chain.clone();
+            }
+        }
+    }
+    // Set up outside with no lines there, it plays only inside them.
+    top.parts.retain(|p| {
+        !p.lines.is_empty()
+            || !groups
+                .iter()
+                .any(|(_, _, l)| l.parts.iter().any(|q| q.name == p.name))
+    });
 
     piece.parts = top.parts;
     for (scope, span, list) in groups {
@@ -696,7 +724,7 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
             // A parameter that moves is a command even without a time: it
             // starts moving where it is written while playing live.
             StmtKind::Param { path, value, sweep } if s.when != When::Bare || sweep.is_some() => {
-                let names: Vec<&str> = piece.parts.iter().map(|p| p.name.as_str()).collect();
+                let names: Vec<&str> = piece.all_parts().map(|p| p.name.as_str()).collect();
                 let (part, id_path) = match &s.part {
                     Some(p) => (Some(p.text.clone()), &path[..]),
                     None if path.len() > 1 && part_named(&names, &path[0].text).is_some() => {

@@ -802,6 +802,17 @@ direita), como os faders e os botões de panorama de uma mesa de som:
 `drums.volume = 0.5`, `violão.pan = -0.6`. O `reverb.mix` de cada parte diz
 quanto dela vai para a sala compartilhada da mixagem.
 
+Uma parte que só existe dentro de seções ou padrões se mixa do mesmo jeito,
+daqui de fora: o número vale onde quer que ela toque, e também numa mudança
+`at bar` ou num número que se move.
+
+```aratu
+section baque { alfaia = O -o o_oo o; caixa = Ssss Ssss Ssss Ssss }
+form: baque x4
+alfaia.volume = 1
+at bar 3: alfaia.volume = 0.6
+```
+
 **Para a obra inteira.** Um número escrito sem parte vale para todas:
 `reverb.mix = 0.5` põe todas as partes no reverb da mixagem. Uma cadeia
 escrita para `todos` (ou `all`) põe os seus efeitos em todas as partes,

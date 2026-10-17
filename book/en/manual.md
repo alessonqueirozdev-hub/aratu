@@ -794,6 +794,17 @@ like the faders and pan knobs of a mixing desk: `drums.volume = 0.5`,
 `guitar.pan = -0.6`. Each part's `reverb.mix` says how much of it goes to the
 mix's shared room.
 
+A part that only exists inside sections or patterns is mixed the same way,
+from outside them: the number holds wherever it plays, and so does a change
+`at bar` or a number that moves.
+
+```aratu
+section groove { alfaia = O -o o_oo o; snare = Ssss Ssss Ssss Ssss }
+form: groove x4
+alfaia.volume = 1
+at bar 3: alfaia.volume = 0.6
+```
+
 **For the whole piece.** A number written with no part is for all of
 them: `reverb.mix = 0.5` puts every part in the mix's reverb. A chain
 written for `all` puts its effects on every part, after each part's own.

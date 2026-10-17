@@ -109,12 +109,18 @@ form: call x2 groove x4
 at bar 3: all: cresc to ff over 4 bars
 reverb.mix = 0.35
 master.reverb.decay = 2.5 s
+alfaia.volume = 1
 ```
+
+The alfaias only exist inside the `groove`, but they are mixed from out
+here, like any part: `alfaia.volume = 1` brings them up front wherever they
+play.
 
 ## 8. Final exercise
 
-Build your own version: the call only once, the groove eight times, and the
-whole group in the room, with `reverb.mix` at 0.35.
+Build your own version: the call only once, the groove eight times, the
+whole group in the room, with `reverb.mix` at 0.35, and the alfaias up
+front, with `volume` at 1.
 
 ```aratu exercise sound=1 bars=9
 tempo: 92
@@ -137,6 +143,7 @@ section groove {
 }
 form: call groove x8
 reverb.mix = 0.35
+alfaia.volume = 1
 ```
 
 ## What next?

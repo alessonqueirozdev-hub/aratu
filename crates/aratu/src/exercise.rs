@@ -411,11 +411,17 @@ fn same_number(id: &str, a: f64, b: f64) -> bool {
 
 /// How the two pieces sound: each part's voice, effects and numbers, and
 /// the master's. Parts are matched by name, or by place (see
-/// [`counterpart`]), in sections and patterns too; a part the student has
-/// not written is already told by its notes.
+/// [`counterpart`]), in sections and patterns too, once each, as the sound
+/// has one of each; a part the student has not written is already told by
+/// its notes.
 fn sound(student: &Piece, answer: &Piece) -> Vec<Problem> {
     let mut problems = Vec::new();
+    let mut seen: Vec<&str> = Vec::new();
     for a in answer.all_parts() {
+        if seen.contains(&a.name.as_str()) {
+            continue;
+        }
+        seen.push(&a.name);
         let Some(s) = counterpart(student, answer, &a.name) else {
             continue;
         };

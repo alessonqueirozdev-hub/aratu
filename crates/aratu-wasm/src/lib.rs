@@ -336,6 +336,9 @@ pub fn controls(piece: &Piece) -> Vec<Control> {
         });
     }
     out.sort_by_key(|c| c.span.start);
+    // A number written for a part that plays in several sections is in each
+    // of them, and has one knob.
+    out.dedup_by_key(|c| c.span);
     out
 }
 
@@ -872,5 +875,18 @@ mod control_tests {
         assert_eq!(ctl[3].factor, 100.0);
         assert!(ctl[3].timed);
         assert!(ctl.iter().all(|c| c.part == "bass" || c.id == "tempo"));
+    }
+
+    #[test]
+    fn a_part_of_sections_set_up_outside_has_one_knob_and_its_number() {
+        let src = "section a { alfaia = O -o o_oo o }\nsection b { alfaia = OO OO OO OO }\nform: a b\nalfaia.volume = 0.6\nalfaia: reverb";
+        let ctl = controls(&compile(src).piece);
+        assert_eq!(ctl.len(), 1);
+        assert_eq!(ctl[0].part, "alfaia");
+        let (_, text) = compile_json(src, Lang::En);
+        assert!(
+            text.contains("{\"name\":\"alfaia\",\"instrument\":\"drums\",\"chain\":[\"reverb\"],\"params\":[{\"id\":\"volume\",\"value\":0.6}]}"),
+            "{text}"
+        );
     }
 }

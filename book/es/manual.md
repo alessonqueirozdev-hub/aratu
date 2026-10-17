@@ -817,6 +817,17 @@ toda a la derecha), como los faders y las perillas de panorama de una mesa de
 mezcla: `drums.volume = 0.5`, `guitarra.pan = -0.6`. El `reverb.mix` de cada
 parte dice cuánto de ella va a la sala compartida de la mezcla.
 
+Una parte que solo existe dentro de secciones o patrones se mezcla igual,
+desde afuera: el número vale donde sea que toque, y también en un cambio
+`at bar` o en un número que se mueve.
+
+```aratu
+section baque { alfaia = O -o o_oo o; caja = Ssss Ssss Ssss Ssss }
+form: baque x4
+alfaia.volume = 1
+at bar 3: alfaia.volume = 0.6
+```
+
 **Para toda la obra.** Un número escrito sin parte vale para todas:
 `reverb.mix = 0.5` pone todas las partes en la reverb de la mezcla. Una
 cadena escrita para `todos` (o `all`) pone sus efectos en todas las partes,

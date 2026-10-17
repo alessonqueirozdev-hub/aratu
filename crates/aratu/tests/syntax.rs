@@ -890,3 +890,65 @@ fn a_part_bends_the_same_whatever_it_is_called() {
         );
     }
 }
+
+#[test]
+fn a_part_that_plays_only_in_sections_is_set_up_from_outside() {
+    // Numbers and a chain written outside, for a part written only inside
+    // sections: it has them wherever it plays.
+    let src = "section baque { alfaia = O -o o_oo o; caixa = Ssss Ssss Ssss Ssss }\nsection virada { alfaia = OO OO OO OO }\nform: baque x2 virada\nalfaia.volume = 1\nalfaia: reverb\nat bar 3: alfaia.volume = 0.5";
+    let c = compile(src);
+    assert!(c.diagnostics.is_empty(), "{:?}", c.diagnostics);
+    assert!(c.piece.parts.is_empty(), "no part of its own outside");
+    let alfaias: Vec<_> = c.piece.all_parts().filter(|p| p.name == "alfaia").collect();
+    assert_eq!(alfaias.len(), 2);
+    for a in alfaias {
+        let set: Vec<(&str, f64)> = a.params.iter().map(|p| (p.id.as_str(), p.value)).collect();
+        assert_eq!(set, [("volume", 1.0)]);
+        assert_eq!(a.chain, ["reverb"]);
+    }
+    // At a bar, and moving, it reaches the part.
+    let changes = |src: &str, from: i64, to: i64| -> Vec<(i64, String, f64)> {
+        events(src, from, to)
+            .into_iter()
+            .filter_map(|e| match e.kind {
+                EventKind::Param { value, .. } => Some((e.bar, e.part, value)),
+                _ => None,
+            })
+            .collect()
+    };
+    assert_eq!(changes(src, 1, 5), [(3, "alfaia".to_string(), 0.5)]);
+    let moving = changes(
+        "section baque { alfaia = O -o o_oo o }\nform: baque\nalfaia.volume = 0 -> 1 over 2 bars",
+        1,
+        3,
+    );
+    assert!(moving.len() > 2 && moving.iter().all(|x| x.1 == "alfaia"));
+    assert!(moving.last().unwrap().2 > 0.9, "{:?}", moving.last());
+    // Written as a block, and for a pattern's drums by another name.
+    let c =
+        compile("pattern g { hh = c c c c }\nplay g\ndrums { volume = 0.5 }\nbateria.pan = -0.5");
+    assert!(c.diagnostics.is_empty(), "{:?}", c.diagnostics);
+    let drums = &c.piece.patterns[0].parts[0];
+    let set: Vec<(&str, f64)> = drums
+        .params
+        .iter()
+        .map(|p| (p.id.as_str(), p.value))
+        .collect();
+    assert_eq!(set, [("volume", 0.5), ("pan", -0.5)]);
+    // A chain written inside stays.
+    let c = compile("section a { baixo = | c2 _ _ _ |; baixo: synth.saw }\nform: a\nbaixo: reverb");
+    assert!(c.diagnostics.is_empty(), "{:?}", c.diagnostics);
+    assert_eq!(c.piece.sections[0].parts[0].chain, ["synth.saw"]);
+    // An exercise hears it, once, though the part plays in two sections.
+    let without = compile(&src.replace("alfaia.volume = 1\n", ""));
+    let opts = aratu::exercise::CheckOptions {
+        sound: true,
+        ..Default::default()
+    };
+    let problems = aratu::exercise::check(&without.piece, &compile(src).piece, opts);
+    let volume: Vec<_> = problems
+        .iter()
+        .filter(|p| matches!(p, aratu::exercise::Problem::Number { part: Some(a), id, .. } if a == "alfaia" && id == "volume"))
+        .collect();
+    assert_eq!(volume.len(), 1, "{problems:?}");
+}
