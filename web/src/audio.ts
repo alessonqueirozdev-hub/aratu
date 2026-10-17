@@ -291,7 +291,11 @@ export class Engine {
     this.master = ctx.createGain();
     this.master.gain.value = 0.7;
     this.master.connect(comp);
+    // Manguebyte plays every instrument at -24 LUFS, about 5 dB under where
+    // the stand-in's voices sit; this brings the two level, and the limiter
+    // after the master holds the peaks.
     this.mbOut = ctx.createGain();
+    this.mbOut.gain.value = 1.78;
     this.mbOut.connect(this.master);
 
     this.reverb = ctx.createConvolver();
