@@ -82,6 +82,11 @@ pub const SYNONYMS: &[(&str, &[&str])] = &[
     ("transpose", &["transpor", "transponer", "transporta"]),
     ("augment", &["aumentar", "aumenta"]),
     ("diminish", &["diminuir", "diminui", "disminuir"]),
+    ("breakdown", &["quebra", "quiebre"]),
+    ("drop", &["queda", "caida"]),
+    ("build", &["subida"]),
+    ("groove", &["levada", "ritmo"]),
+    ("off", &["desliga", "desligado", "apagado", "apaga"]),
 ];
 
 /// Whether `word` is the keyword `kw` in any of the three languages.

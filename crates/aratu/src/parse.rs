@@ -637,6 +637,48 @@ impl Parser {
             }
         }
 
+        // Gestures for the stage: `breakdown`, `drop`, `build over 8 bars`,
+        // `solo bass`, `groove house`. Not when a part of that name is
+        // addressed (`drop: out`).
+        let addressed = c.clone().eat(":");
+        let gesture =
+            crate::words::which(words[0], &["breakdown", "drop", "build", "solo", "groove"]);
+        if let (1, false, Some(g)) = (words.len(), addressed, gesture) {
+            match g {
+                "breakdown" => {
+                    self.end(c)?;
+                    return Ok(StmtKind::Breakdown);
+                }
+                "drop" => {
+                    self.end(c)?;
+                    return Ok(StmtKind::Drop);
+                }
+                "build" => {
+                    let length = if c.at_end() {
+                        Length {
+                            count: 4.0,
+                            unit: TimeUnit::Bars,
+                        }
+                    } else {
+                        over_length(c)?
+                    };
+                    self.end(c)?;
+                    return Ok(StmtKind::Build(length));
+                }
+                "solo" => {
+                    let (n, s) = c.name().ok_or_else(|| expected(c, Thing::Name, "solo"))?;
+                    let off = crate::words::which(n, &["off", "all"]).is_some();
+                    self.end(c)?;
+                    return Ok(StmtKind::Solo((!off).then(|| name(n, s))));
+                }
+                _ => {
+                    let (n, s) = c.name().ok_or_else(|| expected(c, Thing::Name, "groove"))?;
+                    self.end(c)?;
+                    return Ok(StmtKind::Groove(name(n, s)));
+                }
+            }
+        }
+
         // `bass: ...` commands addressed to a part.
         if words.len() == 1 && c.eat(":") {
             let target = name(words[0], pspan);

@@ -375,6 +375,11 @@ struct Scheduler<'p> {
     params: Vec<(i64, Event)>,
     /// When each moving parameter had its last point, by its command.
     last_point: HashMap<usize, f64>,
+    /// The parts a `breakdown` takes out: the drums, the percussion and
+    /// the bass.
+    rhythm: Vec<String>,
+    /// The part that plays a `build`'s roll and a `drop`'s crash.
+    drum_part: String,
 }
 
 impl<'p> Scheduler<'p> {
@@ -408,6 +413,22 @@ impl<'p> Scheduler<'p> {
             done: Vec::new(),
             params: Vec::new(),
             last_point: HashMap::new(),
+            rhythm: piece
+                .all_parts()
+                .filter(|p| {
+                    let name = crate::words::fold(&p.name);
+                    p.lines
+                        .iter()
+                        .any(|l| matches!(l.kind, LineKind::Drums | LineKind::Percussion(_)))
+                        || p.chain.first().is_some_and(|c| c.starts_with("bass."))
+                        || ["bass", "baixo", "bajo"].iter().any(|b| name.contains(b))
+                })
+                .map(|p| p.name.clone())
+                .collect(),
+            drum_part: piece
+                .all_parts()
+                .find(|p| p.lines.iter().any(|l| l.kind == LineKind::Drums))
+                .map_or_else(|| "drums".to_string(), |p| p.name.clone()),
         }
     }
 
@@ -498,6 +519,9 @@ impl<'p> Scheduler<'p> {
                                 | Action::Add { .. }
                                 | Action::Mute { .. }
                                 | Action::Transform { .. }
+                                | Action::Breakdown
+                                | Action::Drop
+                                | Action::Solo(_)
                         )
                 })
                 .map(|(_, c)| c.beat)
@@ -644,6 +668,7 @@ impl<'p> Scheduler<'p> {
                 ));
             }
             self.motions(g, from, from_beat);
+            self.gestures(g, from, from_beat);
             g += 1;
         }
         // Whatever is still held ends where rendering stopped.
@@ -726,6 +751,99 @@ impl<'p> Scheduler<'p> {
 
     fn has_strum(&self, part: &Part) -> bool {
         part.lines.iter().any(|l| l.kind == LineKind::Strum)
+    }
+
+    /// What the stage gestures play in bar `g`: a `drop`'s crash, and a
+    /// `build`'s snare roll, a beat apart at first, then eighths,
+    /// sixteenths and thirty-seconds, growing louder, while a highpass
+    /// rises on every part; where the build ends, each part goes back to
+    /// how it is set up.
+    fn gestures(&mut self, g: i64, from: i64, from_beat: Ratio) {
+        let Some(clock) = self.clocks.get(g as usize) else {
+            return;
+        };
+        let beats = clock.beats;
+        let bar_start = clock.start_beat;
+        let hit = |x: Ratio, drum: Drum, velocity: u8, line: &str, c: &Command| Event {
+            bar: g,
+            beat: x,
+            time: clock.time(x),
+            duration: 0.1,
+            part: self.drum_part.clone(),
+            line: line.to_string(),
+            kind: EventKind::Drum(drum),
+            velocity,
+            accent: false,
+            also: None,
+            span: c.span,
+            grace: 0,
+        };
+        let filter = |x: Ratio, value: f64, glide: f64, reset: bool, c: &Command| Event {
+            bar: g,
+            beat: x,
+            time: clock.time(x),
+            duration: 0.0,
+            part: "all".into(),
+            line: String::new(),
+            kind: EventKind::Param {
+                id: "highpass.cutoff".into(),
+                value,
+                glide,
+                reset,
+            },
+            velocity: 0,
+            accent: false,
+            also: None,
+            span: c.span,
+            grace: 0,
+        };
+        let mut made: Vec<Event> = Vec::new();
+        for &(b, c) in &self.timed {
+            if b > g {
+                break;
+            }
+            match c.action {
+                Action::Drop if b == g => made.push(hit(c.beat, Drum::Crash, 112, "drop", c)),
+                Action::Build(length) => {
+                    let Some(first) = self.clocks.get(b as usize) else {
+                        continue;
+                    };
+                    let total = beats_of(length, self.meter_at(b));
+                    // Beats from the build's start to this bar line.
+                    let before = (bar_start - first.start_beat - c.beat).to_f64();
+                    if total <= 0.0 || before > total {
+                        continue;
+                    }
+                    let mut x = if b == g { c.beat } else { Ratio::ZERO };
+                    let mut last_point: Option<Ratio> = None;
+                    while x < beats && before + x.to_f64() < total - 1e-9 {
+                        let f = (before + x.to_f64()) / total;
+                        let per = match f {
+                            f if f < 0.25 => 1,
+                            f if f < 0.5 => 2,
+                            f if f < 0.75 => 4,
+                            _ => 8,
+                        };
+                        made.push(hit(x, Drum::Snare, (40.0 + 80.0 * f) as u8, "build", c));
+                        // A point of the filter at the start and on each beat.
+                        if last_point.is_none() || x.floor() > last_point.unwrap().floor() {
+                            let glide = last_point.map_or(0.0, |p| clock.time(x) - clock.time(p));
+                            made.push(filter(x, between(20.0, 1500.0, f, true), glide, false, c));
+                            last_point = Some(x);
+                        }
+                        x = x + Ratio::new(1, per);
+                    }
+                    let end = total - before;
+                    if (0.0..beats.to_f64()).contains(&end) {
+                        let at = Ratio::new((end * 1920.0).round() as i64, 1920);
+                        made.push(filter(at, 20.0, 0.0, true, c));
+                    }
+                }
+                _ => {}
+            }
+        }
+        made.retain(|e| g > from || e.beat >= from_beat);
+        self.params.extend(made.into_iter().map(|e| (g, e)));
     }
 
     /// The points of the parameters moving in bar `g`, one every sixteenth
@@ -1336,7 +1454,9 @@ impl<'p> Scheduler<'p> {
     /// written dynamics (1 at mf).
     fn muted(&self, part: &str, g: i64, x: Ratio) -> bool {
         let applies = |t: &str| t == part || t == "all";
+        let rhythm = self.rhythm.iter().any(|r| r == part);
         let mut muted = false;
+        let mut solo: Option<&str> = None;
         for (b, c) in &self.timed {
             if *b > g {
                 break;
@@ -1344,11 +1464,25 @@ impl<'p> Scheduler<'p> {
             if !c.in_force(*b, g, x) {
                 continue;
             }
-            if let Action::Mute { target, muted: m } = &c.action {
-                if applies(target) {
+            match &c.action {
+                Action::Mute { target, muted: m } if applies(target) => {
                     muted = *m;
+                    // `all: in`: everything back, a solo ended too.
+                    if target == "all" && !*m {
+                        solo = None;
+                    }
                 }
+                Action::Breakdown if rhythm => muted = true,
+                Action::Drop => {
+                    muted = false;
+                    solo = None;
+                }
+                Action::Solo(t) => solo = t.as_deref(),
+                _ => {}
             }
+        }
+        if solo.is_some_and(|s| s != part) {
+            return true;
         }
         for c in &self.every {
             let (At::Every { bars, first }, Action::Mute { target, muted: m }) = (c.at, &c.action)
@@ -1665,7 +1799,7 @@ impl<'p> Scheduler<'p> {
                 fixed,
                 part: inst.part.name.as_str(),
                 line: inst.line.label.as_str(),
-                span: h.span,
+                span: inst.line.lit.unwrap_or(h.span),
                 also,
                 humanize: human.unwrap_or(0.0),
                 jitter,

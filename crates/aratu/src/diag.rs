@@ -408,6 +408,17 @@ pub enum Message {
     /// `every 4 bars: melody = …`, or `at bar` before a line inside a
     /// pattern or section.
     LineChangeOnlyAtBar,
+    /// `groove` with a name that is not one of the grooves.
+    UnknownGroove {
+        name: String,
+        closest: Option<String>,
+        names: String,
+    },
+    /// `at bar 9: groove house`: a groove writes lines, which do not
+    /// change at a time this way.
+    GrooveOnlyBare,
+    /// A groove in a piece that is not in 4/4.
+    GrooveMeter,
     /// A letter a percussion instrument does not play.
     UnknownStroke {
         ch: char,
@@ -903,6 +914,24 @@ impl Message {
             (BeatOutOfBar { bar, beat, beats }, Es) => format!("el compás {bar} tiene {}, así que no existe el tiempo {beat}", beats_es(*beats)),
             (LineChangeOnlyAtBar, En) => "a line can change at a bar (`at bar 9: melody = …`) outside patterns and sections, but not with `every` or inside a pattern; to vary it every few bars, use a pattern with `every`".into(),
             (LineChangeOnlyAtBar, Pt) => "uma linha pode mudar num compasso (`at bar 9: melodia = …`) fora de padrões e seções, mas não com `every` nem dentro de um padrão; para variar de tantos em tantos compassos, use um padrão com `every`".into(),
+            (UnknownGroove { name, closest, names }, En) => match closest {
+                Some(c) => format!("there is no groove called `{name}`; did you mean `{c}`? The grooves are: {names}"),
+                None => format!("there is no groove called `{name}`; the grooves are: {names}"),
+            },
+            (UnknownGroove { name, closest, names }, Pt) => match closest {
+                Some(c) => format!("não existe a levada `{name}`; seria `{c}`? As levadas são: {names}"),
+                None => format!("não existe a levada `{name}`; as levadas são: {names}"),
+            },
+            (UnknownGroove { name, closest, names }, Es) => match closest {
+                Some(c) => format!("no existe el ritmo `{name}`; ¿sería `{c}`? Los ritmos son: {names}"),
+                None => format!("no existe el ritmo `{name}`; los ritmos son: {names}"),
+            },
+            (GrooveOnlyBare, En) => "a groove writes lines, so it goes on a line of its own, without `at bar` or `every`; to change it at a bar, write the line that changes (`at bar 9: hh = …`) or use patterns".into(),
+            (GrooveOnlyBare, Pt) => "uma levada escreve linhas, então vai numa linha só dela, sem `at bar` nem `every`; para mudar num compasso, escreva a linha que muda (`at bar 9: hh = …`) ou use padrões".into(),
+            (GrooveOnlyBare, Es) => "un ritmo escribe líneas, así que va en una línea propia, sin `at bar` ni `every`; para cambiarlo en un compás, escribe la línea que cambia (`at bar 9: hh = …`) o usa patrones".into(),
+            (GrooveMeter, En) => "the grooves are in 4/4, and this piece is in another meter; write `meter: 4/4`, or write the drum lines yourself".into(),
+            (GrooveMeter, Pt) => "as levadas são em 4/4, e esta peça está em outra fórmula; escreva `meter: 4/4`, ou escreva as linhas da bateria você mesmo".into(),
+            (GrooveMeter, Es) => "los ritmos son en 4/4, y esta pieza está en otro compás; escribe `meter: 4/4`, o escribe tú las líneas de la batería".into(),
             (LineChangeOnlyAtBar, Es) => "una línea puede cambiar en un compás (`at bar 9: melodia = …`) fuera de patrones y secciones, pero no con `every` ni dentro de un patrón; para variarla cada tantos compases, usa un patrón con `every`".into(),
             (UnknownListPick { name, pick }, En) => format!(
                 "the list `{name}` has no `.{pick}`: pick `.1`, `.2`…, `.all` or `.random`"

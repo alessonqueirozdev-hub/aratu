@@ -113,6 +113,10 @@ pub struct Line {
     /// `from bar 9 to 16: name = …`: the bar it stops at, 17, where the
     /// version before it comes back.
     pub until: Option<i64>,
+    /// For a line a groove wrote (`groove house`): where the groove is
+    /// named, lit while the line plays, since the line itself is not in
+    /// the text.
+    pub lit: Option<Span>,
 }
 
 impl Line {
@@ -196,6 +200,14 @@ pub enum Action {
         target: String,
         muted: bool,
     },
+    /// `breakdown`: the drums, the percussion and the bass go out.
+    Breakdown,
+    /// `drop`: everything comes back, on a crash.
+    Drop,
+    /// `build over 8 bars`: a snare roll and a rising highpass.
+    Build(Length),
+    /// `solo bass`: only that part plays; `None` ends it.
+    Solo(Option<String>),
     Feel {
         target: Option<String>,
         feel: Feel,
@@ -442,21 +454,87 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
                     rounds: Vec::new(),
                     from,
                     until,
+                    lit: None,
                 };
                 if let Some(i) = part
                     .lines
                     .iter()
                     .position(|x| x.name == line.name && x.from == from)
                 {
-                    diags.push(Diagnostic::warning(
-                        l.name.span,
-                        Message::DuplicateLine {
-                            name: line.name.clone(),
-                        },
-                    ));
+                    // Writing a groove's line over takes its place.
+                    if part.lines[i].lit.is_none() {
+                        diags.push(Diagnostic::warning(
+                            l.name.span,
+                            Message::DuplicateLine {
+                                name: line.name.clone(),
+                            },
+                        ));
+                    }
                     part.lines[i] = line;
                 } else {
                     part.lines.push(line);
+                }
+            }
+            // `groove house`: its lines, read from the groove's own text, as if
+            // written here; a line written here with the same name wins.
+            (StmtKind::Groove(n), when) => {
+                if *when != When::Bare {
+                    diags.push(Diagnostic::error(s.span, Message::GrooveOnlyBare));
+                    continue;
+                }
+                let Some(text) = crate::grooves::find(&n.text) else {
+                    diags.push(Diagnostic::error(
+                        n.span,
+                        Message::UnknownGroove {
+                            name: n.text.clone(),
+                            closest: crate::grooves::closest(&n.text).map(String::from),
+                            names: crate::grooves::names(),
+                        },
+                    ));
+                    continue;
+                };
+                if (piece.meter.num, piece.meter.den) != (4, 4) {
+                    diags.push(Diagnostic::error(n.span, Message::GrooveMeter));
+                    continue;
+                }
+                let (groove, _) = crate::parse::parse(text);
+                for g in &groove.stmts {
+                    let StmtKind::Line(l) = &g.kind else {
+                        continue;
+                    };
+                    let part_name = g
+                        .part
+                        .as_ref()
+                        .map_or_else(|| loose_part(&l.name.text, l.kind), |p| p.text.clone());
+                    // In `bateria { levada house }` the lines go to that part.
+                    let part_name = match (&s.part, l.kind) {
+                        (Some(p), LineKind::Drums) => p.text.clone(),
+                        _ => part_name,
+                    };
+                    let part = list.get(&part_name, n.span);
+                    if part
+                        .lines
+                        .iter()
+                        .any(|x| x.name == l.name.text && x.from == 1)
+                    {
+                        continue;
+                    }
+                    part.lines.push(Line {
+                        name: l.name.text.clone(),
+                        label: String::new(),
+                        kind: l.kind,
+                        bars: l.bars.clone(),
+                        pickup: None,
+                        order: Vec::new(),
+                        span: s.span,
+                        seed_key: 0,
+                        levels: HashMap::new(),
+                        variants: l.variants.clone(),
+                        rounds: Vec::new(),
+                        from: 1,
+                        until: None,
+                        lit: Some(s.span),
+                    });
                 }
             }
             (
@@ -692,6 +770,12 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
                 target: target_of(&piece, target, diags),
                 muted: *muted,
             },
+            StmtKind::Breakdown => Action::Breakdown,
+            StmtKind::Drop => Action::Drop,
+            StmtKind::Build(length) => Action::Build(*length),
+            StmtKind::Solo(target) => {
+                Action::Solo(target.as_ref().map(|t| target_of(&piece, t, diags)))
+            }
             StmtKind::LevelRamp { target, to, length } => Action::Level {
                 target: target_of(&piece, target, diags),
                 to: *to,

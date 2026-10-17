@@ -1204,3 +1204,147 @@ fn a_line_may_start_its_bars_below_the_equals_sign() {
     let list = "list temas {\n  | c4 _ _ _ |\n  | d4 _ _ _ |\n}\n";
     assert_eq!(notes(&format!("{list}melody = temas.2"), 1, 2), [(1, 62)]);
 }
+
+/// The sounds of a piece from bar 1 to bar `to` (exclusive), by part.
+fn by_part(src: &str, to: i64) -> std::collections::BTreeMap<String, Vec<Event>> {
+    let c = compile(src);
+    let problems: Vec<String> = c.diagnostics.iter().map(|d| d.text(Lang::En)).collect();
+    assert!(problems.is_empty(), "{problems:?}");
+    let mut out: std::collections::BTreeMap<String, Vec<Event>> = Default::default();
+    for e in render(&c.piece, &Options::default(), 1, to).events {
+        out.entry(e.part.clone()).or_default().push(e);
+    }
+    out
+}
+
+const BAND: &str =
+    "drums { bd = b b b b; hh = cc cc cc cc }\nbass = | c2 _ _ _ |\npad = | c4+e4+g4 _ _ _ |\n";
+
+#[test]
+fn a_breakdown_takes_the_drums_and_the_bass_out_and_a_drop_brings_them_back() {
+    let parts = by_part(&format!("{BAND}at bar 3: breakdown\nat bar 5: drop"), 7);
+    let bars = |p: &str| -> Vec<i64> {
+        let mut b: Vec<i64> = parts[p]
+            .iter()
+            .filter(|e| !matches!(e.kind, EventKind::Param { .. }))
+            .map(|e| e.bar)
+            .collect();
+        b.dedup();
+        b
+    };
+    assert_eq!(bars("bass"), [1, 2, 5, 6]);
+    assert_eq!(bars("pad"), [1, 2, 3, 4, 5, 6]);
+    assert!(bars("drums").iter().all(|b| ![3, 4].contains(b)));
+    // The drop comes in on a crash.
+    assert!(parts["drums"].iter().any(|e| e.bar == 5
+        && e.beat == Ratio::ZERO
+        && matches!(e.kind, EventKind::Drum(Drum::Crash))));
+    // In Portuguese, for a stretch: back on its own afterwards.
+    let parts = by_part(&format!("{BAND}do compasso 2 ao 3: quebra"), 5);
+    let bass: Vec<i64> = parts["bass"].iter().map(|e| e.bar).collect();
+    assert_eq!(bass, [1, 4]);
+}
+
+#[test]
+fn a_build_rolls_faster_and_louder_and_opens_a_highpass_to_its_end() {
+    let parts = by_part(&format!("{BAND}at bar 2: build over 4 bars"), 7);
+    let rolls: Vec<&Event> = parts["drums"]
+        .iter()
+        .filter(|e| e.line == "build")
+        .collect();
+    let per_bar = |b: i64| rolls.iter().filter(|e| e.bar == b).count();
+    assert_eq!(
+        [per_bar(2), per_bar(3), per_bar(4), per_bar(5)],
+        [4, 8, 16, 32]
+    );
+    assert_eq!(per_bar(6), 0);
+    assert!(rolls.first().unwrap().velocity < rolls.last().unwrap().velocity);
+    let cutoff: Vec<(i64, f64, bool)> = parts["all"]
+        .iter()
+        .filter_map(|e| match &e.kind {
+            EventKind::Param {
+                id, value, reset, ..
+            } if id == "highpass.cutoff" => Some((e.bar, *value, *reset)),
+            _ => None,
+        })
+        .collect();
+    assert!(
+        cutoff.windows(2).take(15).all(|w| w[1].1 > w[0].1),
+        "{cutoff:?}"
+    );
+    assert_eq!(cutoff.last().map(|c| (c.0, c.2)), Some((6, true)));
+    // `subida em 2 compassos`, and four bars when no length is said.
+    assert!(
+        compile(&format!("{BAND}no compasso 2: subida em 2 compassos"))
+            .diagnostics
+            .is_empty()
+    );
+    assert!(compile(&format!("{BAND}now: build")).diagnostics.is_empty());
+}
+
+#[test]
+fn a_solo_leaves_one_part_and_solo_off_brings_the_others_back() {
+    let parts = by_part(&format!("{BAND}at bar 2: solo bass\nat bar 3: solo off"), 4);
+    let bars = |p: &str| -> Vec<i64> {
+        let mut b: Vec<i64> = parts[p].iter().map(|e| e.bar).collect();
+        b.dedup();
+        b
+    };
+    assert_eq!(bars("bass"), [1, 2, 3]);
+    assert_eq!(bars("pad"), [1, 3]);
+    assert_eq!(bars("drums"), [1, 3]);
+    // The drum part answers to its name in any language.
+    let parts = by_part(&format!("{BAND}solo bateria"), 2);
+    assert!(parts.contains_key("drums") && !parts.contains_key("pad"));
+}
+
+#[test]
+fn a_groove_writes_its_lines_and_a_line_written_over_it_wins() {
+    let c = compile("groove house");
+    assert!(c.diagnostics.is_empty(), "{:?}", c.diagnostics);
+    let drums = &c.piece.parts[0];
+    let names: Vec<&str> = drums.lines.iter().map(|l| l.name.as_str()).collect();
+    assert_eq!(names, ["bd", "oh", "clap", "hh"]);
+    // Its sounds light the word that wrote it.
+    let r = render(&c.piece, &Options::default(), 1, 2);
+    assert!(
+        r.events
+            .iter()
+            .all(|e| e.span.start == 0 && e.span.end == "groove house".len())
+    );
+    // The hi-hat written here takes the groove's place, in either order.
+    for src in ["levada house\nhh = c c c c", "hh = c c c c\nlevada house"] {
+        let c = compile(src);
+        assert!(c.diagnostics.is_empty(), "{src}: {:?}", c.diagnostics);
+        let hh = c.piece.parts[0]
+            .lines
+            .iter()
+            .find(|l| l.name == "hh")
+            .unwrap();
+        assert!(hh.lit.is_none(), "{src}");
+    }
+    // Percussion grooves write the instruments' own lines.
+    let c = compile("ritmo samba");
+    let parts: Vec<&str> = c.piece.parts.iter().map(|p| p.name.as_str()).collect();
+    assert_eq!(parts, ["surdo", "tamborim", "pandeiro", "ganzá"]);
+    // Unknown names and other meters are told.
+    let texts = |src: &str| -> Vec<String> {
+        compile(src)
+            .diagnostics
+            .iter()
+            .map(|d| d.text(Lang::Pt))
+            .collect()
+    };
+    assert!(
+        texts("levada hous")[0].contains("seria `house`?"),
+        "{:?}",
+        texts("levada hous")
+    );
+    assert!(texts("meter: 3/4\nlevada house")[0].starts_with("as levadas são em 4/4"));
+    // `drop` and `build` may still name sections.
+    assert!(
+        compile("section drop { bass = | c2 _ _ _ | }\nform: drop")
+            .diagnostics
+            .is_empty()
+    );
+}

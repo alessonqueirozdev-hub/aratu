@@ -129,6 +129,19 @@ pub enum StmtKind {
         target: Name,
         transform: Transform,
     },
+
+    // Gestures for the stage.
+    /// `breakdown`: the drums, the percussion and the bass go out.
+    Breakdown,
+    /// `drop`: everything comes back, on a crash.
+    Drop,
+    /// `build over 8 bars`: a snare roll that doubles its speed as it
+    /// grows louder, and a highpass rising on every part, up to its end.
+    Build(Length),
+    /// `solo bass`: only that part plays; `solo off` ends it.
+    Solo(Option<Name>),
+    /// `groove house`: the lines of a ready-made beat.
+    Groove(Name),
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
