@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 // Numbers drawn as knobs. Each number that sets a parameter gets a knob
 // beside it, shaped by the parameter (a cutoff turns on a logarithmic scale
 // in hertz, a mix from 0 to 1). Dragging the knob up or down rewrites the

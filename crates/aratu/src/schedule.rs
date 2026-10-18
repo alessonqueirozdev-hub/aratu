@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 //! Unrolling the piece into timed events.
 //!
 //! The piece is played bar by bar from its start. In each bar every line

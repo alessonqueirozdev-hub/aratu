@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 // A development server: rebuilds on change and serves dist/ with the
 // cross-origin isolation headers the audio engine will need.
 import * as esbuild from "esbuild";

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 // The twelve-tone matrix of each row in the piece: the rows of the matrix
 // are the forms P (read left to right) and R (right to left); the columns
 // are I (top to bottom) and RI (bottom to top). A click on a form's name

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 // The Sounds panel: every voice by family, with the code that selects it.
 // A click on a code writes it into the piece; ▶ plays a bar of it.
 

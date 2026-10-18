@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 //! Aratu, a live-coding language that reads like music.
 //!
 //! The crate reads a piece ([`lex`], then the parser), checks it and reports

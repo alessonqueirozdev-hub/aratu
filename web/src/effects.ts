@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 // The effects of a chain, drawn where they are named: beside `eq`, `tube`,
 // `drive`, `lowpass` and `highpass` in `bass: synth.saw -> eq -> tube`, a
 // small curve worked out from the part's numbers, which follows them as the

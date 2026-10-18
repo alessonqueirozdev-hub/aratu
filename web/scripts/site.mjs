@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 // The book as pages to read: one plain HTML page per lesson and chapter in
 // each language, which needs no script, for search engines, for reading and
 // for sharing a link. Each page sends to the same page in the editor, where
@@ -209,6 +211,12 @@ function footer(lang) {
         <a href="https://github.com/alessonqueirozdev-hub/manguebyte">Manguebyte</a>
         ·
         <a href="https://github.com/alessonqueirozdev-hub/aratu">${escape(tr("source", lang))}</a>
+      </span>
+      <span class="links legal">
+        © 2026 Alesson Lucas Oliveira de Queiroz ·
+        <a href="https://github.com/alessonqueirozdev-hub/aratu/blob/main/NOTICE.md">${escape(tr("legal", lang))}</a>
+        ·
+        <a href="https://github.com/alessonqueirozdev-hub/aratu/blob/main/COMMERCIAL.md">${escape(tr("commercialLicense", lang))}</a>
       </span>
     </footer>`;
 }

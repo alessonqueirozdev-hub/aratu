@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 // The example pieces, read from the repository's examples/ folder (a test in
 // the language crate checks that each compiles without a single warning).
 

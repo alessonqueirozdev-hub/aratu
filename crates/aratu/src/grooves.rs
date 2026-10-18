@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 //! Ready-made beats: `groove house` (`levada house`, `ritmo house`) puts the
 //! lines of a beat in the piece, written in Aratu itself, so a performer
 //! starts from a groove and changes it line by line. A line the piece

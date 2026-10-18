@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 //! Brazilian percussion, and the flamenco cajón: each instrument is a line
 //! named after it, with strokes of its own, written with the rhythm rules
 //! like a drum line: `pandeiro = pd td pd td`.

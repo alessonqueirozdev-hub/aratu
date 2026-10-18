@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 // Prepares the sampled voices from the Versilian Community Sample Library
 // (VCSL, CC0: https://github.com/sgossner/VCSL) and writes them, with an
 // index per voice, into public/samples/. The editor fetches a voice the

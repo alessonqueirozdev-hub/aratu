@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 // Sampled voices: recordings from the Versilian Community Sample Library
 // (CC0), prepared by scripts/samples.mjs into samples/<voice>/, and kits
 // recorded for Aratu, kept beside them. The stand-in fetches a voice when

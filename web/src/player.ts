@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 // Plays a program bar by bar, a little ahead of time, and swaps in a new
 // version of the piece at the next bar line, or at the next beat when the
 // new version brings a line written with `now:`.

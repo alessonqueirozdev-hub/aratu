@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 // The rhythm map: every line as rows of bars, each bar striped with its
 // beats and their subdivisions, the written symbols on them. Drag a symbol
 // to move it, click an empty place to add one, click a symbol to take it

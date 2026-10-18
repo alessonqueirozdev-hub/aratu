@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 // Turns the book (book/<lang>/manual.md, book/<lang>/inside.md and
 // book/<lang>/learn/*.md) into one JSON file per language for the editor. Code blocks marked `aratu`
 // become live examples; `aratu exercise` blocks become exercises, with the

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 //! Music named once and used many times: motifs (`motif riff = [e3 d3 c3
 //! d3]`), twelve-tone rows (`row serie = 0 11 3 4 …`) and melody lists
 //! (`list temas { … }`), and what can be done to them: transposition by

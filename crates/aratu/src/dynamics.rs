@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 //! The loudness of every note of a line, from its marks and hairpins.
 //!
 //! A mark (`p:`, `f:`) sets the level from its note on; `sfz` makes one note

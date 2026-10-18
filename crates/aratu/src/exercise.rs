@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 //! Checking an exercise: does what the student wrote sound like the answer?
 //!
 //! The two pieces are compared by what they play, not by how they are

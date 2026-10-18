@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 //! Diagnostics in a musician's words, in Portuguese, Spanish and English.
 //!
 //! A diagnostic carries what went wrong as data ([`Message`]); the words are

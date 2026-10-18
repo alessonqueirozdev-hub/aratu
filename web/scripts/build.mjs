@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 // Builds the editor into dist/: the wasm module, the bundle, the page, and
 // the book's pages to read with the site map (site.mjs).
 import * as esbuild from "esbuild";

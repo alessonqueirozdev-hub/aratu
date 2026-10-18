@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 // Draws the picture a link to the site shows when shared (Open Graph,
 // Twitter): one 1200×630 card per language, written to public/og-<lang>.png
 // and committed, so the build only copies it. Run it again after changing

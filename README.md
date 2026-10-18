@@ -127,5 +127,16 @@ linking to the others.
 
 ## Licence
 
-Licensed under either of [Apache License, Version 2.0](LICENSE-APACHE) or
-[MIT license](LICENSE-MIT) at your option, like Manguebyte.
+Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz.
+
+Aratu is free software under the [GNU Affero General Public License,
+version 3 or later](LICENSE), with two additional terms in
+[NOTICE.md](NOTICE.md): works that contain Aratu keep the attribution
+"Made with Aratu, by Alesson Lucas Oliveira de Queiroz", and the name and the mascot are not
+licensed as trademarks ([TRADEMARKS.md](TRADEMARKS.md)). The course and the
+manual are under [CC BY-SA 4.0](book/LICENSE.md).
+
+To use Aratu without the AGPL's obligations, for instance in a product whose
+code stays closed, there is a commercial licence:
+[COMMERCIAL.md](COMMERCIAL.md). Contributions are welcome under the terms in
+[CONTRIBUTING.md](CONTRIBUTING.md).

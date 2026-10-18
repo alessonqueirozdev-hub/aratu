@@ -124,8 +124,9 @@ real-time synthesis (oscillators, the polyphonic synth, filters, envelopes,
 effects, the audio graph) comes from there.
 
 Parabolic is not embedded. Its licence (PolyForm Noncommercial plus a
-commercial licence) would otherwise reach Aratu, which stays MIT OR
-Apache-2.0. Parabolic's instruments reach Aratu in two ways instead:
+commercial licence) would otherwise reach Aratu, which is under the GNU
+AGPL (version 3 or later) and a commercial licence of its own. Parabolic's
+instruments reach Aratu in two ways instead:
 
 - **On a desktop, as plugins.** Manguebyte hosts CLAP and VST 3 plugins
   (`manguebyte-host`), so Aratu plays an instrument made with Parabolic
@@ -137,7 +138,7 @@ Apache-2.0. Parabolic's instruments reach Aratu in two ways instead:
 | Layer | Licence | Role |
 |---|---|---|
 | Manguebyte | MIT OR Apache-2.0 | audio engine, synthesis, SFZ sampler, plugin hosting |
-| Aratu | MIT OR Apache-2.0 | language, scheduling, editor; its sound is Manguebyte |
+| Aratu | AGPL-3.0-or-later + commercial | language, scheduling, editor; its sound is Manguebyte |
 | Parabolic | PolyForm Noncommercial + commercial | authoring: guided capture, harmonic modelling, panel design, plugin export |
 
 ## The first version

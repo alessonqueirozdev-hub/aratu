@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 //! The voices a part can play, by code: `bass: bass.slap -> reverb`.
 //!
 //! One list serves the checker (an unknown voice is reported, with the

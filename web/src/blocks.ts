@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 // The live blocks of the book: examples to hear and change, and exercises
 // to solve. Each has a small editor, buttons, and a rhythm grid that draws
 // what is written on the beats of each bar, the way a teacher would on the

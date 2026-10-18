@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 // The sound of the editor. Manguebyte's engine plays almost every voice: one
 // engine, one numbered part of it for each part of the piece, with the
 // part's effects and Manguebyte's master bus (a shared reverb, a glue

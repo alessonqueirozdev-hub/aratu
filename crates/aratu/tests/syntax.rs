@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 //! What the review of the whole syntax (16 October 2026) asked for: things
 //! accepted that did something else, messages that misled, and the same
 //! idea written differently in different places.

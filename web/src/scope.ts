@@ -1,6 +1,8 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 // The sound drawn as it plays: the wave, held still on its rising edge, or
-// its frequencies as bars, the low ones on the left. On the display in Play
-// and behind the code on stage. Each canvas says how in its data: `mode`
+// its frequencies as bars, the low ones on the left, on the display in
+// Play. Each canvas says how in its data: `mode`
 // ("wave" or "bars"), `line` (the wave's thickness) and `gain` (how tall).
 // The colour is the canvas's CSS colour.
 

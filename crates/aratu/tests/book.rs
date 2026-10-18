@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 //! The book (the course and the manual, in every language) must never show
 //! a broken example or an exercise that cannot be solved.
 //!

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 // The editor's words, in Portuguese, Spanish and English.
 
 export type Lang = "pt" | "es" | "en";
@@ -38,6 +40,13 @@ const words = {
   stageSplit: { pt: "2 colunas", es: "2 columnas", en: "2 columns" },
   stageFit: { pt: "Caber na tela", es: "Caber en pantalla", en: "Fit the screen" },
   follow: { pt: "Seguir", es: "Seguir", en: "Follow" },
+  // The legal notices in the footer (the AGPL's Appropriate Legal Notices).
+  legal: {
+    pt: "Software livre (AGPL-3.0), sem garantia; textos CC BY-SA 4.0",
+    es: "Software libre (AGPL-3.0), sin garantía; textos CC BY-SA 4.0",
+    en: "Free software (AGPL-3.0), no warranty; texts CC BY-SA 4.0",
+  },
+  commercialLicense: { pt: "Licença comercial", es: "Licencia comercial", en: "Commercial licence" },
   eqTitle: { pt: "Equalizador", es: "Ecualizador", en: "Equalizer" },
   eqOpen: {
     pt: "Clique para abrir o equalizador e arrastar graves, médios e agudos",

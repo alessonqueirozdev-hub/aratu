@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 // Checks the sampled voices in public/samples/ against what SOURCES.md and
 // the manual say of them: every file a voice.sfz or an index.json names is
 // there; in a voice with dynamic layers the layers share out the

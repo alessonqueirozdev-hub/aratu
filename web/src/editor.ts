@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 // The code editor: CodeMirror 6 with Aratu's colours, diagnostics in the
 // musician's words, and the symbols that are sounding lit up as they play.
 

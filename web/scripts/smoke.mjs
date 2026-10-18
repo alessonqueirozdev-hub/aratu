@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 // Loads the built WebAssembly module in Node and checks the editor's
 // protocol end to end: compile, diagnostics in both languages, render.
 import { readFileSync } from "node:fs";

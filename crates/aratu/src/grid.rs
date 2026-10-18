@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 //! The rhythm map: each line's bars as a grid of equal steps, fine enough
 //! to show every subdivision written (eighths, sixteenths, triplets), with
 //! where each sound is written so the editor can move it and rewrite the

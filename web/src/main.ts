@@ -1,3 +1,9 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
+/*! Aratu, by Alesson Lucas Oliveira de Queiroz (https://aratu.live). Free software under the
+ * GNU AGPL, version 3 or later, with the terms in NOTICE.md; source:
+ * https://github.com/alessonqueirozdev-hub/aratu */
+
 // Aratu in the browser: play, learn, look things up.
 
 import { EditorView } from "@codemirror/view";

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 //! Exact fractions for musical positions.
 //!
 //! Beats are divided into twos, threes, fives and so on, and a triplet must

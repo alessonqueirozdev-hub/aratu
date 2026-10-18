@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 //! "Did you mean": the known word nearest to a misspelt one, and the words
 //! musicians try first in Portuguese and Spanish for the frame of a piece.
 

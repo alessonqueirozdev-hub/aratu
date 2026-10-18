@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 //! Reading a music line: bar lines and repeat signs, markers and jumps, and
 //! the beats with the parts that share them.
 //!

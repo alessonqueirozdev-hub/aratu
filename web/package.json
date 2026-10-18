@@ -3,7 +3,8 @@
   "private": true,
   "version": "0.1.0",
   "description": "The Aratu web editor",
-  "license": "MIT OR Apache-2.0",
+  "license": "AGPL-3.0-or-later",
+  "author": "Alesson Lucas Oliveira de Queiroz",
   "type": "module",
   "scripts": {
     "wasm": "node scripts/build-wasm.mjs",

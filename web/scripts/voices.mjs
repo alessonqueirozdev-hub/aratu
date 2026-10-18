@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 // Listens to sampled voices the way the editor plays them: on Manguebyte's
 // engine, in a Chromium browser with its sound muted (--mute-audio). For
 // each voice it loads voice.sfz, waits until the engine has measured it and

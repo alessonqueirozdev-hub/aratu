@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 // One piece of Aratu being written and heard: an editor, its diagnostics and
 // knobs, a player, and the symbols lit up as they sound. The playground has
 // one; every example and exercise of the book has its own. Only one plays

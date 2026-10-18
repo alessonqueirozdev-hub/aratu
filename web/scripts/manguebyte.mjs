@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 // Brings Manguebyte's browser engine (crates/manguebyte-web) into the
 // editor: clones Manguebyte at a pinned commit, builds the WebAssembly
 // module and copies it, with the three JavaScript files it runs with and

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 // A piece in a link: its text, compressed when the browser can, in the part
 // of the address after `#`, so the link works on any static host and the
 // text never reaches a server. `#/tocar?m=` and the code.

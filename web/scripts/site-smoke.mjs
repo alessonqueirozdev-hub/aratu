@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 // Builds the pages to read into a scratch folder and checks them: every
 // lesson and chapter in every language has its page, with a title, a
 // description and all its text; every relative link lands on a file, even

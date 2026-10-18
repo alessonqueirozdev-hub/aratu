@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 //! The keywords of the language in English, Portuguese and Spanish. The
 //! English word is the one the code and the messages use; the others stand
 //! for it wherever it is expected, so `no compasso 9: toque fill` and

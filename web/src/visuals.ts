@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 // Drawings under a line of the code, where `bass.wave` or `arp.roll` is
 // written: the part's wave, as an oscilloscope shows it, or its roll, the
 // notes of the bar passing under a playhead, a row for each pitch or drum.
