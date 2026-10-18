@@ -3,22 +3,20 @@
 // Prepares the sampled voices from the Versilian Community Sample Library
 // (VCSL, CC0: https://github.com/sgossner/VCSL) and writes them, with an
 // index per voice, into public/samples/. The editor fetches a voice the
-// first time a piece uses it. A voice with `layers` keeps its recordings as
-// they were made, in stereo at their own rate: every dynamic layer, mapped
-// to a range of velocities, and every round robin, taking turns, trimmed
-// and faded and written as FLAC or Ogg Vorbis. The others pick one take of
-// a few notes, make them mono, trim and shorten them, resample them to a
-// light rate and write 16-bit WAV files. The voices in KEPT were made
-// elsewhere: their folders are left as they are. Run by hand and commit the
-// result:
+// first time a piece uses it. Every voice keeps its recordings as they were
+// made, at their own rate and in their own channels: every dynamic layer,
+// mapped to a range of velocities, and every round robin, taking turns,
+// trimmed and faded, or looped where they hold steady, and written as FLAC
+// or Ogg Vorbis. The voices in KEPT were made elsewhere: their folders are
+// left as they are. Run by hand and commit the result:
 //
 //   node scripts/samples.mjs [voice ...]   (downloads into .samples-cache/)
 //
 // Naming voices remakes only those and leaves SOURCES.md as it is.
 //
-// WAV reading and writing and the resampler are below. FLAC and Ogg Vorbis
-// are written by Manguebyte's encoders (manguebyte-formats, MIT OR
-// Apache-2.0), which the script builds into the cache with cargo.
+// WAV reading and writing are below. FLAC and Ogg Vorbis are written by
+// Manguebyte's encoders (manguebyte-formats, MIT OR Apache-2.0), which the
+// script builds into the cache with cargo.
 
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
@@ -30,48 +28,60 @@ const cache = join(web, ".samples-cache");
 const out = join(web, "public", "samples");
 const RAW = "https://raw.githubusercontent.com/sgossner/VCSL/master/";
 
-/** Pitched voices: notes picked at least `spacing` semitones apart. A voice
- * with `layers` (patterns of its files, softest first) keeps the source's
- * rate and channels; its `seconds` may run from the lowest note to the
- * highest, and `rr` finds the round robin a file is. `format` is "flac" or
- * a Vorbis quality ("q7"). Every voice is FLAC for now: on the mallets,
- * Manguebyte's Vorbis encoder at quality 7 took out everything above
- * 16 kHz and most of 8 to 16 kHz, the brightness the layers are for, which
- * FLAC keeps for four times the bytes. `normalized` marks a source whose
- * layers come at one level already (the grand's NORMALIZED.txt asks that
- * their gains be left alone). */
+/** Pitched voices: notes picked at least `spacing` semitones apart, at the
+ * source's rate and in its channels. `layers` are patterns of its files,
+ * softest first, one for each dynamic it was recorded at (one layer when
+ * it has none); `rr` finds the round robin a file is. `seconds` may run
+ * from the lowest note to the highest; a voice that sustains (`loop`)
+ * loops where its notes hold steady, as long as a key is held. `format` is
+ * "flac" or a Vorbis quality ("q7"). Every voice is FLAC for now: on the
+ * mallets, Manguebyte's Vorbis encoder at quality 7 took out everything
+ * above 16 kHz and most of 8 to 16 kHz, the brightness the layers are for,
+ * which FLAC keeps for four times the bytes. `normalized` marks a source
+ * whose layers come at one level already (the grand's NORMALIZED.txt asks
+ * that their gains be left alone).
+ *
+ * Some sources have no dynamics to split: the harpsichord's High and Low
+ * are its two registers at one pitch, the recorder's other folders a
+ * vibrato and a staccato. The organ's Quiet and Loud are two registrations
+ * of its third manual, played as an organist adds stops for forte; the
+ * harmonica's Accented notes are its loud layer. */
 const PITCHED = [
   { code: "piano.grand", dir: "Chordophones/Zithers/Grand Piano, Steinway B", include: /^NoSus\//, layers: [/_vl2_/, /_vl3_/, /_vl4_/], rr: /_rr(\d+)/, normalized: true, spacing: 4, seconds: [5, 2], fade: 1, format: "flac", range: [24, 103] },
   { code: "piano.upright", dir: "Chordophones/Zithers/Upright Piano, Yamaha", include: /^Sustains\//, layers: [/_vl1_/, /_vl2_/, /_vl3_/], rr: /_rr(\d+)/, spacing: 4, seconds: [4, 1.8], fade: 1, format: "flac", range: [24, 103] },
-  { code: "keys.harpsichord", dir: "Chordophones/Zithers/Harpsichord, Flemish", include: /^Sustains\/(High|Low)\/.*_rr1\.wav$/, spacing: 4, seconds: 2.5, rate: 24000 },
-  { code: "organ.pipe", dir: "Aerophones/Edge-blown Aerophones/Pipe Organ", include: /^Loud\/.*\.wav$/, spacing: 3, seconds: 2.5, rate: 24000, loop: true },
+  { code: "keys.harpsichord", dir: "Chordophones/Zithers/Harpsichord, Flemish", include: /^Sustains\/(High|Low)\/.*_rr1\.wav$/, spacing: 4, seconds: [2.5, 1.2], fade: 0.8, format: "flac" },
+  { code: "organ.pipe", dir: "Aerophones/Edge-blown Aerophones/Pipe Organ", include: /^(Quiet|Loud)\//, layers: [/^Quiet\//, /^Loud\//], spacing: 6, seconds: 1.5, loop: true, format: "flac" },
   { code: "harp", dir: "Chordophones/Composite Chordophones/Concert Harp", include: /\.wav$/, layers: [/_(p|mp|mf)\d\.wav$/, /_f\d\.wav$/], spacing: 3, seconds: [4, 1.5], fade: 0.8, format: "flac" },
   { code: "mallets.marimba", dir: "Idiophones/Struck Idiophones/Marimba", include: /\.wav$/, layers: [/_soft_/, /_med_/, /_loud_/], spacing: 3, seconds: [2.5, 1.2], fade: 0.5, format: "flac" },
   { code: "mallets.vibraphone", dir: "Idiophones/Struck Idiophones/Vibraphone", include: /^Hard Mallets\/.*_Main\.wav$/, layers: [/_v2_/, /_v3_/], rr: /_rr(\d+)/, spacing: 3, seconds: [4, 2.5], fade: 1, format: "flac" },
   { code: "mallets.xylophone", dir: "Idiophones/Struck Idiophones/Xylophone", include: /^Medium Mallets\/.*_far\.wav$/, layers: [/_pp_/, /_ff_/], spacing: 3, seconds: 1.5, fade: 0.4, format: "flac" },
   { code: "mallets.glockenspiel", dir: "Idiophones/Struck Idiophones/Glockenspiel", include: /\.wav$/, layers: [/_soft_/, /_medium_/, /_loud_/], spacing: 3, seconds: [3, 2], fade: 0.8, format: "flac" },
-  { code: "bells.tubular", dir: "Idiophones/Struck Idiophones/Tubular Bells 1", include: /_(ff|f)_rr\d\.wav$/, spacing: 2, seconds: 4, rate: 24000 },
-  { code: "mallets.kalimba", dir: "Idiophones/Plucked Idiophones/Kalimba, Kenya", include: /\.wav$/, spacing: 2, seconds: 2.5, rate: 24000 },
-  { code: "harmonica", dir: "Aerophones/Free Aerophones/Harmonica-Hohner-Super64", include: /^Sustains\/Normal\/.*\.wav$/, spacing: 3, seconds: 2, rate: 24000, loop: true },
-  { code: "recorder.alto", dir: "Aerophones/Edge-blown Aerophones/Baroque Alto Recorder", include: /^Sustain\/.*\.wav$/, spacing: 2, seconds: 2, rate: 24000, loop: true },
-  { code: "sax.tenor", dir: "Aerophones/Reed Aerophones/Tenor Saxophone", include: /^Non-Vibrato\/.*_vl3_rr1\.wav$/, spacing: 3, seconds: 2.5, rate: 24000, loop: true },
+  { code: "bells.tubular", dir: "Idiophones/Struck Idiophones/Tubular Bells 1", include: /\.wav$/, layers: [/_(pp|p)_/, /_(f|ff|fff)_/], spacing: 4, seconds: 4, fade: 2, format: "flac" },
+  { code: "mallets.kalimba", dir: "Idiophones/Plucked Idiophones/Kalimba, Kenya", include: /\.wav$/, spacing: 2, seconds: [2.5, 1.5], fade: 0.8, format: "flac" },
+  { code: "harmonica", dir: "Aerophones/Free Aerophones/Harmonica-Hohner-Super64", include: /^Sustains\/(Normal|Accented)\//, layers: [/\/Normal\//, /\/Accented\//], spacing: 3, seconds: 1.2, loop: true, format: "flac" },
+  { code: "recorder.alto", dir: "Aerophones/Edge-blown Aerophones/Baroque Alto Recorder", include: /^Sustain\//, spacing: 2, seconds: 1.5, loop: true, format: "flac" },
+  { code: "sax.tenor", dir: "Aerophones/Reed Aerophones/Tenor Saxophone", include: /^Non-Vibrato\//, layers: [/_vl2_/, /_vl3_/], rr: /_rr(\d+)/, spacing: 3, seconds: 1.1, loop: true, format: "flac" },
 ];
 
-/** The acoustic kit: one recording for each drum the language names. */
+/** The acoustic kit: each drum the language names, with its dynamics and
+ * round robins (at most `takes` of each), on its General MIDI key. The
+ * middle of three layers, which mf plays, is the stroke the kick, snare,
+ * hi-hat, crash and high and mid toms had when the kit had one; the ride
+ * is the suspended cymbal's bell, as it was. */
 const KIT = {
   code: "drums.acoustic",
-  rate: 32000,
-  hits: {
-    kick: ["Membranophones/Struck Membranophones/Bass Drum 1", /BDrumNew_hit_v5_rr1/, 1.2],
-    snare: ["Membranophones/Struck Membranophones/Snare Drum, Modern 1", /HitSN_v5_rr1/, 0.8],
-    "closed-hat": ["Idiophones/Struck Idiophones/Hi-Hat Cymbal", /HitC_v3_rr1/, 0.5],
-    "open-hat": ["Idiophones/Struck Idiophones/Hi-Hat Cymbal", /HitO_rr1/, 1.5],
-    ride: ["Idiophones/Struck Idiophones/Suspended Cymbal 1", /[Hh]it.*\.wav$/, 2.5],
-    crash: ["Idiophones/Struck Idiophones/Clash Cymbals 1", /crash1_mf1/, 2.5],
-    "high-tom": ["Membranophones/Struck Membranophones/Tom 1", /Stick\/TomH_HitS_v3_rr1/, 1],
-    "mid-tom": ["Membranophones/Struck Membranophones/Tom 2", /Stick\/TomL_HitS_v3_rr1/, 1],
-    "floor-tom": ["Membranophones/Struck Membranophones/Legacy Toms", /tenor_lower\/tenor_ff_rr1/, 1.2],
-    "side-stick": ["Membranophones/Struck Membranophones/Legacy Snares", /drum1\/snare1_click\.wav$/, 0.4],
+  format: "flac",
+  drums: {
+    kick: { dir: "Membranophones/Struck Membranophones/Bass Drum 1", include: /^BDrumNew_hit_/, layers: [/_v3_/, /_v5_/, /_v7_/], rr: /_rr(\d+)/, seconds: 1.2 },
+    snare: { dir: "Membranophones/Struck Membranophones/Snare Drum, Modern 1", include: /^Snare2_HitSN_/, layers: [/_v3_/, /_v5_/, /_v7_/], rr: /_rr(\d+)/, seconds: 0.8 },
+    "closed-hat": { dir: "Idiophones/Struck Idiophones/Hi-Hat Cymbal", include: /^HiHat_HitC_/, layers: [/_v1_/, /_v3_/, /_v4_/], rr: /_rr(\d+)/, seconds: 0.5 },
+    "open-hat": { dir: "Idiophones/Struck Idiophones/Hi-Hat Cymbal", include: /^HiHat_HitO_rr/, rr: /_rr(\d+)/, seconds: 1.5 },
+    ride: { dir: "Idiophones/Struck Idiophones/Suspended Cymbal 1", include: /^susCymb1_hit_bell_/, layers: [/_pp\d/, /_mf\d/, /_fff\d/], seconds: 2.5 },
+    crash: { dir: "Idiophones/Struck Idiophones/Clash Cymbals 1", include: /^cymbal_crash1_/, layers: [/_pp\d/, /_mf\d/, /_ff\d/], rr: /(\d)\.wav$/, takes: 1, seconds: 2.5 },
+    "high-tom": { dir: "Membranophones/Struck Membranophones/Tom 1", include: /^Stick\/TomH_HitS_/, layers: [/_v2_/, /_v3_/, /_v4_/], rr: /_rr(\d+)/, seconds: 1 },
+    "mid-tom": { dir: "Membranophones/Struck Membranophones/Tom 2", include: /^Stick\/TomL_HitS_/, layers: [/_v2_/, /_v3_/, /_v4_/], rr: /_rr(\d+)/, seconds: 1 },
+    "floor-tom": { dir: "Membranophones/Struck Membranophones/Legacy Toms", include: /^tenor_lower\//, layers: [/_pp_/, /_mf_/, /_ff_/], rr: /_rr(\d+)/, takes: 2, seconds: 1.2 },
+    "side-stick": { dir: "Membranophones/Struck Membranophones/Legacy Snares", include: /^drum1\/snare1_click\d*\.wav$/, rr: /click(\d*)\.wav$/, seconds: 0.4 },
   },
 };
 
@@ -134,9 +144,8 @@ async function download(path) {
   return readFileSync(file);
 }
 
-/** Reads a PCM or float WAV into one mono channel, and with `keep` each of
- * its channels too. */
-function readWav(buf, keep = false) {
+/** Reads a PCM or float WAV into its channels. */
+function readWav(buf) {
   if (buf.toString("ascii", 0, 4) !== "RIFF" || buf.toString("ascii", 8, 12) !== "WAVE") throw new Error("not a WAV");
   let pos = 12;
   let fmt = null;
@@ -154,10 +163,8 @@ function readWav(buf, keep = false) {
     } else if (id === "data" && fmt) {
       const bytes = fmt.bits / 8;
       const frames = Math.floor(Math.min(size, buf.length - body) / (bytes * fmt.channels));
-      const mono = new Float32Array(frames);
-      const channels = keep ? Array.from({ length: fmt.channels }, () => new Float32Array(frames)) : [];
+      const channels = Array.from({ length: fmt.channels }, () => new Float32Array(frames));
       for (let i = 0; i < frames; i++) {
-        let s = 0;
         for (let c = 0; c < fmt.channels; c++) {
           const at = body + (i * fmt.channels + c) * bytes;
           let v;
@@ -166,84 +173,31 @@ function readWav(buf, keep = false) {
           else if (bytes === 3) v = buf.readIntLE(at, 3) / 8388608;
           else if (bytes === 4) v = buf.readInt32LE(at) / 2147483648;
           else v = (buf[at] - 128) / 128;
-          s += v;
-          if (keep) channels[c][i] = v;
+          channels[c][i] = v;
         }
-        mono[i] = s / fmt.channels;
       }
-      return { rate: fmt.rate, data: mono, channels };
+      return { rate: fmt.rate, channels };
     }
     pos = body + size + (size % 2);
   }
   throw new Error("no audio in WAV");
 }
 
-/** A windowed-sinc resampler, low-passed below the new Nyquist. */
-function resample(data, from, to) {
-  if (from === to) return data;
-  const ratio = to / from;
-  const n = Math.floor(data.length * ratio);
-  const outData = new Float32Array(n);
-  const cutoff = Math.min(1, ratio) * 0.95;
-  const half = 16;
-  for (let i = 0; i < n; i++) {
-    const x = i / ratio;
-    const c = Math.floor(x);
-    let s = 0;
-    let w = 0;
-    for (let k = c - half + 1; k <= c + half; k++) {
-      if (k < 0 || k >= data.length) continue;
-      const t = x - k;
-      const sinc = t === 0 ? 1 : Math.sin(Math.PI * t * cutoff) / (Math.PI * t * cutoff);
-      const win = 0.5 + 0.5 * Math.cos((Math.PI * t) / half);
-      const f = sinc * win;
-      s += data[k] * f;
-      w += f;
-    }
-    outData[i] = w ? s / w : 0;
-  }
-  return outData;
-}
-
-/** From just before the sound starts, at most `seconds` long, faded out. */
-function shape(data, rate, seconds, loop) {
-  let peak = 0;
-  for (const v of data) peak = Math.max(peak, Math.abs(v));
-  const gate = peak * 0.02;
-  let start = 0;
-  while (start < data.length && Math.abs(data[start]) < gate) start++;
-  start = Math.max(0, start - Math.round(rate * 0.003));
-  const len = Math.min(data.length - start, Math.round(rate * seconds));
-  const d = data.slice(start, start + len);
-  let loopStart = null;
-  let loopEnd = null;
-  if (loop) {
-    // A loop in the steady middle, its end cross-faded into its start, so a
-    // held note sustains.
-    loopStart = Math.round(len * 0.35);
-    loopEnd = Math.round(len * 0.9);
-    const fade = Math.min(Math.round(rate * 0.12), loopStart);
-    for (let i = 0; i < fade; i++) {
-      const t = i / fade;
-      const a = loopEnd - fade + i;
-      d[a] = d[a] * (1 - t) + d[loopStart - fade + i] * t;
-    }
-  } else {
-    const fade = Math.min(Math.round(rate * 0.3), Math.floor(len / 3));
-    for (let i = 0; i < fade; i++) d[len - fade + i] *= 1 - i / fade;
-  }
-  return { data: d, loopStart, loopEnd };
-}
-
-/** The channels of a recording, from just before the sound starts, at most
- * `seconds` long, the last `fade` seconds faded out. */
-function shapeChannels(channels, rate, seconds, fade) {
+/** The frame just before a recording's sound starts: 3 ms before the
+ * first that comes to 2% of its peak, in any channel. */
+function onset(channels, rate) {
   const loudest = (i) => channels.reduce((m, d) => Math.max(m, Math.abs(d[i])), 0);
   let peak = 0;
   for (let i = 0; i < channels[0].length; i++) peak = Math.max(peak, loudest(i));
   let start = 0;
   while (start < channels[0].length && loudest(start) < peak * 0.02) start++;
-  start = Math.max(0, start - Math.round(rate * 0.003));
+  return Math.max(0, start - Math.round(rate * 0.003));
+}
+
+/** The channels of a recording, from just before the sound starts, at most
+ * `seconds` long, the last `fade` seconds faded out. */
+function shapeChannels(channels, rate, seconds, fade) {
+  const start = onset(channels, rate);
   const len = Math.min(channels[0].length - start, Math.round(rate * seconds));
   const n = Math.min(Math.round(rate * fade), Math.floor(len / 2));
   return channels.map((d) => {
@@ -252,6 +206,47 @@ function shapeChannels(channels, rate, seconds, fade) {
     for (let i = 0; i < n; i++) s[len - n + i] *= 0.5 + 0.5 * Math.cos((Math.PI * i) / n);
     return s;
   });
+}
+
+/** A sustained recording from just before the sound starts, at most
+ * `seconds` long, looped where it holds steady: from 40% of the way in to
+ * an end, among the last 40 ms, whose frames before it best match, in
+ * every channel at once, the frames before the loop's start. Those frames
+ * then fade into the ones before the start, so that the loop goes round
+ * without a click; the recording stops where the loop ends. The loop is
+ * [start, end), in frames. */
+function loopChannels(channels, rate, seconds) {
+  const begin = onset(channels, rate);
+  const len = Math.min(channels[0].length - begin, Math.round(rate * seconds));
+  const d = channels.map((c) => c.slice(begin, begin + len));
+  const from = Math.round(len * 0.4);
+  const window = Math.round(rate * 0.02);
+  let end = len;
+  let best = -Infinity;
+  for (let e = len - Math.round(rate * 0.04); e <= len; e++) {
+    let dot = 0, a = 0, b = 0;
+    for (const c of d) {
+      for (let i = 1; i <= window; i++) {
+        dot += c[e - i] * c[from - i];
+        a += c[e - i] * c[e - i];
+        b += c[from - i] * c[from - i];
+      }
+    }
+    const score = dot / Math.sqrt(a * b + 1e-30);
+    if (score > best) {
+      best = score;
+      end = e;
+    }
+  }
+  const fade = Math.min(Math.round(rate * 0.1), Math.floor((end - from) / 3), from);
+  for (const c of d) {
+    for (let i = 0; i < fade; i++) {
+      const t = (i + 1) / fade;
+      const at = end - fade + i;
+      c[at] = c[at] * (1 - t) + c[from - fade + i] * t;
+    }
+  }
+  return { channels: d.map((c) => c.slice(0, end)), loop: [from, end] };
 }
 
 /** How loud a recording is, in dB: its first second through the K filter
@@ -387,108 +382,65 @@ function writeEncoded(file, channels, rate, gain, format) {
 
 const peakOf = (d) => d.reduce((m, v) => Math.max(m, Math.abs(v)), 0);
 
-/** The same voice as an SFZ instrument, for Manguebyte's sampler: each
- * recording covers the keys nearest to it. */
-function sfz(notes, rate, loop) {
-  const lines = ["// Made by Aratu's web/scripts/samples.mjs from VCSL (CC0).", "<control> default_path=./", "<global> ampeg_release=0.12"];
-  notes.forEach((n, i) => {
-    const lo = i === 0 ? 0 : Math.floor((notes[i - 1].note + n.note) / 2) + 1;
-    const hi = i === notes.length - 1 ? 127 : Math.floor((n.note + notes[i + 1].note) / 2);
-    let region = `<region> sample=${n.file} pitch_keycenter=${n.note} lokey=${lo} hikey=${hi}`;
-    if (loop && n.loop) {
-      region += ` loop_mode=loop_continuous loop_start=${Math.round(n.loop[0] * rate)} loop_end=${Math.round(n.loop[1] * rate)}`;
-    }
-    lines.push(region);
-  });
-  return lines.join("\n") + "\n";
-}
-
 /** The highest velocity of each layer but the loudest, from Aratu's
  * dynamics (theory.rs: ppp 16, pp 33, p 49, mp 64, mf 80, f 96, ff 112,
- * fff 127, an accent 32 more). Of two layers the soft one plays up to mf;
- * of three, the softest plays p and under, the middle one mp and mf, the
- * loudest f and over, and an accent on mf. */
+ * fff 127, an accent 32 more; a ghost note a third of its dynamic). Of two
+ * layers the soft one plays up to mf; of three, the softest plays p and
+ * under, the middle one mp and mf, the loudest f and over, and an accent on
+ * mf. */
 const SPLITS = { 1: [], 2: [88], 3: [59, 95] };
 
-/** A layered voice as SFZ: each layer a group of velocities, its notes
- * covering the keys nearest to them, round robins taking turns. */
-function layeredSfz(layers) {
-  const tops = SPLITS[layers.length];
-  const lines = ["// Made by Aratu's web/scripts/samples.mjs from VCSL (CC0).", "<control> default_path=./", "<global> ampeg_release=0.12"];
-  layers.forEach((notes, l) => {
-    const lovel = l === 0 ? 0 : tops[l - 1] + 1;
-    const hivel = l === layers.length - 1 ? 127 : tops[l];
-    lines.push(`<group> lovel=${lovel} hivel=${hivel}`);
-    notes.forEach((n, i) => {
-      const lo = i === 0 ? 0 : Math.floor((notes[i - 1].note + n.note) / 2) + 1;
-      const hi = i === notes.length - 1 ? 127 : Math.floor((n.note + notes[i + 1].note) / 2);
-      n.takes.forEach((file, t) => {
-        const turns = n.takes.length > 1 ? ` seq_length=${n.takes.length} seq_position=${t + 1}` : "";
-        lines.push(`<region> sample=${file} pitch_keycenter=${n.note} lokey=${lo} hikey=${hi}${turns}`);
-      });
-    });
-  });
-  return lines.join("\n") + "\n";
+/** The velocities of layer `l` of `count`. */
+function velocities(count, l) {
+  const tops = [...SPLITS[count], 127];
+  return [l === 0 ? 0 : tops[l - 1] + 1, tops[l]];
 }
 
-/** The kit as SFZ: General MIDI drum keys. */
-// "guitar-tap" (the flamenco golpe) is 88 in the contract with Manguebyte, past
-// every GM and GM2 percussion key; VCSL has no recording of it yet.
-const GM = { kick: 36, snare: 38, "side-stick": 37, "closed-hat": 42, "open-hat": 46, ride: 51, crash: 49, "high-tom": 50, "mid-tom": 47, "floor-tom": 43, "guitar-tap": 88 };
-function kitSfz(hits) {
-  const lines = ["// Made by Aratu's web/scripts/samples.mjs from VCSL (CC0).", "<control> default_path=./", "<group> loop_mode=one_shot"];
-  for (const [name, file] of Object.entries(hits)) {
-    // The closed hat (group 2) chokes the open one.
-    const choke = name === "open-hat" ? " group=1 off_by=2" : name === "closed-hat" ? " group=2" : "";
-    lines.push(`<region> sample=${file} key=${GM[name]}${choke}`);
-  }
-  return lines.join("\n") + "\n";
-}
+/** The layer an unmarked note (mf, 80) plays, which the stand-in plays. */
+const mfLayer = (count) => [...SPLITS[count], 127].findIndex((t) => 80 <= t);
 
-/** A voice with every dynamic layer and round robin of its notes, at the
- * source's rate and channels. Each note of a softer layer is brought to the
- * loudness of the loudest layer's, so that velocity sets the level as it
- * does in every sampler part (the SFZ square law; Manguebyte's loudness
- * normalisation measures at velocity 0.8, in the loudest layer) and the
- * layer only changes the timbre; the loudest layer's notes keep their
- * relative levels. */
-async function layered(files, v) {
-  const inDir = files
+/** The recordings of a voice, or of a drum, that `include` takes: their
+ * note, their layer and their take, in that order. A note's takes in a
+ * layer are numbered from 1 in the order `rr` finds them, at most `takes`
+ * of them. */
+function recordingsOf(files, v, noteOf) {
+  const layers = v.layers ?? [/(?:)/];
+  const found = files
     .filter((f) => f.path.startsWith(v.dir + "/"))
     .map((f) => ({ ...f, rel: f.path.slice(v.dir.length + 1) }))
     .filter((f) => v.include.test(f.rel) && f.rel.endsWith(".wav"))
-    .map((f) => ({ ...f, note: noteIn(f.rel), layer: v.layers.findIndex((re) => re.test(f.rel)) }))
+    .map((f) => ({ ...f, note: noteOf(f.rel), layer: layers.findIndex((re) => re.test(f.rel)), turn: v.rr ? Number(f.rel.match(v.rr)?.[1] || 1) : 1 }))
     .filter((f) => f.note !== null && f.layer >= 0 && (!v.range || (f.note >= v.range[0] && f.note <= v.range[1])))
-    .map((f) => ({ ...f, take: v.rr ? Number(f.rel.match(v.rr)?.[1] ?? 1) : 1 }))
-    .sort((a, b) => a.note - b.note || a.layer - b.layer || a.take - b.take || a.rel.localeCompare(b.rel))
+    .sort((a, b) => a.note - b.note || a.layer - b.layer || a.turn - b.turn || a.rel.localeCompare(b.rel))
     // Takes that are not round robins (a second take of a note): the first.
-    .filter((f, i, all) => i === 0 || f.note !== all[i - 1].note || f.layer !== all[i - 1].layer || f.take !== all[i - 1].take);
-  const notes = [];
-  for (const n of new Set(inDir.map((f) => f.note))) {
-    if (notes.length === 0 || n - notes[notes.length - 1] >= v.spacing) notes.push(n);
-  }
-  const picked = inDir.filter((f) => notes.includes(f.note));
-  if (picked.length === 0) throw new Error(`${v.code}: no files matched`);
-  const [low, high] = [notes[0], notes[notes.length - 1]];
-  const secondsAt = (note) => {
-    if (!Array.isArray(v.seconds)) return v.seconds;
-    const t = high === low ? 0 : (note - low) / (high - low);
-    return v.seconds[0] + (v.seconds[1] - v.seconds[0]) * t;
-  };
+    .filter((f, i, all) => i === 0 || f.note !== all[i - 1].note || f.layer !== all[i - 1].layer || f.turn !== all[i - 1].turn);
+  let take = 0;
+  return found
+    .map((f, i) => {
+      take = i > 0 && f.note === found[i - 1].note && f.layer === found[i - 1].layer ? take + 1 : 1;
+      return { ...f, take };
+    })
+    .filter((f) => !v.takes || f.take <= v.takes);
+}
+
+/** Downloads `picked`, at one rate, and trims each, or loops it. Each note
+ * of a softer layer is brought to the loudness of the loudest layer's
+ * nearest note, its takes by one gain, so that they keep their
+ * differences; nothing moves in a source whose layers were brought to one
+ * level already, and that says not to move them. Then one gain for them
+ * all, for their loudest peak. */
+async function prepare(picked, v, secondsAt) {
   const shaped = [];
   let rate = null;
   for (const f of picked) {
-    const wav = readWav(await download(f.path), true);
-    if (rate !== null && wav.rate !== rate) throw new Error(`${v.code}: ${f.rel} is ${wav.rate} Hz, not ${rate}`);
+    const wav = readWav(await download(f.path));
+    if (rate !== null && wav.rate !== rate) throw new Error(`${v.code ?? v.dir}: ${f.rel} is ${wav.rate} Hz, not ${rate}`);
     rate = wav.rate;
-    const channels = shapeChannels(wav.channels.slice(0, 2), rate, secondsAt(f.note), v.fade ?? 0.3);
-    shaped.push({ f, channels, loudness: loudnessOf(channels, rate) });
+    const channels = wav.channels.slice(0, 2);
+    const s = v.loop ? loopChannels(channels, rate, secondsAt(f.note)) : { channels: shapeChannels(channels, rate, secondsAt(f.note), v.fade ?? 0.3), loop: null };
+    shaped.push({ f, ...s, loudness: loudnessOf(s.channels, rate) });
   }
-  // Each note of a softer layer is brought to the loudness of the loudest
-  // layer's nearest note, its takes by one gain, so that they keep their
-  // differences; nothing moves in a source whose layers were brought to one
-  // level already, and that says not to move them.
-  const top = v.layers.length - 1;
+  const top = (v.layers ?? [null]).length - 1;
   const mean = (list) => list.reduce((a, b) => a + b, 0) / list.length;
   const groupOf = (s) => shaped.filter((o) => o.f.note === s.f.note && o.f.layer === s.f.layer);
   const loudest = shaped.filter((s) => s.f.layer === top && s.f.take === 1);
@@ -501,96 +453,161 @@ async function layered(files, v) {
     const ref = loudest.reduce((a, b) => (Math.abs(b.f.note - s.f.note) < Math.abs(a.f.note - s.f.note) ? b : a));
     gainDb.set(s, mean(groupOf(ref).map((o) => o.loudness)) - mean(groupOf(s).map((o) => o.loudness)));
   }
-  const gainOf = (s) => Math.pow(10, gainDb.get(s) / 20);
-  // Then one gain for the voice, for its loudest peak.
-  const peak = Math.max(...shaped.map((s) => gainOf(s) * Math.max(...s.channels.map(peakOf))));
+  const raw = (s) => Math.pow(10, gainDb.get(s) / 20);
+  const peak = Math.max(...shaped.map((s) => raw(s) * Math.max(...s.channels.map(peakOf))));
+  const gainOf = (s) => (raw(s) * 0.9) / peak;
+  const gainsDb = Array.from({ length: top + 1 }, (_, l) => mean(shaped.filter((s) => s.f.layer === l).map((s) => gainDb.get(s))).toFixed(1));
+  return { shaped, rate, gainOf, gainsDb };
+}
+
+/** A layered voice as SFZ: each layer a group of velocities, its notes
+ * covering the keys nearest to them, round robins taking turns, a held
+ * note going round its loop (`loop_end` is the loop's last frame). */
+function layeredSfz(layers) {
+  const lines = ["// Made by Aratu's web/scripts/samples.mjs from VCSL (CC0).", "<control> default_path=./", "<global> ampeg_release=0.12"];
+  layers.forEach((notes, l) => {
+    const [lovel, hivel] = velocities(layers.length, l);
+    lines.push(`<group> lovel=${lovel} hivel=${hivel}`);
+    notes.forEach((n, i) => {
+      const lo = i === 0 ? 0 : Math.floor((notes[i - 1].note + n.note) / 2) + 1;
+      const hi = i === notes.length - 1 ? 127 : Math.floor((n.note + notes[i + 1].note) / 2);
+      n.takes.forEach(({ file, loop }, t) => {
+        const turns = n.takes.length > 1 ? ` seq_length=${n.takes.length} seq_position=${t + 1}` : "";
+        const held = loop ? ` loop_mode=loop_continuous loop_start=${loop[0]} loop_end=${loop[1] - 1}` : "";
+        lines.push(`<region> sample=${file} pitch_keycenter=${n.note} lokey=${lo} hikey=${hi}${turns}${held}`);
+      });
+    });
+  });
+  return lines.join("\n") + "\n";
+}
+
+/** The kit as SFZ: each drum on its General MIDI key, a group of
+ * velocities for each of its layers, its round robins taking turns. */
+// "guitar-tap" (the flamenco golpe) is 88 in the contract with Manguebyte, past
+// every GM and GM2 percussion key; VCSL has no recording of it yet.
+const GM = { kick: 36, snare: 38, "side-stick": 37, "closed-hat": 42, "open-hat": 46, ride: 51, crash: 49, "high-tom": 50, "mid-tom": 47, "floor-tom": 43, "guitar-tap": 88 };
+function kitSfz(drums) {
+  const lines = ["// Made by Aratu's web/scripts/samples.mjs from VCSL (CC0).", "<control> default_path=./", "<global> loop_mode=one_shot"];
+  for (const { name, layers } of drums) {
+    // The closed hat (group 2) chokes the open one.
+    const choke = name === "open-hat" ? " group=1 off_by=2" : name === "closed-hat" ? " group=2" : "";
+    layers.forEach((takes, l) => {
+      const [lovel, hivel] = velocities(layers.length, l);
+      lines.push(`<group> lovel=${lovel} hivel=${hivel}`);
+      takes.forEach((file, t) => {
+        const turns = takes.length > 1 ? ` seq_length=${takes.length} seq_position=${t + 1}` : "";
+        lines.push(`<region> sample=${file} key=${GM[name]}${choke}${turns}`);
+      });
+    });
+  }
+  return lines.join("\n") + "\n";
+}
+
+/** A voice with every dynamic layer and round robin of its notes, at the
+ * source's rate and channels. A softer layer's notes are as loud as the
+ * loudest layer's, so that velocity sets the level as it does in every
+ * sampler part (the SFZ square law; Manguebyte's loudness normalisation
+ * measures at velocity 0.8, in the loudest layer) and the layer only
+ * changes the timbre; the loudest layer's notes keep their relative
+ * levels. */
+async function pitched(files, v) {
+  const inDir = recordingsOf(files, v, noteIn);
+  const notes = [];
+  for (const n of new Set(inDir.map((f) => f.note))) {
+    if (notes.length === 0 || n - notes[notes.length - 1] >= v.spacing) notes.push(n);
+  }
+  const picked = inDir.filter((f) => notes.includes(f.note));
+  if (picked.length === 0) throw new Error(`${v.code}: no files matched`);
+  const [low, high] = [notes[0], notes[notes.length - 1]];
+  const secondsAt = (note) => {
+    if (!Array.isArray(v.seconds)) return v.seconds;
+    const t = high === low ? 0 : (note - low) / (high - low);
+    return v.seconds[0] + (v.seconds[1] - v.seconds[0]) * t;
+  };
+  const { shaped, rate, gainOf, gainsDb } = await prepare(picked, v, secondsAt);
   const dir = join(out, v.code);
   mkdirSync(dir, { recursive: true });
   const ext = v.format === "flac" ? "flac" : "ogg";
   let bytes = 0;
-  const layers = v.layers.map(() => []);
+  const layers = (v.layers ?? [null]).map(() => []);
   for (const s of shaped) {
     const { note, layer, take } = s.f;
     const file = `${note}_v${layer + 1}${take > 1 ? `_rr${take}` : ""}.${ext}`;
-    bytes += writeEncoded(join(dir, file), s.channels, rate, (gainOf(s) * 0.9) / peak, v.format);
+    bytes += writeEncoded(join(dir, file), s.channels, rate, gainOf(s), v.format);
     const list = layers[layer];
     if (list.length === 0 || list[list.length - 1].note !== note) list.push({ note, takes: [] });
-    list[list.length - 1].takes.push(file);
+    list[list.length - 1].takes.push({ file, loop: s.loop });
   }
   // The stand-in plays one layer, the one an unmarked note (mf) plays.
-  const tops = [...SPLITS[v.layers.length], 127];
-  const mf = layers[tops.findIndex((t) => 80 <= t)];
-  const index = { kind: "pitched", source: v.dir, notes: mf.map((n) => ({ note: n.note, file: n.takes[0] })) };
-  writeFileSync(join(dir, "index.json"), JSON.stringify(index));
+  const mf = layers[mfLayer(layers.length)].map((n) => {
+    const { file, loop } = n.takes[0];
+    return loop ? { note: n.note, file, loop: [loop[0] / rate, loop[1] / rate] } : { note: n.note, file };
+  });
+  writeFileSync(join(dir, "index.json"), JSON.stringify({ kind: "pitched", source: v.dir, notes: mf }));
   writeFileSync(join(dir, "voice.sfz"), layeredSfz(layers));
-  const gainsDb = v.layers.map((_, l) => mean(shaped.filter((s) => s.f.layer === l).map((s) => gainDb.get(s))).toFixed(1));
   return { code: v.code, files: shaped.length, bytes, sources: picked.map((f) => f.path), rate, channels: shaped[0].channels.length, gainsDb, layers: layers.map((l) => l.length) };
 }
 
-async function pitched(files, v) {
-  if (v.layers) return layered(files, v);
-  const inDir = files
-    .filter((f) => f.path.startsWith(v.dir + "/"))
-    .map((f) => ({ ...f, rel: f.path.slice(v.dir.length + 1) }))
-    .filter((f) => v.include.test(f.rel))
-    .map((f) => ({ ...f, note: noteIn(f.rel) }))
-    .filter((f) => f.note !== null && (!v.range || (f.note >= v.range[0] && f.note <= v.range[1])))
-    .sort((a, b) => a.note - b.note || a.rel.localeCompare(b.rel));
-  const picked = [];
-  for (const f of inDir) {
-    if (picked.length === 0 || f.note - picked[picked.length - 1].note >= v.spacing) picked.push(f);
-  }
-  if (picked.length === 0) throw new Error(`${v.code}: no files matched`);
-  const shaped = [];
-  for (const f of picked) {
-    const wav = readWav(await download(f.path));
-    const res = resample(wav.data, wav.rate, v.rate);
-    shaped.push({ f, ...shape(res, v.rate, v.seconds, v.loop) });
-  }
-  // One gain for the voice, so its notes keep their relative levels.
-  const gain = 0.9 / Math.max(...shaped.map((s) => peakOf(s.data)));
-  const dir = join(out, v.code);
-  mkdirSync(dir, { recursive: true });
-  let bytes = 0;
-  const notes = shaped.map((s) => {
-    const file = `${s.f.note}.wav`;
-    bytes += writeWav(join(dir, file), s.data, v.rate, gain);
-    const n = { note: s.f.note, file };
-    if (v.loop) Object.assign(n, { loop: [s.loopStart / v.rate, s.loopEnd / v.rate] });
-    return n;
-  });
-  writeFileSync(join(dir, "index.json"), JSON.stringify({ kind: "pitched", source: v.dir, notes }));
-  writeFileSync(join(dir, "voice.sfz"), sfz(notes, v.rate, !!v.loop));
-  return { code: v.code, files: notes.length, bytes, sources: picked.map((f) => f.path) };
-}
-
+/** The kit, each drum with every dynamic layer and round robin it was
+ * recorded with (at most `takes`), at the source's rate and channels; its
+ * softer layers as loud as its loudest, then one gain for the drum, its
+ * loudest peak at 0.9 as every drum's was. */
 async function kit(files) {
   const dir = join(out, KIT.code);
   mkdirSync(dir, { recursive: true });
-  const hits = {};
+  const ext = KIT.format === "flac" ? "flac" : "ogg";
+  const drums = [];
   const sources = [];
   let bytes = 0;
-  for (const [name, [d, re, seconds]] of Object.entries(KIT.hits)) {
-    const f = files.find((x) => x.path.startsWith(d + "/") && re.test(x.path.slice(d.length + 1)));
-    if (!f) throw new Error(`${KIT.code} ${name}: no file`);
-    const wav = readWav(await download(f.path));
-    const s = shape(resample(wav.data, wav.rate, KIT.rate), KIT.rate, seconds, false);
-    bytes += writeWav(join(dir, `${name}.wav`), s.data, KIT.rate, 0.9 / peakOf(s.data));
-    hits[name] = `${name}.wav`;
-    sources.push(f.path);
+  let count = 0;
+  let rate = null;
+  let channels = null;
+  for (const [name, d] of Object.entries(KIT.drums)) {
+    const picked = recordingsOf(files, d, () => 0);
+    if (picked.length === 0) throw new Error(`${KIT.code} ${name}: no files matched`);
+    const made = await prepare(picked, d, () => d.seconds);
+    if (rate !== null && made.rate !== rate) throw new Error(`${KIT.code} ${name}: ${made.rate} Hz, not ${rate}`);
+    rate = made.rate;
+    channels = made.shaped[0].channels.length;
+    const layers = (d.layers ?? [null]).map(() => []);
+    for (const s of made.shaped) {
+      const file = `${name}_v${s.f.layer + 1}${s.f.take > 1 ? `_rr${s.f.take}` : ""}.${ext}`;
+      bytes += writeEncoded(join(dir, file), s.channels, rate, made.gainOf(s), KIT.format);
+      layers[s.f.layer].push(file);
+    }
+    drums.push({ name, layers });
+    sources.push(...picked.map((f) => f.path));
+    count += picked.length;
   }
+  // The stand-in plays one take of each drum, the one an unmarked hit plays.
+  const hits = Object.fromEntries(drums.map(({ name, layers }) => [name, layers[mfLayer(layers.length)][0]]));
   writeFileSync(join(dir, "index.json"), JSON.stringify({ kind: "kit", hits }));
-  writeFileSync(join(dir, "voice.sfz"), kitSfz(hits));
-  return { code: KIT.code, files: Object.keys(hits).length, bytes, sources };
+  writeFileSync(join(dir, "voice.sfz"), kitSfz(drums));
+  return { code: KIT.code, files: count, bytes, sources, rate, channels, drums: drums.map(({ name, layers }) => ({ name, layers: layers.map((l) => l.length) })) };
 }
 
-/** What SOURCES.md says of how a layered voice was made. */
+/** What SOURCES.md says of how a voice was made. */
 function madeOf(v, r) {
-  const tops = [...SPLITS[v.layers.length], 127];
-  const ranges = tops.map((t, l) => `${l === 0 ? 0 : tops[l - 1] + 1}–${t}`).join(", ");
+  const n = r.layers.length;
+  const ranges = Array.from({ length: n }, (_, l) => velocities(n, l).join("–")).join(", ");
+  const layers = n === 1 ? "one dynamic layer" : `${n} dynamic layers (velocities ${ranges})`;
   const format = v.format === "flac" ? "FLAC" : `Ogg Vorbis at quality ${v.format.slice(1)}`;
   const turns = r.files > r.layers.reduce((a, b) => a + b, 0) ? ", with the round robins recorded taking turns" : "";
-  return `${r.rate / 1000} kHz, ${r.channels === 2 ? "stereo" : "mono"}, ${format}: ${r.layers.length} dynamic layers (velocities ${ranges}) of ${r.layers.join(", ")} notes${turns}, ${r.files} recordings.\n\n`;
+  const held = v.loop ? ", each looped where it holds steady" : "";
+  return `${r.rate / 1000} kHz, ${r.channels === 2 ? "stereo" : "mono"}, ${format}: ${layers} of ${r.layers.join(", ")} notes${turns}${held}, ${r.files} recordings.\n\n`;
+}
+
+/** What SOURCES.md says of how the kit was made. */
+function madeOfKit(r) {
+  const format = KIT.format === "flac" ? "FLAC" : `Ogg Vorbis at quality ${KIT.format.slice(1)}`;
+  const counts = [...new Set(r.drums.map((d) => d.layers.length))].filter((n) => n > 1).sort();
+  const ranges = counts.map((n) => `${n} on velocities ${Array.from({ length: n }, (_, l) => velocities(n, l).join("–")).join(", ")}`).join("; ");
+  const drums = r.drums.map(({ name, layers }) => {
+    const n = layers.length;
+    const takes = Math.max(...layers);
+    return `${name} (key ${GM[name]}) ${n === 1 ? "one layer" : `${n} layers`}${takes > 1 ? ` of ${takes} round robins taking turns` : ""}`;
+  });
+  return `${r.rate / 1000} kHz, ${r.channels === 2 ? "stereo" : "mono"}, ${format}: ${r.files} recordings on General MIDI keys, each drum's dynamic layers (${ranges}) brought to one loudness. ${drums.join("; ")}.\n\n`;
 }
 
 const only = process.argv.slice(2);
@@ -616,21 +633,23 @@ process.stdout.write("\n");
 let total = 0;
 for (const r of report) {
   total += r.bytes;
-  const layers = r.layers ? ` ${r.rate} Hz ${r.channels} ch, layers ${r.layers.join("/")} notes, gains ${r.gainsDb.join("/")} dB` : "";
-  console.log(`${r.code.padEnd(22)} ${String(r.files).padStart(3)} files ${(r.bytes / 1e6).toFixed(2)} MB${layers}`);
+  const what = r.drums
+    ? r.drums.map(({ name, layers }) => `${name} ${layers.join("/")}`).join(", ")
+    : `layers ${r.layers.join("/")} notes, gains ${r.gainsDb.join("/")} dB`;
+  console.log(`${r.code.padEnd(22)} ${String(r.files).padStart(3)} files ${(r.bytes / 1e6).toFixed(2)} MB ${r.rate} Hz ${r.channels} ch, ${what}`);
 }
 console.log(`total ${(total / 1e6).toFixed(1)} MB`);
 if (only.length > 0) {
   console.log("SOURCES.md was left as it is: run without naming voices to write it.");
 } else {
-  const formats = [...new Set(PITCHED.filter((v) => v.layers).map((v) => (v.format === "flac" ? "FLAC" : "Ogg Vorbis")))];
+  const formats = [...new Set([...PITCHED, KIT].map((v) => (v.format === "flac" ? "FLAC" : "Ogg Vorbis")))];
   writeFileSync(
     join(out, "SOURCES.md"),
-    `# Sampled voices\n\nMost recordings in this folder come from the Versilian Community Sample\nLibrary (VCSL), released under Creative Commons Zero (CC0):\nhttps://github.com/sgossner/VCSL and https://versilian-studios.com/vcsl/.\n\`web/scripts/samples.mjs\` made them. The voices whose recordings it\ndescribes keep them as they were recorded, at their rate and in their\nchannels, every dynamic layer mapped to a range of velocities and brought\nto one loudness, so that the velocity sets the level and the layer the\ntimbre; trimmed and faded, they are written as ${formats.join(" and ")} by\nManguebyte's encoder${formats.length > 1 ? "s" : ""}. The others were made mono, trimmed, shortened and\nresampled. Thank you, Versilian Studios. The voices at the end were\nrecorded for Aratu.\n\n` +
+    `# Sampled voices\n\nMost recordings in this folder come from the Versilian Community Sample\nLibrary (VCSL), released under Creative Commons Zero (CC0):\nhttps://github.com/sgossner/VCSL and https://versilian-studios.com/vcsl/.\n\`web/scripts/samples.mjs\` made them, keeping them as they were recorded,\nat their rate and in their channels: every dynamic layer mapped to a range\nof velocities and brought to one loudness, so that the velocity sets the\nlevel and the layer the timbre, and the round robins taking turns. Trimmed\nand faded, or looped where they hold steady, they are written as\n${formats.join(" and ")} by Manguebyte's encoder${formats.length > 1 ? "s" : ""}. Thank you, Versilian Studios.\nThe voices at the end were recorded for Aratu.\n\n` +
       [
         ...report.map((r) => {
           const v = PITCHED.find((p) => p.code === r.code);
-          return `## ${r.code}\n\n${v?.layers ? madeOf(v, r) : ""}${r.sources.map((s) => `- ${s}`).join("\n")}\n`;
+          return `## ${r.code}\n\n${v ? madeOf(v, r) : madeOfKit(r)}${r.sources.map((s) => `- ${s}`).join("\n")}\n`;
         }),
         ...KEPT.map((k) => `## ${k.code}\n\n${k.credit}\n`),
       ].join("\n"),

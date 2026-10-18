@@ -4,7 +4,8 @@
 // engine, in a Chromium browser with its sound muted (--mute-audio). For
 // each voice it loads voice.sfz, waits until the engine has measured it and
 // plays a note soft (pp), the same note loud (ff) and the phrase the
-// engine's loudness normalisation measures with, recording what
+// engine's loudness normalisation measures with (a melody, or on a kit the
+// snare and a groove), recording what
 // comes out. It does the same with the voice as it is in a commit (HEAD,
 // or --before=<ref>), and prints both: how soft and loud differ in level
 // and in brightness (the spectral centroid of their first 0.3 s), whether
@@ -34,10 +35,18 @@ const pub = join(web, "public");
 const args = process.argv.slice(2);
 const before = args.find((a) => a.startsWith("--before="))?.slice(9) ?? "HEAD";
 const named = args.filter((a) => !a.startsWith("--"));
-const voices = named.length > 0 ? named : ["piano.grand", "piano.upright", "harp", "mallets.marimba", "mallets.vibraphone", "mallets.xylophone", "mallets.glockenspiel"];
+const voices =
+  named.length > 0
+    ? named
+    : ["piano.grand", "piano.upright", "keys.harpsichord", "organ.pipe", "harp", "mallets.marimba", "mallets.vibraphone", "mallets.xylophone", "mallets.glockenspiel", "bells.tubular", "mallets.kalimba", "harmonica", "recorder.alto", "sax.tenor", "drums.acoustic"];
 
-/** The key a voice is tried on: middle C, or the middle of its range. */
+/** Whether an SFZ text is a drum kit: regions on keys, none retuned. */
+const isKit = (sfz) => /\bkey=\d/.test(sfz) && !/pitch_keycenter=/.test(sfz);
+
+/** The key a voice is tried on: middle C, or the middle of its range; on a
+ * kit, the snare. */
 function keyOf(sfz) {
+  if (isKit(sfz)) return 38;
   const keys = [...sfz.matchAll(/pitch_keycenter=(\d+)/g)].map((m) => Number(m[1]));
   const [lo, hi] = [Math.min(...keys), Math.max(...keys)];
   return lo <= 60 && hi >= 60 ? 60 : Math.round((lo + hi) / 2);
@@ -116,7 +125,7 @@ try {
     part++;
     const result = { voice: job.voice, set: job.set };
     try {
-      await engine.createPart(part, "sampler", "none");
+      await engine.createPart(part, job.kit ? "sampler_kit" : "sampler", "none");
       const started = performance.now();
       const loading = engine.loadSfz(part, job.url);
       result.summary = await loading;
@@ -130,8 +139,12 @@ try {
       engine.noteOn(part, k, 112 / 127, t0 + 1.5);
       engine.noteOff(part, k, t0 + 2.7);
       // The melody Manguebyte measures a sampler with (level.rs): around
-      // middle C, at 120 beats a minute, held 0.9 of each note.
-      const melody = [[0, 1, 60], [1, 0.5, 64], [1.5, 0.5, 67], [2, 1, 69], [3, 1, 67], [4, 0.5, 64], [4.5, 0.5, 62], [5, 0.5, 60], [5.5, 0.5, 62], [6, 1, 64], [7, 1, 60]];
+      // middle C, at 120 beats a minute, held 0.9 of each note. A kit's is
+      // a groove: the closed hat on every eighth, the kick on 1 and 3, the
+      // snare on 2 and 4, for two bars.
+      const melody = job.kit
+        ? Array.from({ length: 16 }, (_, e) => [[e / 2, 0.5, 42], ...(e % 4 === 0 ? [[e / 2, 0.5, 36]] : e % 4 === 2 ? [[e / 2, 0.5, 38]] : [])]).flat()
+        : [[0, 1, 60], [1, 0.5, 64], [1.5, 0.5, 67], [2, 1, 69], [3, 1, 67], [4, 0.5, 64], [4.5, 0.5, 62], [5, 0.5, 60], [5.5, 0.5, 62], [6, 1, 64], [7, 1, 60]];
       for (const [beat, beats, key] of melody) {
         engine.noteOn(part, key, 0.8, t0 + 3 + beat * 0.5);
         engine.noteOff(part, key, t0 + 3 + (beat + beats * 0.9) * 0.5);
@@ -146,15 +159,16 @@ try {
       // decoder, when Manguebyte cannot play.
       const dir = job.url.replace(/voice\\.sfz$/, "");
       const index = await (await fetch(dir + "index.json")).json();
-      if (index.notes?.length > 0) {
+      const named = index.kind === "kit" ? Object.values(index.hits) : (index.notes ?? []).map((n) => n.file);
+      if (named.length > 0) {
         let peak = 0;
         let channels = 0;
-        for (const n of index.notes) {
-          const buffer = await ctx.decodeAudioData(await (await fetch(dir + n.file)).arrayBuffer());
+        for (const file of named) {
+          const buffer = await ctx.decodeAudioData(await (await fetch(dir + file)).arrayBuffer());
           channels = buffer.numberOfChannels;
           for (let c = 0; c < channels; c++) for (const v of buffer.getChannelData(c)) peak = Math.max(peak, Math.abs(v));
         }
-        result.standIn = { files: index.notes.length, channels, peak };
+        result.standIn = { files: named.length, channels, peak };
       }
     } catch (error) {
       result.error = String(error?.message ?? error);
@@ -183,9 +197,10 @@ const plan = [];
 for (const voice of voices) {
   const now = join(pub, "samples", voice, "voice.sfz");
   if (!existsSync(now)) throw new Error(`${voice}: no voice.sfz in public/samples`);
-  const key = keyOf(readFileSync(now, "utf8"));
-  if (fromGit(`samples/${voice}/voice.sfz`)) plan.push({ voice, set: before, url: `/before/samples/${voice}/voice.sfz`, key });
-  plan.push({ voice, set: "now", url: `/samples/${voice}/voice.sfz`, key });
+  const text = readFileSync(now, "utf8");
+  const [key, kit] = [keyOf(text), isKit(text)];
+  if (fromGit(`samples/${voice}/voice.sfz`)) plan.push({ voice, set: before, url: `/before/samples/${voice}/voice.sfz`, key, kit });
+  plan.push({ voice, set: "now", url: `/samples/${voice}/voice.sfz`, key, kit });
 }
 
 let done;

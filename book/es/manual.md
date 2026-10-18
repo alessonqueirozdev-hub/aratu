@@ -913,13 +913,19 @@ arpa, marimba, vibráfono, xilófono, glockenspiel, kalimba, campanas
 tubulares, saxo tenor, armónica, flauta dulce y la batería acústica) son
 grabaciones de la Versilian Community Sample Library, de dominio público
 (CC0), descargadas la primera vez que una pieza las usa. Mientras llegan,
-suena en su lugar un sonido sintetizado parecido. Los pianos, el arpa y los
-mallets (marimba, vibráfono, xilófono y glockenspiel) vienen en estéreo, a
-la frecuencia con que se grabaron, con grabaciones en dos o tres dinámicas:
-cuanto más suave la nota, más suave y oscura la grabación que toca, y
-cuanto más fuerte, más brillante (`f`, `ff` y un acento sobre `mf` llegan a
-la más fuerte). En el piano vertical, las notas grabadas más de una vez
-alternan sus tomas. Los demás sonidos se sintetizan en el navegador.
+suena en su lugar un sonido sintetizado parecido. Vienen a la frecuencia
+con que se grabaron, en estéreo (la armónica, grabada en mono, en mono).
+Los pianos, el órgano de tubos, el arpa, la marimba, el vibráfono, el
+xilófono y el glockenspiel, las campanas tubulares, el saxo tenor, la
+armónica y las piezas de la batería acústica (salvo el hi-hat abierto y el
+aro) tienen grabaciones en dos o tres dinámicas: cuanto más suave la nota,
+más suave y oscura la grabación que toca, y cuanto más fuerte, más
+brillante (`f`, `ff` y un acento sobre `mf` llegan a la más fuerte; en la
+batería, una nota fantasma `(s)` toca la más suave). En el órgano las dos
+son registros, uno discreto y uno fuerte; en la armónica, las grabaciones
+fuertes se tocan con acento. En el piano vertical y en la batería, las
+notas grabadas más de una vez alternan sus tomas. Los demás sonidos se
+sintetizan en el navegador.
 
 La batería grabada de Alesson (`drums.alesson`) la grabó Alesson Queiroz y
 también es de dominio público (CC0). Bombo, caja y crash son grabaciones,

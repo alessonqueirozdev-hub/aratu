@@ -1,15 +1,29 @@
 // Made by Aratu's web/scripts/samples.mjs from VCSL (CC0).
 <control> default_path=./
 <global> ampeg_release=0.12
-<region> sample=32.wav pitch_keycenter=32 lokey=0 hikey=34 loop_mode=loop_continuous loop_start=21000 loop_end=54000
-<region> sample=36.wav pitch_keycenter=36 lokey=35 hikey=38 loop_mode=loop_continuous loop_start=21000 loop_end=54000
-<region> sample=40.wav pitch_keycenter=40 lokey=39 hikey=42 loop_mode=loop_continuous loop_start=21000 loop_end=54000
-<region> sample=44.wav pitch_keycenter=44 lokey=43 hikey=46 loop_mode=loop_continuous loop_start=21000 loop_end=54000
-<region> sample=48.wav pitch_keycenter=48 lokey=47 hikey=50 loop_mode=loop_continuous loop_start=21000 loop_end=54000
-<region> sample=52.wav pitch_keycenter=52 lokey=51 hikey=54 loop_mode=loop_continuous loop_start=21000 loop_end=54000
-<region> sample=56.wav pitch_keycenter=56 lokey=55 hikey=58 loop_mode=loop_continuous loop_start=21000 loop_end=54000
-<region> sample=60.wav pitch_keycenter=60 lokey=59 hikey=62 loop_mode=loop_continuous loop_start=21000 loop_end=54000
-<region> sample=64.wav pitch_keycenter=64 lokey=63 hikey=66 loop_mode=loop_continuous loop_start=21000 loop_end=54000
-<region> sample=68.wav pitch_keycenter=68 lokey=67 hikey=70 loop_mode=loop_continuous loop_start=21000 loop_end=54000
-<region> sample=72.wav pitch_keycenter=72 lokey=71 hikey=74 loop_mode=loop_continuous loop_start=21000 loop_end=54000
-<region> sample=76.wav pitch_keycenter=76 lokey=75 hikey=127 loop_mode=loop_continuous loop_start=21000 loop_end=54000
+<group> lovel=0 hivel=88
+<region> sample=32_v1.flac pitch_keycenter=32 lokey=0 hikey=34 loop_mode=loop_continuous loop_start=21120 loop_end=51162
+<region> sample=36_v1.flac pitch_keycenter=36 lokey=35 hikey=38 loop_mode=loop_continuous loop_start=21120 loop_end=52673
+<region> sample=40_v1.flac pitch_keycenter=40 lokey=39 hikey=42 loop_mode=loop_continuous loop_start=21120 loop_end=51990
+<region> sample=44_v1.flac pitch_keycenter=44 lokey=43 hikey=46 loop_mode=loop_continuous loop_start=21120 loop_end=51862
+<region> sample=48_v1.flac pitch_keycenter=48 lokey=47 hikey=50 loop_mode=loop_continuous loop_start=21120 loop_end=52120
+<region> sample=52_v1.flac pitch_keycenter=52 lokey=51 hikey=54 loop_mode=loop_continuous loop_start=21120 loop_end=51115
+<region> sample=56_v1.flac pitch_keycenter=56 lokey=55 hikey=58 loop_mode=loop_continuous loop_start=21120 loop_end=52436
+<region> sample=60_v1.flac pitch_keycenter=60 lokey=59 hikey=62 loop_mode=loop_continuous loop_start=21120 loop_end=50932
+<region> sample=64_v1.flac pitch_keycenter=64 lokey=63 hikey=66 loop_mode=loop_continuous loop_start=21120 loop_end=51913
+<region> sample=68_v1.flac pitch_keycenter=68 lokey=67 hikey=70 loop_mode=loop_continuous loop_start=21120 loop_end=52669
+<region> sample=72_v1.flac pitch_keycenter=72 lokey=71 hikey=74 loop_mode=loop_continuous loop_start=21120 loop_end=51070
+<region> sample=76_v1.flac pitch_keycenter=76 lokey=75 hikey=127 loop_mode=loop_continuous loop_start=21120 loop_end=52565
+<group> lovel=89 hivel=127
+<region> sample=32_v2.flac pitch_keycenter=32 lokey=0 hikey=34 loop_mode=loop_continuous loop_start=21120 loop_end=51632
+<region> sample=36_v2.flac pitch_keycenter=36 lokey=35 hikey=38 loop_mode=loop_continuous loop_start=21120 loop_end=51576
+<region> sample=40_v2.flac pitch_keycenter=40 lokey=39 hikey=42 loop_mode=loop_continuous loop_start=21120 loop_end=51117
+<region> sample=44_v2.flac pitch_keycenter=44 lokey=43 hikey=46 loop_mode=loop_continuous loop_start=21120 loop_end=52791
+<region> sample=48_v2.flac pitch_keycenter=48 lokey=47 hikey=50 loop_mode=loop_continuous loop_start=21120 loop_end=52490
+<region> sample=52_v2.flac pitch_keycenter=52 lokey=51 hikey=54 loop_mode=loop_continuous loop_start=21120 loop_end=51847
+<region> sample=56_v2.flac pitch_keycenter=56 lokey=55 hikey=58 loop_mode=loop_continuous loop_start=21120 loop_end=52322
+<region> sample=60_v2.flac pitch_keycenter=60 lokey=59 hikey=62 loop_mode=loop_continuous loop_start=21120 loop_end=51575
+<region> sample=64_v2.flac pitch_keycenter=64 lokey=63 hikey=66 loop_mode=loop_continuous loop_start=21120 loop_end=51559
+<region> sample=68_v2.flac pitch_keycenter=68 lokey=67 hikey=70 loop_mode=loop_continuous loop_start=21120 loop_end=50996
+<region> sample=72_v2.flac pitch_keycenter=72 lokey=71 hikey=74 loop_mode=loop_continuous loop_start=21120 loop_end=52585
+<region> sample=76_v2.flac pitch_keycenter=76 lokey=75 hikey=127 loop_mode=loop_continuous loop_start=21120 loop_end=50934

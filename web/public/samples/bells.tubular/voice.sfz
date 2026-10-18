@@ -1,11 +1,15 @@
 // Made by Aratu's web/scripts/samples.mjs from VCSL (CC0).
 <control> default_path=./
 <global> ampeg_release=0.12
-<region> sample=48.wav pitch_keycenter=48 lokey=0 hikey=49
-<region> sample=50.wav pitch_keycenter=50 lokey=50 hikey=51
-<region> sample=52.wav pitch_keycenter=52 lokey=52 hikey=54
-<region> sample=56.wav pitch_keycenter=56 lokey=55 hikey=57
-<region> sample=58.wav pitch_keycenter=58 lokey=58 hikey=59
-<region> sample=60.wav pitch_keycenter=60 lokey=60 hikey=61
-<region> sample=62.wav pitch_keycenter=62 lokey=62 hikey=63
-<region> sample=64.wav pitch_keycenter=64 lokey=64 hikey=127
+<group> lovel=0 hivel=88
+<region> sample=48_v1.flac pitch_keycenter=48 lokey=0 hikey=50
+<region> sample=52_v1.flac pitch_keycenter=52 lokey=51 hikey=54
+<region> sample=56_v1.flac pitch_keycenter=56 lokey=55 hikey=58
+<region> sample=60_v1.flac pitch_keycenter=60 lokey=59 hikey=62
+<region> sample=64_v1.flac pitch_keycenter=64 lokey=63 hikey=127
+<group> lovel=89 hivel=127
+<region> sample=48_v2.flac pitch_keycenter=48 lokey=0 hikey=50
+<region> sample=52_v2.flac pitch_keycenter=52 lokey=51 hikey=54
+<region> sample=56_v2.flac pitch_keycenter=56 lokey=55 hikey=58
+<region> sample=60_v2.flac pitch_keycenter=60 lokey=59 hikey=62
+<region> sample=64_v2.flac pitch_keycenter=64 lokey=63 hikey=127

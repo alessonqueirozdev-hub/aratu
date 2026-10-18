@@ -888,12 +888,17 @@ marimba, vibraphone, xylophone, glockenspiel, kalimba, tubular bells, tenor
 sax, harmonica, recorder and the acoustic kit) are recordings from the
 Versilian Community Sample Library, in the public domain (CC0), fetched the
 first time a piece uses them. While they arrive, a similar synthesized sound
-plays instead. The pianos, the harp and the mallets (marimba, vibraphone,
-xylophone and glockenspiel) come in stereo, at the rate they were recorded,
-with recordings at two or three dynamics: the softer a note, the softer and
-darker the recording it plays, and the louder, the brighter (`f`, `ff` and
-an accent on `mf` reach the loudest). On the upright piano, notes recorded
-more than once play their takes in turn.
+plays instead. They come at the rate they were recorded, in stereo (the
+harmonica, recorded in mono, in mono). The pianos, the pipe organ, the harp,
+the marimba, vibraphone, xylophone and glockenspiel, the tubular bells, the
+tenor sax, the harmonica and the acoustic kit's drums (all but the open
+hi-hat and the side stick) have recordings at two or three dynamics: the
+softer a note, the softer and darker the recording it plays, and the
+louder, the brighter (`f`, `ff` and an accent on `mf` reach the loudest; on
+the kit, a ghost note `(s)` plays the softest). On the organ the two are
+registrations, a quiet one and a loud one; on the harmonica the loud
+recordings are played accented. On the upright piano and on the kit, notes
+recorded more than once play their takes in turn.
 
 Alesson's recorded kit (`drums.alesson`) was recorded by Alesson Queiroz
 and is in the public domain too (CC0). Its kick, snare and crash are

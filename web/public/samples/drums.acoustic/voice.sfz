@@ -1,13 +1,77 @@
 // Made by Aratu's web/scripts/samples.mjs from VCSL (CC0).
 <control> default_path=./
-<group> loop_mode=one_shot
-<region> sample=kick.wav key=36
-<region> sample=snare.wav key=38
-<region> sample=closed-hat.wav key=42 group=2
-<region> sample=open-hat.wav key=46 group=1 off_by=2
-<region> sample=ride.wav key=51
-<region> sample=crash.wav key=49
-<region> sample=high-tom.wav key=50
-<region> sample=mid-tom.wav key=47
-<region> sample=floor-tom.wav key=43
-<region> sample=side-stick.wav key=37
+<global> loop_mode=one_shot
+<group> lovel=0 hivel=59
+<region> sample=kick_v1.flac key=36 seq_length=2 seq_position=1
+<region> sample=kick_v1_rr2.flac key=36 seq_length=2 seq_position=2
+<group> lovel=60 hivel=95
+<region> sample=kick_v2.flac key=36 seq_length=2 seq_position=1
+<region> sample=kick_v2_rr2.flac key=36 seq_length=2 seq_position=2
+<group> lovel=96 hivel=127
+<region> sample=kick_v3.flac key=36 seq_length=2 seq_position=1
+<region> sample=kick_v3_rr2.flac key=36 seq_length=2 seq_position=2
+<group> lovel=0 hivel=59
+<region> sample=snare_v1.flac key=38 seq_length=2 seq_position=1
+<region> sample=snare_v1_rr2.flac key=38 seq_length=2 seq_position=2
+<group> lovel=60 hivel=95
+<region> sample=snare_v2.flac key=38 seq_length=2 seq_position=1
+<region> sample=snare_v2_rr2.flac key=38 seq_length=2 seq_position=2
+<group> lovel=96 hivel=127
+<region> sample=snare_v3.flac key=38 seq_length=2 seq_position=1
+<region> sample=snare_v3_rr2.flac key=38 seq_length=2 seq_position=2
+<group> lovel=0 hivel=59
+<region> sample=closed-hat_v1.flac key=42 group=2 seq_length=2 seq_position=1
+<region> sample=closed-hat_v1_rr2.flac key=42 group=2 seq_length=2 seq_position=2
+<group> lovel=60 hivel=95
+<region> sample=closed-hat_v2.flac key=42 group=2 seq_length=2 seq_position=1
+<region> sample=closed-hat_v2_rr2.flac key=42 group=2 seq_length=2 seq_position=2
+<group> lovel=96 hivel=127
+<region> sample=closed-hat_v3.flac key=42 group=2 seq_length=2 seq_position=1
+<region> sample=closed-hat_v3_rr2.flac key=42 group=2 seq_length=2 seq_position=2
+<group> lovel=0 hivel=127
+<region> sample=open-hat_v1.flac key=46 group=1 off_by=2 seq_length=2 seq_position=1
+<region> sample=open-hat_v1_rr2.flac key=46 group=1 off_by=2 seq_length=2 seq_position=2
+<group> lovel=0 hivel=59
+<region> sample=ride_v1.flac key=51
+<group> lovel=60 hivel=95
+<region> sample=ride_v2.flac key=51
+<group> lovel=96 hivel=127
+<region> sample=ride_v3.flac key=51
+<group> lovel=0 hivel=59
+<region> sample=crash_v1.flac key=49
+<group> lovel=60 hivel=95
+<region> sample=crash_v2.flac key=49
+<group> lovel=96 hivel=127
+<region> sample=crash_v3.flac key=49
+<group> lovel=0 hivel=59
+<region> sample=high-tom_v1.flac key=50 seq_length=2 seq_position=1
+<region> sample=high-tom_v1_rr2.flac key=50 seq_length=2 seq_position=2
+<group> lovel=60 hivel=95
+<region> sample=high-tom_v2.flac key=50 seq_length=2 seq_position=1
+<region> sample=high-tom_v2_rr2.flac key=50 seq_length=2 seq_position=2
+<group> lovel=96 hivel=127
+<region> sample=high-tom_v3.flac key=50 seq_length=2 seq_position=1
+<region> sample=high-tom_v3_rr2.flac key=50 seq_length=2 seq_position=2
+<group> lovel=0 hivel=59
+<region> sample=mid-tom_v1.flac key=47 seq_length=2 seq_position=1
+<region> sample=mid-tom_v1_rr2.flac key=47 seq_length=2 seq_position=2
+<group> lovel=60 hivel=95
+<region> sample=mid-tom_v2.flac key=47 seq_length=2 seq_position=1
+<region> sample=mid-tom_v2_rr2.flac key=47 seq_length=2 seq_position=2
+<group> lovel=96 hivel=127
+<region> sample=mid-tom_v3.flac key=47 seq_length=2 seq_position=1
+<region> sample=mid-tom_v3_rr2.flac key=47 seq_length=2 seq_position=2
+<group> lovel=0 hivel=59
+<region> sample=floor-tom_v1.flac key=43 seq_length=2 seq_position=1
+<region> sample=floor-tom_v1_rr2.flac key=43 seq_length=2 seq_position=2
+<group> lovel=60 hivel=95
+<region> sample=floor-tom_v2.flac key=43 seq_length=2 seq_position=1
+<region> sample=floor-tom_v2_rr2.flac key=43 seq_length=2 seq_position=2
+<group> lovel=96 hivel=127
+<region> sample=floor-tom_v3.flac key=43 seq_length=2 seq_position=1
+<region> sample=floor-tom_v3_rr2.flac key=43 seq_length=2 seq_position=2
+<group> lovel=0 hivel=127
+<region> sample=side-stick_v1.flac key=37 seq_length=4 seq_position=1
+<region> sample=side-stick_v1_rr2.flac key=37 seq_length=4 seq_position=2
+<region> sample=side-stick_v1_rr3.flac key=37 seq_length=4 seq_position=3
+<region> sample=side-stick_v1_rr4.flac key=37 seq_length=4 seq_position=4

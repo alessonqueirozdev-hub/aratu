@@ -3,14 +3,13 @@
 Most recordings in this folder come from the Versilian Community Sample
 Library (VCSL), released under Creative Commons Zero (CC0):
 https://github.com/sgossner/VCSL and https://versilian-studios.com/vcsl/.
-`web/scripts/samples.mjs` made them. The voices whose recordings it
-describes keep them as they were recorded, at their rate and in their
-channels, every dynamic layer mapped to a range of velocities and brought
-to one loudness, so that the velocity sets the level and the layer the
-timbre; trimmed and faded, they are written as FLAC by
-Manguebyte's encoder. The others were made mono, trimmed, shortened and
-resampled. Thank you, Versilian Studios. The voices at the end were
-recorded for Aratu.
+`web/scripts/samples.mjs` made them, keeping them as they were recorded,
+at their rate and in their channels: every dynamic layer mapped to a range
+of velocities and brought to one loudness, so that the velocity sets the
+level and the layer the timbre, and the round robins taking turns. Trimmed
+and faded, or looped where they hold steady, they are written as
+FLAC by Manguebyte's encoder. Thank you, Versilian Studios.
+The voices at the end were recorded for Aratu.
 
 ## piano.grand
 
@@ -147,6 +146,8 @@ recorded for Aratu.
 
 ## keys.harpsichord
 
+44.1 kHz, stereo, FLAC: one dynamic layer of 17 notes, 17 recordings.
+
 - Chordophones/Zithers/Harpsichord, Flemish/Sustains/Low/HarpsiRH_Low_Far_F#0_rr1.wav
 - Chordophones/Zithers/Harpsichord, Flemish/Sustains/Low/HarpsiRH_Low_Far_A#0_rr1.wav
 - Chordophones/Zithers/Harpsichord, Flemish/Sustains/Low/HarpsiRH_Low_Far_D1_rr1.wav
@@ -167,26 +168,29 @@ recorded for Aratu.
 
 ## organ.pipe
 
+44.1 kHz, stereo, FLAC: 2 dynamic layers (velocities 0–88, 89–127) of 11, 11 notes, each looped where it holds steady, 22 recordings.
+
+- Aerophones/Edge-blown Aerophones/Pipe Organ/Quiet/NT5_Man3Quiet_C1_rr1.wav
 - Aerophones/Edge-blown Aerophones/Pipe Organ/Loud/Rode_Man3Open_C1.wav
-- Aerophones/Edge-blown Aerophones/Pipe Organ/Loud/Rode_Man3Open_D#1.wav
+- Aerophones/Edge-blown Aerophones/Pipe Organ/Quiet/NT5_Man3Quiet_F#1_rr1.wav
 - Aerophones/Edge-blown Aerophones/Pipe Organ/Loud/Rode_Man3Open_F#1.wav
-- Aerophones/Edge-blown Aerophones/Pipe Organ/Loud/Rode_Man3Open_A1.wav
+- Aerophones/Edge-blown Aerophones/Pipe Organ/Quiet/NT5_Man3Quiet_C2_rr1.wav
 - Aerophones/Edge-blown Aerophones/Pipe Organ/Loud/Rode_Man3Open_C2.wav
-- Aerophones/Edge-blown Aerophones/Pipe Organ/Loud/Rode_Man3Open_D#2.wav
+- Aerophones/Edge-blown Aerophones/Pipe Organ/Quiet/NT5_Man3Quiet_F#2_rr1.wav
 - Aerophones/Edge-blown Aerophones/Pipe Organ/Loud/Rode_Man3Open_F#2.wav
-- Aerophones/Edge-blown Aerophones/Pipe Organ/Loud/Rode_Man3Open_A2.wav
+- Aerophones/Edge-blown Aerophones/Pipe Organ/Quiet/NT5_Man3Quiet_C3_rr1.wav
 - Aerophones/Edge-blown Aerophones/Pipe Organ/Loud/Rode_Man3Open_C3.wav
-- Aerophones/Edge-blown Aerophones/Pipe Organ/Loud/Rode_Man3Open_D#3.wav
+- Aerophones/Edge-blown Aerophones/Pipe Organ/Quiet/NT5_Man3Quiet_F#3_rr1.wav
 - Aerophones/Edge-blown Aerophones/Pipe Organ/Loud/Rode_Man3Open_F#3.wav
-- Aerophones/Edge-blown Aerophones/Pipe Organ/Loud/Rode_Man3Open_A3.wav
+- Aerophones/Edge-blown Aerophones/Pipe Organ/Quiet/NT5_Man3Quiet_C4_rr1.wav
 - Aerophones/Edge-blown Aerophones/Pipe Organ/Loud/Rode_Man3Open_C4.wav
-- Aerophones/Edge-blown Aerophones/Pipe Organ/Loud/Rode_Man3Open_D#4.wav
+- Aerophones/Edge-blown Aerophones/Pipe Organ/Quiet/NT5_Man3Quiet_F#4_rr1.wav
 - Aerophones/Edge-blown Aerophones/Pipe Organ/Loud/Rode_Man3Open_F#4.wav
-- Aerophones/Edge-blown Aerophones/Pipe Organ/Loud/Rode_Man3Open_A4.wav
+- Aerophones/Edge-blown Aerophones/Pipe Organ/Quiet/NT5_Man3Quiet_C5_rr1.wav
 - Aerophones/Edge-blown Aerophones/Pipe Organ/Loud/Rode_Man3Open_C5.wav
-- Aerophones/Edge-blown Aerophones/Pipe Organ/Loud/Rode_Man3Open_D#5.wav
+- Aerophones/Edge-blown Aerophones/Pipe Organ/Quiet/NT5_Man3Quiet_F#5_rr1.wav
 - Aerophones/Edge-blown Aerophones/Pipe Organ/Loud/Rode_Man3Open_F#5.wav
-- Aerophones/Edge-blown Aerophones/Pipe Organ/Loud/Rode_Man3Open_A5.wav
+- Aerophones/Edge-blown Aerophones/Pipe Organ/Quiet/NT5_Man3Quiet_C6_rr1.wav
 - Aerophones/Edge-blown Aerophones/Pipe Organ/Loud/Rode_Man3Open_C6.wav
 
 ## harp
@@ -344,16 +348,22 @@ recorded for Aratu.
 
 ## bells.tubular
 
+44.1 kHz, stereo, FLAC: 2 dynamic layers (velocities 0–88, 89–127) of 5, 5 notes, 10 recordings.
+
+- Idiophones/Struck Idiophones/Tubular Bells 1/chimes_C3_pp_rr2.wav
 - Idiophones/Struck Idiophones/Tubular Bells 1/chimes_C3_f_rr1.wav
-- Idiophones/Struck Idiophones/Tubular Bells 1/chimes_D3_ff_rr1.wav
+- Idiophones/Struck Idiophones/Tubular Bells 1/chimes_E3_pp_rr1.wav
 - Idiophones/Struck Idiophones/Tubular Bells 1/chimes_E3_ff_rr2.wav
+- Idiophones/Struck Idiophones/Tubular Bells 1/chimes_G#3_p_rr2.wav
 - Idiophones/Struck Idiophones/Tubular Bells 1/chimes_G#3_ff_rr1.wav
-- Idiophones/Struck Idiophones/Tubular Bells 1/chimes_A#3_ff_rr1.wav
+- Idiophones/Struck Idiophones/Tubular Bells 1/chimes_C4_p_rr1.wav
 - Idiophones/Struck Idiophones/Tubular Bells 1/chimes_C4_ff_rr2.wav
-- Idiophones/Struck Idiophones/Tubular Bells 1/chimes_D4_ff_rr2.wav
+- Idiophones/Struck Idiophones/Tubular Bells 1/chimes_E4_pp_rr3.wav
 - Idiophones/Struck Idiophones/Tubular Bells 1/chimes_E4_ff_rr2.wav
 
 ## mallets.kalimba
+
+48 kHz, stereo, FLAC: one dynamic layer of 11 notes, 11 recordings.
 
 - Idiophones/Plucked Idiophones/Kalimba, Kenya/Mbira6_Normal_MainSpirit_B2_k8_vl3_rr2.wav
 - Idiophones/Plucked Idiophones/Kalimba, Kenya/Mbira6_Normal_MainSpirit_C#3_k7_vl3_rr2.wav
@@ -369,21 +379,38 @@ recorded for Aratu.
 
 ## harmonica
 
+44.1 kHz, mono, FLAC: 2 dynamic layers (velocities 0–88, 89–127) of 13, 13 notes, each looped where it holds steady, 26 recordings.
+
 - Aerophones/Free Aerophones/Harmonica-Hohner-Super64/Sustains/Normal/Hohner-Super64_Normal _C2.wav
+- Aerophones/Free Aerophones/Harmonica-Hohner-Super64/Sustains/Accented/Hohner-Super64_Accented_C2.wav
 - Aerophones/Free Aerophones/Harmonica-Hohner-Super64/Sustains/Normal/Hohner-Super64_Normal _E2.wav
+- Aerophones/Free Aerophones/Harmonica-Hohner-Super64/Sustains/Accented/Hohner-Super64_Accented_E2.wav
 - Aerophones/Free Aerophones/Harmonica-Hohner-Super64/Sustains/Normal/Hohner-Super64_Normal _G2.wav
+- Aerophones/Free Aerophones/Harmonica-Hohner-Super64/Sustains/Accented/Hohner-Super64_Accented_G2.wav
 - Aerophones/Free Aerophones/Harmonica-Hohner-Super64/Sustains/Normal/Hohner-Super64_Normal _C3.wav
+- Aerophones/Free Aerophones/Harmonica-Hohner-Super64/Sustains/Accented/Hohner-Super64_Accented_C3.wav
 - Aerophones/Free Aerophones/Harmonica-Hohner-Super64/Sustains/Normal/Hohner-Super64_Normal _E3.wav
+- Aerophones/Free Aerophones/Harmonica-Hohner-Super64/Sustains/Accented/Hohner-Super64_Accented_E3.wav
 - Aerophones/Free Aerophones/Harmonica-Hohner-Super64/Sustains/Normal/Hohner-Super64_Normal _G3.wav
+- Aerophones/Free Aerophones/Harmonica-Hohner-Super64/Sustains/Accented/Hohner-Super64_Accented_G3.wav
 - Aerophones/Free Aerophones/Harmonica-Hohner-Super64/Sustains/Normal/Hohner-Super64_Normal _C4.wav
+- Aerophones/Free Aerophones/Harmonica-Hohner-Super64/Sustains/Accented/Hohner-Super64_Accented_C4.wav
 - Aerophones/Free Aerophones/Harmonica-Hohner-Super64/Sustains/Normal/Hohner-Super64_Normal _E4.wav
+- Aerophones/Free Aerophones/Harmonica-Hohner-Super64/Sustains/Accented/Hohner-Super64_Accented_E4.wav
 - Aerophones/Free Aerophones/Harmonica-Hohner-Super64/Sustains/Normal/Hohner-Super64_Normal _G4.wav
+- Aerophones/Free Aerophones/Harmonica-Hohner-Super64/Sustains/Accented/Hohner-Super64_Accented_G4.wav
 - Aerophones/Free Aerophones/Harmonica-Hohner-Super64/Sustains/Normal/Hohner-Super64_Normal _C5.wav
+- Aerophones/Free Aerophones/Harmonica-Hohner-Super64/Sustains/Accented/Hohner-Super64_Accented_C5.wav
 - Aerophones/Free Aerophones/Harmonica-Hohner-Super64/Sustains/Normal/Hohner-Super64_Normal _E5.wav
+- Aerophones/Free Aerophones/Harmonica-Hohner-Super64/Sustains/Accented/Hohner-Super64_Accented_E5.wav
 - Aerophones/Free Aerophones/Harmonica-Hohner-Super64/Sustains/Normal/Hohner-Super64_Normal _G5.wav
+- Aerophones/Free Aerophones/Harmonica-Hohner-Super64/Sustains/Accented/Hohner-Super64_Accented_G5.wav
 - Aerophones/Free Aerophones/Harmonica-Hohner-Super64/Sustains/Normal/Hohner-Super64_Normal _C6.wav
+- Aerophones/Free Aerophones/Harmonica-Hohner-Super64/Sustains/Accented/Hohner-Super64_Accented_C6.wav
 
 ## recorder.alto
+
+48 kHz, stereo, FLAC: one dynamic layer of 12 notes, each looped where it holds steady, 12 recordings.
 
 - Aerophones/Edge-blown Aerophones/Baroque Alto Recorder/Sustain/AltRecorder_Sus_F3_rr1_Main.wav
 - Aerophones/Edge-blown Aerophones/Baroque Alto Recorder/Sustain/AltRecorder_Sus_G#3_rr1_Main.wav
@@ -400,31 +427,85 @@ recorded for Aratu.
 
 ## sax.tenor
 
+48 kHz, stereo, FLAC: 2 dynamic layers (velocities 0–88, 89–127) of 12, 12 notes, each looped where it holds steady, 24 recordings.
+
+- Aerophones/Reed Aerophones/Tenor Saxophone/Non-Vibrato/BrettTenor_NV_Main_G#1_vl2_rr1.wav
 - Aerophones/Reed Aerophones/Tenor Saxophone/Non-Vibrato/BrettTenor_NV_Main_G#1_vl3_rr1.wav
+- Aerophones/Reed Aerophones/Tenor Saxophone/Non-Vibrato/BrettTenor_NV_Main_C2_vl2_rr1.wav
 - Aerophones/Reed Aerophones/Tenor Saxophone/Non-Vibrato/BrettTenor_NV_Main_C2_vl3_rr1.wav
+- Aerophones/Reed Aerophones/Tenor Saxophone/Non-Vibrato/BrettTenor_NV_Main_E2_vl2_rr1.wav
 - Aerophones/Reed Aerophones/Tenor Saxophone/Non-Vibrato/BrettTenor_NV_Main_E2_vl3_rr1.wav
+- Aerophones/Reed Aerophones/Tenor Saxophone/Non-Vibrato/BrettTenor_NV_Main_G#2_vl2_rr1.wav
 - Aerophones/Reed Aerophones/Tenor Saxophone/Non-Vibrato/BrettTenor_NV_Main_G#2_vl3_rr1.wav
+- Aerophones/Reed Aerophones/Tenor Saxophone/Non-Vibrato/BrettTenor_NV_Main_C3_vl2_rr1.wav
 - Aerophones/Reed Aerophones/Tenor Saxophone/Non-Vibrato/BrettTenor_NV_Main_C3_vl3_rr1.wav
+- Aerophones/Reed Aerophones/Tenor Saxophone/Non-Vibrato/BrettTenor_NV_Main_E3_vl2_rr1.wav
 - Aerophones/Reed Aerophones/Tenor Saxophone/Non-Vibrato/BrettTenor_NV_Main_E3_vl3_rr1.wav
+- Aerophones/Reed Aerophones/Tenor Saxophone/Non-Vibrato/BrettTenor_NV_Main_G#3_vl2_rr1.wav
 - Aerophones/Reed Aerophones/Tenor Saxophone/Non-Vibrato/BrettTenor_NV_Main_G#3_vl3_rr1.wav
+- Aerophones/Reed Aerophones/Tenor Saxophone/Non-Vibrato/BrettTenor_NV_Main_C4_vl2_rr1.wav
 - Aerophones/Reed Aerophones/Tenor Saxophone/Non-Vibrato/BrettTenor_NV_Main_C4_vl3_rr1.wav
+- Aerophones/Reed Aerophones/Tenor Saxophone/Non-Vibrato/BrettTenor_NV_Main_E4_vl2_rr1.wav
 - Aerophones/Reed Aerophones/Tenor Saxophone/Non-Vibrato/BrettTenor_NV_Main_E4_vl3_rr1.wav
+- Aerophones/Reed Aerophones/Tenor Saxophone/Non-Vibrato/BrettTenor_NV_Main_G#4_vl2_rr1.wav
 - Aerophones/Reed Aerophones/Tenor Saxophone/Non-Vibrato/BrettTenor_NV_Main_G#4_vl3_rr1.wav
+- Aerophones/Reed Aerophones/Tenor Saxophone/Non-Vibrato/BrettTenor_NV_Main_C5_vl2_rr1.wav
 - Aerophones/Reed Aerophones/Tenor Saxophone/Non-Vibrato/BrettTenor_NV_Main_C5_vl3_rr1.wav
+- Aerophones/Reed Aerophones/Tenor Saxophone/Non-Vibrato/BrettTenor_NV_Main_E5_vl2_rr1.wav
 - Aerophones/Reed Aerophones/Tenor Saxophone/Non-Vibrato/BrettTenor_NV_Main_E5_vl3_rr1.wav
 
 ## drums.acoustic
 
+44.1 kHz, stereo, FLAC: 48 recordings on General MIDI keys, each drum's dynamic layers (3 on velocities 0–59, 60–95, 96–127) brought to one loudness. kick (key 36) 3 layers of 2 round robins taking turns; snare (key 38) 3 layers of 2 round robins taking turns; closed-hat (key 42) 3 layers of 2 round robins taking turns; open-hat (key 46) one layer of 2 round robins taking turns; ride (key 51) 3 layers; crash (key 49) 3 layers; high-tom (key 50) 3 layers of 2 round robins taking turns; mid-tom (key 47) 3 layers of 2 round robins taking turns; floor-tom (key 43) 3 layers of 2 round robins taking turns; side-stick (key 37) one layer of 4 round robins taking turns.
+
+- Membranophones/Struck Membranophones/Bass Drum 1/BDrumNew_hit_v3_rr1_Sum.wav
+- Membranophones/Struck Membranophones/Bass Drum 1/BDrumNew_hit_v3_rr2_Sum.wav
 - Membranophones/Struck Membranophones/Bass Drum 1/BDrumNew_hit_v5_rr1_Sum.wav
+- Membranophones/Struck Membranophones/Bass Drum 1/BDrumNew_hit_v5_rr2_Sum.wav
+- Membranophones/Struck Membranophones/Bass Drum 1/BDrumNew_hit_v7_rr1_Sum.wav
+- Membranophones/Struck Membranophones/Bass Drum 1/BDrumNew_hit_v7_rr2_Sum.wav
+- Membranophones/Struck Membranophones/Snare Drum, Modern 1/Snare2_HitSN_v3_rr1_Mid.wav
+- Membranophones/Struck Membranophones/Snare Drum, Modern 1/Snare2_HitSN_v3_rr2_Mid.wav
 - Membranophones/Struck Membranophones/Snare Drum, Modern 1/Snare2_HitSN_v5_rr1_Mid.wav
+- Membranophones/Struck Membranophones/Snare Drum, Modern 1/Snare2_HitSN_v5_rr2_Mid.wav
+- Membranophones/Struck Membranophones/Snare Drum, Modern 1/Snare2_HitSN_v7_rr1_Mid.wav
+- Membranophones/Struck Membranophones/Snare Drum, Modern 1/Snare2_HitSN_v7_rr2_Mid.wav
+- Idiophones/Struck Idiophones/Hi-Hat Cymbal/HiHat_HitC_v1_rr1_Mid.wav
+- Idiophones/Struck Idiophones/Hi-Hat Cymbal/HiHat_HitC_v1_rr2_Mid.wav
 - Idiophones/Struck Idiophones/Hi-Hat Cymbal/HiHat_HitC_v3_rr1_Mid.wav
+- Idiophones/Struck Idiophones/Hi-Hat Cymbal/HiHat_HitC_v3_rr2_Mid.wav
+- Idiophones/Struck Idiophones/Hi-Hat Cymbal/HiHat_HitC_v4_rr1_Mid.wav
+- Idiophones/Struck Idiophones/Hi-Hat Cymbal/HiHat_HitC_v4_rr2_Mid.wav
 - Idiophones/Struck Idiophones/Hi-Hat Cymbal/HiHat_HitO_rr1_Mid.wav
+- Idiophones/Struck Idiophones/Hi-Hat Cymbal/HiHat_HitO_rr2_Mid.wav
+- Idiophones/Struck Idiophones/Suspended Cymbal 1/susCymb1_hit_bell_pp1.wav
+- Idiophones/Struck Idiophones/Suspended Cymbal 1/susCymb1_hit_bell_mf1.wav
 - Idiophones/Struck Idiophones/Suspended Cymbal 1/susCymb1_hit_bell_fff1.wav
+- Idiophones/Struck Idiophones/Clash Cymbals 1/cymbal_crash1_pp1.wav
 - Idiophones/Struck Idiophones/Clash Cymbals 1/cymbal_crash1_mf1.wav
+- Idiophones/Struck Idiophones/Clash Cymbals 1/cymbal_crash1_ff2.wav
+- Membranophones/Struck Membranophones/Tom 1/Stick/TomH_HitS_v2_rr1_Mid.wav
+- Membranophones/Struck Membranophones/Tom 1/Stick/TomH_HitS_v2_rr2_Mid.wav
 - Membranophones/Struck Membranophones/Tom 1/Stick/TomH_HitS_v3_rr1_Mid.wav
+- Membranophones/Struck Membranophones/Tom 1/Stick/TomH_HitS_v3_rr2_Mid.wav
+- Membranophones/Struck Membranophones/Tom 1/Stick/TomH_HitS_v4_rr1_Mid.wav
+- Membranophones/Struck Membranophones/Tom 1/Stick/TomH_HitS_v4_rr2_Mid.wav
+- Membranophones/Struck Membranophones/Tom 2/Stick/TomL_HitS_v2_rr1_Mid.wav
+- Membranophones/Struck Membranophones/Tom 2/Stick/TomL_HitS_v2_rr2_Mid.wav
 - Membranophones/Struck Membranophones/Tom 2/Stick/TomL_HitS_v3_rr1_Mid.wav
+- Membranophones/Struck Membranophones/Tom 2/Stick/TomL_HitS_v3_rr2_Mid.wav
+- Membranophones/Struck Membranophones/Tom 2/Stick/TomL_HitS_v4_rr1_Mid.wav
+- Membranophones/Struck Membranophones/Tom 2/Stick/TomL_HitS_v4_rr2_Mid.wav
+- Membranophones/Struck Membranophones/Legacy Toms/tenor_lower/tenor_pp_rr1.wav
+- Membranophones/Struck Membranophones/Legacy Toms/tenor_lower/tenor_pp_rr2.wav
+- Membranophones/Struck Membranophones/Legacy Toms/tenor_lower/tenor_mf_rr1.wav
+- Membranophones/Struck Membranophones/Legacy Toms/tenor_lower/tenor_mf_rr2.wav
 - Membranophones/Struck Membranophones/Legacy Toms/tenor_lower/tenor_ff_rr1.wav
+- Membranophones/Struck Membranophones/Legacy Toms/tenor_lower/tenor_ff_rr2.wav
 - Membranophones/Struck Membranophones/Legacy Snares/drum1/snare1_click.wav
+- Membranophones/Struck Membranophones/Legacy Snares/drum1/snare1_click2.wav
+- Membranophones/Struck Membranophones/Legacy Snares/drum1/snare1_click3.wav
+- Membranophones/Struck Membranophones/Legacy Snares/drum1/snare1_click4.wav
 
 ## drums.alesson
 
