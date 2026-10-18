@@ -127,6 +127,7 @@ const MB_EFFECTS = new Set([
   "lowpass",
   "eq",
   "drive",
+  "tube",
   "bitcrush",
   "compressor",
   "chorus",
@@ -136,6 +137,16 @@ const MB_EFFECTS = new Set([
   "autopan",
   "delay",
 ]);
+
+/** The tube: Manguebyte's drive set up as a valve, its smooth curve, a
+ * moderate gain and the level brought back down. Its numbers are the
+ * drive's under other names. */
+const TUBE = { shape: 0, amount: 8, output: -4, mix: 1 };
+const TUBE_PARAMS: Record<string, string> = {
+  "tube.drive": "drive.amount",
+  "tube.output": "drive.output",
+  "tube.mix": "drive.mix",
+};
 
 const mtof = (n: number) => 440 * Math.pow(2, (n - 69) / 12);
 
@@ -760,9 +771,12 @@ export class Engine {
     const engine = this.mbLive;
     if (!engine) return;
     const now = this.ctx.currentTime;
-    const effects = Object.fromEntries(
-      c.effects.filter((e) => MB_EFFECTS.has(e)).map((e) => [e, {}] as [string, Record<string, number>]),
-    );
+    const effects: Record<string, Record<string, number>> = {};
+    for (const e of c.effects) {
+      if (e === "tube") effects.drive ??= { ...TUBE };
+      else if (e === "drive") effects.drive = {};
+      else if (MB_EFFECTS.has(e)) effects[e] = {};
+    }
     c.effectsSet = c.effects.join(">");
     await engine.setEffects(part.index, effects, now);
     for (const [id, v] of c.configured) this.mbParam(part, id, v, now);
@@ -793,6 +807,11 @@ export class Engine {
         return;
       case "highpass.cutoff":
         engine.setParam(i, id, Math.max(20, v), when);
+        return;
+      case "tube.drive":
+      case "tube.output":
+      case "tube.mix":
+        engine.setParam(i, TUBE_PARAMS[id], v, when);
         return;
       case "master.gain":
         // Manguebyte plays every instrument at -24 LUFS, about 5 dB under

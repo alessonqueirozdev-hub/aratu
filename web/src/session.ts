@@ -11,6 +11,7 @@ import { createEditor, narrowScreen, setWrapping, showDiagnostics, showPlaying }
 import { knobs, showKnobs, showMoving } from "./knobs";
 import { Player, type Scheduled } from "./player";
 import { type Heard, lendVisuals, showVisuals, startVisuals, stopVisuals, visuals } from "./visuals";
+import { effects, showFx } from "./effects";
 
 export interface SessionOptions {
   parent: HTMLElement;
@@ -84,7 +85,7 @@ export class Session {
         run: () => void this.play(),
         stop: () => this.stop(),
       },
-      [knobs, visuals],
+      [knobs, visuals, effects],
       o.compact,
     );
     lendVisuals(this.view, this.visualSource);
@@ -137,6 +138,7 @@ export class Session {
       showDiagnostics(view, p.diagnostics);
       showKnobs(view, p.controls, moved);
       showVisuals(view, p.visuals ?? []);
+      showFx(view, { parts: p.parts, controls: p.controls, lang: this.o.lang() });
     }
     this.o.onCompile?.(p);
     if (!p.ok) {
@@ -282,7 +284,7 @@ export class Session {
         run: () => void this.play(),
         stop: () => this.stop(),
       },
-      [knobs, visuals],
+      [knobs, visuals, effects],
       this.o.compact,
     );
     lendVisuals(mirror, this.visualSource);

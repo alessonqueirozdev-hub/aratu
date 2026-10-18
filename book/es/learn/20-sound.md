@@ -52,6 +52,7 @@ bajo = | do2 _ do2 mib2 | fa2 _ sol2 sib1 |
 | `highpass` | quita los graves, como una radio pequeña |
 | `eq` | sube o baja graves, medios y agudos |
 | `drive` | distorsiona, como un amplificador al máximo |
+| `valvula` (o `tube`) | calienta y satura, como un amplificador de válvulas |
 | `bitcrush` | sonido de videojuego antiguo |
 | `compressor` | iguala el volumen, los fuertes y los suaves |
 | `chorus` | duplica el sonido, que queda ancho y brillante |
@@ -106,6 +107,34 @@ El manual tiene la lista completa. La perilla del cutoff se mueve en una
 escala de frecuencia como la percibe el oído; mantén Shift para pasos más
 finos.
 
+## Ecualizador y válvula
+
+Al lado de `eq`, `valvula`, `drive`, `lowpass` y `highpass` en una cadena,
+el editor dibuja una curva pequeña que muestra lo que hace el efecto, y
+cambia cuando giras las perillas. La del `eq` es la respuesta del
+ecualizador: los graves a la izquierda, los agudos a la derecha, hacia
+arriba lo que sube. Haz clic en ella y el ecualizador se abre grande:
+arrastra los puntos de los graves, los medios y los agudos, y los números
+se escriben en el código. La rueda del ratón en el punto de los medios
+estrecha o ensancha la banda.
+
+```aratu
+tempo: 96
+guitarra: guitar.steel -> eq -> valvula -> reverb
+guitarra = | mi3 sol3 la3 sol3 | mi3 _ re3 _ |
+guitarra.eq.low_gain = -6 dB
+guitarra.eq.mid_gain = 4 dB
+guitarra.eq.mid_freq = 900 Hz
+guitarra.valvula.drive = 12 dB
+```
+
+La válvula es el drive de Manguebyte ajustado como una válvula: la curva
+suave que redondea los picos, un poco de ganancia y el volumen devuelto
+a su lugar. Sus números son `valvula.drive` (de 0 a 24 dB),
+`valvula.output` y `valvula.mix`. La curva a su lado muestra cuánto se
+aplana el sonido, y brilla más cuanto más fuerte se la toca. Como la
+válvula y el drive son la misma etapa, una cadena usa una u otro.
+
 ## Un número que cambia en un compás
 
 Como cualquier cambio, un número puede cambiar en un compás:
@@ -159,4 +188,17 @@ bajo.lowpass.cutoff = 5000 Hz
 bajo: synth.saw -> lowpass
 bajo = | do2 _ do3 _ |
 bajo.lowpass.cutoff = 600 Hz
+```
+
+Pasa la guitarra por una válvula, con 12 dB de drive.
+
+```aratu exercise sound=1
+guitarra: guitar.steel -> reverb
+guitarra = | mi3 sol3 la3 sol3 |
+```
+
+```aratu answer
+guitarra: guitar.steel -> valvula -> reverb
+guitarra = | mi3 sol3 la3 sol3 |
+guitarra.valvula.drive = 12 dB
 ```

@@ -52,6 +52,7 @@ bass = | c2 _ c2 eb2 | f2 _ g2 bb1 |
 | `highpass` | takes out the lows, like a small radio |
 | `eq` | raises or lowers the bass, middle and treble |
 | `drive` | distorts, like an amplifier turned all the way up |
+| `tube` | warms and saturates, like a valve amplifier |
 | `bitcrush` | the sound of an old video game |
 | `compressor` | evens out the volume, the loud and the soft |
 | `chorus` | doubles the sound, which turns wide and bright |
@@ -104,6 +105,33 @@ The numbers used most:
 
 The manual has the whole list. The cutoff knob turns on a frequency scale,
 the way the ear hears; hold Shift for finer steps.
+
+## Equalizer and tube
+
+Beside `eq`, `tube`, `drive`, `lowpass` and `highpass` in a chain, the
+editor draws a small curve that shows what the effect does, and it moves
+as you turn the knobs. The `eq`'s is the equalizer's response: the lows
+on the left, the highs on the right, up what is boosted. Click it and the
+equalizer opens large: drag the points of the lows, the mids and the
+highs, and the numbers are written in the code. The mouse wheel on the
+mids' point narrows or widens the band.
+
+```aratu
+tempo: 96
+guitar: guitar.steel -> eq -> tube -> reverb
+guitar = | e3 g3 a3 g3 | e3 _ d3 _ |
+guitar.eq.low_gain = -6 dB
+guitar.eq.mid_gain = 4 dB
+guitar.eq.mid_freq = 900 Hz
+guitar.tube.drive = 12 dB
+```
+
+The tube is Manguebyte's drive set up as a valve: the smooth curve that
+rounds the peaks off, a little gain and the level brought back down. Its
+numbers are `tube.drive` (0 to 24 dB), `tube.output` and `tube.mix`. The
+curve beside it shows how much the sound is flattened, and glows the
+harder it is driven. The tube and the drive are the same stage, so a
+chain uses one or the other.
 
 ## A number that changes at a bar
 
@@ -158,4 +186,17 @@ bass.lowpass.cutoff = 5000 Hz
 bass: synth.saw -> lowpass
 bass = | c2 _ c3 _ |
 bass.lowpass.cutoff = 600 Hz
+```
+
+Put the guitar through a tube, with 12 dB of drive.
+
+```aratu exercise sound=1
+guitar: guitar.steel -> reverb
+guitar = | e3 g3 a3 g3 |
+```
+
+```aratu answer
+guitar: guitar.steel -> tube -> reverb
+guitar = | e3 g3 a3 g3 |
+guitar.tube.drive = 12 dB
 ```

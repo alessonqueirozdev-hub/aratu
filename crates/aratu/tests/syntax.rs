@@ -1795,3 +1795,25 @@ fn a_part_or_a_line_shows_its_wave_or_its_roll_under_the_line() {
             .any(|d| matches!(&d.message, Message::UnknownTarget { name } if name == "bas"))
     );
 }
+
+#[test]
+fn a_tube_is_the_drive_stage_set_up_as_a_valve() {
+    let src = "guitarra: guitar.steel -> válvula -> reverb\nguitarra = | e3 _ _ _ |\nguitarra.valvula.drive = 10\n";
+    let c = compile(src);
+    assert!(!c.has_errors(), "{:?}", c.diagnostics);
+    assert!(c.diagnostics.is_empty(), "{:?}", c.diagnostics);
+    let part = c.piece.parts.iter().find(|p| p.name == "guitarra").unwrap();
+    assert_eq!(part.chain, ["guitar.steel", "tube", "reverb"]);
+    assert!(
+        part.params
+            .iter()
+            .any(|p| p.id == "tube.drive" && (p.value - 10.0).abs() < 1e-9)
+    );
+    // The valve and the drive are one stage.
+    let c = compile("g: synth.saw -> drive -> tube\ng = | c4 _ _ _ |\n");
+    assert!(
+        c.diagnostics
+            .iter()
+            .any(|d| matches!(d.message, Message::TubeAndDrive))
+    );
+}

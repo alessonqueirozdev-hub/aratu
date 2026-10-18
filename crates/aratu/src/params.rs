@@ -67,6 +67,10 @@ pub const PARAMS: &[ParamInfo] = &[
     p("drive.output", -24.0, 12.0, -6.0, "dB", Scale::Linear),
     p("drive.mix", 0.0, 1.0, 1.0, "", Scale::Linear),
     p("drive.shape", 0.0, 3.0, 0.0, "", Scale::Steps),
+    // The valve: Manguebyte's drive with its smooth curve.
+    p("tube.drive", 0.0, 24.0, 8.0, "dB", Scale::Linear),
+    p("tube.output", -24.0, 12.0, -4.0, "dB", Scale::Linear),
+    p("tube.mix", 0.0, 1.0, 1.0, "", Scale::Linear),
     p("bitcrush.bits", 1.0, 16.0, 8.0, "", Scale::Linear),
     p("bitcrush.rate", 100.0, 48000.0, 48000.0, "Hz", Scale::Log),
     p("bitcrush.mix", 0.0, 1.0, 1.0, "", Scale::Linear),

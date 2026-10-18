@@ -561,6 +561,139 @@ button:active {
   color: var(--accent);
 }
 
+/* An effect's curve beside its name in a chain; the tube glows as hard as
+   it is driven. */
+.cm-fx {
+  display: inline-block;
+  margin: 0 3px 0 4px;
+  padding: 0 2px;
+  vertical-align: middle;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--panel) 70%, transparent);
+  color: var(--accent);
+  line-height: 0;
+}
+
+.cm-fx svg {
+  display: block;
+  width: 2.9em;
+  height: 1em;
+}
+
+.cm-fx-curve {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+
+.cm-fx-zero {
+  stroke: color-mix(in srgb, var(--muted) 50%, transparent);
+  stroke-width: 0.8;
+}
+
+.cm-fx-eq {
+  cursor: pointer;
+}
+
+.cm-fx-eq:hover {
+  outline: 1px solid var(--accent);
+}
+
+.cm-fx-tube {
+  box-shadow: 0 0 calc(var(--heat, 0) * 12px) color-mix(in srgb, var(--accent) calc(var(--heat, 0) * 90%), transparent);
+}
+
+/* The equalizer, opened from its curve. */
+.eq-panel {
+  position: absolute;
+  z-index: 70;
+  width: 344px;
+  padding: 10px 12px 12px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--paper);
+  box-shadow: var(--shadow), 0 18px 40px -18px rgba(0, 0, 0, 0.45);
+  color: var(--text);
+  font-family: var(--font-ui);
+}
+
+.eq-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.eq-head b {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 400;
+}
+
+.eq-close {
+  padding: 2px 8px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+}
+
+.eq-graph {
+  display: block;
+  width: 320px;
+  height: 150px;
+  border-radius: 4px;
+  background: var(--code-bg);
+  touch-action: none;
+}
+
+.eq-grid {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.eq-zero {
+  stroke: var(--rule);
+}
+
+.eq-curve {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.2;
+}
+
+.eq-band {
+  fill: var(--accent);
+  stroke: var(--paper);
+  stroke-width: 2;
+  cursor: grab;
+}
+
+.eq-mid {
+  fill: var(--accent-2);
+}
+
+.eq-high {
+  fill: var(--mangue);
+}
+
+.eq-legend,
+.eq-hint {
+  margin: 8px 0 0;
+  color: var(--soft);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.eq-hint {
+  color: var(--muted);
+}
+
+.eq-legend {
+  white-space: pre-line;
+  font-variant-numeric: tabular-nums;
+}
+
 .cm-visual-roll canvas {
   height: 3.4em;
   background: color-mix(in srgb, var(--panel) 55%, transparent);

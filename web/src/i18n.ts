@@ -38,6 +38,20 @@ const words = {
   stageSplit: { pt: "2 colunas", es: "2 columnas", en: "2 columns" },
   stageFit: { pt: "Caber na tela", es: "Caber en pantalla", en: "Fit the screen" },
   follow: { pt: "Seguir", es: "Seguir", en: "Follow" },
+  eqTitle: { pt: "Equalizador", es: "Ecualizador", en: "Equalizer" },
+  eqOpen: {
+    pt: "Clique para abrir o equalizador e arrastar graves, médios e agudos",
+    es: "Haz clic para abrir el ecualizador y arrastrar graves, medios y agudos",
+    en: "Click to open the equalizer and drag the lows, mids and highs",
+  },
+  eqLow: { pt: "Graves", es: "Graves", en: "Lows" },
+  eqMid: { pt: "Médios", es: "Medios", en: "Mids" },
+  eqHigh: { pt: "Agudos", es: "Agudos", en: "Highs" },
+  eqHint: {
+    pt: "Arraste um ponto: para os lados muda a frequência, para cima e para baixo o volume. A roda do mouse nos médios estreita ou alarga a faixa.",
+    es: "Arrastra un punto: hacia los lados cambia la frecuencia, hacia arriba y abajo el volumen. La rueda del ratón en los medios estrecha o ensancha la banda.",
+    en: "Drag a point: sideways changes the frequency, up and down the level. The mouse wheel on the mids narrows or widens the band.",
+  },
   followHint: {
     pt: "Seguir a música: a tela vai até o trecho que está tocando",
     es: "Seguir la música: la pantalla va al trozo que está sonando",
