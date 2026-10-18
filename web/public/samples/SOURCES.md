@@ -3,46 +3,147 @@
 Most recordings in this folder come from the Versilian Community Sample
 Library (VCSL), released under Creative Commons Zero (CC0):
 https://github.com/sgossner/VCSL and https://versilian-studios.com/vcsl/.
-They were made mono, trimmed, shortened and resampled by
-`web/scripts/samples.mjs`. Thank you, Versilian Studios. The voices at
-the end were recorded for Aratu.
+`web/scripts/samples.mjs` made them. The voices whose recordings it
+describes keep them as they were recorded, at their rate and in their
+channels, every dynamic layer mapped to a range of velocities and brought
+to one loudness, so that the velocity sets the level and the layer the
+timbre; trimmed and faded, they are written as FLAC by
+Manguebyte's encoder. The others were made mono, trimmed, shortened and
+resampled. Thank you, Versilian Studios. The voices at the end were
+recorded for Aratu.
 
 ## piano.grand
 
+44.1 kHz, stereo, FLAC: 3 dynamic layers (velocities 0–59, 60–95, 96–127) of 20, 20, 20 notes, 60 recordings.
+
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_C1_vl2_rr1.wav
 - Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_C1_vl3_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_C1_vl4_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_E1_vl2_rr1.wav
 - Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_E1_vl3_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_E1_vl4_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_G#1_vl2_rr1.wav
 - Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_G#1_vl3_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_G#1_vl4_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_C2_vl2_rr1.wav
 - Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_C2_vl3_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_C2_vl4_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_E2_vl2_rr1.wav
 - Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_E2_vl3_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_E2_vl4_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_G#2_vl2_rr1.wav
 - Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_G#2_vl3_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_G#2_vl4_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_C3_vl2_rr1.wav
 - Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_C3_vl3_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_C3_vl4_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_E3_vl2_rr1.wav
 - Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_E3_vl3_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_E3_vl4_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_G#3_vl2_rr1.wav
 - Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_G#3_vl3_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_G#3_vl4_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_C4_vl2_rr1.wav
 - Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_C4_vl3_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_C4_vl4_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_E4_vl2_rr1.wav
 - Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_E4_vl3_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_E4_vl4_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_G#4_vl2_rr1.wav
 - Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_G#4_vl3_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_G#4_vl4_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_C5_vl2_rr1.wav
 - Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_C5_vl3_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_C5_vl4_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_E5_vl2_rr1.wav
 - Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_E5_vl3_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_E5_vl4_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_G#5_vl2_rr1.wav
 - Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_G#5_vl3_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_G#5_vl4_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_C6_vl2_rr1.wav
 - Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_C6_vl3_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_C6_vl4_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_E6_vl2_rr1.wav
 - Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_E6_vl3_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_E6_vl4_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_G#6_vl2_rr1.wav
 - Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_G#6_vl3_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_G#6_vl4_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_C7_vl2_rr1.wav
 - Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_C7_vl3_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_C7_vl4_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_E7_vl2_rr1.wav
 - Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_E7_vl3_rr1.wav
+- Chordophones/Zithers/Grand Piano, Steinway B/NoSus/JHPiano_NoSus_Close_E7_vl4_rr1.wav
 
 ## piano.upright
 
+44.1 kHz, stereo, FLAC: 3 dynamic layers (velocities 0–59, 60–95, 96–127) of 10, 11, 11 notes, with the round robins recorded taking turns, 63 recordings.
+
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C1_vl1_rr1.wav
 - Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C1_vl2_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C1_vl2_rr2.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C1_vl3_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C1_vl3_rr2.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G1_vl1_rr1.wav
 - Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G1_vl2_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G1_vl2_rr2.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G1_vl3_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G1_vl3_rr2.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C2_vl1_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C2_vl1_rr2.wav
 - Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C2_vl2_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C2_vl2_rr2.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C2_vl3_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C2_vl3_rr2.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G2_vl1_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G2_vl1_rr2.wav
 - Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G2_vl2_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G2_vl2_rr2.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G2_vl3_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G2_vl3_rr2.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C3_vl1_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C3_vl1_rr2.wav
 - Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C3_vl2_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C3_vl2_rr2.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C3_vl3_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C3_vl3_rr2.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G3_vl1_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G3_vl1_rr2.wav
 - Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G3_vl2_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G3_vl2_rr2.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G3_vl3_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G3_vl3_rr2.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C4_vl1_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C4_vl1_rr2.wav
 - Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C4_vl2_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C4_vl2_rr2.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C4_vl3_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C4_vl3_rr2.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G4_vl1_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G4_vl1_rr2.wav
 - Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G4_vl2_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G4_vl2_rr2.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G4_vl3_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G4_vl3_rr2.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C5_vl1_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C5_vl1_rr2.wav
 - Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C5_vl2_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C5_vl2_rr2.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C5_vl3_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C5_vl3_rr2.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G5_vl1_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G5_vl1_rr2.wav
 - Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G5_vl2_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G5_vl2_rr2.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G5_vl3_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G5_vl3_rr2.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G5_vl3_rr3.wav
 - Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C6_vl2_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C6_vl2_rr2.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C6_vl3_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C6_vl3_rr2.wav
 
 ## keys.harpsichord
 
@@ -90,70 +191,156 @@ the end were recorded for Aratu.
 
 ## harp
 
+44.1 kHz, stereo, FLAC: 2 dynamic layers (velocities 0–88, 89–127) of 21, 22 notes, 43 recordings.
+
+- Chordophones/Composite Chordophones/Concert Harp/KSHarp_E1_f1.wav
+- Chordophones/Composite Chordophones/Concert Harp/KSHarp_G1_mp1.wav
+- Chordophones/Composite Chordophones/Concert Harp/KSHarp_G1_f1.wav
 - Chordophones/Composite Chordophones/Concert Harp/KSHarp_B1_mf1.wav
+- Chordophones/Composite Chordophones/Concert Harp/KSHarp_B1_f1.wav
 - Chordophones/Composite Chordophones/Concert Harp/KSHarp_D2_mf1.wav
+- Chordophones/Composite Chordophones/Concert Harp/KSHarp_D2_f1.wav
 - Chordophones/Composite Chordophones/Concert Harp/KSHarp_F2_mf1.wav
+- Chordophones/Composite Chordophones/Concert Harp/KSHarp_F2_f1.wav
 - Chordophones/Composite Chordophones/Concert Harp/KSHarp_A2_mf1.wav
+- Chordophones/Composite Chordophones/Concert Harp/KSHarp_A2_f1.wav
+- Chordophones/Composite Chordophones/Concert Harp/KSHarp_C3_mf3.wav
+- Chordophones/Composite Chordophones/Concert Harp/KSHarp_C3_f2.wav
 - Chordophones/Composite Chordophones/Concert Harp/KSHarp_E3_mf1.wav
+- Chordophones/Composite Chordophones/Concert Harp/KSHarp_E3_f1.wav
 - Chordophones/Composite Chordophones/Concert Harp/KSHarp_G3_mf1.wav
+- Chordophones/Composite Chordophones/Concert Harp/KSHarp_G3_f1.wav
 - Chordophones/Composite Chordophones/Concert Harp/KSHarp_B3_mf1.wav
+- Chordophones/Composite Chordophones/Concert Harp/KSHarp_B3_f1.wav
 - Chordophones/Composite Chordophones/Concert Harp/KSHarp_D4_mf1.wav
+- Chordophones/Composite Chordophones/Concert Harp/KSHarp_D4_f1.wav
 - Chordophones/Composite Chordophones/Concert Harp/KSHarp_F4_mf1.wav
+- Chordophones/Composite Chordophones/Concert Harp/KSHarp_F4_f1.wav
 - Chordophones/Composite Chordophones/Concert Harp/KSHarp_A4_mf1.wav
+- Chordophones/Composite Chordophones/Concert Harp/KSHarp_A4_f1.wav
 - Chordophones/Composite Chordophones/Concert Harp/KSHarp_C5_mf1.wav
+- Chordophones/Composite Chordophones/Concert Harp/KSHarp_C5_f1.wav
 - Chordophones/Composite Chordophones/Concert Harp/KSHarp_E5_mf1.wav
+- Chordophones/Composite Chordophones/Concert Harp/KSHarp_E5_f1.wav
 - Chordophones/Composite Chordophones/Concert Harp/KSHarp_G5_mf1.wav
+- Chordophones/Composite Chordophones/Concert Harp/KSHarp_G5_f1.wav
 - Chordophones/Composite Chordophones/Concert Harp/KSHarp_B5_mf1.wav
+- Chordophones/Composite Chordophones/Concert Harp/KSHarp_B5_f1.wav
 - Chordophones/Composite Chordophones/Concert Harp/KSHarp_D6_mf1.wav
+- Chordophones/Composite Chordophones/Concert Harp/KSHarp_D6_f1.wav
 - Chordophones/Composite Chordophones/Concert Harp/KSHarp_F6_mf1.wav
+- Chordophones/Composite Chordophones/Concert Harp/KSHarp_F6_f1.wav
 - Chordophones/Composite Chordophones/Concert Harp/KSHarp_A6_mf1.wav
+- Chordophones/Composite Chordophones/Concert Harp/KSHarp_A6_f1.wav
+- Chordophones/Composite Chordophones/Concert Harp/KSHarp_D7_p1.wav
+- Chordophones/Composite Chordophones/Concert Harp/KSHarp_D7_f1.wav
+- Chordophones/Composite Chordophones/Concert Harp/KSHarp_F7_p1.wav
+- Chordophones/Composite Chordophones/Concert Harp/KSHarp_F7_f1.wav
 
 ## mallets.marimba
 
+44.1 kHz, stereo, FLAC: 3 dynamic layers (velocities 0–59, 60–95, 96–127) of 10, 10, 10 notes, 30 recordings.
+
+- Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_F1_soft_01.wav
 - Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_F1_med_01.wav
+- Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_F1_loud_01.wav
+- Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_C2_soft_01.wav
 - Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_C2_med_01.wav
+- Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_C2_loud_01.wav
+- Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_G2_soft_01.wav
 - Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_G2_med_01.wav
+- Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_G2_loud_01.wav
+- Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_B2_soft_01.wav
 - Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_B2_med_01.wav
+- Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_B2_loud_01.wav
+- Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_F3_soft_01.wav
 - Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_F3_med_01.wav
+- Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_F3_loud_01.wav
+- Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_C4_soft_01.wav
 - Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_C4_med_01.wav
+- Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_C4_loud_01.wav
+- Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_G4_soft_01.wav
 - Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_G4_med_01.wav
+- Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_G4_loud_01.wav
+- Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_B4_soft_01.wav
 - Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_B4_med_01.wav
+- Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_B4_loud_01.wav
+- Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_F5_soft_01.wav
 - Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_F5_med_01.wav
+- Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_F5_loud_01.wav
+- Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_C6_soft_01.wav
 - Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_C6_med_01.wav
+- Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_C6_loud_01.wav
 
 ## mallets.vibraphone
 
+44.1 kHz, stereo, FLAC: 2 dynamic layers (velocities 0–88, 89–127) of 11, 11 notes, 22 recordings.
+
 - Idiophones/Struck Idiophones/Vibraphone/Hard Mallets/Vibes_hard_F2_v2_rr1_Main.wav
+- Idiophones/Struck Idiophones/Vibraphone/Hard Mallets/Vibes_hard_F2_v3_rr1_Main.wav
 - Idiophones/Struck Idiophones/Vibraphone/Hard Mallets/Vibes_hard_A2_v2_rr1_Main.wav
+- Idiophones/Struck Idiophones/Vibraphone/Hard Mallets/Vibes_hard_A2_v3_rr1_Main.wav
 - Idiophones/Struck Idiophones/Vibraphone/Hard Mallets/Vibes_hard_C3_v2_rr1_Main.wav
+- Idiophones/Struck Idiophones/Vibraphone/Hard Mallets/Vibes_hard_C3_v3_rr1_Main.wav
 - Idiophones/Struck Idiophones/Vibraphone/Hard Mallets/Vibes_hard_E3_v2_rr1_Main.wav
+- Idiophones/Struck Idiophones/Vibraphone/Hard Mallets/Vibes_hard_E3_v3_rr1_Main.wav
 - Idiophones/Struck Idiophones/Vibraphone/Hard Mallets/Vibes_hard_G3_v2_rr1_Main.wav
+- Idiophones/Struck Idiophones/Vibraphone/Hard Mallets/Vibes_hard_G3_v3_rr1_Main.wav
 - Idiophones/Struck Idiophones/Vibraphone/Hard Mallets/Vibes_hard_B3_v2_rr1_Main.wav
+- Idiophones/Struck Idiophones/Vibraphone/Hard Mallets/Vibes_hard_B3_v3_rr1_Main.wav
 - Idiophones/Struck Idiophones/Vibraphone/Hard Mallets/Vibes_hard_D4_v2_rr1_Main.wav
+- Idiophones/Struck Idiophones/Vibraphone/Hard Mallets/Vibes_hard_D4_v3_rr1_Main.wav
 - Idiophones/Struck Idiophones/Vibraphone/Hard Mallets/Vibes_hard_F4_v2_rr1_Main.wav
+- Idiophones/Struck Idiophones/Vibraphone/Hard Mallets/Vibes_hard_F4_v3_rr1_Main.wav
 - Idiophones/Struck Idiophones/Vibraphone/Hard Mallets/Vibes_hard_A4_v2_rr1_Main.wav
+- Idiophones/Struck Idiophones/Vibraphone/Hard Mallets/Vibes_hard_A4_v3_rr1_Main.wav
 - Idiophones/Struck Idiophones/Vibraphone/Hard Mallets/Vibes_hard_C5_v2_rr1_Main.wav
+- Idiophones/Struck Idiophones/Vibraphone/Hard Mallets/Vibes_hard_C5_v3_rr1_Main.wav
 - Idiophones/Struck Idiophones/Vibraphone/Hard Mallets/Vibes_hard_E5_v2_rr1_Main.wav
+- Idiophones/Struck Idiophones/Vibraphone/Hard Mallets/Vibes_hard_E5_v3_rr1_Main.wav
 
 ## mallets.xylophone
 
+44.1 kHz, stereo, FLAC: 2 dynamic layers (velocities 0–88, 89–127) of 8, 8 notes, 16 recordings.
+
+- Idiophones/Struck Idiophones/Xylophone/Medium Mallets/Xylo_Medium_G3_pp_01_far.wav
 - Idiophones/Struck Idiophones/Xylophone/Medium Mallets/Xylo_Medium_G3_ff_01_far.wav
+- Idiophones/Struck Idiophones/Xylophone/Medium Mallets/Xylo_Medium_C4_pp_01_far.wav
 - Idiophones/Struck Idiophones/Xylophone/Medium Mallets/Xylo_Medium_C4_ff_01_far.wav
+- Idiophones/Struck Idiophones/Xylophone/Medium Mallets/Xylo_Medium_G4_pp_01_far.wav
 - Idiophones/Struck Idiophones/Xylophone/Medium Mallets/Xylo_Medium_G4_ff_01_far.wav
+- Idiophones/Struck Idiophones/Xylophone/Medium Mallets/Xylo_Medium_C5_pp_01_far.wav
 - Idiophones/Struck Idiophones/Xylophone/Medium Mallets/Xylo_Medium_C5_ff_01_far.wav
+- Idiophones/Struck Idiophones/Xylophone/Medium Mallets/Xylo_Medium_G5_pp_01_far.wav
 - Idiophones/Struck Idiophones/Xylophone/Medium Mallets/Xylo_Medium_G5_ff_01_far.wav
+- Idiophones/Struck Idiophones/Xylophone/Medium Mallets/Xylo_Medium_C6_pp_01_far.wav
 - Idiophones/Struck Idiophones/Xylophone/Medium Mallets/Xylo_Medium_C6_ff_01_far.wav
+- Idiophones/Struck Idiophones/Xylophone/Medium Mallets/Xylo_Medium_G6_pp_01_far.wav
 - Idiophones/Struck Idiophones/Xylophone/Medium Mallets/Xylo_Medium_G6_ff_01_far.wav
+- Idiophones/Struck Idiophones/Xylophone/Medium Mallets/Xylo_Medium_C7_pp_01_far.wav
 - Idiophones/Struck Idiophones/Xylophone/Medium Mallets/Xylo_Medium_C7_ff_01_far.wav
 
 ## mallets.glockenspiel
 
+44.1 kHz, stereo, FLAC: 3 dynamic layers (velocities 0–59, 60–95, 96–127) of 6, 6, 5 notes, 17 recordings.
+
+- Idiophones/Struck Idiophones/Glockenspiel/glock_soft_G4_01.wav
 - Idiophones/Struck Idiophones/Glockenspiel/glock_medium_G4_01.wav
+- Idiophones/Struck Idiophones/Glockenspiel/glock_loud_G4_01.wav
+- Idiophones/Struck Idiophones/Glockenspiel/glock_soft_C5_02.wav
 - Idiophones/Struck Idiophones/Glockenspiel/glock_medium_C5_01.wav
+- Idiophones/Struck Idiophones/Glockenspiel/glock_loud_C5_01.wav
+- Idiophones/Struck Idiophones/Glockenspiel/glock_soft_G5_01.wav
 - Idiophones/Struck Idiophones/Glockenspiel/glock_medium_G5_01.wav
+- Idiophones/Struck Idiophones/Glockenspiel/glock_loud_G5_01.wav
+- Idiophones/Struck Idiophones/Glockenspiel/glock_soft_C6_01.wav
 - Idiophones/Struck Idiophones/Glockenspiel/glock_medium_C6_01.wav
+- Idiophones/Struck Idiophones/Glockenspiel/glock_loud_C6_01.wav
+- Idiophones/Struck Idiophones/Glockenspiel/glock_soft_G6_01.wav
 - Idiophones/Struck Idiophones/Glockenspiel/glock_medium_G6_01.wav
+- Idiophones/Struck Idiophones/Glockenspiel/glock_soft_C7_03.wav
 - Idiophones/Struck Idiophones/Glockenspiel/glock_medium_C7_01.wav
+- Idiophones/Struck Idiophones/Glockenspiel/glock_loud_C7_01.wav
 
 ## bells.tubular
 

@@ -1,13 +1,36 @@
 // Made by Aratu's web/scripts/samples.mjs from VCSL (CC0).
 <control> default_path=./
 <global> ampeg_release=0.12
-<region> sample=29.wav pitch_keycenter=29 lokey=0 hikey=32
-<region> sample=36.wav pitch_keycenter=36 lokey=33 hikey=39
-<region> sample=43.wav pitch_keycenter=43 lokey=40 hikey=45
-<region> sample=47.wav pitch_keycenter=47 lokey=46 hikey=50
-<region> sample=53.wav pitch_keycenter=53 lokey=51 hikey=56
-<region> sample=60.wav pitch_keycenter=60 lokey=57 hikey=63
-<region> sample=67.wav pitch_keycenter=67 lokey=64 hikey=69
-<region> sample=71.wav pitch_keycenter=71 lokey=70 hikey=74
-<region> sample=77.wav pitch_keycenter=77 lokey=75 hikey=80
-<region> sample=84.wav pitch_keycenter=84 lokey=81 hikey=127
+<group> lovel=0 hivel=59
+<region> sample=29_v1.flac pitch_keycenter=29 lokey=0 hikey=32
+<region> sample=36_v1.flac pitch_keycenter=36 lokey=33 hikey=39
+<region> sample=43_v1.flac pitch_keycenter=43 lokey=40 hikey=45
+<region> sample=47_v1.flac pitch_keycenter=47 lokey=46 hikey=50
+<region> sample=53_v1.flac pitch_keycenter=53 lokey=51 hikey=56
+<region> sample=60_v1.flac pitch_keycenter=60 lokey=57 hikey=63
+<region> sample=67_v1.flac pitch_keycenter=67 lokey=64 hikey=69
+<region> sample=71_v1.flac pitch_keycenter=71 lokey=70 hikey=74
+<region> sample=77_v1.flac pitch_keycenter=77 lokey=75 hikey=80
+<region> sample=84_v1.flac pitch_keycenter=84 lokey=81 hikey=127
+<group> lovel=60 hivel=95
+<region> sample=29_v2.flac pitch_keycenter=29 lokey=0 hikey=32
+<region> sample=36_v2.flac pitch_keycenter=36 lokey=33 hikey=39
+<region> sample=43_v2.flac pitch_keycenter=43 lokey=40 hikey=45
+<region> sample=47_v2.flac pitch_keycenter=47 lokey=46 hikey=50
+<region> sample=53_v2.flac pitch_keycenter=53 lokey=51 hikey=56
+<region> sample=60_v2.flac pitch_keycenter=60 lokey=57 hikey=63
+<region> sample=67_v2.flac pitch_keycenter=67 lokey=64 hikey=69
+<region> sample=71_v2.flac pitch_keycenter=71 lokey=70 hikey=74
+<region> sample=77_v2.flac pitch_keycenter=77 lokey=75 hikey=80
+<region> sample=84_v2.flac pitch_keycenter=84 lokey=81 hikey=127
+<group> lovel=96 hivel=127
+<region> sample=29_v3.flac pitch_keycenter=29 lokey=0 hikey=32
+<region> sample=36_v3.flac pitch_keycenter=36 lokey=33 hikey=39
+<region> sample=43_v3.flac pitch_keycenter=43 lokey=40 hikey=45
+<region> sample=47_v3.flac pitch_keycenter=47 lokey=46 hikey=50
+<region> sample=53_v3.flac pitch_keycenter=53 lokey=51 hikey=56
+<region> sample=60_v3.flac pitch_keycenter=60 lokey=57 hikey=63
+<region> sample=67_v3.flac pitch_keycenter=67 lokey=64 hikey=69
+<region> sample=71_v3.flac pitch_keycenter=71 lokey=70 hikey=74
+<region> sample=77_v3.flac pitch_keycenter=77 lokey=75 hikey=80
+<region> sample=84_v3.flac pitch_keycenter=84 lokey=81 hikey=127

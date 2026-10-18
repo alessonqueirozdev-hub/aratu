@@ -904,8 +904,13 @@ arpa, marimba, vibráfono, xilófono, glockenspiel, kalimba, campanas
 tubulares, saxo tenor, armónica, flauta dulce y la batería acústica) son
 grabaciones de la Versilian Community Sample Library, de dominio público
 (CC0), descargadas la primera vez que una pieza las usa. Mientras llegan,
-suena en su lugar un sonido sintetizado parecido. Los demás se sintetizan
-en el navegador.
+suena en su lugar un sonido sintetizado parecido. Los pianos, el arpa y los
+mallets (marimba, vibráfono, xilófono y glockenspiel) vienen en estéreo, a
+la frecuencia con que se grabaron, con grabaciones en dos o tres dinámicas:
+cuanto más suave la nota, más suave y oscura la grabación que toca, y
+cuanto más fuerte, más brillante (`f`, `ff` y un acento sobre `mf` llegan a
+la más fuerte). En el piano vertical, las notas grabadas más de una vez
+alternan sus tomas. Los demás sonidos se sintetizan en el navegador.
 
 La batería grabada de Alesson (`drums.alesson`) la grabó Alesson Queiroz y
 también es de dominio público (CC0). Bombo, caja y crash son grabaciones,

@@ -887,7 +887,12 @@ marimba, vibrafone, xilofone, glockenspiel, kalimba, sinos tubulares, sax
 tenor, gaita, flauta doce e a bateria acústica) são gravações da Versilian
 Community Sample Library, em domínio público (CC0), baixadas na primeira vez
 que uma peça as usa. Enquanto chegam, um som sintetizado parecido toca no
-lugar.
+lugar. Os pianos, a harpa e os mallets (marimba, vibrafone, xilofone e
+glockenspiel) vêm em estéreo, na taxa em que foram gravados, com gravações
+em duas ou três dinâmicas: quanto mais suave a nota, mais suave e escura a
+gravação que ela toca, e quanto mais forte, mais brilhante (`f`, `ff` e um
+acento num `mf` chegam à mais forte). No piano de armário, as notas gravadas
+mais de uma vez revezam as tomadas.
 
 A bateria gravada do Alesson (`drums.alesson`) foi gravada por Alesson
 Queiroz e também está em domínio público (CC0). Bumbo, caixa e ataque são

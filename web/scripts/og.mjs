@@ -82,7 +82,8 @@ pre { font-family: "JetBrains Mono", "Cascadia Code", "Fira Code", Consolas, mon
 `;
 }
 
-function browser() {
+/** A Chromium browser on this machine, or the one ARATU_BROWSER names. */
+export function browser() {
   const found = [
     process.env.ARATU_BROWSER,
     "C:/Program Files/Google/Chrome/Application/chrome.exe",

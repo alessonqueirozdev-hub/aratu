@@ -140,17 +140,22 @@ const MB_EFFECTS = new Set([
 const mtof = (n: number) => 440 * Math.pow(2, (n - 69) / 12);
 
 /** Each voice's level, measured in the browser so that one line of any
- * voice peaks near the same height (about 0.3 at mf). */
+ * voice peaks near the same height (about 0.3 at mf). The recorded voices
+ * with dynamic layers play their mf layer here, and make up for how far
+ * under full scale its recordings peak. */
 const VOICE_GAIN: Record<string, number> = {
   "bass.slap": 0.3,
   "bass.808": 0.5,
   "bass.finger": 0.85,
   "bass.synth": 1.4,
   "mallets.vibraphone": 2,
-  "piano.upright": 1.6,
+  "mallets.marimba": 1.6,
+  "mallets.xylophone": 1.15,
+  "piano.grand": 1.2,
+  "piano.upright": 3.2,
   "organ.pipe": 1.8,
   "sax.tenor": 1.7,
-  harp: 1.4,
+  harp: 1.55,
   "bells.tubular": 1.2,
   "recorder.alto": 1.3,
   "keys.harpsichord": 1.3,
