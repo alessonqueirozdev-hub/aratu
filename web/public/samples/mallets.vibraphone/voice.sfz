@@ -2,26 +2,26 @@
 <control> default_path=./
 <global> ampeg_release=0.12
 <group> lovel=0 hivel=88
-<region> sample=41_v1.flac pitch_keycenter=41 lokey=0 hikey=43
-<region> sample=45_v1.flac pitch_keycenter=45 lokey=44 hikey=46
-<region> sample=48_v1.flac pitch_keycenter=48 lokey=47 hikey=50
-<region> sample=52_v1.flac pitch_keycenter=52 lokey=51 hikey=53
-<region> sample=55_v1.flac pitch_keycenter=55 lokey=54 hikey=57
-<region> sample=59_v1.flac pitch_keycenter=59 lokey=58 hikey=60
-<region> sample=62_v1.flac pitch_keycenter=62 lokey=61 hikey=63
-<region> sample=65_v1.flac pitch_keycenter=65 lokey=64 hikey=67
-<region> sample=69_v1.flac pitch_keycenter=69 lokey=68 hikey=70
-<region> sample=72_v1.flac pitch_keycenter=72 lokey=71 hikey=74
-<region> sample=76_v1.flac pitch_keycenter=76 lokey=75 hikey=127
+<region> sample=53_v1.flac pitch_keycenter=53 lokey=0 hikey=55
+<region> sample=57_v1.flac pitch_keycenter=57 lokey=56 hikey=58
+<region> sample=60_v1.flac pitch_keycenter=60 lokey=59 hikey=62
+<region> sample=64_v1.flac pitch_keycenter=64 lokey=63 hikey=65
+<region> sample=67_v1.flac pitch_keycenter=67 lokey=66 hikey=69
+<region> sample=71_v1.flac pitch_keycenter=71 lokey=70 hikey=72
+<region> sample=74_v1.flac pitch_keycenter=74 lokey=73 hikey=75
+<region> sample=77_v1.flac pitch_keycenter=77 lokey=76 hikey=79
+<region> sample=81_v1.flac pitch_keycenter=81 lokey=80 hikey=82
+<region> sample=84_v1.flac pitch_keycenter=84 lokey=83 hikey=86
+<region> sample=88_v1.flac pitch_keycenter=88 lokey=87 hikey=127
 <group> lovel=89 hivel=127
-<region> sample=41_v2.flac pitch_keycenter=41 lokey=0 hikey=43
-<region> sample=45_v2.flac pitch_keycenter=45 lokey=44 hikey=46
-<region> sample=48_v2.flac pitch_keycenter=48 lokey=47 hikey=50
-<region> sample=52_v2.flac pitch_keycenter=52 lokey=51 hikey=53
-<region> sample=55_v2.flac pitch_keycenter=55 lokey=54 hikey=57
-<region> sample=59_v2.flac pitch_keycenter=59 lokey=58 hikey=60
-<region> sample=62_v2.flac pitch_keycenter=62 lokey=61 hikey=63
-<region> sample=65_v2.flac pitch_keycenter=65 lokey=64 hikey=67
-<region> sample=69_v2.flac pitch_keycenter=69 lokey=68 hikey=70
-<region> sample=72_v2.flac pitch_keycenter=72 lokey=71 hikey=74
-<region> sample=76_v2.flac pitch_keycenter=76 lokey=75 hikey=127
+<region> sample=53_v2.flac pitch_keycenter=53 lokey=0 hikey=55
+<region> sample=57_v2.flac pitch_keycenter=57 lokey=56 hikey=58
+<region> sample=60_v2.flac pitch_keycenter=60 lokey=59 hikey=62
+<region> sample=64_v2.flac pitch_keycenter=64 lokey=63 hikey=65
+<region> sample=67_v2.flac pitch_keycenter=67 lokey=66 hikey=69
+<region> sample=71_v2.flac pitch_keycenter=71 lokey=70 hikey=72
+<region> sample=74_v2.flac pitch_keycenter=74 lokey=73 hikey=75
+<region> sample=77_v2.flac pitch_keycenter=77 lokey=76 hikey=79
+<region> sample=81_v2.flac pitch_keycenter=81 lokey=80 hikey=82
+<region> sample=84_v2.flac pitch_keycenter=84 lokey=83 hikey=86
+<region> sample=88_v2.flac pitch_keycenter=88 lokey=87 hikey=127

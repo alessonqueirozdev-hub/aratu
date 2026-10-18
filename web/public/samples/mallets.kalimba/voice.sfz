@@ -2,14 +2,14 @@
 <control> default_path=./
 <global> ampeg_release=0.12
 <group> lovel=0 hivel=127
-<region> sample=47_v1.flac pitch_keycenter=47 lokey=0 hikey=48
-<region> sample=49_v1.flac pitch_keycenter=49 lokey=49 hikey=50
-<region> sample=51_v1.flac pitch_keycenter=51 lokey=51 hikey=52
-<region> sample=54_v1.flac pitch_keycenter=54 lokey=53 hikey=55
-<region> sample=56_v1.flac pitch_keycenter=56 lokey=56 hikey=57
-<region> sample=59_v1.flac pitch_keycenter=59 lokey=58 hikey=60
+<region> sample=59_v1.flac pitch_keycenter=59 lokey=0 hikey=60
 <region> sample=61_v1.flac pitch_keycenter=61 lokey=61 hikey=62
 <region> sample=63_v1.flac pitch_keycenter=63 lokey=63 hikey=64
 <region> sample=66_v1.flac pitch_keycenter=66 lokey=65 hikey=67
-<region> sample=69_v1.flac pitch_keycenter=69 lokey=68 hikey=70
-<region> sample=71_v1.flac pitch_keycenter=71 lokey=71 hikey=127
+<region> sample=68_v1.flac pitch_keycenter=68 lokey=68 hikey=69
+<region> sample=71_v1.flac pitch_keycenter=71 lokey=70 hikey=72
+<region> sample=73_v1.flac pitch_keycenter=73 lokey=73 hikey=74
+<region> sample=75_v1.flac pitch_keycenter=75 lokey=75 hikey=76
+<region> sample=78_v1.flac pitch_keycenter=78 lokey=77 hikey=79
+<region> sample=81_v1.flac pitch_keycenter=81 lokey=80 hikey=82
+<region> sample=83_v1.flac pitch_keycenter=83 lokey=83 hikey=127

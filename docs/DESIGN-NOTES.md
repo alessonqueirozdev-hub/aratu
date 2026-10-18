@@ -1099,3 +1099,47 @@ add. A chain names the tube or the drive, not both: they are one stage.
 On a phone the tabs go to the foot of the screen, under the thumb. Long
 lines wrap. The course's contents fold into a bar that names the page you
 are on.
+
+## Recorded voices at the pitch they sound
+
+Many VCSL folders name their files an octave below the pitch they sound: a
+file called C4 sounds C5, 523 Hz. Twelve of the recorded voices played an
+octave above what was written: the upright piano, the harpsichord, the
+marimba, vibraphone, xylophone and glockenspiel, the tubular bells, the
+kalimba, the harmonica, the alto recorder, the tenor saxophone and the
+pipe organ. The grand piano and the harp are named right. The organ's loud
+registration has a weaker stop at the named pitch under its main one, an
+octave up, as a 16' under an 8'; the quiet one is at the octave alone.
+
+The pitch was measured, not guessed from conventions: an autocorrelation
+(YIN) for the strings, winds and keyboards, and, for the bars and the bells,
+whose partials are not harmonics, the strike note by subharmonic summation
+(Hermes 1988), which hears the grand piano at its names and the upright an
+octave above them. `samples.mjs` now maps each voice by a `shift` (12 semitones) and
+measures every voice as it makes it: a layer whose median is more than a
+semitone from its notes stops the script, so a source named off cannot come
+in unnoticed. (A semitone, not less: the harpsichord is tuned about 40
+cents under A 440.) The autocorrelation is not used to decide: under the
+organ's main stop it finds the weaker one an octave below in half the notes. The pitches heard go into each voice's
+`index.json`, and `samples-smoke.mjs` checks them in CI.
+
+The same measure showed that several sources were tuned to A 430: the
+harmonica, the harpsichord, the organ, the recorder and the saxophone sound
+40 cents under the A 440 of the pianos and of every synthesized voice, and
+the xylophone 25. A voice is tuned back to A 440 (`tune` in its SFZ, which
+Manguebyte's sampler reads, and in its index.json, which the stand-in
+reads) when every layer agrees on how far off it is and was heard steadily.
+The glockenspiel and the bells are left as they are: their layers disagree
+by more than a recorded instrument can, or a soft layer was heard here and
+there, which is the measure, not the instruments. The lowest bell, named
+C3, is left out of the voice: in both layers its strike note is heard about
+a fourth above it, and the E above plays it instead.
+
+`scripts/voices.mjs` now hears the loud note it plays on Manguebyte and
+fails when it is more than a semitone from its key: before this change the
+twelve voices played their middle C at 71.6 to 72.4, now within half a
+semitone of 60.
+
+Every voice sounds the note written, as a sampler's keys do. A xylophone or
+a glockenspiel part copied from a score, which writes them one or two
+octaves below their sound, is written here as it sounds.

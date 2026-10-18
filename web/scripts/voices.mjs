@@ -9,8 +9,9 @@
 // comes out. It does the same with the voice as it is in a commit (HEAD,
 // or --before=<ref>), and prints both: how soft and loud differ in level
 // and in brightness (the spectral centroid of their first 0.3 s), whether
-// the voice is stereo, and the loudness of the phrase, which the
-// normalisation should keep where it was. Run by hand after
+// the voice is stereo, the loudness of the phrase, which the
+// normalisation should keep where it was, and the pitch the loud note is
+// heard at, which must be the key played. Run by hand after
 // scripts/samples.mjs:
 //
 //   node scripts/voices.mjs [voice ...] [--before=<ref>]
@@ -19,13 +20,14 @@
 // decode the files index.json names for the stand-in, or if a voice with
 // dynamic layers
 // (more than one `lovel` in its voice.sfz) does not change its timbre from
-// soft to loud, or plays its phrase more than 1.5 LU away from before.
+// soft to loud, plays its phrase more than 1.5 LU away from before, or
+// plays its loud note more than a semitone from its key.
 
 import { execFileSync, spawn } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
-import { dirname, extname, join, normalize } from "node:path";
+import { basename, dirname, extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 import { browser } from "./og.mjs";
 
@@ -123,7 +125,7 @@ try {
   let part = 0;
   for (const job of plan) {
     part++;
-    const result = { voice: job.voice, set: job.set };
+    const result = { voice: job.voice, set: job.set, key: job.key, kit: job.kit };
     try {
       await engine.createPart(part, job.kit ? "sampler_kit" : "sampler", "none");
       const started = performance.now();
@@ -251,9 +253,22 @@ const chrome = spawn(browser(), [
 const timer = setTimeout(() => done([{ error: "no answer from the browser after 10 minutes" }]), 600_000);
 const results = await finished;
 clearTimeout(timer);
-// The whole browser, its helper processes too.
-if (process.platform === "win32") execFileSync("taskkill", ["/pid", String(chrome.pid), "/t", "/f"], { stdio: "ignore" });
-else chrome.kill();
+// The whole browser, its helper processes too. On Windows the process
+// started may have handed over to the browser and gone, so whatever still
+// runs with this profile is stopped too.
+if (process.platform === "win32") {
+  try {
+    execFileSync("taskkill", ["/pid", String(chrome.pid), "/t", "/f"], { stdio: "ignore" });
+  } catch {
+    // Gone already: its children are found by their profile below.
+  }
+  const stop = `Get-CimInstance Win32_Process -Filter "Name='chrome.exe'" | Where-Object { $_.CommandLine -like '*${basename(profile)}*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }`;
+  try {
+    execFileSync("powershell", ["-NoProfile", "-Command", stop], { stdio: "ignore" });
+  } catch {
+    // Nothing left to stop.
+  }
+} else chrome.kill();
 server.close();
 await new Promise((resolve) => setTimeout(resolve, 1500));
 try {
@@ -322,6 +337,54 @@ function centroid(d, from) {
   return weighted / sum;
 }
 
+/** The pitch heard in 0.3 s from `from`, as a MIDI note: the fundamental
+ * whose harmonics best explain the spectrum (subharmonic summation, as
+ * samples.mjs hears the recordings). */
+function heardKey(d, from) {
+  const n = 16384;
+  const re = new Float64Array(n);
+  const im = new Float64Array(n);
+  const start = Math.round(from * RATE);
+  for (let i = 0; i < n; i++) re[i] = (d[start + i] ?? 0) * (0.5 - 0.5 * Math.cos((2 * Math.PI * i) / n));
+  for (let i = 1, j = 0; i < n; i++) {
+    let bit = n >> 1;
+    for (; j & bit; bit >>= 1) j ^= bit;
+    j ^= bit;
+    if (i < j) [re[i], re[j], im[i], im[j]] = [re[j], re[i], im[j], im[i]];
+  }
+  for (let size = 2; size <= n; size <<= 1) {
+    const step = (-2 * Math.PI) / size;
+    for (let i = 0; i < n; i += size) {
+      for (let k = 0; k < size / 2; k++) {
+        const wr = Math.cos(step * k), wi = Math.sin(step * k);
+        const a = i + k, b = a + size / 2;
+        const tr = re[b] * wr - im[b] * wi, ti = re[b] * wi + im[b] * wr;
+        re[b] = re[a] - tr; im[b] = im[a] - ti; re[a] += tr; im[a] += ti;
+      }
+    }
+  }
+  const mag = Float64Array.from({ length: n / 2 }, (_, k) => Math.hypot(re[k], im[k]));
+  const bin = RATE / n;
+  const near = (f) => {
+    const lo = Math.max(1, Math.floor((f * Math.pow(2, -1 / 24)) / bin));
+    const hi = Math.min(mag.length - 1, Math.ceil((f * Math.pow(2, 1 / 24)) / bin));
+    let m = 0;
+    for (let k = lo; k <= hi; k++) m = Math.max(m, mag[k]);
+    return m;
+  };
+  let best = 0;
+  let heard = 0;
+  for (let f0 = 25; f0 <= 4500; f0 *= Math.pow(2, 1 / 96)) {
+    let s = 0;
+    for (let k = 1; k <= 10 && k * f0 < RATE / 2; k++) s += Math.pow(0.84, k - 1) * near(k * f0);
+    if (s > best) {
+      best = s;
+      heard = f0;
+    }
+  }
+  return 69 + 12 * Math.log2(heard / 440);
+}
+
 let failed = false;
 const byVoice = new Map();
 for (const [i, r] of results.entries()) {
@@ -349,14 +412,20 @@ for (const [i, r] of results.entries()) {
   }
   const width = db(side / mid);
   const peak = 20 * Math.log10(both.reduce((m, v) => Math.max(m, Math.abs(v)), 0));
-  const m = { soft, loud, phrase, bright, width, peak, makeUp: r.makeUp, ms: r.playableMs, ...r.summary };
+  const heard = r.kit ? null : heardKey(l, 1.55);
+  const m = { soft, loud, phrase, bright, width, peak, heard, key: r.key, makeUp: r.makeUp, ms: r.playableMs, ...r.summary };
   (byVoice.get(r.voice) ?? byVoice.set(r.voice, {}).get(r.voice))[r.set === "now" ? "now" : "before"] = m;
   console.log(
     `${r.voice.padEnd(22)} ${r.set.slice(0, 7).padEnd(7)} ${String(m.regions).padStart(3)} regions ${(m.sample_bytes / 1e6).toFixed(0).padStart(3)} MB decoded, playable in ${String(m.ms).padStart(5)} ms, make-up ${m.makeUp?.toFixed(1) ?? "-"} dB | ` +
       `pp ${soft.toFixed(1)} ff ${loud.toFixed(1)} (${(loud - soft).toFixed(1)} dB), brightness ff/pp ${bright.toFixed(2)}, ` +
       `phrase ${phrase.toFixed(1)} LUFS, peak ${peak.toFixed(1)} dBFS, side ${width < -90 ? "none (mono)" : `${width.toFixed(1)} dB`}` +
-      (r.standIn ? `, stand-in decodes ${r.standIn.files} ${r.standIn.channels}-channel files, peak ${(20 * Math.log10(r.standIn.peak)).toFixed(1)} dBFS` : ", stand-in decodes nothing"),
+      (r.standIn ? `, stand-in decodes ${r.standIn.files} ${r.standIn.channels}-channel files, peak ${(20 * Math.log10(r.standIn.peak)).toFixed(1)} dBFS` : ", stand-in decodes nothing") +
+      (heard === null ? "" : `, key ${r.key} heard at ${heard.toFixed(2)}`),
   );
+  if (r.set === "now" && heard !== null && Math.abs(heard - r.key) > 1) {
+    console.log(`${r.voice}: key ${r.key} is heard at ${heard.toFixed(2)}, ${(heard - r.key).toFixed(2)} semitones off`);
+    failed = true;
+  }
 }
 for (const [voice, { now, before: was }] of byVoice) {
   if (!now) continue;

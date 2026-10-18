@@ -41,6 +41,17 @@ const RAW = "https://raw.githubusercontent.com/sgossner/VCSL/master/";
  * whose layers come at one level already (the grand's NORMALIZED.txt asks
  * that their gains be left alone).
  *
+ * Many sources name their files an octave below the pitch they sound (a
+ * file "C4" that sounds C5, 523 Hz): `shift` moves their notes up to the
+ * pitch heard, 12 semitones. Every voice is measured as it is made
+ * (`heardPitch`), and a layer whose notes do not sound within a semitone
+ * of where they are mapped stops the script; the lowest tubular bell, named
+ * C3, is left out, heard about a fourth above it in both layers. Several
+ * sources were tuned to A 430, 40 cents under the A 440 every other voice
+ * plays at: a voice whose
+ * layers agree that it sounds 20 cents or more off is tuned back to A 440
+ * (`tune` in its SFZ and its index.json).
+ *
  * Some sources have no dynamics to split: the harpsichord's High and Low
  * are its two registers at one pitch, the recorder's other folders a
  * vibrato and a staccato. The organ's Quiet and Loud are two registrations
@@ -48,19 +59,19 @@ const RAW = "https://raw.githubusercontent.com/sgossner/VCSL/master/";
  * harmonica's Accented notes are its loud layer. */
 const PITCHED = [
   { code: "piano.grand", dir: "Chordophones/Zithers/Grand Piano, Steinway B", include: /^NoSus\//, layers: [/_vl2_/, /_vl3_/, /_vl4_/], rr: /_rr(\d+)/, normalized: true, spacing: 4, seconds: [5, 2], fade: 1, format: "flac", range: [24, 103] },
-  { code: "piano.upright", dir: "Chordophones/Zithers/Upright Piano, Yamaha", include: /^Sustains\//, layers: [/_vl1_/, /_vl2_/, /_vl3_/], rr: /_rr(\d+)/, spacing: 4, seconds: [4, 1.8], fade: 1, format: "flac", range: [24, 103] },
-  { code: "keys.harpsichord", dir: "Chordophones/Zithers/Harpsichord, Flemish", include: /^Sustains\/(High|Low)\/.*_rr1\.wav$/, spacing: 4, seconds: [2.5, 1.2], fade: 0.8, format: "flac" },
-  { code: "organ.pipe", dir: "Aerophones/Edge-blown Aerophones/Pipe Organ", include: /^(Quiet|Loud)\//, layers: [/^Quiet\//, /^Loud\//], spacing: 6, seconds: 1.5, loop: true, format: "flac" },
+  { code: "piano.upright", dir: "Chordophones/Zithers/Upright Piano, Yamaha", include: /^Sustains\//, layers: [/_vl1_/, /_vl2_/, /_vl3_/], rr: /_rr(\d+)/, shift: 12, spacing: 4, seconds: [4, 1.8], fade: 1, format: "flac", range: [24, 103] },
+  { code: "keys.harpsichord", dir: "Chordophones/Zithers/Harpsichord, Flemish", include: /^Sustains\/(High|Low)\/.*_rr1\.wav$/, shift: 12, spacing: 4, seconds: [2.5, 1.2], fade: 0.8, format: "flac" },
+  { code: "organ.pipe", dir: "Aerophones/Edge-blown Aerophones/Pipe Organ", include: /^(Quiet|Loud)\//, layers: [/^Quiet\//, /^Loud\//], shift: 12, spacing: 6, seconds: 1.5, loop: true, format: "flac" },
   { code: "harp", dir: "Chordophones/Composite Chordophones/Concert Harp", include: /\.wav$/, layers: [/_(p|mp|mf)\d\.wav$/, /_f\d\.wav$/], spacing: 3, seconds: [4, 1.5], fade: 0.8, format: "flac" },
-  { code: "mallets.marimba", dir: "Idiophones/Struck Idiophones/Marimba", include: /\.wav$/, layers: [/_soft_/, /_med_/, /_loud_/], spacing: 3, seconds: [2.5, 1.2], fade: 0.5, format: "flac" },
-  { code: "mallets.vibraphone", dir: "Idiophones/Struck Idiophones/Vibraphone", include: /^Hard Mallets\/.*_Main\.wav$/, layers: [/_v2_/, /_v3_/], rr: /_rr(\d+)/, spacing: 3, seconds: [4, 2.5], fade: 1, format: "flac" },
-  { code: "mallets.xylophone", dir: "Idiophones/Struck Idiophones/Xylophone", include: /^Medium Mallets\/.*_far\.wav$/, layers: [/_pp_/, /_ff_/], spacing: 3, seconds: 1.5, fade: 0.4, format: "flac" },
-  { code: "mallets.glockenspiel", dir: "Idiophones/Struck Idiophones/Glockenspiel", include: /\.wav$/, layers: [/_soft_/, /_medium_/, /_loud_/], spacing: 3, seconds: [3, 2], fade: 0.8, format: "flac" },
-  { code: "bells.tubular", dir: "Idiophones/Struck Idiophones/Tubular Bells 1", include: /\.wav$/, layers: [/_(pp|p)_/, /_(f|ff|fff)_/], spacing: 4, seconds: 4, fade: 2, format: "flac" },
-  { code: "mallets.kalimba", dir: "Idiophones/Plucked Idiophones/Kalimba, Kenya", include: /\.wav$/, spacing: 2, seconds: [2.5, 1.5], fade: 0.8, format: "flac" },
-  { code: "harmonica", dir: "Aerophones/Free Aerophones/Harmonica-Hohner-Super64", include: /^Sustains\/(Normal|Accented)\//, layers: [/\/Normal\//, /\/Accented\//], spacing: 3, seconds: 1.2, loop: true, format: "flac" },
-  { code: "recorder.alto", dir: "Aerophones/Edge-blown Aerophones/Baroque Alto Recorder", include: /^Sustain\//, spacing: 2, seconds: 1.5, loop: true, format: "flac" },
-  { code: "sax.tenor", dir: "Aerophones/Reed Aerophones/Tenor Saxophone", include: /^Non-Vibrato\//, layers: [/_vl2_/, /_vl3_/], rr: /_rr(\d+)/, spacing: 3, seconds: 1.1, loop: true, format: "flac" },
+  { code: "mallets.marimba", dir: "Idiophones/Struck Idiophones/Marimba", include: /\.wav$/, layers: [/_soft_/, /_med_/, /_loud_/], shift: 12, spacing: 3, seconds: [2.5, 1.2], fade: 0.5, format: "flac" },
+  { code: "mallets.vibraphone", dir: "Idiophones/Struck Idiophones/Vibraphone", include: /^Hard Mallets\/.*_Main\.wav$/, layers: [/_v2_/, /_v3_/], rr: /_rr(\d+)/, shift: 12, spacing: 3, seconds: [4, 2.5], fade: 1, format: "flac" },
+  { code: "mallets.xylophone", dir: "Idiophones/Struck Idiophones/Xylophone", include: /^Medium Mallets\/.*_far\.wav$/, layers: [/_pp_/, /_ff_/], shift: 12, spacing: 3, seconds: 1.5, fade: 0.4, format: "flac" },
+  { code: "mallets.glockenspiel", dir: "Idiophones/Struck Idiophones/Glockenspiel", include: /\.wav$/, layers: [/_soft_/, /_medium_/, /_loud_/], shift: 12, spacing: 3, seconds: [3, 2], fade: 0.8, format: "flac" },
+  { code: "bells.tubular", dir: "Idiophones/Struck Idiophones/Tubular Bells 1", include: /\.wav$/, layers: [/_(pp|p)_/, /_(f|ff|fff)_/], shift: 12, spacing: 4, seconds: 4, fade: 2, format: "flac", range: [64, 127] },
+  { code: "mallets.kalimba", dir: "Idiophones/Plucked Idiophones/Kalimba, Kenya", include: /\.wav$/, shift: 12, spacing: 2, seconds: [2.5, 1.5], fade: 0.8, format: "flac" },
+  { code: "harmonica", dir: "Aerophones/Free Aerophones/Harmonica-Hohner-Super64", include: /^Sustains\/(Normal|Accented)\//, layers: [/\/Normal\//, /\/Accented\//], shift: 12, spacing: 3, seconds: 1.2, loop: true, format: "flac" },
+  { code: "recorder.alto", dir: "Aerophones/Edge-blown Aerophones/Baroque Alto Recorder", include: /^Sustain\//, shift: 12, spacing: 2, seconds: 1.5, loop: true, format: "flac" },
+  { code: "sax.tenor", dir: "Aerophones/Reed Aerophones/Tenor Saxophone", include: /^Non-Vibrato\//, layers: [/_vl2_/, /_vl3_/], rr: /_rr(\d+)/, shift: 12, spacing: 3, seconds: 1.1, loop: true, format: "flac" },
 ];
 
 /** The acoustic kit: each drum the language names, with its dynamics and
@@ -399,6 +410,123 @@ function velocities(count, l) {
 /** The layer an unmarked note (mf, 80) plays, which the stand-in plays. */
 const mfLayer = (count) => [...SPLITS[count], 127].findIndex((t) => 80 <= t);
 
+/** How many semitones a layer's notes sound above their names. */
+const shiftOf = (v) => v.shift ?? 0;
+
+/** The magnitudes of a stretch's spectrum, Hann-windowed (a radix-2 FFT;
+ * the length is a power of two). */
+function magnitudes(x) {
+  const n = x.length;
+  const re = Float64Array.from(x, (v, i) => v * (0.5 - 0.5 * Math.cos((2 * Math.PI * i) / n)));
+  const im = new Float64Array(n);
+  for (let i = 1, j = 0; i < n; i++) {
+    let bit = n >> 1;
+    for (; j & bit; bit >>= 1) j ^= bit;
+    j ^= bit;
+    if (i < j) {
+      [re[i], re[j]] = [re[j], re[i]];
+      [im[i], im[j]] = [im[j], im[i]];
+    }
+  }
+  for (let len = 2; len <= n; len <<= 1) {
+    const half = len >> 1;
+    const wr = Math.cos((-2 * Math.PI) / len);
+    const wi = Math.sin((-2 * Math.PI) / len);
+    for (let i = 0; i < n; i += len) {
+      let cr = 1;
+      let ci = 0;
+      for (let k = 0; k < half; k++) {
+        const a = i + k;
+        const b = a + half;
+        const tr = re[b] * cr - im[b] * ci;
+        const ti = re[b] * ci + im[b] * cr;
+        re[b] = re[a] - tr;
+        im[b] = im[a] - ti;
+        re[a] += tr;
+        im[a] += ti;
+        const t = cr * wr - ci * wi;
+        ci = cr * wi + ci * wr;
+        cr = t;
+      }
+    }
+  }
+  return Float64Array.from({ length: n / 2 }, (_, k) => Math.hypot(re[k], im[k]));
+}
+
+/** The pitch a recording is heard at, as a MIDI note with cents, 50 ms
+ * in: the fundamental whose harmonics best explain its spectrum
+ * (subharmonic summation, Hermes 1988). Unlike an autocorrelation it hears
+ * the strike note of a bell or a bar, whose partials are not harmonics,
+ * and the organ's main stop over a weaker one an octave below it. It hears
+ * the grand piano, named right, at its names, within 0.2 of a semitone. */
+function heardPitch(channels, rate) {
+  const start = Math.round(rate * 0.05);
+  let n = 16384;
+  while (n > 2048 && start + n > channels[0].length) n >>= 1;
+  let x = null;
+  let energy = -1;
+  for (const c of channels) {
+    const s = c.subarray(start, start + n);
+    if (s.length < n) continue;
+    const e = s.reduce((a, v) => a + v * v, 0);
+    if (e > energy) {
+      energy = e;
+      x = s;
+    }
+  }
+  if (!x) return null;
+  const mag = magnitudes(x);
+  const bin = rate / n;
+  // The strongest bin within a quarter tone of f.
+  const near = (f) => {
+    const lo = Math.max(1, Math.floor((f * Math.pow(2, -1 / 24)) / bin));
+    const hi = Math.min(mag.length - 1, Math.ceil((f * Math.pow(2, 1 / 24)) / bin));
+    let m = 0;
+    for (let k = lo; k <= hi; k++) m = Math.max(m, mag[k]);
+    return m;
+  };
+  let best = 0;
+  let heard = 0;
+  for (let f0 = 25; f0 <= 4500; f0 *= Math.pow(2, 1 / 48)) {
+    let s = 0;
+    for (let k = 1; k <= 10 && k * f0 < rate / 2; k++) s += Math.pow(0.84, k - 1) * near(k * f0);
+    if (s > best) {
+      best = s;
+      heard = f0;
+    }
+  }
+  // Then finer, around the best.
+  const coarse = heard;
+  for (let f0 = coarse * Math.pow(2, -1 / 48); f0 <= coarse * Math.pow(2, 1 / 48); f0 *= Math.pow(2, 1 / 1200)) {
+    let s = 0;
+    for (let k = 1; k <= 10 && k * f0 < rate / 2; k++) s += Math.pow(0.84, k - 1) * near(k * f0);
+    if (s > best) {
+      best = s;
+      heard = f0;
+    }
+  }
+  return 69 + 12 * Math.log2(heard / 440);
+}
+
+const median = (list) => [...list].sort((a, b) => a - b)[Math.floor(list.length / 2)];
+
+/** The cents that bring a voice to A 440: when its notes sound 20 cents
+ * or more off, every layer agrees, within 30 cents, on how far, and in
+ * every layer at least 70% of the notes were heard within a semitone of
+ * where they are mapped. Where the layers of one recorded instrument
+ * disagree, or a layer was heard here and there (a bell struck softly),
+ * what is off is the measure, not the instrument. 0 when it plays in tune. */
+function tuneOf(heard) {
+  const off = median(heard.map((h) => h.heard - h.note));
+  const layers = [...new Set(heard.map((h) => h.layer))].map((l) => median(heard.filter((h) => h.layer === l).map((h) => h.heard - h.note)));
+  const steady = [...new Set(heard.map((h) => h.layer))].every((l) => {
+    const here = heard.filter((h) => h.layer === l);
+    return here.filter((h) => Math.abs(h.heard - h.note) <= 1).length >= 0.7 * here.length;
+  });
+  const agree = steady && Math.max(...layers) - Math.min(...layers) <= 0.3;
+  return agree && Math.abs(off) >= 0.2 ? -Math.round(off * 100) : 0;
+}
+
 /** The recordings of a voice, or of a drum, that `include` takes: their
  * note, their layer and their take, in that order. A note's takes in a
  * layer are numbered from 1 in the order `rr` finds them, at most `takes`
@@ -409,7 +537,11 @@ function recordingsOf(files, v, noteOf) {
     .filter((f) => f.path.startsWith(v.dir + "/"))
     .map((f) => ({ ...f, rel: f.path.slice(v.dir.length + 1) }))
     .filter((f) => v.include.test(f.rel) && f.rel.endsWith(".wav"))
-    .map((f) => ({ ...f, note: noteOf(f.rel), layer: layers.findIndex((re) => re.test(f.rel)), turn: v.rr ? Number(f.rel.match(v.rr)?.[1] || 1) : 1 }))
+    .map((f) => ({ ...f, layer: layers.findIndex((re) => re.test(f.rel)), turn: v.rr ? Number(f.rel.match(v.rr)?.[1] || 1) : 1 }))
+    .map((f) => {
+      const named = noteOf(f.rel);
+      return { ...f, note: named === null ? null : named + shiftOf(v) };
+    })
     .filter((f) => f.note !== null && f.layer >= 0 && (!v.range || (f.note >= v.range[0] && f.note <= v.range[1])))
     .sort((a, b) => a.note - b.note || a.layer - b.layer || a.turn - b.turn || a.rel.localeCompare(b.rel))
     // Takes that are not round robins (a second take of a note): the first.
@@ -463,8 +595,8 @@ async function prepare(picked, v, secondsAt) {
 /** A layered voice as SFZ: each layer a group of velocities, its notes
  * covering the keys nearest to them, round robins taking turns, a held
  * note going round its loop (`loop_end` is the loop's last frame). */
-function layeredSfz(layers) {
-  const lines = ["// Made by Aratu's web/scripts/samples.mjs from VCSL (CC0).", "<control> default_path=./", "<global> ampeg_release=0.12"];
+function layeredSfz(layers, tune) {
+  const lines = ["// Made by Aratu's web/scripts/samples.mjs from VCSL (CC0).", "<control> default_path=./", `<global> ampeg_release=0.12${tune ? ` tune=${tune}` : ""}`];
   layers.forEach((notes, l) => {
     const [lovel, hivel] = velocities(layers.length, l);
     lines.push(`<group> lovel=${lovel} hivel=${hivel}`);
@@ -525,6 +657,22 @@ async function pitched(files, v) {
     return v.seconds[0] + (v.seconds[1] - v.seconds[0]) * t;
   };
   const { shaped, rate, gainOf, gainsDb } = await prepare(picked, v, secondsAt);
+  // Each note's first take in each layer, heard: the median of a layer must
+  // be within a semitone of its notes, or their names are off (see `shift`).
+  const heard = shaped
+    .filter((s) => s.f.take === 1)
+    .map((s) => ({ note: s.f.note, layer: s.f.layer, heard: Math.round(heardPitch(s.channels, rate) * 100) / 100 }));
+  for (let l = 0; l < (v.layers ?? [null]).length; l++) {
+    const off = heard
+      .filter((h) => h.layer === l)
+      .map((h) => h.heard - h.note)
+      .sort((a, b) => a - b);
+    const median = off[Math.floor(off.length / 2)];
+    if (!(Math.abs(median) <= 1)) {
+      throw new Error(`${v.code}: layer ${l + 1} sounds ${median.toFixed(2)} semitones from the notes it is mapped to; its files are named off (set its shift)`);
+    }
+  }
+  const tune = tuneOf(heard);
   const dir = join(out, v.code);
   mkdirSync(dir, { recursive: true });
   const ext = v.format === "flac" ? "flac" : "ogg";
@@ -543,9 +691,9 @@ async function pitched(files, v) {
     const { file, loop } = n.takes[0];
     return loop ? { note: n.note, file, loop: [loop[0] / rate, loop[1] / rate] } : { note: n.note, file };
   });
-  writeFileSync(join(dir, "index.json"), JSON.stringify({ kind: "pitched", source: v.dir, notes: mf }));
-  writeFileSync(join(dir, "voice.sfz"), layeredSfz(layers));
-  return { code: v.code, files: shaped.length, bytes, sources: picked.map((f) => f.path), rate, channels: shaped[0].channels.length, gainsDb, layers: layers.map((l) => l.length) };
+  writeFileSync(join(dir, "index.json"), JSON.stringify({ kind: "pitched", source: v.dir, notes: mf, tune, heard }));
+  writeFileSync(join(dir, "voice.sfz"), layeredSfz(layers, tune));
+  return { code: v.code, files: shaped.length, bytes, sources: picked.map((f) => f.path), rate, channels: shaped[0].channels.length, gainsDb, layers: layers.map((l) => l.length), tune };
 }
 
 /** The kit, each drum with every dynamic layer and round robin it was
@@ -594,7 +742,9 @@ function madeOf(v, r) {
   const format = v.format === "flac" ? "FLAC" : `Ogg Vorbis at quality ${v.format.slice(1)}`;
   const turns = r.files > r.layers.reduce((a, b) => a + b, 0) ? ", with the round robins recorded taking turns" : "";
   const held = v.loop ? ", each looped where it holds steady" : "";
-  return `${r.rate / 1000} kHz, ${r.channels === 2 ? "stereo" : "mono"}, ${format}: ${layers} of ${r.layers.join(", ")} notes${turns}${held}, ${r.files} recordings.\n\n`;
+  const named = v.shift ? " Its files are named an octave below the pitch they sound, and are mapped to the pitch heard." : "";
+  const tuned = r.tune ? ` It was tuned ${Math.abs(r.tune)} cents ${r.tune > 0 ? "under" : "over"} A 440, and is tuned back to it.` : "";
+  return `${r.rate / 1000} kHz, ${r.channels === 2 ? "stereo" : "mono"}, ${format}: ${layers} of ${r.layers.join(", ")} notes${turns}${held}, ${r.files} recordings.${named}${tuned}\n\n`;
 }
 
 /** What SOURCES.md says of how the kit was made. */

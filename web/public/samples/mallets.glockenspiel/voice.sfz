@@ -2,22 +2,22 @@
 <control> default_path=./
 <global> ampeg_release=0.12
 <group> lovel=0 hivel=59
-<region> sample=67_v1.flac pitch_keycenter=67 lokey=0 hikey=69
-<region> sample=72_v1.flac pitch_keycenter=72 lokey=70 hikey=75
-<region> sample=79_v1.flac pitch_keycenter=79 lokey=76 hikey=81
+<region> sample=79_v1.flac pitch_keycenter=79 lokey=0 hikey=81
 <region> sample=84_v1.flac pitch_keycenter=84 lokey=82 hikey=87
 <region> sample=91_v1.flac pitch_keycenter=91 lokey=88 hikey=93
-<region> sample=96_v1.flac pitch_keycenter=96 lokey=94 hikey=127
+<region> sample=96_v1.flac pitch_keycenter=96 lokey=94 hikey=99
+<region> sample=103_v1.flac pitch_keycenter=103 lokey=100 hikey=105
+<region> sample=108_v1.flac pitch_keycenter=108 lokey=106 hikey=127
 <group> lovel=60 hivel=95
-<region> sample=67_v2.flac pitch_keycenter=67 lokey=0 hikey=69
-<region> sample=72_v2.flac pitch_keycenter=72 lokey=70 hikey=75
-<region> sample=79_v2.flac pitch_keycenter=79 lokey=76 hikey=81
+<region> sample=79_v2.flac pitch_keycenter=79 lokey=0 hikey=81
 <region> sample=84_v2.flac pitch_keycenter=84 lokey=82 hikey=87
 <region> sample=91_v2.flac pitch_keycenter=91 lokey=88 hikey=93
-<region> sample=96_v2.flac pitch_keycenter=96 lokey=94 hikey=127
+<region> sample=96_v2.flac pitch_keycenter=96 lokey=94 hikey=99
+<region> sample=103_v2.flac pitch_keycenter=103 lokey=100 hikey=105
+<region> sample=108_v2.flac pitch_keycenter=108 lokey=106 hikey=127
 <group> lovel=96 hivel=127
-<region> sample=67_v3.flac pitch_keycenter=67 lokey=0 hikey=69
-<region> sample=72_v3.flac pitch_keycenter=72 lokey=70 hikey=75
-<region> sample=79_v3.flac pitch_keycenter=79 lokey=76 hikey=81
-<region> sample=84_v3.flac pitch_keycenter=84 lokey=82 hikey=90
-<region> sample=96_v3.flac pitch_keycenter=96 lokey=91 hikey=127
+<region> sample=79_v3.flac pitch_keycenter=79 lokey=0 hikey=81
+<region> sample=84_v3.flac pitch_keycenter=84 lokey=82 hikey=87
+<region> sample=91_v3.flac pitch_keycenter=91 lokey=88 hikey=93
+<region> sample=96_v3.flac pitch_keycenter=96 lokey=94 hikey=102
+<region> sample=108_v3.flac pitch_keycenter=108 lokey=103 hikey=127

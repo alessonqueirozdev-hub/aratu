@@ -11,6 +11,8 @@ import { detailOf, limited } from "./download";
 interface PitchedIndex {
   kind: "pitched";
   notes: { note: number; file: string; loop?: [number, number] }[];
+  /** Cents that bring a voice recorded at another A to A 440. */
+  tune?: number;
 }
 
 interface KitIndex {
@@ -30,6 +32,8 @@ export interface Loaded {
   zones: Zone[];
   /** Kit: one recording per drum name. */
   hits: Map<string, AudioBuffer>;
+  /** Pitched: cents that bring the recordings to A 440. */
+  tune: number;
 }
 
 export class Sampler {
@@ -103,13 +107,13 @@ export class Sampler {
       await Promise.all(
         Object.entries(index.hits).map(async ([name, file]) => hits.set(name, await this.buffer(`${dir}/${file}`))),
       );
-      return { kind: "kit", zones: [], hits };
+      return { kind: "kit", zones: [], hits, tune: 0 };
     }
     const zones = await Promise.all(
       index.notes.map(async (n) => ({ note: n.note, loop: n.loop, buffer: await this.buffer(`${dir}/${n.file}`) })),
     );
     zones.sort((a, b) => a.note - b.note);
-    return { kind: "pitched", zones, hits: new Map() };
+    return { kind: "pitched", zones, hits: new Map(), tune: index.tune ?? 0 };
   }
 
   /** The recording nearest to a note, and how far to retune it. */
@@ -117,6 +121,6 @@ export class Sampler {
     if (v.zones.length === 0) return null;
     let best = v.zones[0];
     for (const z of v.zones) if (Math.abs(z.note - note) < Math.abs(best.note - note)) best = z;
-    return { zone: best, rate: Math.pow(2, (note - best.note) / 12) };
+    return { zone: best, rate: Math.pow(2, (note - best.note) / 12 + v.tune / 1200) };
   }
 }

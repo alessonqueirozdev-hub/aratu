@@ -5,8 +5,11 @@
 // there; in a voice made from its layers the layers share out the
 // velocities, 0 to 127, on every key it plays (every key of a pitched
 // voice, each drum's key in a kit), round robins take turns in full, the
-// FLAC and Ogg Vorbis files keep their source's rate and channels, and a
-// voice that sustains loops inside its recordings.
+// FLAC and Ogg Vorbis files keep their source's rate and channels, a
+// voice that sustains loops inside its recordings, and a pitched voice's
+// notes sound where they are mapped (the pitches samples.mjs heard, with
+// the voice's `tune`, within a semitone for every layer and, for a voice
+// that is tuned, within 25 cents of A 440 overall).
 import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -105,6 +108,29 @@ for (const code of voices) {
   const kit = typeof voice.layers === "object";
   const keys = kit ? Object.keys(voice.layers).map(Number) : Array.from({ length: 128 }, (_, k) => k);
   if (kit) assert.deepEqual([...new Set(all.map((r) => Number(r.key)))].sort((a, b) => a - b), [...keys].sort((a, b) => a - b), `${code}: its drums' keys`);
+  if (!kit) {
+    // Each layer's notes sound where they are mapped: many VCSL files are
+    // named an octave below what they sound.
+    assert.ok(Array.isArray(index.heard) && index.heard.length > 0, `${code}: index.json has no pitches heard`);
+    for (let l = 0; l < voice.layers; l++) {
+      const off = index.heard
+        .filter((h) => h.layer === l)
+        .map((h) => h.heard + (index.tune ?? 0) / 100 - h.note)
+        .sort((a, b) => a - b);
+      assert.ok(off.length > 0, `${code}: layer ${l + 1} was not heard`);
+      const median = off[Math.floor(off.length / 2)];
+      assert.ok(Math.abs(median) <= 1, `${code}: layer ${l + 1} sounds ${median.toFixed(2)} semitones from its notes`);
+    }
+    if (index.tune) {
+      // A voice recorded at another A is brought to A 440, in its SFZ too.
+      const all = index.heard.map((h) => h.heard + index.tune / 100 - h.note).sort((a, b) => a - b);
+      const median = all[Math.floor(all.length / 2)];
+      assert.ok(Math.abs(median) <= 0.25, `${code}: tuned ${index.tune} cents, it is still ${median.toFixed(2)} semitones off`);
+      assert.match(sfz, new RegExp(`<global>[^\\n]*tune=${index.tune}\\b`), `${code}: its SFZ is not tuned ${index.tune} cents`);
+    }
+    const heard = new Set(index.heard.map((h) => h.note));
+    for (const r of all) assert.ok(heard.has(Number(r.pitch_keycenter)), `${code}: ${r.sample} is on ${r.pitch_keycenter}, a note that was not heard`);
+  }
   for (const key of keys) {
     const here = all.filter((r) => Number(r.lokey) <= key && key <= Number(r.hikey));
     const layers = kit ? voice.layers[key] : voice.layers;

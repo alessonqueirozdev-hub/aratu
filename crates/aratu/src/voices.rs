@@ -124,6 +124,9 @@ const CHORD: &str = "| c4 e4 g4 [c5 g4] |";
 const RUN: &str = "| c4 e4 g4 c5 |";
 const LOW: &str = "| c2 _ g2 c3 |";
 const LONG: &str = "| c4 _ g4 _ |";
+/// For the instruments that start above middle C (the xylophone from G4, the
+/// alto recorder from F4): they play at the pitch written.
+const HIGH: &str = "| c5 e5 g5 c6 |";
 
 pub const VOICES: &[Voice] = &[
     v(
@@ -219,14 +222,14 @@ pub const VOICES: &[Voice] = &[
         Mallets,
         Sampled,
         ["Xilofone", "Xilófono", "Xylophone"],
-        RUN,
+        HIGH,
     ),
     v(
         "mallets.glockenspiel",
         Mallets,
         Sampled,
         ["Glockenspiel", "Glockenspiel", "Glockenspiel"],
-        "| c5 e5 g5 c6 |",
+        "| c6 e6 g6 c7 |",
     ),
     v(
         "mallets.kalimba",
@@ -318,7 +321,7 @@ pub const VOICES: &[Voice] = &[
         Winds,
         Sampled,
         ["Flauta doce", "Flauta dulce", "Recorder"],
-        RUN,
+        HIGH,
     ),
     v(
         "synth.saw",

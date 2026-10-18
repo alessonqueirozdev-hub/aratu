@@ -78,8 +78,16 @@ The voices at the end were recorded for Aratu.
 
 ## piano.upright
 
-44.1 kHz, stereo, FLAC: 3 dynamic layers (velocities 0–59, 60–95, 96–127) of 10, 11, 11 notes, with the round robins recorded taking turns, 63 recordings.
+44.1 kHz, stereo, FLAC: 3 dynamic layers (velocities 0–59, 60–95, 96–127) of 12, 13, 13 notes, with the round robins recorded taking turns, 71 recordings. Its files are named an octave below the pitch they sound, and are mapped to the pitch heard.
 
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C0_vl1_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C0_vl1_rr2.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C0_vl2_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C0_vl3_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C0_vl3_rr2.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G0_vl1_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G0_vl2_rr1.wav
+- Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_G0_vl3_rr1.wav
 - Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C1_vl1_rr1.wav
 - Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C1_vl2_rr1.wav
 - Chordophones/Zithers/Upright Piano, Yamaha/Sustains/Upright1_Sus_C1_vl2_rr2.wav
@@ -146,7 +154,7 @@ The voices at the end were recorded for Aratu.
 
 ## keys.harpsichord
 
-44.1 kHz, stereo, FLAC: one dynamic layer of 17 notes, 17 recordings.
+44.1 kHz, stereo, FLAC: one dynamic layer of 17 notes, 17 recordings. Its files are named an octave below the pitch they sound, and are mapped to the pitch heard. It was tuned 40 cents under A 440, and is tuned back to it.
 
 - Chordophones/Zithers/Harpsichord, Flemish/Sustains/Low/HarpsiRH_Low_Far_F#0_rr1.wav
 - Chordophones/Zithers/Harpsichord, Flemish/Sustains/Low/HarpsiRH_Low_Far_A#0_rr1.wav
@@ -168,7 +176,7 @@ The voices at the end were recorded for Aratu.
 
 ## organ.pipe
 
-44.1 kHz, stereo, FLAC: 2 dynamic layers (velocities 0–88, 89–127) of 11, 11 notes, each looped where it holds steady, 22 recordings.
+44.1 kHz, stereo, FLAC: 2 dynamic layers (velocities 0–88, 89–127) of 11, 11 notes, each looped where it holds steady, 22 recordings. Its files are named an octave below the pitch they sound, and are mapped to the pitch heard. It was tuned 40 cents under A 440, and is tuned back to it.
 
 - Aerophones/Edge-blown Aerophones/Pipe Organ/Quiet/NT5_Man3Quiet_C1_rr1.wav
 - Aerophones/Edge-blown Aerophones/Pipe Organ/Loud/Rode_Man3Open_C1.wav
@@ -243,7 +251,7 @@ The voices at the end were recorded for Aratu.
 
 ## mallets.marimba
 
-44.1 kHz, stereo, FLAC: 3 dynamic layers (velocities 0–59, 60–95, 96–127) of 10, 10, 10 notes, 30 recordings.
+44.1 kHz, stereo, FLAC: 3 dynamic layers (velocities 0–59, 60–95, 96–127) of 10, 10, 10 notes, 30 recordings. Its files are named an octave below the pitch they sound, and are mapped to the pitch heard.
 
 - Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_F1_soft_01.wav
 - Idiophones/Struck Idiophones/Marimba/Marimba_hit_Outrigger_F1_med_01.wav
@@ -278,7 +286,7 @@ The voices at the end were recorded for Aratu.
 
 ## mallets.vibraphone
 
-44.1 kHz, stereo, FLAC: 2 dynamic layers (velocities 0–88, 89–127) of 11, 11 notes, 22 recordings.
+44.1 kHz, stereo, FLAC: 2 dynamic layers (velocities 0–88, 89–127) of 11, 11 notes, 22 recordings. Its files are named an octave below the pitch they sound, and are mapped to the pitch heard.
 
 - Idiophones/Struck Idiophones/Vibraphone/Hard Mallets/Vibes_hard_F2_v2_rr1_Main.wav
 - Idiophones/Struck Idiophones/Vibraphone/Hard Mallets/Vibes_hard_F2_v3_rr1_Main.wav
@@ -305,7 +313,7 @@ The voices at the end were recorded for Aratu.
 
 ## mallets.xylophone
 
-44.1 kHz, stereo, FLAC: 2 dynamic layers (velocities 0–88, 89–127) of 8, 8 notes, 16 recordings.
+44.1 kHz, stereo, FLAC: 2 dynamic layers (velocities 0–88, 89–127) of 8, 8 notes, 16 recordings. Its files are named an octave below the pitch they sound, and are mapped to the pitch heard. It was tuned 25 cents under A 440, and is tuned back to it.
 
 - Idiophones/Struck Idiophones/Xylophone/Medium Mallets/Xylo_Medium_G3_pp_01_far.wav
 - Idiophones/Struck Idiophones/Xylophone/Medium Mallets/Xylo_Medium_G3_ff_01_far.wav
@@ -326,7 +334,7 @@ The voices at the end were recorded for Aratu.
 
 ## mallets.glockenspiel
 
-44.1 kHz, stereo, FLAC: 3 dynamic layers (velocities 0–59, 60–95, 96–127) of 6, 6, 5 notes, 17 recordings.
+44.1 kHz, stereo, FLAC: 3 dynamic layers (velocities 0–59, 60–95, 96–127) of 6, 6, 5 notes, 17 recordings. Its files are named an octave below the pitch they sound, and are mapped to the pitch heard.
 
 - Idiophones/Struck Idiophones/Glockenspiel/glock_soft_G4_01.wav
 - Idiophones/Struck Idiophones/Glockenspiel/glock_medium_G4_01.wav
@@ -348,10 +356,8 @@ The voices at the end were recorded for Aratu.
 
 ## bells.tubular
 
-44.1 kHz, stereo, FLAC: 2 dynamic layers (velocities 0–88, 89–127) of 5, 5 notes, 10 recordings.
+44.1 kHz, stereo, FLAC: 2 dynamic layers (velocities 0–88, 89–127) of 4, 4 notes, 8 recordings. Its files are named an octave below the pitch they sound, and are mapped to the pitch heard.
 
-- Idiophones/Struck Idiophones/Tubular Bells 1/chimes_C3_pp_rr2.wav
-- Idiophones/Struck Idiophones/Tubular Bells 1/chimes_C3_f_rr1.wav
 - Idiophones/Struck Idiophones/Tubular Bells 1/chimes_E3_pp_rr1.wav
 - Idiophones/Struck Idiophones/Tubular Bells 1/chimes_E3_ff_rr2.wav
 - Idiophones/Struck Idiophones/Tubular Bells 1/chimes_G#3_p_rr2.wav
@@ -363,7 +369,7 @@ The voices at the end were recorded for Aratu.
 
 ## mallets.kalimba
 
-48 kHz, stereo, FLAC: one dynamic layer of 11 notes, 11 recordings.
+48 kHz, stereo, FLAC: one dynamic layer of 11 notes, 11 recordings. Its files are named an octave below the pitch they sound, and are mapped to the pitch heard.
 
 - Idiophones/Plucked Idiophones/Kalimba, Kenya/Mbira6_Normal_MainSpirit_B2_k8_vl3_rr2.wav
 - Idiophones/Plucked Idiophones/Kalimba, Kenya/Mbira6_Normal_MainSpirit_C#3_k7_vl3_rr2.wav
@@ -379,7 +385,7 @@ The voices at the end were recorded for Aratu.
 
 ## harmonica
 
-44.1 kHz, mono, FLAC: 2 dynamic layers (velocities 0–88, 89–127) of 13, 13 notes, each looped where it holds steady, 26 recordings.
+44.1 kHz, mono, FLAC: 2 dynamic layers (velocities 0–88, 89–127) of 13, 13 notes, each looped where it holds steady, 26 recordings. Its files are named an octave below the pitch they sound, and are mapped to the pitch heard. It was tuned 40 cents under A 440, and is tuned back to it.
 
 - Aerophones/Free Aerophones/Harmonica-Hohner-Super64/Sustains/Normal/Hohner-Super64_Normal _C2.wav
 - Aerophones/Free Aerophones/Harmonica-Hohner-Super64/Sustains/Accented/Hohner-Super64_Accented_C2.wav
@@ -410,7 +416,7 @@ The voices at the end were recorded for Aratu.
 
 ## recorder.alto
 
-48 kHz, stereo, FLAC: one dynamic layer of 12 notes, each looped where it holds steady, 12 recordings.
+48 kHz, stereo, FLAC: one dynamic layer of 12 notes, each looped where it holds steady, 12 recordings. Its files are named an octave below the pitch they sound, and are mapped to the pitch heard. It was tuned 40 cents under A 440, and is tuned back to it.
 
 - Aerophones/Edge-blown Aerophones/Baroque Alto Recorder/Sustain/AltRecorder_Sus_F3_rr1_Main.wav
 - Aerophones/Edge-blown Aerophones/Baroque Alto Recorder/Sustain/AltRecorder_Sus_G#3_rr1_Main.wav
@@ -427,7 +433,7 @@ The voices at the end were recorded for Aratu.
 
 ## sax.tenor
 
-48 kHz, stereo, FLAC: 2 dynamic layers (velocities 0–88, 89–127) of 12, 12 notes, each looped where it holds steady, 24 recordings.
+48 kHz, stereo, FLAC: 2 dynamic layers (velocities 0–88, 89–127) of 12, 12 notes, each looped where it holds steady, 24 recordings. Its files are named an octave below the pitch they sound, and are mapped to the pitch heard. It was tuned 40 cents under A 440, and is tuned back to it.
 
 - Aerophones/Reed Aerophones/Tenor Saxophone/Non-Vibrato/BrettTenor_NV_Main_G#1_vl2_rr1.wav
 - Aerophones/Reed Aerophones/Tenor Saxophone/Non-Vibrato/BrettTenor_NV_Main_G#1_vl3_rr1.wav
