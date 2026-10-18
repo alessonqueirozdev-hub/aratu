@@ -21,5 +21,5 @@ Teaching, research, personal projects and performances need no commercial
 licence: the AGPL covers them, as long as its terms are kept.
 
 To ask for one, write to Alesson Lucas Oliveira de Queiroz at
-alessonqueirozqueiroz.dev@gmail.com, saying who you are, what you would
+alessonqueiroz.dev@gmail.com, saying who you are, what you would
 like to make, and how Aratu would be part of it.

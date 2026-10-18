@@ -20,4 +20,4 @@ Not without written permission:
 - using the mascot or the logo as the identity of something else;
 - suggesting that the author made, endorses or supports what he did not.
 
-To ask, write to alessonqueirozqueiroz.dev@gmail.com.
+To ask, write to alessonqueiroz.dev@gmail.com.
