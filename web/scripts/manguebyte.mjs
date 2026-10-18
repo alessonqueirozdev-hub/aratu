@@ -2,13 +2,13 @@
 // Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 // Brings Manguebyte's browser engine (crates/manguebyte-web) into the
 // editor: clones Manguebyte at a pinned commit, builds the WebAssembly
-// module and copies it, with the three JavaScript files it runs with and
+// module and copies it, with the four JavaScript files it runs with and
 // its licences, into public/manguebyte/. Run by hand when Manguebyte ships
 // something Aratu should play, then commit the result:
 //
 //   node scripts/manguebyte.mjs [commit]
 //
-// Manguebyte is MIT OR Apache-2.0, like Aratu.
+// Manguebyte is MIT OR Apache-2.0, which Aratu's AGPL can carry.
 
 import { execFileSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, rmSync, statSync, writeFileSync } from "node:fs";
@@ -22,7 +22,7 @@ const REPO = "https://github.com/alessonqueirozdev-hub/manguebyte.git";
 // sampled instrument playing as soon as its samples are decoded. Wave 5e:
 // the drum kits, the poly synth and the modelled mallets, bowed strings,
 // winds and choir.
-const COMMIT = process.argv[2] ?? "a1f369409eb285d4a1fccc2bdfbdb5cda86526f4";
+const COMMIT = process.argv[2] ?? "1eb07a3a7a10f46ffafe0baa34e6913e1561cb36";
 
 const web = join(dirname(fileURLToPath(import.meta.url)), "..");
 const cache = join(web, ".manguebyte-cache");
@@ -55,7 +55,7 @@ rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
 const crate = join(src, "crates", "manguebyte-web");
 cpSync(join(cache, "target", "wasm32-unknown-unknown", "release", "manguebyte_web.wasm"), join(out, "manguebyte_web.wasm"));
-for (const f of ["engine.js", "ring.js", "worklet.js"]) cpSync(join(crate, "js", f), join(out, f));
+for (const f of ["engine.js", "ring.js", "scope.js", "worklet.js"]) cpSync(join(crate, "js", f), join(out, f));
 for (const f of ["LICENSE-MIT", "LICENSE-APACHE"]) cpSync(join(crate, f), join(out, f));
 // Aratu's own types for the part of engine.js it uses.
 cpSync(join(web, "scripts", "manguebyte-engine.d.ts"), join(out, "engine.d.ts"));

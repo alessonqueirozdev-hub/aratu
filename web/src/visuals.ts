@@ -4,11 +4,14 @@
 // written: the part's wave, as an oscilloscope shows it, or its roll, the
 // notes of the bar passing under a playhead, a row for each pitch or drum.
 //
-// Manguebyte mixes the parts inside its engine and hands over the whole mix,
-// so a part's own sound cannot be measured yet: the wave is drawn from what
-// the part plays (each note's pitch, strength and length, a drum's kind),
-// held still on the lowest note as a scope holds a steady tone. The roll is
-// the piece's own events.
+// A part that Manguebyte plays draws its real sound: the engine keeps the
+// last frames each part put into the mix, after its effects (its part
+// scope), and the wave is held still on a rising zero crossing, about three
+// cycles of the lowest note across, as an oscilloscope's trigger holds a
+// steady tone. A drum's line, a part the stand-in plays, or an engine
+// without scopes draws the wave from what is played instead (each note's
+// pitch, strength and length, a drum's kind). The roll is the piece's own
+// events.
 
 import { type Range, StateEffect, StateField } from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView, WidgetType } from "@codemirror/view";
@@ -24,11 +27,15 @@ export interface Heard {
 export interface VisualSource {
   /** The audio clock, or null when not playing. */
   now(): number | null;
-  /** The bar sounding at \`now\`, with its start on the audio clock, and
+  /** The bar sounding at `now`, with its start on the audio clock, and
    * every event of it and of the bars around it. */
   sounding(now: number): { info: BarInfo; at: number; events: Heard[] } | null;
-  /** A part's sound (\`synth.saw\`, \`drums.808\`), for the wave's shape. */
+  /** A part's sound (`synth.saw`, `drums.808`), for the wave's shape. */
   voice(part: string): string;
+  /** A part's real sound, its latest frames, or null when it has none. */
+  scope(part: string): Float32Array | null;
+  /** The audio clock's sample rate. */
+  rate(): number;
 }
 
 const sources = new WeakMap<EditorView, VisualSource>();
@@ -141,7 +148,11 @@ function draw(): void {
     g.ctx.strokeStyle = color;
     g.ctx.fillStyle = color;
     if (c.dataset.kind === "roll") roll(g, bar, mine, now, color);
-    else wave(g, mine, now, source.voice(mine[0]?.event.part ?? target));
+    else {
+      const real = source.scope(target);
+      if (real) scope(g, real, source.rate(), mine, now);
+      else wave(g, mine, now, source.voice(mine[0]?.event.part ?? target));
+    }
   }
 }
 
@@ -173,7 +184,7 @@ function noise(t: number): number {
   return (n - Math.floor(n)) * 2 - 1;
 }
 
-/** How loud a note is, \`t\` seconds after it starts. */
+/** How loud a note is, `t` seconds after it starts. */
 function envelope(t: number, dur: number): number {
   if (t < 0) return 0;
   if (t < 0.006) return t / 0.006;
@@ -197,7 +208,7 @@ function shapeOf(voice: string): Shape {
   return rich;
 }
 
-/** A drum's sound at \`t\` seconds after the hit. */
+/** A drum's sound at `t` seconds after the hit. */
 function drumAt(drum: string, t: number, abs: number): number {
   if (t < 0) return 0;
   if (/kick|bd|alfaia|surdo|bombo|zabumba/.test(drum)) {
@@ -215,7 +226,7 @@ function drumAt(drum: string, t: number, abs: number): number {
 const freq = (note: number) => 440 * Math.pow(2, (note - 69) / 12);
 
 function wave(g: Sized, events: Heard[], now: number, voice: string): void {
-  const { ctx, w, h, dpr } = g;
+  const { w, dpr } = g;
   const live = events.filter((e) => e.at <= now && now < e.at + e.event.dur + 0.6);
   const notes = live.filter((e) => e.event.note !== undefined);
   // Held on the lowest note: about three of its cycles across.
@@ -245,11 +256,21 @@ function wave(g: Sized, events: Heard[], now: number, voice: string): void {
     ys[i] = s;
     peak = Math.max(peak, Math.abs(s));
   }
-  // The height follows the part's level, as a scope's gain is set to it:
-  // up at once, down slowly, and a quiet part stays small.
-  const held = Math.max(peak, (levels.get(g.ctx) ?? 0) * 0.94);
-  levels.set(g.ctx, held);
+  trace(g, ys, peak);
+}
+
+/** Each wave's height, held a little while. */
+const levels = new WeakMap<CanvasRenderingContext2D, number>();
+
+/** A wave across the drawing. Its height follows the part's level, as a
+ * scope's gain is set to it: up at once, down slowly, and a quiet part
+ * stays small. */
+function trace(g: Sized, ys: Float32Array, peak: number): void {
+  const { ctx, w, h, dpr } = g;
+  const held = Math.max(peak, (levels.get(ctx) ?? 0) * 0.94);
+  levels.set(ctx, held);
   const scale = 0.85 / Math.max(held, 0.12);
+  const steps = ys.length - 1;
   ctx.lineWidth = 1.6 * dpr;
   ctx.lineJoin = "round";
   ctx.beginPath();
@@ -262,8 +283,34 @@ function wave(g: Sized, events: Heard[], now: number, voice: string): void {
   ctx.stroke();
 }
 
-/** Each wave's height, held a little while. */
-const levels = new WeakMap<CanvasRenderingContext2D, number>();
+/** The part's real sound, from the engine's part scope. */
+function scope(g: Sized, samples: Float32Array, rate: number, events: Heard[], now: number): void {
+  const low = events
+    .filter((e) => e.event.note !== undefined && e.at <= now && now < e.at + e.event.dur + 0.3)
+    .reduce((a, e) => Math.min(a, e.event.note ?? 127), 128);
+  const f0 = low < 128 ? freq(low) : 0;
+  const span = f0 > 0 ? Math.min(0.04, Math.max(0.008, 3 / f0)) : 0.02;
+  const n = Math.min(samples.length - 2, Math.round(span * rate));
+  const period = Math.round(rate / (f0 > 0 ? f0 : 100));
+  // The trigger: the newest rising zero crossing that leaves room for the
+  // whole window after it.
+  let start = samples.length - n - 1;
+  for (let i = start, stop = Math.max(1, start - 2 * period); i >= stop; i--) {
+    if (samples[i - 1] < 0 && samples[i] >= 0) {
+      start = i;
+      break;
+    }
+  }
+  const steps = Math.max(2, Math.min(n, Math.floor(g.w / g.dpr)));
+  const ys = new Float32Array(steps + 1);
+  let peak = 0;
+  for (let i = 0; i <= steps; i++) {
+    const s = samples[start + Math.round((i / steps) * n)] ?? 0;
+    ys[i] = s;
+    peak = Math.max(peak, Math.abs(s));
+  }
+  trace(g, ys, peak);
+}
 
 // The roll.
 

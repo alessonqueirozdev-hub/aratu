@@ -71,7 +71,7 @@ function cellsOf(bar: GridBar, res: number, text: string): Cell[] {
 export function formatBar(cells: Cell[], beats: number, res: number, kind: string): string {
   const out: string[] = [];
   // A drum or a strum does not sustain: a rest after it sounds the same as
-  // a hold, so the shortest writing wins (\`b\`, not \`b-\`).
+  // a hold, so the shortest writing wins (`b`, not `b-`).
   const struck = kind === "drums" || kind === "strum";
   for (let b = 0; b < beats; b++) {
     const slice = cells.slice(b * res, (b + 1) * res);
@@ -320,8 +320,8 @@ export class RhythmMap {
       }
       if (!plays[hit.line].has(e.bar)) plays[hit.line].set(e.bar, hit.bar);
       if (!rowOf.has(hit.line)) {
-        // From the part on: \`intro.drums.bd\` goes in the row \`drums.bd\`,
-        // and \`intro\` is the section.
+        // From the part on: `intro.drums.bd` goes in the row `drums.bd`,
+        // and `intro` is the section.
         const words = e.line.split(".");
         const at = Math.max(0, words.indexOf(e.part));
         rowOf.set(hit.line, words.slice(at).join("."));

@@ -139,9 +139,10 @@ guitarra.eq.mid_freq = 900 Hz
 guitarra.valvula.drive = 12 dB
 ```
 
-A válvula é o drive do Manguebyte ajustado como uma válvula: a curva
-suave que arredonda os picos, um pouco de ganho e o volume trazido de
-volta. Os números dela são `valvula.drive` (de 0 a 24 dB), `valvula.output`
+A válvula é o drive do Manguebyte ajustado como uma válvula: uma curva
+que arredonda o alto da onda antes do baixo, como uma válvula faz, o que
+acrescenta os harmônicos pares que soam quentes, um pouco de ganho e o
+volume trazido de volta. Os números dela são `valvula.drive` (de 0 a 24 dB), `valvula.output`
 e `valvula.mix`. A curva ao lado dela mostra o quanto o som é achatado, e
 brilha mais quanto mais forte ela é tocada. Como a válvula e o drive são o
 mesmo estágio, uma cadeia usa um ou o outro.

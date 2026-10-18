@@ -750,8 +750,10 @@ wave as it plays, and a click on it shows the frequencies. A line with
 the name of a part or a line, a dot and `wave` (`bass.wave`) draws that
 part's wave under it; with `roll` (`drums.hh.roll`), the notes of the
 bar passing under a moving line, a row for each note or drum. A part's
-wave is drawn from the notes it plays, because Manguebyte hands over the
-parts already mixed; the drawings do not change the sound. The rhythm
+wave is its real sound after its effects, read from Manguebyte's scope of
+that part and held still on a rising zero crossing, about three cycles of
+the lowest note across; a drum line, or a part the stand-in plays, is
+drawn from the notes it plays. The drawings do not change the sound. The rhythm
 map, under the editor, shows the piece in time: a column for each bar,
 in the order it plays, with its section on top, and a row for each part;
 an orange line runs across it and it scrolls along. A piece that starts
@@ -853,13 +855,13 @@ in the same order, from the filter to the delay:
 | the part | `volume` (0 to 1), `pan` (-1 left to 1 right), `reverb.mix` (how much goes to the mix's reverb, 0 to 1) |
 | `highpass`, `lowpass` | `cutoff` (20 to 20000 Hz), `resonance` (0 to 1) |
 | `eq` | `low_gain`, `mid_gain`, `high_gain` (-24 to 24 dB), `low_freq`, `mid_freq`, `high_freq`, `mid_q` |
-| `drive` | `amount` (0 to 36 dB), `output`, `mix`, `shape` (0 smooth, 1 soft, 2 hard, 3 folded) |
+| `drive` | `amount` (0 to 36 dB), `output`, `mix`, `shape` (0 smooth, 1 soft, 2 hard, 3 folded, 4 tube) |
 | `bitcrush` | `bits` (1 to 16), `rate` (Hz), `mix` |
 | `compressor` | `threshold`, `ratio`, `attack`, `release`, `knee`, `makeup`, `mix` |
 | `chorus`, `flanger`, `phaser` | `mix`, `rate`, `depth`, and more: `voices`, `feedback`, `stages`… |
 | `tremolo`, `autopan` | `rate`, `depth`, `shape` (0 sine, 1 triangle, 2 square, 3 and 4 saw), `sync` (in beats) |
 | `delay` | `time` (in s or ms), `feedback`, `mix`, `damping`, `pingpong`, `sync` (in beats) |
-| `tube` (`valvula`) | `drive` (0 to 24 dB), `output`, `mix`: Manguebyte's drive as a valve, with the smooth curve; a chain has the tube or the drive |
+| `tube` (`valvula`) | `drive` (0 to 24 dB), `output`, `mix`: Manguebyte's drive with its tube curve (shape 4), which flattens the top of the wave sooner than the bottom and adds even harmonics; a chain has the tube or the drive |
 
 Beside `eq`, `tube`, `drive`, `lowpass` and `highpass` in a chain, the
 editor draws the effect's curve from the part's numbers: the response of

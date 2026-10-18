@@ -141,8 +141,10 @@ guitar.eq.mid_freq = 900 Hz
 guitar.tube.drive = 12 dB
 ```
 
-The tube is Manguebyte's drive set up as a valve: the smooth curve that
-rounds the peaks off, a little gain and the level brought back down. Its
+The tube is Manguebyte's drive set up as a valve: a curve that rounds the
+top of the wave off sooner than the bottom, as a valve does, which adds
+the even harmonics that sound warm, a little gain and the level brought
+back down. Its
 numbers are `tube.drive` (0 to 24 dB), `tube.output` and `tube.mix`. The
 curve beside it shows how much the sound is flattened, and glows the
 harder it is driven. The tube and the drive are the same stage, so a

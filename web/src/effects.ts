@@ -125,7 +125,7 @@ function transfer(kind: string, v: Values): (x: number) => number {
   const prefix = kind === "tube" ? "tube" : "drive";
   const gain = Math.pow(10, v(kind === "tube" ? "tube.drive" : "drive.amount") / 20);
   const mix = v(`${prefix}.mix`);
-  const shape = kind === "tube" ? 0 : Math.round(v("drive.shape"));
+  const shape = kind === "tube" ? 4 : Math.round(v("drive.shape"));
   const curve = (x: number) => {
     const g = x * gain;
     switch (shape) {
@@ -135,11 +135,14 @@ function transfer(kind: string, v: Values): (x: number) => number {
         return Math.max(-1, Math.min(1, g));
       case 3:
         return Math.sin(g);
+      case 4:
+        // Manguebyte's tube: zero and unity slope at rest, flatter above.
+        return 0.75 * (Math.tanh(1.5 * g + Math.LN2 / 2) - 1 / 3);
       default:
         return Math.tanh(g);
     }
   };
-  const top = Math.max(Math.abs(curve(1)), 1e-6);
+  const top = Math.max(Math.abs(curve(1)), Math.abs(curve(-1)), 1e-6);
   return (x) => (1 - mix) * x + (mix * curve(x)) / top;
 }
 

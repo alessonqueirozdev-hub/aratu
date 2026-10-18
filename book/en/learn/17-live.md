@@ -197,10 +197,12 @@ bass.wave
 ```
 
 The drawings do not change the sound: they show what each part does. The
-wave is drawn from the notes the part plays (the pitch, strength and
-length of each), because Manguebyte still hands over the parts already
-mixed. The real wave, the whole piece's, is on the display beside the
-bar; a click on it shows the frequencies, low on the left to high on the
+wave is the part's real sound, after its effects, as Manguebyte puts it
+into the mix: put a `drive` or a `lowpass` in its chain and watch the
+wave change. It is held still on about three cycles of the lowest note.
+A drum line (`drums.hh.wave`) is drawn from its hits instead, since the
+kit sounds as one part. The whole piece's wave is on the display beside
+the bar; a click on it shows the frequencies, low on the left to high on the
 right, as an equalizer does.
 
 ## Following the music

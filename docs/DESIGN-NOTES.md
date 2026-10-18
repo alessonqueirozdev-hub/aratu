@@ -1168,3 +1168,24 @@ drum-and-bass kit and a reese, a whistle lead and a Moog bass for G-funk,
 a string section under the waltz and the chillout melody, now on a flute),
 and a new one, `chamber`, plays a flute, a clarinet, a string trio and a
 choir.
+
+## A part's real wave, and the tube's own curve (18 October 2026)
+
+Manguebyte's wave 5f (commit 1eb07a3) keeps each part's last 4 096 frames
+after its effects, gain and pan, and its levels (`partScope`,
+`partLevels`). `bass.wave` now draws that: the engine reads the part's
+scope (from shared memory when the page is cross-origin isolated, by a
+message otherwise, one read in flight per part), averages the channels and
+holds the wave on the newest rising zero crossing that leaves room for
+about three cycles of the lowest sounding note. A drum line names part of
+a kit that sounds as one part, and a part the stand-in plays has no scope,
+so both are still drawn from their notes; so is everything when the module
+has no scopes (it rejects, and the editor stops asking).
+
+The tube is now the drive's own tube curve, shape 4:
+`3/4 (tanh(1.5x + ln(2)/2) - 1/3)`, a tanh biased a third of the way up,
+so the top of the wave flattens before the bottom and it gains even
+harmonics, with unity slope at rest and a 5 Hz high-pass after it for the
+offset. The curve drawn beside `tube` is the same function, and
+`drive.shape = 4` gives it to a plain drive. It has no oversampling, so
+much drive on high notes aliases, as the other curves do.

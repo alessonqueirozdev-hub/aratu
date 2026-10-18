@@ -68,7 +68,7 @@ pub const PARAMS: &[ParamInfo] = &[
     p("drive.amount", 0.0, 36.0, 12.0, "dB", Scale::Linear),
     p("drive.output", -24.0, 12.0, -6.0, "dB", Scale::Linear),
     p("drive.mix", 0.0, 1.0, 1.0, "", Scale::Linear),
-    p("drive.shape", 0.0, 3.0, 0.0, "", Scale::Steps),
+    p("drive.shape", 0.0, 4.0, 0.0, "", Scale::Steps),
     // The valve: Manguebyte's drive with its smooth curve.
     p("tube.drive", 0.0, 24.0, 8.0, "dB", Scale::Linear),
     p("tube.output", -24.0, 12.0, -4.0, "dB", Scale::Linear),

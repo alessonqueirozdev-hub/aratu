@@ -101,6 +101,8 @@ export class Session {
       return bar ? { info: bar.info, at: bar.at, events: this.heard } : null;
     },
     voice: (part: string): string => this.latest?.parts.find((p) => p.name === part)?.chain[0] ?? "",
+    scope: (part: string): Float32Array | null => (this.playing ? this.o.engine().partWave(part) : null),
+    rate: (): number => this.o.engine().ctx.sampleRate,
   };
 
   get text(): string {

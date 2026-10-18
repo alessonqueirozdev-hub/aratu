@@ -758,8 +758,11 @@ um clique nela mostra as frequências. Uma linha com o nome de uma parte
 ou de uma linha, um ponto e `onda` (`baixo.onda`) desenha embaixo dela a
 onda dessa parte; com `rolo` (`drums.hh.rolo`), as notas do compasso
 passando sob uma linha que anda, uma fileira para cada nota ou tambor. A
-onda de uma parte é desenhada a partir das notas que ela toca, porque o
-Manguebyte entrega as partes já misturadas; os desenhos não mudam o som.
+onda de uma parte é o seu som de verdade depois dos efeitos, lido do
+osciloscópio do Manguebyte para aquela parte e parado numa passagem por
+zero subindo, umas três voltas da nota mais grave; uma linha da bateria,
+ou uma parte que o provisório toca, é desenhada a partir das notas que
+toca. Os desenhos não mudam o som.
 O mapa do ritmo, embaixo do editor, mostra a música no tempo: uma coluna
 para cada compasso, na ordem em que toca, com a seção em cima, e uma
 fileira para cada parte; uma linha laranja corre por ele e ele rola
@@ -862,13 +865,13 @@ mesma ordem, do filtro ao delay:
 | a parte | `volume` (0 a 1), `pan` (-1 esquerda a 1 direita), `reverb.mix` (quanto vai para o reverb da mixagem, 0 a 1) |
 | `highpass`, `lowpass` | `cutoff` (20 a 20000 Hz), `resonance` (0 a 1) |
 | `eq` | `low_gain`, `mid_gain`, `high_gain` (-24 a 24 dB), `low_freq`, `mid_freq`, `high_freq`, `mid_q` |
-| `drive` | `amount` (0 a 36 dB), `output`, `mix`, `shape` (0 suave, 1 macio, 2 duro, 3 dobrado) |
+| `drive` | `amount` (0 a 36 dB), `output`, `mix`, `shape` (0 suave, 1 macio, 2 duro, 3 dobrado, 4 válvula) |
 | `bitcrush` | `bits` (1 a 16), `rate` (Hz), `mix` |
 | `compressor` | `threshold`, `ratio`, `attack`, `release`, `knee`, `makeup`, `mix` |
 | `chorus`, `flanger`, `phaser` | `mix`, `rate`, `depth`, e mais: `voices`, `feedback`, `stages`… |
 | `tremolo`, `autopan` | `rate`, `depth`, `shape` (0 senoide, 1 triângulo, 2 quadrada, 3 e 4 serra), `sync` (em tempos) |
 | `delay` | `time` (em s ou ms), `feedback`, `mix`, `damping`, `pingpong`, `sync` (em tempos) |
-| `tube` (`valvula`) | `drive` (0 a 24 dB), `output`, `mix`: o drive do Manguebyte como válvula, com a curva suave; numa cadeia, ou a válvula ou o drive |
+| `tube` (`valvula`) | `drive` (0 a 24 dB), `output`, `mix`: o drive do Manguebyte com a sua curva de válvula (forma 4), que achata o alto da onda antes do baixo e acrescenta harmônicos pares; numa cadeia, ou a válvula ou o drive |
 
 Ao lado de `eq`, `tube`, `drive`, `lowpass` e `highpass` numa cadeia, o
 editor desenha a curva do efeito com os números da parte: a resposta do

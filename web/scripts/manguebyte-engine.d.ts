@@ -46,13 +46,38 @@ export declare const DRUM_NOTES: Readonly<Record<string, number>>;
 export declare const PRESETS: Readonly<Record<PresetKind, readonly string[]>>;
 export declare const EFFECT_ORDER: readonly string[];
 
+/** The latest frames a part put into the master bus, after its effects,
+ * gain and pan: `frame` is the engine frame of the first sample, `time`
+ * its AudioContext time. */
+export interface PartScope {
+  frame: number;
+  time: number;
+  left: Float32Array;
+  right: Float32Array;
+}
+
+/** A part's levels, linear, 1 at full scale, [left, right]. */
+export interface PartLevels {
+  part: number;
+  frame: number;
+  peak: [number, number];
+  rms: [number, number];
+}
+
 export declare class ManguebyteEngine {
   static create(
     context: BaseAudioContext,
-    options: { wasm: string | URL | ArrayBuffer | WebAssembly.Module; workletUrl?: string | URL; shared?: boolean },
+    options: {
+      wasm: string | URL | ArrayBuffer | WebAssembly.Module;
+      workletUrl?: string | URL;
+      shared?: boolean;
+      scopes?: boolean;
+    },
   ): Promise<ManguebyteEngine>;
   readonly node: AudioWorkletNode;
   readonly mode: "shared" | "message";
+  /** How partScope and partLevels read: null for a module without them. */
+  readonly scopeMode: "shared" | "message" | null;
   noteOn(part: number, note: number, velocity?: number, time?: number, channel?: number, accent?: boolean): boolean;
   noteOff(part: number, note: number, time?: number, channel?: number): boolean;
   setParam(part: number, id: string | number, value: number, time?: number): boolean;
@@ -72,5 +97,10 @@ export declare class ManguebyteEngine {
   loadSfz(part: number, url: string, options?: { base?: string }): Promise<SfzSummary>;
   removePart(part: number): Promise<void>;
   limiterReduction(): Promise<number>;
+  /** The newest `frames` frames of a part (at most SCOPE_FRAMES), or null
+   * when there is no such part. */
+  partScope(part: number, frames?: number): Promise<PartScope | null>;
+  partLevels(part: number): Promise<PartLevels | null>;
+  partLevels(): Promise<PartLevels[]>;
   close(): Promise<void>;
 }

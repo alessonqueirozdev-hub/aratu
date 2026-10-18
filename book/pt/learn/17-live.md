@@ -201,9 +201,11 @@ baixo.onda
 ```
 
 Os desenhos não mudam o som: servem para ver o que cada parte faz. A onda
-é desenhada a partir das notas que a parte toca (a altura, a força e a
-duração de cada uma), porque o Manguebyte ainda entrega as partes já
-misturadas. A onda de verdade, a da música inteira, fica no visor, ao
+é o som de verdade da parte, depois dos efeitos, como o Manguebyte o põe
+na mixagem: ponha um `drive` ou um `lowpass` na cadeia e veja a onda
+mudar. Ela fica parada em umas três voltas da nota mais grave. Uma linha
+da bateria (`drums.hh.onda`) é desenhada a partir dos golpes, porque a
+bateria soa como uma parte só. A onda da música inteira fica no visor, ao
 lado do compasso; um clique nela mostra as frequências, do grave à
 esquerda ao agudo à direita, como num equalizador.
 

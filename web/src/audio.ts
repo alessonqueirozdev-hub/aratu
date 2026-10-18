@@ -237,10 +237,11 @@ const MB_EFFECTS = new Set([
   "delay",
 ]);
 
-/** The tube: Manguebyte's drive set up as a valve, its smooth curve, a
- * moderate gain and the level brought back down. Its numbers are the
- * drive's under other names. */
-const TUBE = { shape: 0, amount: 8, output: -4, mix: 1 };
+/** The tube: Manguebyte's drive with its tube curve (shape 4, a tanh
+ * biased so the positive half flattens sooner and the wave gains even
+ * harmonics), a moderate gain and the level brought back down. Its numbers
+ * are the drive's under other names. */
+const TUBE = { shape: 4, amount: 8, output: -4, mix: 1 };
 const TUBE_PARAMS: Record<string, string> = {
   "tube.drive": "drive.amount",
   "tube.output": "drive.output",
@@ -492,6 +493,10 @@ export class Engine {
   private mbLive: ManguebyteEngine | null = null;
   /** Where Manguebyte's output joins the stand-in's on the way out. */
   private readonly mbOut: GainNode;
+  /** Each part's wave, as Manguebyte's part scope last gave it. */
+  private readonly waves = new Map<string, { samples: Float32Array | null; asked: boolean }>();
+  /** The module has no part scopes: the waves are drawn from the notes. */
+  private scopesGone = false;
   private nextMbPart = 0;
   private readonly freeMbParts: number[] = [];
   /** The beats played before each bar, for synced effects. */
@@ -1111,6 +1116,39 @@ export class Engine {
   playedBy(code: string): "manguebyte" | "stand-in" {
     for (const c of this.chains.values()) if (c.mb?.voice === code && c.mb.ready) return "manguebyte";
     return "stand-in";
+  }
+
+  /** The latest sound a part put into the mix, its two channels averaged:
+   * what the last read of Manguebyte's part scope brought, with the next
+   * read asked for (a message each way when the page has no shared
+   * memory). Null when Manguebyte does not play the part, or its module
+   * has no scopes. */
+  partWave(part: string, frames = 2048): Float32Array | null {
+    const engine = this.mbLive;
+    const mb = this.chains.get(part)?.mb;
+    if (!engine || !mb?.ready || this.scopesGone) return null;
+    let wave = this.waves.get(part);
+    if (!wave) this.waves.set(part, (wave = { samples: null, asked: false }));
+    const w = wave;
+    if (!w.asked) {
+      w.asked = true;
+      engine.partScope(mb.index, frames).then(
+        (s) => {
+          w.asked = false;
+          if (!s) {
+            w.samples = null;
+            return;
+          }
+          const mono = new Float32Array(s.left.length);
+          for (let i = 0; i < mono.length; i++) mono[i] = (s.left[i] + s.right[i]) / 2;
+          w.samples = mono;
+        },
+        () => {
+          this.scopesGone = true;
+        },
+      );
+    }
+    return w.samples;
   }
 
   /** The voice the stand-in plays a part with: the one it sounds with
