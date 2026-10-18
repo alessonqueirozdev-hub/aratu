@@ -1043,6 +1043,40 @@ the stage opens again. Linked scrolling moved the line the musician was
 reading. Nothing is put under a phone's camera, round corners or home bar
 (the safe-area insets), and a phone lying down counts as a phone.
 
+## Following the music, and seeing it
+
+**Follow.** While the piece plays, the screen keeps the code that sounds in
+sight: of the notes lit at once, it goes to the stretch with the most of
+them, and only when they are out of sight in both columns. Moving
+parameters (a sidechain written as a volume) light every beat and are left
+out, or the screen would sit on the mix settings. It waits 2.5 s after the
+musician types, clicks or scrolls. In Play the page scrolls, so the
+transport stays at the top under the header.
+
+**Drawings under a line.** `bass.wave` and `arp.roll`, like Strudel's
+`._scope()` and `._punchcard()`, put a drawing under the line they are
+written on: an oscilloscope of the part, or its notes passing under a
+playhead. They are statements of the language, so they travel with the
+piece and are written where the musician wants to see them; they change
+nothing that sounds. Manguebyte renders every part inside one engine and
+hands over the mix, so a part's own sound cannot be measured: the wave is
+drawn from the part's notes (pitch, velocity, length, a drum's kind), held
+on its lowest note, with a gain that follows the part's level. When
+Manguebyte gives each part's output, the drawing can read it instead. The
+display in the transport draws the real sound of the whole piece, as a wave
+or, clicked, as frequency bars from 30 Hz to 16 kHz.
+
+**The rhythm map as a timeline.** In Play the map shows the piece in time,
+as a DAW shows an arrangement: a column per bar in the order they sound,
+the section over the bar it starts, a row per line wherever it is written
+(`intro.drums.bd` and `drop.drums.bd` share the row `drums.bd`), and in each
+bar only what sounds there. The written bar a cell shows is the one its
+sounds come from, so editing a cell rewrites that bar, and every bar that
+plays it. A piece that comes round (a form played again, a loop) is drawn
+once round: the bars are compared by what sounds at which beat. A playhead
+crosses the map and turns it a page at a time, unless it was just scrolled
+by hand. The book's small grids keep one time round of each line.
+
 On a phone the tabs go to the foot of the screen, under the thumb. Long
 lines wrap. The course's contents fold into a bar that names the page you
 are on.

@@ -10,6 +10,7 @@ import type { Engine } from "./audio";
 import { createEditor, narrowScreen, setWrapping, showDiagnostics, showPlaying } from "./editor";
 import { knobs, showKnobs, showMoving } from "./knobs";
 import { Player, type Scheduled } from "./player";
+import { type Heard, lendVisuals, showVisuals, startVisuals, stopVisuals, visuals } from "./visuals";
 
 export interface SessionOptions {
   parent: HTMLElement;
@@ -25,6 +26,8 @@ export interface SessionOptions {
   onBar?(info: BarInfo, at: number): void;
   onSwap?(bar: number, beat: number): void;
   onPlaying?(playing: boolean): void;
+  /** The symbols lit as they sound, each time they change. */
+  onLit?(spans: { from: number; to: number }[]): void;
 }
 
 export class Session {
@@ -46,6 +49,10 @@ export class Session {
   private movingShown = false;
   /** A second view of the same text (the stage's second column). */
   mirror: EditorView | null = null;
+  /** The bars scheduled and their events, kept a while after they sound,
+   * for the drawings under the lines (`bass.wave`, `arp.roll`). */
+  private heardBars: { info: BarInfo; at: number }[] = [];
+  private heard: Heard[] = [];
   /** Set while a change is copied from one view to the other. */
   private syncing = false;
 
@@ -77,10 +84,21 @@ export class Session {
         run: () => void this.play(),
         stop: () => this.stop(),
       },
-      [knobs],
+      [knobs, visuals],
       o.compact,
     );
+    lendVisuals(this.view, this.visualSource);
   }
+
+  /** What the drawings under the lines draw from. */
+  private readonly visualSource = {
+    now: (): number | null => (this.playing ? this.o.engine().ctx.currentTime : null),
+    sounding: (now: number) => {
+      const bar = this.heardBars.find((b) => b.at <= now && now < b.at + b.info.end - b.info.start);
+      return bar ? { info: bar.info, at: bar.at, events: this.heard } : null;
+    },
+    voice: (part: string): string => this.latest?.parts.find((p) => p.name === part)?.chain[0] ?? "",
+  };
 
   get text(): string {
     return this.view.state.doc.toString();
@@ -118,6 +136,7 @@ export class Session {
     for (const view of this.views()) {
       showDiagnostics(view, p.diagnostics);
       showKnobs(view, p.controls, moved);
+      showVisuals(view, p.visuals ?? []);
     }
     this.o.onCompile?.(p);
     if (!p.ok) {
@@ -141,7 +160,10 @@ export class Session {
     const engine = this.o.engine();
     if (!this.player) {
       this.player = new Player(this.o.aratu, engine, {
-        bar: (info, at) => this.o.onBar?.(info, at),
+        bar: (info, at) => {
+          this.heardBars.push({ info, at });
+          this.o.onBar?.(info, at);
+        },
         events: (list) => {
           for (const s of list) {
             const cs = this.editsSince.get(s.handle);
@@ -155,11 +177,14 @@ export class Session {
             }
           }
           this.scheduled.push(...list);
+          this.heard.push(...list);
         },
         cut: (bar, beat) => {
           this.scheduled = this.scheduled.filter(
             (s) => s.event.bar < bar || (s.event.bar === bar && s.event.beat < beat),
           );
+          this.heard = this.heard.filter((s) => s.event.bar < bar || (s.event.bar === bar && s.event.beat < beat));
+          this.heardBars = this.heardBars.filter((b) => b.info.bar < bar || (b.info.bar === bar && beat > 0));
         },
         swapped: (_p, bar, beat) => this.o.onSwap?.(bar, beat),
       });
@@ -167,14 +192,20 @@ export class Session {
     this.ready = null;
     await this.player.play(p);
     this.o.onPlaying?.(true);
+    startVisuals();
     const tick = () => {
       if (!this.playing) return;
       const now = engine.ctx.currentTime;
       this.scheduled = this.scheduled.filter((s) => s.at + Math.max(s.event.dur, 0.12) > now - 0.05);
+      // A bar's events stay while the bar after it sounds.
+      this.heardBars = this.heardBars.filter((b) => b.at + 2 * (b.info.end - b.info.start) > now);
+      const oldest = this.heardBars[0]?.info.bar ?? 0;
+      if (this.heard.length > 0 && this.heard[0].event.bar < oldest) {
+        this.heard = this.heard.filter((s) => s.event.bar >= oldest);
+      }
       // A strum lights its chord symbol too.
-      const spans = this.scheduled
-        .filter((s) => s.at <= now)
-        .flatMap((s) => {
+      const lit = this.scheduled.filter((s) => s.at <= now);
+      const spans = lit.flatMap((s) => {
           const own = { from: s.event.from, to: s.event.to };
           return s.event.cfrom !== undefined && s.event.cto !== undefined
             ? [own, { from: s.event.cfrom, to: s.event.cto }]
@@ -184,6 +215,9 @@ export class Session {
       if (key !== this.shown) {
         this.shown = key;
         for (const view of this.views()) showPlaying(view, spans);
+        // What sounds, for following the music: the notes, not the numbers
+        // that move.
+        this.o.onLit?.(lit.filter((s) => s.event.param === undefined).map((s) => ({ from: s.event.from, to: s.event.to })));
       }
       // Where each moving parameter is now, on its knobs.
       const moving = new Set((this.player?.current?.moving ?? []).map((m) => `${m.part}	${m.id}`));
@@ -208,6 +242,9 @@ export class Session {
     this.player?.stop();
     cancelAnimationFrame(this.frame);
     this.scheduled = [];
+    this.heard = [];
+    this.heardBars = [];
+    if (was) stopVisuals();
     this.shown = "";
     for (const view of this.views()) showPlaying(view, []);
     for (const view of this.views()) showMoving(view, new Map());
@@ -245,14 +282,16 @@ export class Session {
         run: () => void this.play(),
         stop: () => this.stop(),
       },
-      [knobs],
+      [knobs, visuals],
       this.o.compact,
     );
+    lendVisuals(mirror, this.visualSource);
     this.mirror = mirror;
     setWrapping(this.view, true);
     setWrapping(mirror, true);
     if (this.latest) {
       showDiagnostics(mirror, this.latest.diagnostics);
+      showVisuals(mirror, this.latest.visuals ?? []);
     }
     // Knobs come with the next compile; ask for it now.
     this.compile();

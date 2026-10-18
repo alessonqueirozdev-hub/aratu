@@ -751,6 +751,20 @@ celular o palco tem uma coluna só e um tamanho de letra próprio.
 sem rolar, até um tamanho ainda legível; daí em diante, as colunas rolam.
 Desligado, a letra fica do tamanho escolhido com A− e A+, e você rola.
 
+**Seguir a música e ver o som.** O botão **Seguir**, em Tocar e no palco,
+leva a tela até o trecho que está tocando; ela espera enquanto você
+digita, clica ou rola. O visor mostra a onda da música enquanto toca, e
+um clique nela mostra as frequências. Uma linha com o nome de uma parte
+ou de uma linha, um ponto e `onda` (`baixo.onda`) desenha embaixo dela a
+onda dessa parte; com `rolo` (`drums.hh.rolo`), as notas do compasso
+passando sob uma linha que anda, uma fileira para cada nota ou tambor. A
+onda de uma parte é desenhada a partir das notas que ela toca, porque o
+Manguebyte entrega as partes já misturadas; os desenhos não mudam o som.
+O mapa do ritmo, embaixo do editor, mostra a música no tempo: uma coluna
+para cada compasso, na ordem em que toca, com a seção em cima, e uma
+fileira para cada parte; uma linha laranja corre por ele e ele rola
+junto. Uma peça que recomeça (uma forma, um loop) aparece uma volta só.
+
 **Compartilhar e gravar.** O botão **Compartilhar**, em Tocar, copia um
 link com a música dentro: quem abrir o link ouve e edita a mesma peça, e o
 Ctrl+Z traz de volta o que estava no editor dela. A música vai na parte do

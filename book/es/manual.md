@@ -767,6 +767,21 @@ todo quepa sin desplazar, hasta un tamaño todavía legible; a partir de ahí,
 las columnas se desplazan. Apagado, la letra queda del tamaño elegido con A−
 y A+, y se desplaza.
 
+**Seguir la música y ver el sonido.** El botón **Seguir**, en Tocar y en
+el escenario, lleva la pantalla al trozo que está sonando; espera
+mientras escribes, haces clic o te desplazas. El visor muestra la onda de
+la música mientras suena, y un clic en ella muestra las frecuencias. Una
+línea con el nombre de una parte o de una línea, un punto y `onda`
+(`bajo.onda`) dibuja debajo la onda de esa parte; con `rollo`
+(`drums.hh.rollo`), las notas del compás pasando bajo una línea que
+avanza, una fila para cada nota o tambor. La onda de una parte se dibuja
+a partir de las notas que toca, porque Manguebyte entrega las partes ya
+mezcladas; los dibujos no cambian el sonido. El mapa del ritmo, debajo
+del editor, muestra la música en el tiempo: una columna para cada compás,
+en el orden en que suena, con la sección arriba, y una fila para cada
+parte; una línea naranja lo recorre y él se desplaza con ella. Una pieza
+que vuelve a empezar (una forma, un loop) aparece una vuelta sola.
+
 **Compartir y grabar.** El botón **Compartir**, en Tocar, copia un enlace
 con la música adentro: quien abra el enlace oye y edita la misma pieza, y
 Ctrl+Z le devuelve lo que tenía en el editor. La música va en la parte de la

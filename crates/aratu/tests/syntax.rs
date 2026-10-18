@@ -1757,3 +1757,41 @@ fn a_melody_may_be_written_by_the_degrees_of_its_key() {
     assert_eq!(texts.len(), 2, "{texts:?}");
     assert!(texts[0].starts_with("`0` não é um grau"), "{texts:?}");
 }
+
+#[test]
+fn a_part_or_a_line_shows_its_wave_or_its_roll_under_the_line() {
+    let src = "bass = | c2 c c c |\ndrums {\n  hh = cccc cccc cccc cccc\n}\nbass.wave\ndrums.hh.roll\nbaixo = | c2 c c c |\nbaixo.onda\nbajo = | c2 c c c |\nbajo.rollo\n";
+    let c = compile(src);
+    assert!(!c.has_errors(), "{:?}", c.diagnostics);
+    let shown: Vec<(&str, &str)> = c
+        .piece
+        .visuals
+        .iter()
+        .map(|v| (v.target.as_str(), v.visual.name()))
+        .collect();
+    assert_eq!(
+        shown,
+        [
+            ("bass", "wave"),
+            ("drums.hh", "roll"),
+            ("baixo", "wave"),
+            ("bajo", "roll")
+        ]
+    );
+    // Each is placed on its own line.
+    let line = |i: usize| &src[c.piece.visuals[i].span.start..c.piece.visuals[i].span.end];
+    assert_eq!(line(0), "bass.wave");
+    assert_eq!(line(1), "drums.hh.roll");
+    // A drawing changes nothing that sounds.
+    assert_eq!(
+        events(src, 1, 2).len(),
+        events(&src.replace("bass.wave\n", ""), 1, 2).len()
+    );
+    // A name that is no part nor line is told.
+    let c = compile("bass = | c2 c c c |\nbas.wave\n");
+    assert!(
+        c.diagnostics
+            .iter()
+            .any(|d| matches!(&d.message, Message::UnknownTarget { name } if name == "bas"))
+    );
+}

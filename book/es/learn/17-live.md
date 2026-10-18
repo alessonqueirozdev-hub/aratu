@@ -184,6 +184,44 @@ Así preparas la introducción, el groove, el breakdown y el drop como
 escenas, y en el escenario pasas de una a otra con una tecla. Las escenas
 quedan guardadas en este navegador.
 
+## Ver el sonido: onda y rollo
+
+Debajo de una parte, escribe su nombre, un punto y **onda**, y el editor
+dibuja ahí la onda de su sonido mientras suena, como un osciloscopio. Con
+**rollo** en lugar de onda, aparecen las notas del compás pasando bajo
+una línea que avanza, una fila para cada nota o tambor, como el *piano
+roll* de un estudio. Sirve para una parte (`bajo.onda`) o para una línea
+de la batería (`drums.hh.rollo`).
+
+```aratu
+tempo: 120
+drums { bd = b b b b; hh = cc cc cc cc }
+drums.hh.rollo
+bajo = | do2 do2 mib2 sol2 |
+bajo.onda
+```
+
+Los dibujos no cambian el sonido: sirven para ver qué hace cada parte. La
+onda se dibuja a partir de las notas que toca la parte (la altura, la
+fuerza y la duración de cada una), porque Manguebyte todavía entrega las
+partes ya mezcladas. La onda de verdad, la de toda la música, está en el
+visor, al lado del compás; un clic en ella muestra las frecuencias, de
+los graves a la izquierda a los agudos a la derecha, como en un
+ecualizador.
+
+## Seguir la música
+
+Con el botón **Seguir**, en Tocar y en el escenario, la pantalla va sola
+al trozo que está sonando: cuando la música pasa a una sección más abajo,
+su código aparece. La pantalla espera mientras escribes, haces clic o te
+desplazas, y solo avanza cuando lo que suena sale de la vista.
+
+El **mapa del ritmo**, debajo del editor, muestra la música en el tiempo,
+como el arreglo de una DAW: una columna para cada compás, en el orden en
+que suena, con el nombre de la sección arriba, y una fila para cada
+parte, solo con lo que toca en cada compás. Una línea naranja lo recorre
+mientras la música suena, y el mapa se desplaza con ella.
+
 ## En el escenario
 
 El botón **Escenario**, en Tocar, deja solo el código en la pantalla, a
@@ -203,6 +241,19 @@ pieza. **Grabar** graba lo que está sonando, hasta que lo pulses de nuevo;
 entonces el archivo de audio se descarga, para guardarlo o mostrarlo.
 
 ## Ejercicios
+
+Escribe el bajo tocando do2 en los cuatro tiempos y muestra debajo la
+onda del bajo.
+
+```aratu exercise
+drums { bd = b b b b }
+```
+
+```aratu answer
+drums { bd = b b b b }
+bajo = | do2 do2 do2 do2 |
+bajo.onda
+```
 
 Usa los patrones listos para tocar la frase: groove tres veces, después el
 redoble. (`x3` también puede escribirse `3x`.)

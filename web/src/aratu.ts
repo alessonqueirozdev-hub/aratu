@@ -44,6 +44,15 @@ export interface Control {
   steps: boolean;
 }
 
+/** A drawing under a line: `bass.wave`, `arp.roll`. */
+export interface Visual {
+  /** The part (`bass`) or the line (`drums.hh`). */
+  target: string;
+  kind: "wave" | "roll";
+  from: number;
+  to: number;
+}
+
 export interface Program {
   handle: number;
   ok: boolean;
@@ -60,6 +69,8 @@ export interface Program {
   /** Twelve-tone rows (`row serie = …`), as MIDI notes. */
   rows: { name: string; pitches: number[] }[];
   parts: PartInfo[];
+  /** The drawings under lines, where they are written. */
+  visuals: Visual[];
   params: ParamValue[];
   /** Parameters that move (`-> 4000 Hz over 4 bars`), by part ("all" for
    * the whole mix). */

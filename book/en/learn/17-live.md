@@ -180,6 +180,42 @@ So you prepare the intro, the groove, the breakdown and the drop as
 scenes, and on stage go from one to the next with one key. The scenes are
 kept in this browser.
 
+## Seeing the sound: wave and roll
+
+Under a part, write its name, a dot and **wave**, and the editor draws
+the wave of its sound there as it plays, like an oscilloscope. With
+**roll** instead of wave, the notes of the bar pass under a moving line,
+a row for each note or drum, like a studio's piano roll. It works for a
+part (`bass.wave`) or for a drum line (`drums.hh.roll`).
+
+```aratu
+tempo: 120
+drums { bd = b b b b; hh = cc cc cc cc }
+drums.hh.roll
+bass = | c2 c2 eb2 g2 |
+bass.wave
+```
+
+The drawings do not change the sound: they show what each part does. The
+wave is drawn from the notes the part plays (the pitch, strength and
+length of each), because Manguebyte still hands over the parts already
+mixed. The real wave, the whole piece's, is on the display beside the
+bar; a click on it shows the frequencies, low on the left to high on the
+right, as an equalizer does.
+
+## Following the music
+
+With the **Follow** button, in Play and on stage, the screen goes by
+itself to the code that is playing: when the music moves to a section
+further down, its code comes into view. The screen waits while you type,
+click or scroll, and only moves when what plays is out of sight.
+
+The **rhythm map**, under the editor, shows the piece in time, like a
+DAW's arrangement: a column for each bar, in the order it plays, with the
+section's name on top, and a row for each part, with only what it plays
+in each bar. An orange line runs across it while the music plays, and
+the map scrolls along.
+
 ## On stage
 
 The **Stage** button, in Play, leaves only the code on the screen, full
@@ -199,6 +235,19 @@ to someone, and whoever opens it hears it and can change the same piece.
 file downloads, to keep or to show anyone.
 
 ## Exercises
+
+Write the bass playing c2 on the four beats and show the bass's wave
+under it.
+
+```aratu exercise
+drums { bd = b b b b }
+```
+
+```aratu answer
+drums { bd = b b b b }
+bass = | c2 c2 c2 c2 |
+bass.wave
+```
 
 Use the ready-made patterns to play the phrase: the groove three times,
 then the fill. (`x3` can also be written `3x`.)

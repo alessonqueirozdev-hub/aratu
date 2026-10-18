@@ -142,6 +142,12 @@ pub enum StmtKind {
     Solo(Option<Name>),
     /// `groove house`: the lines of a ready-made beat.
     Groove(Name),
+    /// `bass.wave`, `arp.roll`: a drawing of what a part or a line plays,
+    /// under the line where it is written.
+    Show {
+        target: Name,
+        visual: Visual,
+    },
     /// `pad: duck by kick 70% over 1 beat`: the part's volume dips at each
     /// hit of another part or line and comes back over the length.
     Duck {
@@ -152,6 +158,25 @@ pub enum StmtKind {
         /// How long it takes to come back.
         length: Length,
     },
+}
+
+/// What `bass.wave` and `arp.roll` draw under their line.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Visual {
+    /// The sound's wave, as an oscilloscope draws it.
+    Wave,
+    /// The notes of the bar as they pass, a row for each pitch or drum,
+    /// like a piano roll.
+    Roll,
+}
+
+impl Visual {
+    pub fn name(self) -> &'static str {
+        match self {
+            Visual::Wave => "wave",
+            Visual::Roll => "roll",
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

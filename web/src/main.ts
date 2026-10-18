@@ -12,6 +12,7 @@ import { Session } from "./session";
 import { codeInAddress, decodePiece, encodePiece, linkFor } from "./share";
 import { SoundsPanel } from "./sounds";
 import { RowMatrix } from "./matrix";
+import { Scope } from "./scope";
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -230,7 +231,8 @@ async function main(): Promise<void> {
     view: () => playground?.view ?? null,
     edited: () => playground.compile(),
     quantum: () => quantum,
-    maxBars: 8,
+    maxBars: 64,
+    timeline: true,
   });
   const showQuantum = () => {
     for (const b of document.querySelectorAll<HTMLElement>("#quantum button")) {
@@ -321,8 +323,11 @@ async function main(): Promise<void> {
       $("note").textContent = `${tr("next", lang)} ${at}.`;
       window.setTimeout(() => ($("note").textContent = ""), 3000);
     },
+    onLit: (spans) => followMusic(spans),
     onPlaying: (on) => {
       $("play").classList.toggle("on", on);
+      if (on) scope.start();
+      else scope.stop();
       $("stage-play").classList.toggle("on", on);
       if (!on) {
         for (const id of ["bar-progress", "stage-progress"]) runProgress($(id), null);
@@ -333,6 +338,19 @@ async function main(): Promise<void> {
     },
   });
   for (const id of ["beat", "stage-beat"]) beatPips($(id), 4, -1);
+
+  // The sound drawn as it plays, on the display: the wave or (a click) its
+  // frequencies.
+  const scope = new Scope(
+    () => [$<HTMLCanvasElement>("scope")],
+    () => engine?.analyser ?? null,
+  );
+  const scopeCanvas = $<HTMLCanvasElement>("scope");
+  scopeCanvas.dataset.mode = load("aratu.scope") === "bars" ? "bars" : "wave";
+  scopeCanvas.onclick = () => {
+    scopeCanvas.dataset.mode = scopeCanvas.dataset.mode === "bars" ? "wave" : "bars";
+    save("aratu.scope", scopeCanvas.dataset.mode);
+  };
   // Melody lists in the piece: `temas.2`, `temas.all`, `temas.random`,
   // where the number can be changed by a button or Alt+1…9 while it plays.
   interface ListRef {
@@ -592,6 +610,101 @@ async function main(): Promise<void> {
     fitFont();
     for (const ms of [250, 600]) window.setTimeout(place, ms);
   };
+  // Following the music: while it plays, the code that sounds stays in
+  // sight, in Play and on stage. Of the symbols lit at once, the screen
+  // goes to where most of them are, and only when they are out of sight
+  // (in either column). It waits while the musician types, clicks or
+  // scrolls in the code.
+  let follow = load("aratu.follow") === "on";
+  let touched = 0;
+  let followed = 0;
+  const showFollow = () => {
+    for (const id of ["follow", "stage-follow"]) {
+      $(id).classList.toggle("on", follow);
+      $(id).setAttribute("aria-pressed", String(follow));
+    }
+  };
+  showFollow();
+  for (const id of ["follow", "stage-follow"]) {
+    $(id).onclick = () => {
+      follow = !follow;
+      save("aratu.follow", follow ? "on" : "off");
+      touched = 0;
+      showFollow();
+    };
+  }
+  const touch = (e: Event) => {
+    if ((e.target as Element | null)?.closest?.("#view-play")) touched = performance.now();
+  };
+  for (const kind of ["keydown", "pointerdown", "wheel", "touchmove"]) {
+    document.addEventListener(kind, touch, { capture: true, passive: true });
+  }
+  // The part of the window the code can be seen in: under the header and
+  // over a phone's tabs, or all of it on stage.
+  const windowRoom = (): { top: number; bottom: number } => {
+    if (onStage()) return { top: 0, bottom: window.innerHeight };
+    const tabs = document.querySelector(".tabs");
+    const low = tabs && getComputedStyle(tabs).position === "fixed" ? tabs.getBoundingClientRect().top : window.innerHeight;
+    // The transport stays at the top while the page scrolls, under the header.
+    const bars = [".top", ".toolbar"].map((sel) => document.querySelector(sel)).filter((el) => el && getComputedStyle(el).position === "sticky");
+    const high = Math.max(0, ...bars.map((el) => el?.getBoundingClientRect().bottom ?? 0));
+    return { top: high, bottom: low };
+  };
+  /** Where a view shows text, on the screen. */
+  const viewRoom = (v: EditorView): { top: number; bottom: number } => {
+    const r = v.scrollDOM.getBoundingClientRect();
+    const w = windowRoom();
+    return { top: Math.max(r.top, w.top), bottom: Math.min(r.bottom, w.bottom) };
+  };
+  /** Where the text from `a` to `b` is, on the screen. */
+  const onScreen = (v: EditorView, a: number, b: number): { top: number; bottom: number } => ({
+    top: v.documentTop + v.lineBlockAt(a).top,
+    bottom: v.documentTop + v.lineBlockAt(b).bottom,
+  });
+  const seen = (v: EditorView, a: number, b: number): boolean => {
+    const text = onScreen(v, a, b);
+    const room = viewRoom(v);
+    return text.top >= room.top && text.bottom <= room.bottom;
+  };
+  function followMusic(spans: { from: number; to: number }[]): void {
+    if (!follow || spans.length === 0 || !location.hash.startsWith("#/tocar")) return;
+    const now = performance.now();
+    if (now - touched < 2500 || now - followed < 400) return;
+    const v = playground.view;
+    const end = v.state.doc.length;
+    const at = spans.map((s) => Math.min(s.from, end)).sort((a, b) => a - b);
+    const blocks = at.map((pos) => v.lineBlockAt(pos));
+    // The stretch, at most most of a screen tall, with the most lit symbols.
+    const sight = viewRoom(v);
+    const room = Math.max(100, (sight.bottom - sight.top) * 0.7);
+    let first = 0;
+    let last = 0;
+    for (let i = 0, j = 0; i < blocks.length; i++) {
+      while (blocks[i].bottom - blocks[j].top > room) j++;
+      if (i - j > last - first) {
+        first = j;
+        last = i;
+      }
+    }
+    if (seen(v, at[first], at[last])) return;
+    const m = playground.mirror;
+    if (m && seen(m, at[first], at[last])) return;
+    followed = now;
+    // The right column comes along, starting where the left one ends.
+    attached = true;
+    const text = onScreen(v, at[first], at[last]);
+    const s = v.scrollDOM;
+    if (s.scrollHeight > s.clientHeight + 1) {
+      // The code scrolls in its own box: on stage, and on a phone.
+      const move = (text.top + text.bottom) / 2 - (sight.top + sight.bottom) / 2;
+      s.scrollTo({ top: Math.max(0, s.scrollTop + move), behavior: "smooth" });
+    } else {
+      // The box is as tall as the code, and the page scrolls.
+      const w = windowRoom();
+      const move = (text.top + text.bottom) / 2 - (w.top + w.bottom) / 2;
+      window.scrollTo({ top: Math.max(0, window.scrollY + move), behavior: "smooth" });
+    }
+  }
   // The controls fade when the mouse rests, and come back when it moves.
   const wake = () => {
     document.body.classList.remove("idle");

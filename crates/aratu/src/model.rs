@@ -33,8 +33,29 @@ pub struct Piece {
     pub lists: Vec<(String, usize)>,
     /// Twelve-tone rows by name, for the editor's matrix.
     pub rows: Vec<(String, Vec<i32>)>,
+    /// What `bass.wave` and `arp.roll` draw, and where they are written.
+    pub visuals: Vec<Shown>,
 }
 
+/// A drawing of what a part or a line plays, under the line that asks for
+/// it.
+#[derive(Clone, Debug)]
+pub struct Shown {
+    /// The part (`bass`) or the line (`drums.hh`).
+    pub target: String,
+    pub visual: Visual,
+    pub span: Span,
+}
+
+/// Whether `name` is a part, a line of one (`hh`) or both (`drums.hh`).
+fn names_a_line(piece: &Piece, name: &str) -> bool {
+    piece.all_parts().any(|p| {
+        p.name == name
+            || p.lines
+                .iter()
+                .any(|l| l.name == name || format!("{}.{}", p.name, l.name) == name)
+    })
+}
 /// A pattern or a section: parts prepared under a name.
 #[derive(Clone, Debug)]
 pub struct Group {
@@ -363,6 +384,7 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
         tempo_span: None,
         lists: ast.lists.clone(),
         rows: ast.rows.clone(),
+        visuals: Vec::new(),
     };
 
     // The frame.
@@ -748,6 +770,22 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
             continue;
         }
         let action = match &s.kind {
+            StmtKind::Show { target, visual } => {
+                if !names_a_line(&piece, &target.text) {
+                    diags.push(Diagnostic::warning(
+                        target.span,
+                        Message::UnknownTarget {
+                            name: target.text.clone(),
+                        },
+                    ));
+                }
+                piece.visuals.push(Shown {
+                    target: target.text.clone(),
+                    visual: *visual,
+                    span: s.span,
+                });
+                continue;
+            }
             StmtKind::TempoChange(t) => Action::Tempo(*t),
             StmtKind::MeterChange(m) => Action::Meter(*m),
             StmtKind::KeyChange(k) => Action::Key(*k),
@@ -814,12 +852,8 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
                 feel: *feel,
             },
             StmtKind::Transform { target, transform } => {
-                let known = piece.all_parts().any(|p| {
-                    p.name == target.text
-                        || p.lines.iter().any(|l| {
-                            l.name == target.text || format!("{}.{}", p.name, l.name) == target.text
-                        })
-                }) || piece.patterns.iter().any(|g| g.name == target.text);
+                let known = names_a_line(&piece, &target.text)
+                    || piece.patterns.iter().any(|g| g.name == target.text);
                 if !known {
                     diags.push(Diagnostic::warning(
                         target.span,

@@ -743,6 +743,20 @@ of it shows without scrolling, down to a size still easy to read; past
 that, the columns scroll. Off, the letters keep the size set with A− and A+,
 and you scroll.
 
+**Following the music and seeing the sound.** The **Follow** button, in
+Play and on stage, takes the screen to the code that is playing; it
+waits while you type, click or scroll. The display shows the piece's
+wave as it plays, and a click on it shows the frequencies. A line with
+the name of a part or a line, a dot and `wave` (`bass.wave`) draws that
+part's wave under it; with `roll` (`drums.hh.roll`), the notes of the
+bar passing under a moving line, a row for each note or drum. A part's
+wave is drawn from the notes it plays, because Manguebyte hands over the
+parts already mixed; the drawings do not change the sound. The rhythm
+map, under the editor, shows the piece in time: a column for each bar,
+in the order it plays, with its section on top, and a row for each part;
+an orange line runs across it and it scrolls along. A piece that starts
+again (a form, a loop) shows one round.
+
 **Sharing and recording.** The **Share** button, in Play, copies a link
 with the piece inside it: whoever opens the link hears and edits the same
 piece, and Ctrl+Z brings back what was in their editor. The piece travels

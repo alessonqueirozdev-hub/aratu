@@ -685,6 +685,27 @@ impl Parser {
             return self.part_command(c, target);
         }
 
+        // `bass.wave`, `arp.roll`: a drawing under the line.
+        if words.len() >= 2 {
+            let last = words.last().unwrap();
+            let visual = if crate::words::is(last, "wave") {
+                Some(Visual::Wave)
+            } else if crate::words::is(last, "roll") {
+                Some(Visual::Roll)
+            } else {
+                None
+            };
+            if let Some(visual) = visual {
+                let target = words[..words.len() - 1].join(".");
+                let tspan = Span::new(pspan.start, pspan.start + target.len());
+                self.end(c)?;
+                return Ok(StmtKind::Show {
+                    target: name(&target, tspan),
+                    visual,
+                });
+            }
+        }
+
         // `hh.rotate 1`
         if words.len() >= 2 {
             let verb = words.last().unwrap().to_lowercase();

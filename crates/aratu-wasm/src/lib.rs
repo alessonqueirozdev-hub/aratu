@@ -161,6 +161,18 @@ fn describe(handle: u32, program: &Program, src: &str, lang: Lang) -> String {
     }
     j.close_arr();
 
+    // The drawings under lines (`bass.wave`), for the editor to place.
+    j.key("visuals").open_arr();
+    for v in &piece.visuals {
+        j.open_obj();
+        j.key("target").str(&v.target);
+        j.key("kind").str(v.visual.name());
+        j.key("from").num(program.pos(v.span.start) as f64);
+        j.key("to").num(program.pos(v.span.end) as f64);
+        j.close_obj();
+    }
+    j.close_arr();
+
     // Every part, from the piece, its patterns and its sections, once.
     let mut seen = Vec::new();
     j.key("parts").open_arr();

@@ -46,6 +46,8 @@ const KEYWORDS = new Set([
   "semicolcheias", "semicorchea", "semicorcheas", "vez", "uma", "una", "com", "con",
   "breakdown", "quebra", "quiebre", "drop", "queda", "caida", "build", "subida", "solo", "off",
   "desliga", "desligado", "apagado", "apaga", "groove", "levada", "ritmo",
+  // Drawings under a line.
+  "wave", "onda", "roll", "rolo", "rollo",
   // The arpeggiator, ducking, and the quick transformations.
   "up", "down", "updown", "triplets", "octaves", "sobe", "subindo", "sube", "subiendo", "desce",
   "descendo", "baja", "bajando", "sobedesce", "subeybaja", "tercinas", "quialteras", "tresillos",

@@ -98,6 +98,9 @@ pub const SYNONYMS: &[(&str, &[&str])] = &[
     ("augment", &["aumentar", "aumenta"]),
     ("diminish", &["diminuir", "diminui", "disminuir"]),
     ("breakdown", &["quebra", "quiebre"]),
+    // Drawings under a line.
+    ("wave", &["onda"]),
+    ("roll", &["rolo", "rollo"]),
     ("drop", &["queda", "caida"]),
     ("build", &["subida"]),
     ("groove", &["levada", "ritmo"]),

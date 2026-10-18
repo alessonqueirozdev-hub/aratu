@@ -262,6 +262,8 @@ export class Engine {
   private readonly master: GainNode;
   /** The last node before the speakers: what a recording takes. */
   private readonly output: AudioNode;
+  /** What the speakers get, for drawing the sound (see scope.ts). */
+  readonly analyser: AnalyserNode;
   private recorder: { rec: MediaRecorder; dest: MediaStreamAudioDestinationNode; chunks: Blob[] } | null = null;
   private readonly reverb: ConvolverNode;
   private readonly noise: AudioBuffer;
@@ -331,6 +333,10 @@ export class Engine {
     limit.release.value = 0.08;
     comp.connect(out).connect(limit).connect(ctx.destination);
     this.output = limit;
+    this.analyser = ctx.createAnalyser();
+    this.analyser.fftSize = 2048;
+    this.analyser.smoothingTimeConstant = 0.7;
+    limit.connect(this.analyser);
     this.master = ctx.createGain();
     this.master.gain.value = 0.7;
     this.master.connect(comp);

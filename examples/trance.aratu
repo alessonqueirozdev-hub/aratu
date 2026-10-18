@@ -10,6 +10,9 @@ pad: synth.pad -> reverb
 arp: synth.pluck -> lowpass -> delay -> reverb
 lead: synth.supersaw -> delay -> reverb
 bass: bass.synth -> lowpass
+// What the arpeggio and the bass play, drawn under these lines.
+arp.roll
+bass.wave
 
 section intro {
   drums {
