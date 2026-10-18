@@ -18,7 +18,7 @@ pad { chords = | Dm | Bb | F | C | }
 pad.volume = 0.1 -> 0.7 over 1 beat, loop
 pad.reverb.mix = 0.5
 
-pluck: synth.pluck -> delay -> reverb
+pluck: poly.house_pluck -> delay -> reverb
 pluck = | [d5 a4] [- f5] [- a4] [e5 d5] | [d5 bb4] [- f5] [- bb4] [d5 c5] |
         | [c5 a4] [- f5] [- a4] [c5 a4] | [c5 g4] [- e5] [- g4] [c5 e5] |
 pluck.volume = 0.5
@@ -26,7 +26,7 @@ pluck.delay.sync = 0.75
 pluck.delay.mix = 0 -> 0.5 over 4 bars, loop
 every 8 bars: pluck.reverb.mix = 0.1 -> 0.6 over 3 bars, back over 1 bar
 
-drums: drums.kit -> highpass
+drums: drums.house -> highpass
 drums {
   bd   = b b b b
   oh   = -o -o -o -o

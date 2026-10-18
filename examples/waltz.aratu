@@ -13,7 +13,7 @@ lead.delay.sync = 1.5
 lead.delay.mix = 0.3
 lead.reverb.mix = 0.5
 
-pad: synth.strings -> reverb
+pad: strings.section -> reverb
 pad { chords = | C | G7 | G | C | F | G | C | C | }
 pad.volume = 0.45
 

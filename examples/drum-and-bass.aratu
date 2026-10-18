@@ -5,14 +5,14 @@
 tempo: 174
 key: F minor
 
-drums: drums.acoustic -> compressor
+drums: drums.dnb -> compressor
 drums {
   bd = | b--- ---- --b- ---- | b--- ---- --bb ---- |
   sd = | ---- s!--(s) -(s)-- s!-(s)- | ---- s!--(s) ---(s) s!(s)(s)(s) |
   hh = cCcc cCcc cCcc cCcc
 }
 
-reese: synth.supersaw -> lowpass -> drive
+reese: poly.reese -> lowpass -> drive
 reese = | f1 _ _ _ | _ _ [- db1] _ | db1 _ _ _ | eb1 _ [c1 -] _ |
 reese.lowpass.cutoff = 200 Hz <-> 1400 Hz over 2 bars
 reese.drive.amount = 8 dB

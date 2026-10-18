@@ -318,6 +318,7 @@ const words = {
   manguebeat: { pt: "Manguebeat eletrônico", es: "Manguebeat electrónico", en: "Electronic manguebeat" },
   "drum-and-bass": { pt: "Drum and bass: notas fantasma", es: "Drum and bass: notas fantasma", en: "Drum and bass: ghost notes" },
   "g-funk": { pt: "G-funk da Costa Oeste", es: "G-funk de la Costa Oeste", en: "West Coast G-funk" },
+  chamber: { pt: "Música de câmara: cordas, sopros e coro", es: "Música de cámara: cuerdas, vientos y coro", en: "Chamber music: strings, winds and choir" },
 } as const;
 
 export type Word = keyof typeof words;

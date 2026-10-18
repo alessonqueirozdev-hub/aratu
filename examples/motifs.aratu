@@ -20,7 +20,7 @@ bass: bass.synth
 bass = | oct oct oct oct | oct-4st oct-4st oct-4st oct-4st |
        | oct+3st oct+3st oct+3st oct+3st | oct-2st oct-2st oct-2st oct-2st |
 
-pad: synth.strings -> chorus -> reverb
+pad: poly.string_machine -> chorus -> reverb
 pad { chords = | Am | F | C | G | }
 pad.volume = 0.45
 

@@ -3,6 +3,7 @@
 // The example pieces, read from the repository's examples/ folder (a test in
 // the language crate checks that each compiles without a single warning).
 
+import chamber from "../../examples/chamber.aratu";
 import chance from "../../examples/chance.aratu";
 import drumAndBass from "../../examples/drum-and-bass.aratu";
 import firstPiece from "../../examples/first-piece.aratu";
@@ -35,4 +36,5 @@ export const examples = [
   { id: "manguebeat", text: manguebeat },
   { id: "drum-and-bass", text: drumAndBass },
   { id: "g-funk", text: gFunk },
+  { id: "chamber", text: chamber },
 ] as const;

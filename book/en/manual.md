@@ -872,8 +872,8 @@ are not there yet.
 **Sounds.** Each sound has a code, written at the head of the chain:
 `bass: bass.slap -> reverb`, `drums: drums.808`, `piano: piano.grand`. The
 **Sounds** panel, beside the messages in Play, lists them all by family
-(drum kits, keyboards, mallets and bells, plucked strings, basses, winds,
-synthesizers), plays a bar of each and puts the code in the text with a
+(drum kits, keyboards, mallets and bells, plucked strings, bowed strings,
+basses, winds, voices, synthesizers), plays a bar of each and puts the code in the text with a
 click. A code that does not exist is reported, with the closest one: *"did
 you mean `bass.slap`?"*. Without a code, drums, guitar and chords pick
 their own.
@@ -912,8 +912,16 @@ the recorded ones in a sampler; guitars and basses (`guitar.nylon`,
 `guitar.steel`, `bass.finger`, `bass.slap`) as modelled strings; the
 electric piano and the bell (`keys.epiano`, `keys.bell`) in FM; the organ
 (`keys.organ`) through its rotating speaker, whose speed is `organ.rotary`
-(0 stopped, 1 slow, 2 fast); the 808 (`drums.808`), the 808 bass
-(`bass.808`), the acid (`bass.acid`) and the synthesizers (`synth.*`). Each
+(0 stopped, 1 slow, 2 fast); the 808 bass (`bass.808`), the acid
+(`bass.acid`) and the synthesizers (`synth.*`); the electronic kits
+(`drums.808`, `drums.909`, `drums.606`, `drums.cr78`, `drums.trap`,
+`drums.house`, `drums.techno`, `drums.dnb`, `drums.lofi`, and
+`drums.modeled`, whose drums are modelled as they play) on its drum
+machine; the `poly.*` codes, its polyphonic synthesizer's presets; the
+celesta and the steelpan (`mallets.celesta`, `mallets.steelpan`) as
+modelled bars; the bowed strings (`strings.*`, also in pizzicato), the
+winds (`flute`, `clarinet`, `sax`, `trumpet`, `trombone`) and the voices
+(`choir.aah`, `choir.ooh`, `voice.solo`) as modelled instruments. Each
 part has its effects in the engine, and the mix goes through a shared
 reverb, a glue compressor and a limiter. The Brazilian percussion and the
 golpe still play in a stand-in until Manguebyte has them; if something goes

@@ -20,12 +20,14 @@ estala. Os códigos têm duas partes, a família e o instrumento:
 | Família | Alguns sons |
 |---|---|
 | teclados | `piano.grand`, `piano.upright`, `keys.epiano`, `keys.organ`, `keys.harpsichord` |
-| percussão de teclas e sinos | `mallets.marimba`, `mallets.vibraphone`, `mallets.kalimba`, `bells.tubular` |
+| percussão de teclas e sinos | `mallets.marimba`, `mallets.vibraphone`, `mallets.celesta`, `mallets.steelpan`, `bells.tubular` |
 | cordas dedilhadas | `guitar.nylon`, `guitar.steel`, `harp` |
+| cordas de arco | `strings.violin`, `strings.viola`, `strings.cello`, `strings.bass`, `strings.section`, `strings.violin_pizz` |
 | baixos | `bass.finger`, `bass.slap`, `bass.808`, `bass.acid`, `bass.synth` |
-| sopros | `sax.tenor`, `recorder.alto` |
-| sintetizadores | `synth.saw`, `synth.square`, `synth.pad`, `synth.supersaw`, `synth.lead` |
-| baterias | `drums.kit`, `drums.808`, `drums.acoustic`, `drums.alesson` |
+| sopros | `flute`, `clarinet`, `sax`, `trumpet`, `trombone`, `sax.tenor`, `recorder.alto` |
+| vozes | `choir.aah`, `choir.ooh`, `voice.solo` |
+| sintetizadores | `synth.saw`, `synth.pad`, `synth.supersaw`, `poly.trance_supersaw`, `poly.reese`, `poly.house_pluck`, `poly.string_machine` |
+| baterias | `drums.kit`, `drums.808`, `drums.909`, `drums.606`, `drums.cr78`, `drums.trap`, `drums.house`, `drums.techno`, `drums.dnb`, `drums.lofi`, `drums.acoustic`, `drums.alesson` |
 
 Abra o painel **Sons**, ao lado das mensagens em Tocar, para ouvir cada um
 e pôr o código no texto com um clique. Todos tocam pelo motor do
@@ -33,6 +35,18 @@ e pôr o código no texto com um clique. Todos tocam pelo motor do
 
 > Troque `bass.slap` por `bass.808` e depois por `guitar.steel`. As notas
 > são as mesmas; o instrumento muda.
+
+Os códigos `poly.` são os sons prontos do sintetizador polifônico do
+Manguebyte: mais de sessenta, de pads e leads a baixos, plucks, stabs e
+efeitos como `poly.riser`. As baterias eletrônicas imitam máquinas
+famosas (`drums.808`, `drums.909`, `drums.606`, `drums.cr78`) e estilos
+(`drums.trap`, `drums.house`, `drums.techno`, `drums.dnb`, `drums.lofi`);
+as peças têm os mesmos nomes em todas, então trocar o kit não muda o
+ritmo. Cordas de arco, sopros e coro são modelados enquanto tocam, sem
+nada para baixar.
+
+> Troque `drums: drums.808` por `drums.909` e depois por `drums.lofi`
+> num ritmo seu. Depois ponha a melodia num `flute` e num `strings.violin`.
 
 ## A cadeia de efeitos
 

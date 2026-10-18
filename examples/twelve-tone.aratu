@@ -1,5 +1,5 @@
 // A twelve-tone row, in IDM: the row and its forms poured into glitchy
-// rhythms. The pluck plays the row (P0), the bell answers with its
+// rhythms. The pluck plays the row (P0), the celesta answers with its
 // retrograde inversion (RI5), the 808 bass walks its inversion (I0), and the
 // drums stutter through a bitcrusher. The lines are of different lengths,
 // so they meet in a new way every time round. The Rows tab shows the row's
@@ -13,15 +13,15 @@ pluck = | o [o o] - [o o o] | [- o] o [o o] _ | o _ [o o] o | from serie.P0 octa
 pluck.delay.sync = 0.75
 pluck.delay.mix = 0.35
 
-bell: keys.bell -> reverb
-bell = | - o - [o o] | - [o o] o _ | O _ - o | from serie.RI5 octave 4
-bell.volume = 0.5
-bell.reverb.mix = 0.5
+celesta: mallets.celesta -> reverb
+celesta = | - o - [o o] | - [o o] o _ | O _ - o | from serie.RI5 octave 4
+celesta.volume = 0.5
+celesta.reverb.mix = 0.5
 
 bass: bass.808
 bass = | o _ _ [- o] | o _ [- o] _ | from serie.I0 octave 2
 
-drums: drums.808 -> bitcrush
+drums: drums.606 -> bitcrush
 drums {
   bd = | b - [- b] - | [b b] - - [- b] |
   sd = - s - [(s) s]

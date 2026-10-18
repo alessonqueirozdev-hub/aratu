@@ -21,12 +21,14 @@ chasquea. Los códigos tienen dos partes, la familia y el instrumento:
 | Familia | Algunos sonidos |
 |---|---|
 | teclados | `piano.grand`, `piano.upright`, `keys.epiano`, `keys.organ`, `keys.harpsichord` |
-| percusión de láminas y campanas | `mallets.marimba`, `mallets.vibraphone`, `mallets.kalimba`, `bells.tubular` |
+| percusión de láminas y campanas | `mallets.marimba`, `mallets.vibraphone`, `mallets.celesta`, `mallets.steelpan`, `bells.tubular` |
 | cuerdas pulsadas | `guitar.nylon`, `guitar.steel`, `harp` |
+| cuerdas frotadas | `strings.violin`, `strings.viola`, `strings.cello`, `strings.bass`, `strings.section`, `strings.violin_pizz` |
 | bajos | `bass.finger`, `bass.slap`, `bass.808`, `bass.acid`, `bass.synth` |
-| vientos | `sax.tenor`, `recorder.alto` |
-| sintetizadores | `synth.saw`, `synth.square`, `synth.pad`, `synth.supersaw`, `synth.lead` |
-| baterías | `drums.kit`, `drums.808`, `drums.acoustic`, `drums.alesson` |
+| vientos | `flute`, `clarinet`, `sax`, `trumpet`, `trombone`, `sax.tenor`, `recorder.alto` |
+| voces | `choir.aah`, `choir.ooh`, `voice.solo` |
+| sintetizadores | `synth.saw`, `synth.pad`, `synth.supersaw`, `poly.trance_supersaw`, `poly.reese`, `poly.house_pluck`, `poly.string_machine` |
+| baterías | `drums.kit`, `drums.808`, `drums.909`, `drums.606`, `drums.cr78`, `drums.trap`, `drums.house`, `drums.techno`, `drums.dnb`, `drums.lofi`, `drums.acoustic`, `drums.alesson` |
 
 Abre el panel **Sonidos**, junto a los mensajes en Tocar, para escuchar
 cada uno y poner el código en el texto con un clic. Todos suenan con el
@@ -34,6 +36,19 @@ motor de **Manguebyte**, el motor de audio del ecosistema de Aratu.
 
 > Cambia `bass.slap` por `bass.808` y después por `guitar.steel`. Las notas
 > son las mismas; el instrumento cambia.
+
+Los códigos `poly.` son los sonidos listos del sintetizador polifónico de
+Manguebyte: más de sesenta, de pads y leads a bajos, plucks, stabs y
+efectos como `poly.riser`. Las baterías electrónicas imitan máquinas
+famosas (`drums.808`, `drums.909`, `drums.606`, `drums.cr78`) y estilos
+(`drums.trap`, `drums.house`, `drums.techno`, `drums.dnb`, `drums.lofi`);
+las piezas tienen los mismos nombres en todas, así que cambiar el kit no
+cambia el ritmo. Las cuerdas frotadas, los vientos y el coro se modelan
+mientras suenan, sin nada que descargar.
+
+> Cambia `drums: drums.808` por `drums.909` y después por `drums.lofi` en
+> un ritmo tuyo. Después pon la melodía en un `flute` y en un
+> `strings.violin`.
 
 ## La cadena de efectos
 

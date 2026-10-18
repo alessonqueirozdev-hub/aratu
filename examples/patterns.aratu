@@ -22,6 +22,7 @@ pattern breakdown {
 }
 pattern crash { cr = x - - - }
 
+drums: drums.techno
 play groove x7, fill
 every 16 bars, first: add crash
 

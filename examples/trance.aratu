@@ -3,13 +3,16 @@
 // sing alone, a build with a snare roll, then the drop with the lead. The
 // pad and the bass breathe with the kick (a sidechain, written as a volume
 // that rises in every beat), and the arpeggio's filter opens over the build.
+// The drums are a 909; the pluck and the lead are the poly synth's trance
+// presets.
 tempo: 138
 key: C minor
 
 pad: synth.pad -> reverb
-arp: synth.pluck -> lowpass -> delay -> reverb
-lead: synth.supersaw -> delay -> reverb
+arp: poly.trance_pluck -> lowpass -> delay -> reverb
+lead: poly.trance_supersaw -> delay -> reverb
 bass: bass.synth -> lowpass
+drums: drums.909
 // What the arpeggio and the bass play, drawn under these lines.
 arp.roll
 bass.wave

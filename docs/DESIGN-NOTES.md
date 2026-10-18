@@ -1143,3 +1143,28 @@ semitone of 60.
 Every voice sounds the note written, as a sampler's keys do. A xylophone or
 a glockenspiel part copied from a score, which writes them one or two
 octaves below their sound, is written here as it sounds.
+
+## Drum machines, the poly synth and modelled instruments (18 October 2026)
+
+Manguebyte's wave 5e (commit a1f3694) added six instruments, all
+loudness-normalized to the same level, so no gain per voice is needed for
+them: a drum machine with ten kits, a polyphonic synthesizer with 68
+presets, modelled bars, bowed strings, winds and a choir. Aratu names them
+by family: `drums.909`, `drums.606`, `drums.cr78`, `drums.trap`,
+`drums.house`, `drums.techno`, `drums.dnb`, `drums.lofi` and
+`drums.modeled` (and `drums.808`, which moves from the analogue kit to the
+drum machine's 808); `poly.<preset>` with the preset's own name;
+`mallets.celesta` and `mallets.steelpan`; `strings.violin`, `.viola`,
+`.cello`, `.bass`, `.section` and the three pizzicati; `flute`,
+`clarinet`, `sax`, `trumpet`, `trombone`; `choir.aah`, `choir.ooh` and
+`voice.solo`. Two families are new in the Sounds panel, bowed strings and
+voices. The drum names are the same in every kit, with the clap and the
+shaker on the drum machine's own keys.
+
+The poly synth and the choir cost the most processor time, so the
+examples use at most two `poly.*` parts each. The examples moved to the new
+sounds where a style asks for them (a 909 for trance and electro house, the
+drum-and-bass kit and a reese, a whistle lead and a Moog bass for G-funk,
+a string section under the waltz and the chillout melody, now on a flute),
+and a new one, `chamber`, plays a flute, a clarinet, a string trio and a
+choir.

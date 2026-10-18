@@ -881,7 +881,7 @@ no código, ou escritos embaixo da cadeia quando ainda não estão.
 `baixo: bass.slap -> reverb`, `drums: drums.808`, `piano: piano.grand`. O
 painel **Sons**, ao lado das mensagens em Tocar, lista todos por família
 (baterias, teclados, teclados de percussão e sinos, cordas dedilhadas,
-baixos, sopros, sintetizadores), toca um compasso de cada um e põe o código
+cordas de arco, baixos, sopros, vozes, sintetizadores), toca um compasso de cada um e põe o código
 no texto com um clique. Um código que não existe é avisado, com o mais
 parecido: *"seria `bass.slap`?"*. Sem código, a bateria, o violão e as
 cifras escolhem sozinhos.
@@ -920,8 +920,16 @@ gravados num sampler; violões e baixos (`guitar.nylon`, `guitar.steel`,
 `bass.finger`, `bass.slap`) em cordas modeladas; o piano elétrico e o sino
 (`keys.epiano`, `keys.bell`) em FM; o órgão (`keys.organ`) com a sua caixa
 rotativa, cuja velocidade é `organ.rotary` (0 parada, 1 lenta, 2 rápida); a
-808 (`drums.808`), o baixo 808 (`bass.808`), o acid (`bass.acid`) e os
-sintetizadores (`synth.*`). Cada parte tem os seus efeitos no motor, e a
+baixo 808 (`bass.808`), o acid (`bass.acid`) e os sintetizadores
+(`synth.*`); as baterias eletrônicas (`drums.808`, `drums.909`,
+`drums.606`, `drums.cr78`, `drums.trap`, `drums.house`, `drums.techno`,
+`drums.dnb`, `drums.lofi`, e `drums.modeled`, cujas peças são modeladas
+enquanto tocam) na sua bateria eletrônica; os códigos `poly.*`, os sons
+prontos do seu sintetizador polifônico; a celesta e o steelpan
+(`mallets.celesta`, `mallets.steelpan`) em lâminas modeladas; as cordas de
+arco (`strings.*`, também em pizzicato), os sopros (`flute`, `clarinet`,
+`sax`, `trumpet`, `trombone`) e as vozes (`choir.aah`, `choir.ooh`,
+`voice.solo`) como instrumentos modelados. Cada parte tem os seus efeitos no motor, e a
 mixagem passa por um reverb compartilhado, um compressor de cola e um
 limitador. A percussão brasileira e o golpe ainda tocam num motor
 provisório, até o Manguebyte tê-los; se algo der errado numa apresentação,

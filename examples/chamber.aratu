@@ -1,0 +1,45 @@
+// Chamber music: a flute, a clarinet, a string trio and a choir, all of them
+// modelled by the engine as they play, with nothing to fetch. The flute
+// sings the theme over the strings, the clarinet answers it, and the third
+// time round the choir comes in under everything and the music grows to
+// forte, before the theme comes back quietly.
+meter: 4/4
+tempo: 76
+key: D major
+
+flute: flute -> reverb
+clarinet: clarinet -> reverb
+violin: strings.violin -> reverb
+viola: strings.viola -> reverb
+cello: strings.cello -> reverb
+choir: choir.ooh -> reverb
+
+section theme {
+  flute  = | p:f#5< _ e5 d5 | b4 _ [c#5 d5] e5 | d5 _ b4 g4 | mf:a4 _ _ _ |
+  violin = | p:a4 _ _ _ | b4 _ _ _ | g4 _ _ _ | a4 _ g4 _ |
+  viola  = | p:f#4 _ _ _ | f#4 _ _ _ | d4 _ _ _ | e4 _ c#4 _ |
+  cello  = | p:d3 _ a2 _ | b2 _ f#2 _ | g2 _ d3 _ | a2 _ e2 _ |
+}
+
+section answer {
+  clarinet = | mf:d5 _ [c#5 b4] a4 | f#4 _ [g4 a4] b4 | b4 _ g4 d4 | e4 _ _ _ |
+  flute    = | - - p:a5 _ | - - f#5 _ | - - d5 _ | c#5 _ _ _ |
+  violin   = | mp:a4 _ _ _ | b4 _ _ _ | g4 _ _ _ | a4 _ g4 _ |
+  viola    = | mp:f#4 _ _ _ | f#4 _ _ _ | d4 _ _ _ | e4 _ c#4 _ |
+  cello    = | mp:d3 _ a2 _ | b2 _ f#2 _ | g2 _ d3 _ | a2 _ e2 _ |
+}
+
+section tutti {
+  choir    { chords = | Bm | G | D | A | }
+  flute    = | f:b5 _ a5 f#5 | g5 _ [f#5 e5] d5 | f#5 _ e5 d5 | e5 _ _ _ |
+  clarinet = | f:f#4 _ _ _ | d4 _ e4 _ | f#4 _ a4 _ | c#5 _ _ _ |
+  violin   = | f:d5 _ c#5 _ | b4 _ _ _ | a4 _ _ _ | a4 _ _ _ |
+  viola    = | f:f#4 _ _ _ | g4 _ _ _ | f#4 _ _ _ | e4 _ _ _ |
+  cello    = | f:b2 _ f#2 _ | g2 _ d2 _ | d3 _ a2 _ | a2 _ e2 _ |
+}
+
+form: theme answer tutti theme
+
+choir.volume = 0.5
+reverb.mix = 0.35
+master.reverb.decay = 3 s

@@ -1,17 +1,17 @@
-// A melody with dynamics, in a chillout groove: the bell lead grows from p to
+// A melody with dynamics, in a chillout groove: the flute grows from p to
 // f and comes back (< and >), the first four bars repeat (|: :|), and at the
 // end the music slows down (rit) and holds its last note (a fermata, ^).
 meter: 4/4
 tempo: 92
 key: A minor
 
-lead: keys.bell -> delay -> reverb
+lead: flute -> delay -> reverb
 lead = |: p:e5< _ [d5 c5] a4 | g4 _ [a4 c5] _ | f:d5 _ [c5 a4] g4 | e4 _ _ _ :| e5> d5 c5 g4 | p:a4^ _ _ _ |
 lead.delay.sync = 0.75
 lead.delay.mix = 0.3
 lead.reverb.mix = 0.5
 
-pad: synth.strings -> chorus -> reverb
+pad: strings.section -> reverb
 pad { chords = |: Am7 | Dm7 | Fmaj7 | E7 :| Fmaj7 | Am9 | }
 pad.volume = 0.5
 pad.reverb.mix = 0.6

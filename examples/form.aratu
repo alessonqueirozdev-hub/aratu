@@ -7,8 +7,9 @@ tempo: 124
 key: F minor
 
 piano: piano.grand -> reverb
-pad: synth.strings -> reverb
-bass: bass.synth -> lowpass
+pad: strings.section -> reverb
+bass: poly.house_organ_bass -> lowpass
+drums: drums.house
 
 section intro {
   drums { bd = b b b b; hh = -c -c -c -c }

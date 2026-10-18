@@ -13,10 +13,16 @@ export type Instrument =
   | "organ"
   | "analog_kit"
   | "kick_bass"
-  | "acid";
+  | "acid"
+  | "drum_kit"
+  | "poly"
+  | "mallet"
+  | "bowed"
+  | "wind"
+  | "choir";
 
 /** The instruments that have presets (`<kind>.preset`). */
-export type PresetKind = "plucked" | "fm" | "organ" | "acid";
+export type PresetKind = "plucked" | "fm" | "organ" | "acid" | "drum_kit" | "poly" | "mallet" | "bowed" | "wind" | "choir";
 
 export interface Latency {
   engineFrames: number;

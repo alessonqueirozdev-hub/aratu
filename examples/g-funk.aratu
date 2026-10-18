@@ -1,12 +1,13 @@
 // G-funk, West Coast style: a slow, swung beat, a fat bass that walks up to
 // each chord, an electric piano wavering through a tremolo on jazzy chords,
-// and a high synth lead whining over the top. An original piece in the style
+// and a high whistle lead whining over the top. An original piece in the style
 // of the nineties; the swing makes every second sixteenth late.
 meter: 4/4
 tempo: 92
 key: D minor
 swing 58%
 
+drums: drums.808
 drums {
   bd   = b --b- b -
   sd   = - s - s
@@ -14,7 +15,7 @@ drums {
   hh   = cccc cccc cccc ccco
 }
 
-bass: bass.synth -> lowpass
+bass: poly.moog_bass -> lowpass
 bass = | d2 _ [- d2] [f2 a2] | g1 _ [- g1] [bb1 d2] |
        | bb1 _ [- bb1] [d2 f2] | a1 _ [- a1] [c#2 e2] |
 bass.lowpass.cutoff = 700 Hz
@@ -25,7 +26,7 @@ keys.tremolo.rate = 4
 keys.volume = 0.6
 keys.reverb.mix = 0.3
 
-lead: synth.lead -> delay -> reverb
+lead: poly.whistle_lead -> delay -> reverb
 lead = | - - a5 _ | [g5 f5] e5 _ d5 | - - bb5 _ | [a5 g5] f5 _ e5 |
 lead.volume = 0.4
 lead.delay.sync = 0.75

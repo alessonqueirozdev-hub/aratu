@@ -6,7 +6,7 @@ meter: 4/4
 tempo: 128
 seed 7
 
-drums: drums.808
+drums: drums.techno
 drums {
   bd   = b b b b
   oh   = -o -o -o -o?70%

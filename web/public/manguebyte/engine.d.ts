@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
 // Types for Manguebyte's js/engine.js, the part of its API Aratu uses.
 // Copied next to engine.js by scripts/manguebyte.mjs.
 
@@ -11,10 +13,16 @@ export type Instrument =
   | "organ"
   | "analog_kit"
   | "kick_bass"
-  | "acid";
+  | "acid"
+  | "drum_kit"
+  | "poly"
+  | "mallet"
+  | "bowed"
+  | "wind"
+  | "choir";
 
 /** The instruments that have presets (`<kind>.preset`). */
-export type PresetKind = "plucked" | "fm" | "organ" | "acid";
+export type PresetKind = "plucked" | "fm" | "organ" | "acid" | "drum_kit" | "poly" | "mallet" | "bowed" | "wind" | "choir";
 
 export interface Latency {
   engineFrames: number;

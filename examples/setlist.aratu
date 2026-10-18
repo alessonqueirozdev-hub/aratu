@@ -27,12 +27,13 @@ bass: bass.synth -> lowpass
 bass = basses.1
 bass.lowpass.cutoff = 1100 Hz
 
-stab: synth.saw -> drive -> lowpass
+stab: poly.rave_chord_stab -> drive -> lowpass
 stab = | - [- g3+bb3+d4] - [- g3+bb3+d4] | - [- eb3+g3+bb3] - [- f3+a3+c4] |
 stab.drive.amount = 10 dB
 stab.lowpass.cutoff = 2400 Hz
 stab.volume = 0.45
 
+drums: drums.909
 drums {
   bd   = b b b b
   oh   = -o -o -o -o

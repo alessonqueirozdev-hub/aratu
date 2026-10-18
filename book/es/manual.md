@@ -899,7 +899,7 @@ de la cadena cuando todavía no están.
 cadena: `bajo: bass.slap -> reverb`, `drums: drums.808`, `piano:
 piano.grand`. El panel **Sonidos**, junto a los mensajes en Tocar, los
 muestra todos por familia (baterías, teclados, láminas y campanas, cuerdas
-pulsadas, bajos, vientos, sintetizadores), toca un compás de cada uno y pone
+pulsadas, cuerdas frotadas, bajos, vientos, voces, sintetizadores), toca un compás de cada uno y pone
 el código en el texto con un clic. Un código que no existe se avisa, con el
 más parecido: *"¿quisiste decir `bass.slap`?"*. Sin código, la batería, la
 guitarra y los acordes eligen solos.
@@ -939,8 +939,17 @@ navegador: los grabados en un sampler; guitarras y bajos (`guitar.nylon`,
 `guitar.steel`, `bass.finger`, `bass.slap`) en cuerdas modeladas; el piano
 eléctrico y la campana (`keys.epiano`, `keys.bell`) en FM; el órgano
 (`keys.organ`) con su caja rotativa, cuya velocidad es `organ.rotary` (0
-parada, 1 lenta, 2 rápida); la 808 (`drums.808`), el bajo 808 (`bass.808`),
-el acid (`bass.acid`) y los sintetizadores (`synth.*`). Cada parte tiene sus
+parada, 1 lenta, 2 rápida); el bajo 808 (`bass.808`), el acid
+(`bass.acid`) y los sintetizadores (`synth.*`); las baterías electrónicas
+(`drums.808`, `drums.909`, `drums.606`, `drums.cr78`, `drums.trap`,
+`drums.house`, `drums.techno`, `drums.dnb`, `drums.lofi`, y
+`drums.modeled`, cuyas piezas se modelan mientras suenan) en su caja de
+ritmos; los códigos `poly.*`, los sonidos listos de su sintetizador
+polifónico; la celesta y el steelpan (`mallets.celesta`,
+`mallets.steelpan`) en láminas modeladas; las cuerdas frotadas
+(`strings.*`, también en pizzicato), los vientos (`flute`, `clarinet`,
+`sax`, `trumpet`, `trombone`) y las voces (`choir.aah`, `choir.ooh`,
+`voice.solo`) como instrumentos modelados. Cada parte tiene sus
 efectos en el motor, y la mezcla pasa por una reverb compartida, un
 compresor de pegamento y un limitador. La percusión brasileña y el golpe
 aún suenan con un motor provisional, hasta que Manguebyte los tenga; si

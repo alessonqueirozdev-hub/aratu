@@ -21,12 +21,14 @@ snaps. The codes have two parts, the family and the instrument:
 | Family | Some sounds |
 |---|---|
 | keyboards | `piano.grand`, `piano.upright`, `keys.epiano`, `keys.organ`, `keys.harpsichord` |
-| mallets and bells | `mallets.marimba`, `mallets.vibraphone`, `mallets.kalimba`, `bells.tubular` |
+| mallets and bells | `mallets.marimba`, `mallets.vibraphone`, `mallets.celesta`, `mallets.steelpan`, `bells.tubular` |
 | plucked strings | `guitar.nylon`, `guitar.steel`, `harp` |
+| bowed strings | `strings.violin`, `strings.viola`, `strings.cello`, `strings.bass`, `strings.section`, `strings.violin_pizz` |
 | basses | `bass.finger`, `bass.slap`, `bass.808`, `bass.acid`, `bass.synth` |
-| winds | `sax.tenor`, `recorder.alto` |
-| synthesizers | `synth.saw`, `synth.square`, `synth.pad`, `synth.supersaw`, `synth.lead` |
-| drum kits | `drums.kit`, `drums.808`, `drums.acoustic`, `drums.alesson` |
+| winds | `flute`, `clarinet`, `sax`, `trumpet`, `trombone`, `sax.tenor`, `recorder.alto` |
+| voices | `choir.aah`, `choir.ooh`, `voice.solo` |
+| synthesizers | `synth.saw`, `synth.pad`, `synth.supersaw`, `poly.trance_supersaw`, `poly.reese`, `poly.house_pluck`, `poly.string_machine` |
+| drum kits | `drums.kit`, `drums.808`, `drums.909`, `drums.606`, `drums.cr78`, `drums.trap`, `drums.house`, `drums.techno`, `drums.dnb`, `drums.lofi`, `drums.acoustic`, `drums.alesson` |
 
 Open the **Sounds** panel, beside the messages in Play, to hear each one
 and put its code in the text with a click. They all play through
@@ -34,6 +36,19 @@ and put its code in the text with a click. They all play through
 
 > Change `bass.slap` to `bass.808` and then to `guitar.steel`. The notes
 > stay the same; the instrument changes.
+
+The `poly.` codes are the ready sounds of Manguebyte's polyphonic
+synthesizer: more than sixty, from pads and leads to basses, plucks, stabs
+and effects such as `poly.riser`. The electronic kits copy famous machines
+(`drums.808`, `drums.909`, `drums.606`, `drums.cr78`) and styles
+(`drums.trap`, `drums.house`, `drums.techno`, `drums.dnb`, `drums.lofi`);
+the drums have the same names in all of them, so changing the kit does not
+change the rhythm. Bowed strings, winds and the choir are modelled as they
+play, with nothing to download.
+
+> Change `drums: drums.808` to `drums.909` and then to `drums.lofi` in a
+> rhythm of yours. Then put the melody on a `flute` and on a
+> `strings.violin`.
 
 ## The effects chain
 
