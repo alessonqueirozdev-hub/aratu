@@ -596,11 +596,12 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
                 When::Bare,
             ) => match &s.part {
                 Some(p) => {
-                    let id = path
-                        .iter()
-                        .map(|n| n.text.as_str())
-                        .collect::<Vec<_>>()
-                        .join(".");
+                    let id = crate::voices::param_id(
+                        path.iter()
+                            .map(|n| n.text.as_str())
+                            .collect::<Vec<_>>()
+                            .join("."),
+                    );
                     if let Some((v, factor)) = param_value(&id, value, diags) {
                         list.get(&p.text, p.span).params.push(ParamSet {
                             id,
@@ -616,7 +617,7 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
                 // The first unit may be a voice; every unit must be one or
                 // an effect.
                 for (i, u) in units.iter().enumerate() {
-                    let known = crate::voices::EFFECTS.contains(&u.text.as_str())
+                    let known = crate::voices::effect(&u.text).is_some()
                         || (i == 0 && crate::voices::find(&u.text).is_some());
                     if !known {
                         diags.push(Diagnostic::warning(
@@ -628,18 +629,27 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
                         ));
                     }
                 }
+                // The valve is the drive stage: one or the other.
+                let is = |name: &str, e: &str| crate::voices::effect(name) == Some(e);
+                if let Some(t) = units.iter().find(|u| is(&u.text, "tube"))
+                    && units.iter().any(|u| is(&u.text, "drive"))
+                {
+                    diags.push(Diagnostic::warning(t.span, Message::TubeAndDrive));
+                }
+                let names: Vec<String> = units
+                    .iter()
+                    .map(|u| crate::voices::effect(&u.text).map_or(u.text.clone(), String::from))
+                    .collect();
                 let target = target.as_ref().or(s.part.as_ref());
                 match target {
                     Some(t) if t.text == "all" => {
-                        global_effects = units
-                            .iter()
-                            .map(|u| u.text.clone())
+                        global_effects = names
+                            .into_iter()
                             .filter(|u| crate::voices::EFFECTS.contains(&u.as_str()))
                             .collect();
                     }
                     Some(t) => {
-                        list.get(&t.text, t.span).chain =
-                            units.iter().map(|u| u.text.clone()).collect();
+                        list.get(&t.text, t.span).chain = names;
                     }
                     None => {}
                 }
@@ -665,11 +675,13 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
         } else {
             &path[..]
         };
-        let id = id_path
-            .iter()
-            .map(|n| n.text.as_str())
-            .collect::<Vec<_>>()
-            .join(".");
+        let id = crate::voices::param_id(
+            id_path
+                .iter()
+                .map(|n| n.text.as_str())
+                .collect::<Vec<_>>()
+                .join("."),
+        );
         if let Some((v, factor)) = param_value(&id, &value, diags) {
             let set = ParamSet {
                 id,
@@ -889,11 +901,13 @@ pub fn build(ast: &Ast, src: &str, diags: &mut Vec<Diagnostic>) -> Piece {
                     }
                     None => (None, &path[..]),
                 };
-                let id = id_path
-                    .iter()
-                    .map(|n| n.text.as_str())
-                    .collect::<Vec<_>>()
-                    .join(".");
+                let id = crate::voices::param_id(
+                    id_path
+                        .iter()
+                        .map(|n| n.text.as_str())
+                        .collect::<Vec<_>>()
+                        .join("."),
+                );
                 let Some((v, factor)) = param_value(&id, value, diags) else {
                     continue;
                 };

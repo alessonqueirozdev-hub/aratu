@@ -402,11 +402,14 @@ pub const ALIASES: &[(&str, &str)] = &[
 ];
 
 /// The effects a chain may name: Manguebyte's, in the order it runs them.
+/// `tube` is Manguebyte's drive set up as a valve: its smooth curve, a
+/// moderate gain and the level brought back down.
 pub const EFFECTS: &[&str] = &[
     "highpass",
     "lowpass",
     "eq",
     "drive",
+    "tube",
     "bitcrush",
     "compressor",
     "chorus",
@@ -417,6 +420,23 @@ pub const EFFECTS: &[&str] = &[
     "delay",
     "reverb",
 ];
+
+/// The effect a word names, in English: `valvula` and `válvula` are `tube`.
+pub fn effect(name: &str) -> Option<&'static str> {
+    EFFECTS.iter().copied().find(|e| crate::words::is(name, e))
+}
+
+/// A parameter's id with its effect in English: `valvula.drive` is
+/// `tube.drive`.
+pub fn param_id(id: String) -> String {
+    match id.split_once('.') {
+        Some((head, rest)) => match effect(head) {
+            Some(e) if e != head => format!("{e}.{rest}"),
+            _ => id,
+        },
+        None => id,
+    }
+}
 
 /// The voice a code names, aliases included.
 pub fn find(code: &str) -> Option<&'static Voice> {

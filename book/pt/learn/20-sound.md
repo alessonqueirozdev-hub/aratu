@@ -51,6 +51,7 @@ baixo = | dó2 _ dó2 mib2 | fá2 _ sol2 sib1 |
 | `highpass` | tira os graves, como um rádio pequeno |
 | `eq` | aumenta ou diminui graves, médios e agudos |
 | `drive` | distorce, como um amplificador no talo |
+| `valvula` (ou `tube`) | aquece e satura, como um amplificador de válvula |
 | `bitcrush` | som de videogame antigo |
 | `compressor` | iguala o volume, os fortes e os fracos |
 | `chorus` | dobra o som, que fica largo e brilhante |
@@ -103,6 +104,33 @@ Os números mais usados:
 
 O manual tem a lista completa. O knob do cutoff anda numa escala de
 frequência como o ouvido percebe; segure Shift para passos mais finos.
+
+## Equalizador e válvula
+
+Ao lado de `eq`, `valvula`, `drive`, `lowpass` e `highpass` numa cadeia, o
+editor desenha uma curva pequena que mostra o que o efeito faz, e ela
+muda junto quando você gira os knobs. A do `eq` é a resposta do
+equalizador: os graves à esquerda, os agudos à direita, para cima o que
+aumenta. Clique nela e o equalizador abre grande: arraste os pontos dos
+graves, dos médios e dos agudos, e os números são escritos no código. A
+roda do mouse no ponto dos médios estreita ou alarga a faixa.
+
+```aratu
+tempo: 96
+guitarra: guitar.steel -> eq -> valvula -> reverb
+guitarra = | mi3 sol3 lá3 sol3 | mi3 _ ré3 _ |
+guitarra.eq.low_gain = -6 dB
+guitarra.eq.mid_gain = 4 dB
+guitarra.eq.mid_freq = 900 Hz
+guitarra.valvula.drive = 12 dB
+```
+
+A válvula é o drive do Manguebyte ajustado como uma válvula: a curva
+suave que arredonda os picos, um pouco de ganho e o volume trazido de
+volta. Os números dela são `valvula.drive` (de 0 a 24 dB), `valvula.output`
+e `valvula.mix`. A curva ao lado dela mostra o quanto o som é achatado, e
+brilha mais quanto mais forte ela é tocada. Como a válvula e o drive são o
+mesmo estágio, uma cadeia usa um ou o outro.
 
 ## Um número que muda num compasso
 
@@ -157,4 +185,17 @@ baixo.lowpass.cutoff = 5000 Hz
 baixo: synth.saw -> lowpass
 baixo = | dó2 _ dó3 _ |
 baixo.lowpass.cutoff = 600 Hz
+```
+
+Passe a guitarra por uma válvula, com 12 dB de drive.
+
+```aratu exercise sound=1
+guitarra: guitar.steel -> reverb
+guitarra = | mi3 sol3 lá3 sol3 |
+```
+
+```aratu answer
+guitarra: guitar.steel -> valvula -> reverb
+guitarra = | mi3 sol3 lá3 sol3 |
+guitarra.valvula.drive = 12 dB
 ```

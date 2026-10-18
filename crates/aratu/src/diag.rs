@@ -441,6 +441,8 @@ pub enum Message {
     GrooveOnlyBare,
     /// A groove in a piece that is not in 4/4.
     GrooveMeter,
+    /// `-> tube -> drive`: the valve is Manguebyte's drive stage.
+    TubeAndDrive,
     /// A degree written as a note beyond what a melody reaches.
     DegreeRange {
         degree: i32,
@@ -983,6 +985,9 @@ impl Message {
                 Some(c) => format!("no existe el ritmo `{name}`; ¿sería `{c}`? Los ritmos son: {names}"),
                 None => format!("no existe el ritmo `{name}`; los ritmos son: {names}"),
             },
+            (TubeAndDrive, En) => "the tube is Manguebyte's drive stage set up as a valve, so a chain has one or the other; the drive's settings win here".into(),
+            (TubeAndDrive, Pt) => "a válvula é o estágio de drive do Manguebyte ajustado como válvula, então a cadeia tem um ou o outro; aqui valem os ajustes do drive".into(),
+            (TubeAndDrive, Es) => "la válvula es la etapa de drive de Manguebyte ajustada como válvula, así que la cadena tiene una u otro; aquí valen los ajustes del drive".into(),
             (GrooveOnlyBare, En) => "a groove writes lines, so it goes on a line of its own, without `at bar` or `every`; to change it at a bar, write the line that changes (`at bar 9: hh = …`) or use patterns".into(),
             (GrooveOnlyBare, Pt) => "uma levada escreve linhas, então vai numa linha só dela, sem `at bar` nem `every`; para mudar num compasso, escreva a linha que muda (`at bar 9: hh = …`) ou use padrões".into(),
             (GrooveOnlyBare, Es) => "un ritmo escribe líneas, así que va en una línea propia, sin `at bar` ni `every`; para cambiarlo en un compás, escribe la línea que cambia (`at bar 9: hh = …`) o usa patrones".into(),

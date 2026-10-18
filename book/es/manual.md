@@ -885,6 +885,15 @@ en el mismo orden, del filtro al delay:
 | `chorus`, `flanger`, `phaser` | `mix`, `rate`, `depth`, y más: `voices`, `feedback`, `stages`… |
 | `tremolo`, `autopan` | `rate`, `depth`, `shape` (0 senoide, 1 triángulo, 2 cuadrada, 3 y 4 sierra), `sync` (en tiempos) |
 | `delay` | `time` (en s o ms), `feedback`, `mix`, `damping`, `pingpong`, `sync` (en tiempos) |
+| `tube` (`valvula`) | `drive` (0 a 24 dB), `output`, `mix`: el drive de Manguebyte como válvula, con la curva suave; en una cadena, o la válvula o el drive |
+
+Al lado de `eq`, `tube`, `drive`, `lowpass` y `highpass` en una cadena, el
+editor dibuja la curva del efecto con los números de la parte: la
+respuesta del ecualizador y de los filtros, de los graves a los agudos, y
+cuánto aplanan el sonido el drive y la válvula. La curva del `eq`, con un
+clic, abre un ecualizador cuyos puntos de graves, medios y agudos se
+arrastran; los números se reescriben en el código, o se escriben debajo
+de la cadena cuando todavía no están.
 
 **Los sonidos.** Cada sonido tiene un código, escrito al principio de la
 cadena: `bajo: bass.slap -> reverb`, `drums: drums.808`, `piano:

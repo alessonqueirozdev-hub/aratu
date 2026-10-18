@@ -395,6 +395,10 @@ const TAUGHT: &[Taught] = &[
         c.contains("build over") || c.contains("subida e")
     }),
     ("melodies by degree", |c| c.contains("| 1 3 5")),
+    ("the tube", |c| {
+        c.contains("-> valvula") || c.contains("-> tube")
+    }),
+    ("the equalizer's numbers", |c| c.contains(".eq.")),
     ("a part's wave", |c| {
         c.contains(".wave") || c.contains(".onda")
     }),

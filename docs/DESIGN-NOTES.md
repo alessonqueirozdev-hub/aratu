@@ -1077,6 +1077,25 @@ once round: the bars are compared by what sounds at which beat. A playhead
 crosses the map and turns it a page at a time, unless it was just scrolled
 by hand. The book's small grids keep one time round of each line.
 
+## The equalizer and the tube, seen
+
+Beside `eq`, `tube`, `drive`, `lowpass` and `highpass` in a chain the
+editor draws the effect's curve from the part's numbers, worked out in the
+page (RBJ biquads for the equalizer's shelves and peak and for the
+filters, the transfer curve for the drive and the tube), so it is there
+before anything plays and follows the knobs. Manguebyte's `effectCurve`
+gives the same curves from the engine, but only for a part it has made.
+The equalizer's curve opens into a larger one with its three bands to
+drag: the numbers are rewritten where they are written, or written under
+the chain when they are not, so the piece keeps what was done.
+
+`tube` (`valvula`) is Manguebyte's drive set up as a valve: its smooth tanh
+curve, 8 dB of gain and the level brought 4 dB down, with `tube.drive`,
+`tube.output` and `tube.mix` as the drive's own numbers under other names.
+Manguebyte's curves are symmetric, so the tube has no even harmonics yet;
+an asymmetric curve with a bias, as a triode has, would be Manguebyte's to
+add. A chain names the tube or the drive, not both: they are one stage.
+
 On a phone the tabs go to the foot of the screen, under the thumb. Long
 lines wrap. The course's contents fold into a bar that names the page you
 are on.
