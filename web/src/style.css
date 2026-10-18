@@ -9,8 +9,6 @@
   --paper: #fffdf8;
   --panel: #f1ead9;
   --line: #e2d8c3;
-  /* The share card (scripts/og.mjs) draws its staff with this. */
-  --staff: rgba(120, 100, 70, 0.11);
   --rule: #cfc2a8;
   --text: #2a2420;
   --soft: #5b5047;
@@ -49,7 +47,6 @@
   --paper: #1d1612;
   --panel: #221a15;
   --line: #3a2d24;
-  --staff: rgba(255, 220, 180, 0.05);
   --rule: #4c3b2f;
   --text: #f3e6dc;
   --soft: #d6c4b5;
@@ -89,6 +86,12 @@
   --radius: 6px;
   --top-h: 66px;
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  /* What a phone's camera, round corners and home bar cover: nothing is
+     put there. */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
 }
 
 * {
@@ -112,6 +115,8 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
   background-image: var(--grain);
 }
 
@@ -164,8 +169,8 @@ h3,
   display: flex;
   align-items: center;
   gap: 10px 30px;
-  height: var(--top-h);
-  padding: 0 clamp(14px, 3vw, 30px);
+  height: calc(var(--top-h) + var(--safe-top));
+  padding: var(--safe-top) clamp(14px, 3vw, 30px) 0;
   background: var(--paper);
   border-bottom: 1px solid var(--line);
 }
@@ -1166,9 +1171,9 @@ button:active {
 
 .toc {
   position: sticky;
-  top: var(--top-h);
+  top: calc(var(--top-h) + var(--safe-top));
   align-self: start;
-  max-height: calc(100vh - var(--top-h));
+  max-height: calc(100vh - var(--top-h) - var(--safe-top));
   overflow: auto;
   padding: 26px 16px 32px 20px;
   border-right: 1px solid var(--line);
@@ -1941,7 +1946,7 @@ body.stage .play-view > * {
 
 body.stage .work {
   position: absolute;
-  inset: var(--rail) 0 0 0;
+  inset: calc(var(--rail) + var(--safe-top)) var(--safe-right) 0 var(--safe-left);
   display: block;
   height: auto;
   min-height: 0;
@@ -2012,8 +2017,8 @@ body.stage .stage-bar {
   display: flex;
   align-items: center;
   gap: 18px;
-  height: var(--rail);
-  padding: 0 14px 0 22px;
+  height: calc(var(--rail) + var(--safe-top));
+  padding: var(--safe-top) max(14px, var(--safe-right)) 0 max(22px, var(--safe-left));
   background: var(--paper);
   border-bottom: 1px solid var(--line);
   transition: box-shadow 160ms ease-out;
@@ -2211,8 +2216,8 @@ body.stage.idle .stage-bar .stage-exit {
 body.stage .stage-msg:not([hidden]) {
   display: block;
   position: fixed;
-  left: 20px;
-  bottom: 18px;
+  left: max(20px, var(--safe-left));
+  bottom: calc(18px + var(--safe-bottom));
   z-index: 30;
   max-width: min(64vw, 760px);
   margin: 0;
@@ -2239,6 +2244,7 @@ body.stage.stage-map #view-play > .rhythm {
   height: 36vh;
   overflow: auto;
   margin: 0;
+  padding-bottom: calc(16px + var(--safe-bottom));
   border-radius: 0;
   border-width: 1px 0 0;
 }
@@ -2438,11 +2444,11 @@ body.stage .stage-bar .stage-list-choice.on {
     --top-h: 54px;
   }
   body {
-    padding-bottom: calc(64px + env(safe-area-inset-bottom));
+    padding-bottom: calc(64px + var(--safe-bottom));
   }
   .top {
     gap: 8px;
-    padding: 0 12px;
+    padding: var(--safe-top) 12px 0;
   }
   .brand {
     gap: 8px;
@@ -2463,7 +2469,7 @@ body.stage .stage-bar .stage-list-choice.on {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0;
-    padding: 4px 4px calc(4px + env(safe-area-inset-bottom));
+    padding: 4px max(4px, var(--safe-right)) calc(4px + var(--safe-bottom)) max(4px, var(--safe-left));
     background: color-mix(in srgb, var(--paper) 94%, transparent);
     backdrop-filter: blur(12px);
     border-top: 1px solid var(--line);
@@ -2682,21 +2688,23 @@ body.stage .stage-bar .stage-list-choice.on {
     padding: 12px 16px 16px;
   }
   .sound-status {
-    bottom: calc(76px + env(safe-area-inset-bottom));
+    bottom: calc(76px + var(--safe-bottom));
   }
+}
 
-  /* The stage on a phone: one column, a slimmer rail, the tools in a row
-     that scrolls. */
+/* The stage on a phone, upright or lying down: one column, a slimmer rail,
+   the tools in a row that scrolls. */
+@media (max-width: 720px), (max-height: 500px) {
   body.stage {
     --rail: 54px;
     padding-bottom: 0;
   }
   body.stage .sound-status {
-    bottom: 12px;
+    bottom: calc(12px + var(--safe-bottom));
   }
   body.stage .stage-bar {
     gap: 10px;
-    padding: 0 8px 0 12px;
+    padding: var(--safe-top) max(8px, var(--safe-right)) 0 max(12px, var(--safe-left));
   }
   .stage-hud {
     gap: 10px;
@@ -2742,9 +2750,9 @@ body.stage .stage-bar .stage-list-choice.on {
     padding: 3vh 4vw 30vh;
   }
   body.stage .stage-msg:not([hidden]) {
-    left: 8px;
-    right: 8px;
-    bottom: 10px;
+    left: max(8px, var(--safe-left));
+    right: max(8px, var(--safe-right));
+    bottom: calc(10px + var(--safe-bottom));
     max-width: none;
     font-size: 14px;
   }

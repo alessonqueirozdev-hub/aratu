@@ -735,13 +735,18 @@ Enquanto a peça toca, você a muda; você não a reescreve.
 
 **O palco.** Para tocar diante de uma plateia, o botão **Palco** em Tocar
 (ou Ctrl+Shift+F) deixa só o código na tela, em tela cheia e com letra
-grande para o projetor. O contorno pisca no primeiro tempo de cada
-compasso, os símbolos acendem quando soam e a primeira mensagem aparece no
-canto. Os botões do canto tocam e param, mudam o tamanho da letra
-(A− e A+), mostram o mapa do ritmo embaixo e saem do palco; eles somem
-quando o mouse para. Esc também sai. O botão **2 colunas** divide o código
-em duas colunas, como num jornal: a segunda continua de onde a primeira
-termina, as duas rolam juntas, e editar em qualquer uma muda o mesmo texto.
+grande para o projetor. Uma faixa no alto mostra sempre o compasso, os
+tempos e o andamento, com uma linha que corre na duração de um compasso. O
+contorno acende no primeiro tempo de cada compasso, os símbolos acendem
+quando soam e a primeira mensagem aparece embaixo. Os botões da faixa tocam
+e param, trazem as cenas, mudam o tamanho da letra (A− e A+), mostram o
+mapa do ritmo embaixo e saem do palco; eles somem quando o mouse para e
+ficam numa tela de toque. Esc também sai. O botão **2 colunas** divide o
+código em duas colunas, como num jornal: a segunda começa de onde a
+primeira termina, e continua assim enquanto você escreve. Cada coluna rola
+sozinha: rolar uma não mexe a outra, e cada uma fica onde você a deixou até
+a letra mudar de tamanho. Editar em qualquer uma muda o mesmo texto. No
+celular o palco tem uma coluna só e um tamanho de letra próprio.
 **Caber na tela** encolhe a letra conforme a música cresce, para tudo caber
 sem rolar, até um tamanho ainda legível; daí em diante, as colunas rolam.
 Desligado, a letra fica do tamanho escolhido com A− e A+, e você rola.

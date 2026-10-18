@@ -197,9 +197,12 @@ export interface EditorHooks {
   stop(): void;
 }
 
-/** A phone's width: long lines wrap there, and the stage has one column. */
+/** A phone, upright or lying down: long lines wrap there, and the stage
+ * has one column. */
+export const PHONE = "(max-width: 720px), (max-height: 500px)";
+
 export function narrowScreen(): boolean {
-  return typeof window !== "undefined" && window.matchMedia("(max-width: 720px)").matches;
+  return typeof window !== "undefined" && window.matchMedia(PHONE).matches;
 }
 
 /** Long lines wrapped or not; on in the stage's two columns and on phones. */

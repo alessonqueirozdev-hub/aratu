@@ -190,7 +190,7 @@ El botón **Escenario**, en Tocar, deja solo el código en la pantalla, a
 pantalla completa y con letra grande, para tocar frente al público. El botón
 **2 columnas** divide el código en dos columnas, como en un periódico: la
 segunda sigue donde termina la primera, así cabe el doble sin desplazar la
-pantalla, y las dos se desplazan juntas. Se puede editar en cualquiera. Con
+pantalla, y cada una se desplaza sola. Se puede editar en cualquiera. Con
 **Caber en pantalla**, la letra se achica a medida que la música crece, para
 que la pieza entera quepa sin desplazar. Las listas de melodías tienen
 botones en la esquina, y Esc sale del escenario.

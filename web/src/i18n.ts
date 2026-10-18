@@ -11,9 +11,9 @@ const words = {
   navManual: { pt: "Manual", es: "Manual", en: "Manual" },
   navInside: { pt: "Por dentro", es: "Por dentro", en: "Inside" },
   tagline: {
-    pt: "música escrita para tocar e mudar enquanto toca",
-    es: "música escrita para tocar y cambiar mientras suena",
-    en: "music written to play, and to change while it plays",
+    pt: "linguagem orientada a performance musical e composição algorítmica",
+    es: "lenguaje orientado a la performance musical y la composición algorítmica",
+    en: "a language for musical performance and algorithmic composition",
   },
   light: { pt: "Claro", es: "Claro", en: "Light" },
   dark: { pt: "Escuro", es: "Oscuro", en: "Dark" },

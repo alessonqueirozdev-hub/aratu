@@ -727,12 +727,17 @@ While a piece plays, you change it; you do not rewrite it.
 **The stage.** To play in front of an audience, the **Stage** button in Play
 (or Ctrl+Shift+F) leaves only the code on the screen, full screen and in
 large type for a projector. The frame flashes on the first beat of each
-bar, the symbols light up as they sound and the first message shows in the
-corner. The buttons in the corner play and stop, change the type size (A−
-and A+), show the rhythm map below and leave the stage; they fade when the
-mouse rests. Esc leaves too. The **2 columns** button splits the code in two
-columns, like a newspaper: the second goes on where the first ends, the two
-scroll together, and editing in either changes the same text.
+bar, the symbols light up as they sound and the first message shows at the
+foot. A rail at the top always shows the bar, the beats and the tempo, with
+a line that runs for the length of one bar. The buttons on the rail play
+and stop, bring back scenes, change the type size (A− and A+), show the
+rhythm map below and leave the stage; they fade when the mouse rests and
+stay on a touch screen. Esc leaves too. The **2 columns** button splits the
+code in two columns, like a newspaper: the second starts where the first
+ends, and keeps doing so while you write. Each column scrolls on its own:
+scrolling one does not move the other, and each stays where you left it
+until the type size changes. Editing in either changes the same text. On a
+phone the stage has one column and its own type size.
 **Fit the screen** makes the letters smaller as the piece grows, so that all
 of it shows without scrolling, down to a size still easy to read; past
 that, the columns scroll. Off, the letters keep the size set with A− and A+,

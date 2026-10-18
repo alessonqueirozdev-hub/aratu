@@ -49,16 +49,6 @@ html, body { width: ${SHARE_IMAGE.width}px; height: ${SHARE_IMAGE.height}px; ove
 body {
   position: relative;
   background-color: var(--bg);
-  /* Music paper: staves of five faint lines. */
-  background-image: repeating-linear-gradient(
-    to bottom,
-    transparent 0 64px,
-    var(--staff) 64px 66px, transparent 66px 80px,
-    var(--staff) 80px 82px, transparent 82px 96px,
-    var(--staff) 96px 98px, transparent 98px 112px,
-    var(--staff) 112px 114px, transparent 114px 128px,
-    var(--staff) 128px 130px, transparent 130px 157.5px
-  );
   color: var(--text);
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
 }

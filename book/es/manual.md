@@ -750,12 +750,18 @@ Mientras la pieza suena, la cambias; no la reescribes.
 Tocar (o Ctrl+Shift+F) deja solo el código en la pantalla, en pantalla
 completa y con letra grande para el proyector. El borde destella en el
 primer tiempo de cada compás, los símbolos se encienden cuando suenan y el
-primer mensaje aparece en la esquina. Los botones de la esquina tocan y
-detienen, cambian el tamaño de la letra (A− y A+), muestran el mapa del
-ritmo abajo y salen del escenario; desaparecen cuando el ratón se queda
-quieto. Esc también sale. El botón **2 columnas** divide el código en dos
-columnas, como en un periódico: la segunda sigue donde termina la primera,
-las dos se desplazan juntas, y editar en cualquiera cambia el mismo texto.
+primer mensaje aparece abajo. Una franja arriba muestra siempre el compás,
+los tiempos y el tempo, con una línea que corre en la duración de un
+compás. Los botones de la franja tocan y detienen, traen las escenas,
+cambian el tamaño de la letra (A− y A+), muestran el mapa del ritmo abajo y
+salen del escenario; desaparecen cuando el ratón se queda quieto y se
+quedan en una pantalla táctil. Esc también sale. El botón **2 columnas**
+divide el código en dos columnas, como en un periódico: la segunda empieza
+donde termina la primera, y sigue así mientras escribes. Cada columna se
+desplaza sola: mover una no mueve la otra, y cada una queda donde la
+dejaste hasta que la letra cambie de tamaño. Editar en cualquiera cambia el
+mismo texto. En el celular el escenario tiene una sola columna y su propio
+tamaño de letra.
 **Caber en pantalla** achica la letra a medida que la música crece, para que
 todo quepa sin desplazar, hasta un tamaño todavía legible; a partir de ahí,
 las columnas se desplazan. Apagado, la letra queda del tamaño elegido con A−

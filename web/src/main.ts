@@ -1,7 +1,7 @@
 // Aratu in the browser: play, learn, look things up.
 
 import { EditorView } from "@codemirror/view";
-import { narrowScreen, setWrapping } from "./editor";
+import { PHONE, narrowScreen, setWrapping } from "./editor";
 import { Aratu, type Program } from "./aratu";
 import { Engine, type SoundProblem } from "./audio";
 import { mountBlocks } from "./blocks";
@@ -454,43 +454,60 @@ async function main(): Promise<void> {
     stageFont = Math.min(72, Math.max(narrowScreen() ? 12 : 16, px));
     save(fontKey(), String(stageFont));
     showFont(stageFont);
+    attached = true;
     requestAnimationFrame(() => fitFont());
   };
   // Two columns on stage: a second view of the code that goes on where
   // the first ends, like a newspaper's columns, so more of the piece shows
-  // without scrolling. Scrolling either moves both.
+  // without scrolling. The right column starts with the first line the
+  // left one does not show whole, so no line is cut in two and none is
+  // left out, and keeps to it while the piece is typed. Each column
+  // scrolls on its own: scrolled by hand, a column moves alone, and from
+  // then on each stays where it was put, until the letters change size,
+  // the window does, or the stage opens again.
   let split = load("aratu.stageSplit") === "on";
-  let linking = false;
-  // The right column starts with the first line the left one does not
-  // show whole, so no line is cut in two and none is left out. The left
-  // view knows exactly where its last line is; the right one is asked to
-  // bring that line to its top, measuring as it goes. Scrolling one column
-  // moves the other; the move it causes is not taken for the person's.
-  let mirrorQuiet = 0;
-  let leftQuiet = 0;
+  let attached = true;
+  // The right column's own moves, made here, are not taken for the
+  // person's.
+  let placing = 0;
+  // The left view knows exactly where its last line is; the right one is
+  // asked to bring that line to its top, measuring as it goes.
   const followColumn = () => {
     const m = playground.mirror;
-    if (!m || linking) return;
-    linking = true;
+    if (!m) return;
     const v = playground.view;
     const s = v.scrollDOM;
     const bottom = Math.max(0, s.scrollTop + s.clientHeight - v.documentPadding.top);
     const block = v.lineBlockAtHeight(bottom);
     const pos = block.bottom > bottom + 1 ? block.from : Math.min(block.to + 1, v.state.doc.length);
-    mirrorQuiet = performance.now() + 250;
+    placing = performance.now() + 250;
     m.dispatch({ effects: EditorView.scrollIntoView(pos, { y: "start", yMargin: 8 }) });
-    linking = false;
   };
-  const leadColumn = () => {
-    const m = playground.mirror;
-    if (!m || linking || performance.now() < mirrorQuiet) return;
-    linking = true;
-    const v = playground.view;
-    const s = v.scrollDOM;
-    const top = m.lineBlockAtHeight(Math.max(0, m.scrollDOM.scrollTop - m.documentPadding.top));
-    leftQuiet = performance.now() + 250;
-    s.scrollTop = Math.max(0, v.lineBlockAt(top.from).top + v.documentPadding.top - s.clientHeight);
-    linking = false;
+  // Not while the right column is being written in: there the cursor leads.
+  const place = () => {
+    if (attached && !playground.mirror?.hasFocus) followColumn();
+  };
+  // A scroll the person made: the wheel, a finger, the scroll bar, Page Up
+  // and Page Down. A wheel's glide goes on a little after the wheel stops.
+  const scrolledByHand = (el: HTMLElement): (() => boolean) => {
+    let until = 0;
+    const mark = () => (until = performance.now() + 500);
+    el.addEventListener("wheel", mark, { passive: true });
+    el.addEventListener("touchmove", mark, { passive: true });
+    el.addEventListener("pointerdown", (e) => {
+      if (e.target === el) mark();
+    });
+    el.addEventListener("keydown", (e) => {
+      if (e.key === "PageUp" || e.key === "PageDown") mark();
+    });
+    el.addEventListener(
+      "scroll",
+      () => {
+        if (performance.now() < until) mark();
+      },
+      { passive: true },
+    );
+    return () => performance.now() < until;
   };
   // "Fit the screen": the letters shrink as the piece grows, so that all
   // of it shows in the columns without scrolling, down to a size still
@@ -504,7 +521,7 @@ async function main(): Promise<void> {
     const run = ++fitting;
     if (!fit) {
       if (shownFont !== stageFont) showFont(stageFont);
-      requestAnimationFrame(followColumn);
+      requestAnimationFrame(place);
       return;
     }
     let steps = 0;
@@ -533,16 +550,23 @@ async function main(): Promise<void> {
       } else {
         if (next !== shownFont) showFont(next);
         // Once the letters have their size and the lines their places.
-        requestAnimationFrame(() => requestAnimationFrame(followColumn));
-        window.setTimeout(followColumn, 300);
+        requestAnimationFrame(() => requestAnimationFrame(place));
+        window.setTimeout(place, 300);
       }
     };
     requestAnimationFrame(() => requestAnimationFrame(step));
   };
+  // The left column scrolled by hand moves alone; moved by the cursor as
+  // the piece is typed, the right one follows.
+  const leftByHand = scrolledByHand(playground.view.scrollDOM);
   playground.view.scrollDOM.addEventListener("scroll", () => {
-    if (performance.now() >= leftQuiet) followColumn();
+    if (leftByHand()) attached = false;
+    else place();
   });
-  window.addEventListener("resize", () => fitFont());
+  window.addEventListener("resize", () => {
+    attached = true;
+    fitFont();
+  });
   const applySplit = () => {
     // A phone is too narrow for two columns.
     const on = split && onStage() && !narrowScreen();
@@ -551,15 +575,22 @@ async function main(): Promise<void> {
     $("stage-split").classList.toggle("on", split);
     if (on && !playground.mirror) {
       const m = playground.openMirror($("editor-mirror"));
-      m.scrollDOM.addEventListener("scroll", leadColumn);
+      // Moved by the person, or by the cursor while typing there: the right
+      // column stays where it went. Lines typed in the left column move it
+      // too, keeping what it shows in place; that is not the person's move.
+      const rightByHand = scrolledByHand(m.scrollDOM);
+      m.scrollDOM.addEventListener("scroll", () => {
+        if (performance.now() > placing && (rightByHand() || m.hasFocus)) attached = false;
+      });
     }
     if (!on && playground.mirror) playground.unmirror();
     $("stage-fit").classList.toggle("on", fit);
     playground.view.requestMeasure();
     // Once the second view has laid itself out, it starts where the first
     // ends.
+    attached = true;
     fitFont();
-    for (const ms of [250, 600]) window.setTimeout(followColumn, ms);
+    for (const ms of [250, 600]) window.setTimeout(place, ms);
   };
   // The controls fade when the mouse rests, and come back when it moves.
   const wake = () => {
@@ -598,6 +629,7 @@ async function main(): Promise<void> {
     fit = !fit;
     save("aratu.stageFit", fit ? "on" : "off");
     $("stage-fit").classList.toggle("on", fit);
+    attached = true;
     fitFont();
   };
   $("stage-play").onclick = () => void playground.play();
@@ -616,7 +648,7 @@ async function main(): Promise<void> {
   document.addEventListener("pointerdown", wake);
   // Turning a tablet, or narrowing the window: long lines wrap on a phone,
   // and the stage goes to one column.
-  window.matchMedia("(max-width: 720px)").addEventListener("change", () => {
+  window.matchMedia(PHONE).addEventListener("change", () => {
     if (!playground.mirror) setWrapping(playground.view, narrowScreen());
     if (onStage()) {
       setStageFont(savedFont());

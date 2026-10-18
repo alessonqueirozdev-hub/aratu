@@ -186,7 +186,7 @@ The **Stage** button, in Play, leaves only the code on the screen, full
 screen and in large letters, to play in front of an audience. The
 **2 columns** button splits the code in two columns, like a newspaper: the
 second goes on where the first ends, so twice as much fits without
-scrolling, and the two scroll together. You can edit in either. With
+scrolling, and each scrolls on its own. You can edit in either. With
 **Fit the screen**, the letters get smaller as the piece grows, so the whole
 piece shows without scrolling. Melody lists get buttons in the corner, and
 Esc leaves the stage.

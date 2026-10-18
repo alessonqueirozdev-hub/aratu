@@ -1035,6 +1035,14 @@ which has no resting mouse. A problem in the piece shows at the foot,
 never over the line being written. On a phone the stage has one column and
 its own letter size, and the button that leaves it stays in reach.
 
+In two columns each column scrolls on its own. The right one starts where
+the left one ends and keeps to it while the piece is typed in the left.
+Once either is scrolled by hand, or the cursor moves the right one, each
+stays where it was put until the letters change size, the window does, or
+the stage opens again. Linked scrolling moved the line the musician was
+reading. Nothing is put under a phone's camera, round corners or home bar
+(the safe-area insets), and a phone lying down counts as a phone.
+
 On a phone the tabs go to the foot of the screen, under the thumb. Long
 lines wrap. The course's contents fold into a bar that names the page you
 are on.
