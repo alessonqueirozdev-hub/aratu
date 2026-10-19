@@ -60,6 +60,7 @@ for (const f of ["engine.js", "ring.js", "scope.js", "worklet.js", "bridge.js"])
 for (const f of ["LICENSE-MIT", "LICENSE-APACHE"]) cpSync(join(crate, f), join(out, f));
 // Aratu's own types for the part of engine.js it uses.
 cpSync(join(web, "scripts", "manguebyte-engine.d.ts"), join(out, "engine.d.ts"));
+cpSync(join(web, "scripts", "manguebyte-bridge.d.ts"), join(out, "bridge.d.ts"));
 writeFileSync(
   join(out, "VERSION"),
   `Manguebyte ${COMMIT}\n${REPO}\nBuilt by Aratu's web/scripts/manguebyte.mjs.\n`,

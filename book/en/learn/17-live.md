@@ -229,6 +229,30 @@ scrolling, and each scrolls on its own. You can edit in either. With
 piece shows without scrolling. Melody lists get buttons in the corner, and
 Esc leaves the stage.
 
+## Playing in a DAW
+
+A DAW (REAPER, Ableton Live, FL Studio, Logic) is the program that records,
+mixes and puts effects on music. Aratu plays inside one with Manguebyte's
+**Aratu Bridge** plugin: put the plugin on an instrument track of the DAW,
+press **DAW** in Play and then **Connect**. From then on the sound comes
+out of the track, not the browser, with the same instruments: you can
+record the track, mix it with the others and put the DAW's effects on it.
+
+The DAW leads the time. Its play starts the music on its next bar line, its
+stop stops it, and its tempo is written in the piece's `tempo:` line. With
+the DAW stopped, **Play** still works, and the sound comes out of the DAW
+just the same.
+
+The plugin listens on port 47870; with more than one plugin in the DAW,
+each has a port of its own, written in the panel. The first time, the
+browser may ask whether the page can talk to programs on this computer:
+say yes. The parts' waves do not come through the DAW, so `bass.wave` is
+drawn from the notes again.
+
+> Put the plugin on a track, connect, and write `tempo: 90` in your piece.
+> Press play in the DAW at 120: the line becomes `tempo: 120` and the
+> music comes in on the DAW's next bar line.
+
 ## Sharing and recording
 
 Like what you made? **Share** copies a link with your piece inside: send it

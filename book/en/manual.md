@@ -759,6 +759,23 @@ in the order it plays, with its section on top, and a row for each part;
 an orange line runs across it and it scrolls along. A piece that starts
 again (a form, a loop) shows one round.
 
+**Playing in a DAW.** The **DAW** button, in Play, connects to
+Manguebyte's Aratu Bridge plugin on a DAW's track (port 47870 unless the
+plugin is set to another, `ws://127.0.0.1`). The page then sends the plugin
+what it would play itself, the parts, their effects and numbers, the
+recorded voices' files and every note, and the plugin plays them with the
+same engine, on the track; the browser makes no sound of its own. Times on
+the page become beats on the DAW's timeline at the DAW's tempo, and every
+bar line is put back on the DAW's beat, so the two clocks do not drift
+apart. The DAW leads: its play starts the piece on its next bar line, a
+jump of its cursor starts it again there, its stop stops it, and its tempo
+is written in the piece's `tempo:` line. While the DAW loops, the piece
+goes on in its own time and each lap is played. While the DAW is stopped,
+the piece plays from the page and is heard in the DAW. The parts' scopes
+(`bass.wave`) and levels do not come over the connection; the wave is drawn
+from the notes. If the plugin goes away, the sound comes back to the
+browser.
+
 **Sharing and recording.** The **Share** button, in Play, copies a link
 with the piece inside it: whoever opens the link hears and edits the same
 piece, and Ctrl+Z brings back what was in their editor. The piece travels

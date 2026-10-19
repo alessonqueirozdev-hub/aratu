@@ -10,6 +10,7 @@ import { EditorView } from "@codemirror/view";
 import { PHONE, narrowScreen, setWrapping } from "./editor";
 import { Aratu, type Program } from "./aratu";
 import { Engine, type SoundProblem } from "./audio";
+import { setupDaw } from "./daw";
 import { mountBlocks } from "./blocks";
 import { RhythmMap } from "./rhythm";
 import { examples } from "./examples";
@@ -631,6 +632,9 @@ async function main(): Promise<void> {
     }
   };
   showFollow();
+
+  // Playing in a DAW, through the Aratu Bridge plugin (see daw.ts).
+  setupDaw({ button: $("daw"), engine: getEngine, session: () => playground, lang: () => lang });
   for (const id of ["follow", "stage-follow"]) {
     $(id).onclick = () => {
       follow = !follow;

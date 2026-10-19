@@ -158,7 +158,8 @@ export class Session {
     return p;
   }
 
-  async play(): Promise<void> {
+  /** Plays the piece, its first bar at `at` on the audio clock, or at once. */
+  async play(at?: number): Promise<void> {
     const p = this.compile();
     if (this.playing || !p.ok) return;
     if (Session.active && Session.active !== this) Session.active.stop();
@@ -196,7 +197,7 @@ export class Session {
       });
     }
     this.ready = null;
-    await this.player.play(p);
+    await this.player.play(p, at);
     this.o.onPlaying?.(true);
     startVisuals();
     const tick = () => {
@@ -241,6 +242,24 @@ export class Session {
       this.frame = requestAnimationFrame(tick);
     };
     this.frame = requestAnimationFrame(tick);
+  }
+
+  /** The tempo the piece starts at, as last compiled. */
+  get tempo(): number | null {
+    return this.latest?.tempo ?? null;
+  }
+
+  /** Writes `bpm` as the piece's tempo, as its knob would: in the
+   * `tempo:` line, or in a new one at the top. While playing, it comes in
+   * at the next bar line. */
+  setTempo(bpm: number): void {
+    const text = String(Math.round(bpm * 10) / 10);
+    const control = this.compile().controls.find((c) => c.id === "tempo" && !c.timed);
+    const changes = control
+      ? { from: control.from, to: control.to, insert: text }
+      : { from: 0, insert: `tempo: ${text}
+` };
+    this.view.dispatch({ changes, userEvent: "input.daw" });
   }
 
   stop(): void {

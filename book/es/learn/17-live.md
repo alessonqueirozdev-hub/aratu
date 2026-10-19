@@ -235,6 +235,31 @@ pantalla, y cada una se desplaza sola. Se puede editar en cualquiera. Con
 que la pieza entera quepa sin desplazar. Las listas de melodías tienen
 botones en la esquina, y Esc sale del escenario.
 
+## Tocar en una DAW
+
+Una DAW (REAPER, Ableton Live, FL Studio, Logic) es el programa que graba,
+mezcla y pone efectos a la música. Aratu toca dentro de ella con el plugin
+**Aratu Bridge**, de Manguebyte: pon el plugin en una pista de instrumento
+de la DAW, pulsa **DAW** en Tocar y después **Conectar**. Desde entonces el
+sonido sale de la pista, y no del navegador, con los mismos instrumentos:
+puedes grabar la pista, mezclarla con las otras y ponerle los efectos de la
+DAW encima.
+
+Quien manda en el tempo es la DAW. Su play empieza la música en su compás
+siguiente, su stop la para, y su tempo se escribe en la línea `tempo:` de
+la pieza. Con la DAW parada, **Tocar** sigue funcionando, y el sonido sale
+en la DAW igual.
+
+El plugin escucha en el puerto 47870; con más de un plugin en la DAW, cada
+uno tiene su puerto, y se escribe en el panel. La primera vez, el navegador
+puede preguntar si la página puede hablar con programas de este ordenador:
+responde que sí. Por la DAW no llegan las ondas de las partes, así que
+`bajo.onda` vuelve a dibujarse a partir de las notas.
+
+> Pon el plugin en una pista, conecta y escribe `tempo: 90` en tu pieza.
+> Dale play a la DAW a 120: la línea pasa a `tempo: 120` y la música entra
+> en el compás siguiente de la DAW.
+
 ## Compartir y grabar
 
 ¿Te gustó lo que hiciste? **Compartir** copia un enlace con tu música

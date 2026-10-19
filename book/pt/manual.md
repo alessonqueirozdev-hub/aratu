@@ -768,6 +768,22 @@ para cada compasso, na ordem em que toca, com a seção em cima, e uma
 fileira para cada parte; uma linha laranja corre por ele e ele rola
 junto. Uma peça que recomeça (uma forma, um loop) aparece uma volta só.
 
+**Tocar numa DAW.** O botão **DAW**, em Tocar, conecta ao plugin
+Aratu Bridge do Manguebyte numa trilha da DAW (porta 47870, a não ser que o
+plugin esteja em outra; `ws://127.0.0.1`). A página passa a mandar ao
+plugin o que ela mesma tocaria, as partes, os seus efeitos e números, os
+arquivos das vozes gravadas e cada nota, e o plugin os toca com o mesmo
+motor, na trilha; o navegador não faz som nenhum. Os tempos da página
+viram tempos da linha do tempo da DAW, no andamento dela, e cada barra de
+compasso é recolocada no tempo da DAW, para os dois relógios não se
+afastarem. A DAW manda: o play dela começa a peça no próximo compasso
+dela, um salto do cursor recomeça a peça ali, o stop para, e o andamento
+dela é escrito na linha `tempo:` da peça. Enquanto a DAW está em loop, a
+peça segue no seu tempo e cada volta é tocada. Com a DAW parada, a peça
+toca pela página e é ouvida na DAW. Os osciloscópios das partes
+(`baixo.onda`) e os níveis não vêm pela conexão; a onda é desenhada pelas
+notas. Se o plugin sair, o som volta para o navegador.
+
 **Compartilhar e gravar.** O botão **Compartilhar**, em Tocar, copia um
 link com a música dentro: quem abrir o link ouve e edita a mesma peça, e o
 Ctrl+Z traz de volta o que estava no editor dela. A música vai na parte do

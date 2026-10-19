@@ -10,11 +10,14 @@
 // failed, and everything when Manguebyte cannot run or the Sounds panel
 // turns it off. Each part keeps a
 // stand-in chain (high-pass, low-pass, volume, pan, delay and reverb sends)
-// for that. A part's voice is the code at the head of its chain
+// for that. In a DAW, the same calls go to the Aratu Bridge plugin instead
+// (`useDaw`), which plays them with Manguebyte's engine on a track, in time
+// with the DAW; the browser then makes no sound of its own. A part's voice is the code at the head of its chain
 // (`bass: bass.slap -> reverb`), from the catalogue in the crate.
 
 import type { AratuEvent, BarInfo, ParamValue, PartInfo, Program, VoiceCatalogue } from "./aratu";
 import { type Instrument, ManguebyteEngine, type PresetKind } from "../public/manguebyte/engine.js";
+import { AratuBridge } from "../public/manguebyte/bridge.js";
 import { detailOf, limited } from "./download";
 import { type Loaded, Sampler } from "./sampler";
 import { encodeWav } from "./wav";
@@ -533,6 +536,14 @@ export class Engine {
   private mbLive: ManguebyteEngine | null = null;
   /** Where Manguebyte's output joins the stand-in's on the way out. */
   private readonly mbOut: GainNode;
+  /** The DAW the parts play in, through the Aratu Bridge plugin on this
+   * port; null when they play in the browser. */
+  private daw: { port: number; bridge?: AratuBridge } | null = null;
+  /** Tells the editor when the DAW connects, goes or sends its transport. */
+  dawHooks: {
+    state?(state: AratuBridge["state"]): void;
+    transport?(t: NonNullable<AratuBridge["transport"]>): void;
+  } = {};
   /** Each part's wave, as Manguebyte's part scope last gave it. */
   private readonly waves = new Map<string, { samples: Float32Array | null; asked: boolean }>();
   /** The module has no part scopes: the waves are drawn from the notes. */
@@ -946,8 +957,126 @@ export class Engine {
     this.hear(c, voice);
   }
 
+  /** Why the DAW could not be reached, last time. */
+  private dawError = "";
+  /** The DAW's beat the piece's first bar fell on, while the DAW plays. */
+  private dawStart: number | null = null;
+
+  /** Ties the piece's first bar, at `at` on the audio clock, to the beat the
+   * DAW is on then, if it plays. */
+  anchorDaw(at: number): void {
+    const bridge = this.bridge;
+    this.dawStart = bridge?.transport?.playing ? bridge.beatAt(at) : null;
+  }
+
+  /** Where on the audio clock the DAW reaches the piece's `elapsed` seconds,
+   * at its tempo: null when it does not play, or loops, and the page's own
+   * clock goes on. */
+  lockedTime(elapsed: number): number | null {
+    const bridge = this.bridge;
+    const t = bridge?.transport;
+    if (!bridge || !t?.playing || this.dawStart === null || t.loopEnd > t.loopStart) return null;
+    return bridge.timeAtBeat(this.dawStart + (elapsed * t.tempo) / 60);
+  }
+
+  /** The bridge to the DAW, while the parts play there. */
+  get bridge(): AratuBridge | null {
+    return this.daw?.bridge ?? null;
+  }
+
+  /** Plays in the DAW whose Aratu Bridge plugin listens on `port`, or, with
+   * null, in the browser again. Every part is made again in the engine it
+   * moves to; what sounds stops. Rejects, and stays in the browser, when the
+   * plugin cannot be reached. */
+  async useDaw(port: number | null): Promise<void> {
+    this.allOff();
+    const old = this.mbEngine;
+    this.mbEngine = null;
+    this.mbLive = null;
+    this.daw = port === null ? null : { port };
+    for (const c of this.chains.values()) {
+      c.mb = undefined;
+      c.next = undefined;
+      c.perc = undefined;
+      c.percLoading = undefined;
+      c.wanted = "";
+      c.effectsSet = "";
+    }
+    this.nextMbPart = 0;
+    this.freeMbParts.length = 0;
+    this.waves.clear();
+    this.scopesGone = false;
+    // In the DAW the sound is the plugin's: the browser stays quiet.
+    this.master.gain.setTargetAtTime(port === null ? 0.7 : 0, this.ctx.currentTime, 0.02);
+    void old?.then((e) => e?.close()).catch(() => {});
+    await this.ctx.resume();
+    if (port === null) return;
+    const engine = await this.engineMb();
+    if (!engine) {
+      const detail = this.dawError;
+      this.daw = null;
+      this.mbEngine = null;
+      this.master.gain.setTargetAtTime(0.7, this.ctx.currentTime, 0.02);
+      throw new Error(detail || "the plugin could not be reached");
+    }
+  }
+
+  /** Makes every part again in the engine, as after the plugin's engine
+   * was reset. */
+  private remake(): void {
+    for (const c of this.chains.values()) {
+      c.mb = undefined;
+      c.next = undefined;
+      c.perc = undefined;
+      c.percLoading = undefined;
+      c.wanted = "";
+      c.effectsSet = "";
+      this.route(c);
+      this.routePerc(c);
+    }
+  }
+
+  /** The bridge to the DAW: the page's audio clock is its clock, so every
+   * time given here becomes a beat on the DAW's timeline. */
+  private async connectDaw(port: number): Promise<ManguebyteEngine> {
+    const bridge = await limited(
+      AratuBridge.connect({ port, clock: () => this.ctx.currentTime, name: "Aratu" }),
+    );
+    if (this.daw?.port !== port) {
+      void bridge.close();
+      throw new Error("the DAW was let go while connecting");
+    }
+    this.daw.bridge = bridge;
+    bridge.onstate = (state) => {
+      if (state === "closed" || state === "error") {
+        if (this.daw?.bridge === bridge) this.mbLive = null;
+      }
+      this.dawHooks.state?.(state);
+    };
+    bridge.ontransport = (t) => this.dawHooks.transport?.(t);
+    bridge.onnotice = (n) => {
+      if (n.code === 1) this.remake();
+    };
+    this.dawHooks.state?.(bridge.state);
+    return bridge;
+  }
+
   /** Manguebyte's engine, made once, its output joining the stand-in's. */
   private engineMb(): Promise<ManguebyteEngine | null> {
+    const daw = this.daw;
+    if (daw) {
+      this.mbEngine ??= this.connectDaw(daw.port)
+        .then((engine) => {
+          this.mbLive = engine;
+          return engine;
+        })
+        .catch((error: unknown) => {
+          console.warn("Aratu Bridge:", error);
+          this.dawError = error instanceof Error ? error.message : String(error);
+          return null;
+        });
+      return this.mbEngine;
+    }
     this.mbEngine ??= (async () => {
       const module = await this.moduleOf();
       if (!module) return null;
@@ -1126,7 +1255,8 @@ export class Engine {
     const before = this.beatAt.get(info.bar) ?? 0;
     this.beatAt.set(info.bar + 1, before + info.beats);
     const first = [...this.chains.values()].find((c) => c.mb?.ready)?.mb;
-    if (!first) return;
+    // In a DAW the plugin gives the engine the DAW's tempo itself.
+    if (!first || this.daw) return;
     engine.setParam(first.index, "master.tempo", info.bpm, at);
     engine.setParam(first.index, "master.beat", before, at);
   }

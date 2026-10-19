@@ -1209,3 +1209,35 @@ for go to it. While that part is being made, or when Manguebyte cannot run,
 the stand-in plays them as before; nothing else plays in the stand-in now
 but a recorded voice whose download failed, or everything when Manguebyte
 is off.
+
+## Playing in a DAW (19 October 2026)
+
+Manguebyte's Aratu Bridge plugin (CLAP, VST 3, AU) runs `manguebyte-web`
+natively on a DAW track and takes, over a WebSocket on 127.0.0.1, what the
+page would give its own engine. `bridge.js` is the same API as
+`engine.js`, so `Engine.useDaw(port)` only swaps the engine: every part is
+made again in it, the browser's own output is turned down to nothing (a
+stand-in voice heard locally would be out of time with the DAW), and
+`useDaw(null)` comes back.
+
+The bridge is given the page's audio clock (`clock: ctx.currentTime`), so
+the player schedules exactly as it does in the browser and the bridge turns
+each time into a beat on the DAW's timeline at the DAW's tempo. Two clocks
+on two devices drift apart, so each bar line the player schedules is put
+back on the DAW: the piece's seconds since its first bar, at the DAW's
+tempo, from the beat the first bar fell on (`anchorDaw`, `lockedTime`).
+Against a fake plugin that plays a transport on another process's clock,
+26 seconds of playing kept every bar within -0.027 and +0.007 beats of its
+DAW beat, where without the lock it drifted 0.012 beats every 8. While the
+DAW loops the lock is off: the piece goes on in its own time, and the
+bridge sends what falls past the loop's end to the next lap.
+
+The DAW leads (`daw.ts`): its play starts the piece on its next bar line at
+least 0.4 s ahead, a jump of its cursor starts it again there (the events
+the bridge sends again after the jump are dropped by the stop's cancel),
+its stop stops it, and its tempo is written in the piece's `tempo:` line as
+the knob would write it, once it has settled for 0.3 s. Scopes and levels
+are not available over the bridge; `partWave` falls back to the notes when
+the read rejects. Not tried yet: a real DAW from aratu.live (the plugin was
+tried by Manguebyte in REAPER from a page on 127.0.0.1), Chrome's local
+network permission prompt, and Safari's rules for `ws://` from `https://`.

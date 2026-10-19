@@ -40,6 +40,44 @@ const words = {
   stageSplit: { pt: "2 colunas", es: "2 columnas", en: "2 columns" },
   stageFit: { pt: "Caber na tela", es: "Caber en pantalla", en: "Fit the screen" },
   follow: { pt: "Seguir", es: "Seguir", en: "Follow" },
+  // Playing in a DAW, through the Aratu Bridge plugin.
+  daw: { pt: "DAW", es: "DAW", en: "DAW" },
+  dawHint: {
+    pt: "Tocar numa DAW, pelo plugin Aratu Bridge",
+    es: "Tocar en una DAW, con el plugin Aratu Bridge",
+    en: "Play in a DAW, through the Aratu Bridge plugin",
+  },
+  dawTitle: { pt: "Tocar na DAW", es: "Tocar en la DAW", en: "Play in the DAW" },
+  dawAbout: {
+    pt: "Ponha o plugin Aratu Bridge numa trilha da DAW e conecte. O som sai da trilha; o play da DAW começa a música no próximo compasso, o stop para, e o andamento da DAW passa a ser o da peça.",
+    es: "Pon el plugin Aratu Bridge en una pista de la DAW y conecta. El sonido sale de la pista; el play de la DAW empieza la música en el compás siguiente, el stop la para, y el tempo de la DAW pasa a ser el de la pieza.",
+    en: "Put the Aratu Bridge plugin on a DAW track and connect. The sound comes out of the track; the DAW's play starts the music on its next bar line, its stop stops it, and the DAW's tempo becomes the piece's.",
+  },
+  dawPort: { pt: "Porta do plugin", es: "Puerto del plugin", en: "Plugin port" },
+  dawConnect: { pt: "Conectar", es: "Conectar", en: "Connect" },
+  dawDisconnect: { pt: "Desconectar", es: "Desconectar", en: "Disconnect" },
+  dawIdle: { pt: "Tocando no navegador.", es: "Sonando en el navegador.", en: "Playing in the browser." },
+  dawConnecting: { pt: "Conectando ao plugin…", es: "Conectando con el plugin…", en: "Connecting to the plugin…" },
+  dawOpen: {
+    pt: "Conectado: o som sai da DAW.",
+    es: "Conectado: el sonido sale de la DAW.",
+    en: "Connected: the sound comes out of the DAW.",
+  },
+  dawFailed: {
+    pt: "Não conectou. O plugin está aberto, nessa porta?",
+    es: "No se conectó. ¿Está abierto el plugin, en ese puerto?",
+    en: "Could not connect. Is the plugin open, on that port?",
+  },
+  dawLost: {
+    pt: "A DAW desconectou; o som voltou ao navegador.",
+    es: "La DAW se desconectó; el sonido volvió al navegador.",
+    en: "The DAW went away; the sound is back in the browser.",
+  },
+  dawBadPort: {
+    pt: "A porta é um número de 1024 a 65535.",
+    es: "El puerto es un número de 1024 a 65535.",
+    en: "The port is a number from 1024 to 65535.",
+  },
   // The legal notices in the footer (the AGPL's Appropriate Legal Notices).
   legal: {
     pt: "Software livre (AGPL-3.0), sem garantia; textos CC BY-SA 4.0",

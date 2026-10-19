@@ -75,7 +75,7 @@ export declare class ManguebyteEngine {
     },
   ): Promise<ManguebyteEngine>;
   readonly node: AudioWorkletNode;
-  readonly mode: "shared" | "message";
+  readonly mode: "shared" | "message" | "bridge";
   /** How partScope and partLevels read: null for a module without them. */
   readonly scopeMode: "shared" | "message" | null;
   noteOn(part: number, note: number, velocity?: number, time?: number, channel?: number, accent?: boolean): boolean;

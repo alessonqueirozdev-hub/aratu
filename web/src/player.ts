@@ -58,6 +58,8 @@ export class Player {
   /** Counts stops, so a start still waiting for the engine knows it was
    * stopped meanwhile. */
   private runs = 0;
+  /** The piece's seconds from its first bar to `nextTime`. */
+  private elapsed = 0;
   private timer: number | undefined;
 
   constructor(
@@ -74,7 +76,9 @@ export class Player {
     return this.program;
   }
 
-  async play(program: Program): Promise<void> {
+  /** Plays from the first bar, which starts at `at` on the audio clock, or
+   * at once. */
+  async play(program: Program, at?: number): Promise<void> {
     this.stop();
     const run = this.runs;
     await this.engine.ctx.resume();
@@ -89,7 +93,9 @@ export class Player {
     for (const l of program.live) this.anchors.set(l.key, 1);
     this.seed = (Math.random() * 2 ** 32) >>> 0;
     this.nextBar = program.pickup > 0 ? 0 : 1;
-    this.nextTime = this.engine.ctx.currentTime + 0.12;
+    this.nextTime = Math.max(at ?? 0, this.engine.ctx.currentTime + 0.12);
+    this.elapsed = 0;
+    this.engine.anchorDaw(this.nextTime);
     this.timer = window.setInterval(() => this.tick(), 25);
     this.tick();
   }
@@ -165,6 +171,7 @@ export class Player {
       this.hooks.events(this.schedule(r.events, offset, program.handle));
       this.hooks.swapped(program, bar, beat);
       this.nextBar = bar + 1;
+      this.elapsed += info.end + offset - this.nextTime;
       this.nextTime = info.end + offset;
       this.tick();
       return true;
@@ -217,6 +224,10 @@ export class Player {
     this.engine.bar(bar, this.nextTime);
     this.hooks.events(list);
     this.nextTime += Math.max(bar.end - bar.start, 0);
+    this.elapsed += Math.max(bar.end - bar.start, 0);
+    // In a DAW, each bar line is put back on the DAW's beat, so that the
+    // page's clock and the DAW's never drift apart.
+    this.nextTime = this.engine.lockedTime(this.elapsed) ?? this.nextTime;
     this.nextBar++;
   }
 }
