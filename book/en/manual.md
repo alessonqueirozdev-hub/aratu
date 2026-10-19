@@ -925,9 +925,14 @@ modelled bars; the bowed strings (`strings.*`, also in pizzicato), the
 winds (`flute`, `clarinet`, `sax`, `trumpet`, `trombone`) and the voices
 (`choir.aah`, `choir.ooh`, `voice.solo`) as modelled instruments. Each
 part has its effects in the engine, and the mix goes through a shared
-reverb, a glue compressor and a limiter. The Brazilian percussion and the
-golpe still play in a stand-in until Manguebyte has them; if something goes
-wrong in a performance, the switch in the Sounds panel turns Manguebyte off
+reverb, a glue compressor and a limiter. The Brazilian percussion (pandeiro,
+zabumba, triangle, agogô, surdo, tamborim, alfaia, gonguê, ganzá, cuíca and
+cajón), the golpe and the hand clap play on Manguebyte's drum machine,
+modelled, the same on every kit: when a part's own sound has no keys for
+them (`drums.kit`, `drums.acoustic`, a guitar for its golpe), a drum
+machine plays them beside it, with the part's effects and numbers. A
+stand-in engine plays a recorded voice whose download failed; if something
+goes wrong in a performance, the switch in the Sounds panel turns Manguebyte off
 and everything plays in the stand-in.
 
 **A sound plays only once it has been downloaded.** When you press **Play** or

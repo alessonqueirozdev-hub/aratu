@@ -186,6 +186,7 @@ fn describe(handle: u32, program: &Program, src: &str, lang: Lang) -> String {
         j.open_obj();
         j.key("name").str(&part.name);
         j.key("instrument").str(instrument(part));
+        j.key("percussion").bool(part.plays_percussion());
         j.key("chain").open_arr();
         for u in &part.chain {
             j.str(u);
@@ -806,6 +807,7 @@ mod tests {
         assert!(text.contains("\"ok\":true"), "{text}");
         assert!(text.contains("\"name\":\"bass\""));
         assert!(text.contains("\"instrument\":\"drums\""));
+        assert!(text.contains("\"percussion\":false"));
         let r = render_json(h, 1, 0, 2, 1, 0, "");
         assert!(r.contains("\"note\":48"), "{r}");
         assert!(r.contains("\"drum\":\"closed-hat\""));
@@ -899,7 +901,7 @@ mod control_tests {
         assert_eq!(ctl[0].part, "alfaia");
         let (_, text) = compile_json(src, Lang::En);
         assert!(
-            text.contains("{\"name\":\"alfaia\",\"instrument\":\"drums\",\"chain\":[\"reverb\"],\"params\":[{\"id\":\"volume\",\"value\":0.6}]}"),
+            text.contains("{\"name\":\"alfaia\",\"instrument\":\"drums\",\"percussion\":true,\"chain\":[\"reverb\"],\"params\":[{\"id\":\"volume\",\"value\":0.6}]}"),
             "{text}"
         );
     }

@@ -1189,3 +1189,23 @@ harmonics, with unity slope at rest and a 5 Hz high-pass after it for the
 offset. The curve drawn beside `tube` is the same function, and
 `drive.shape = 4` gives it to a plain drive. It has no oversampling, so
 much drive on high notes aliases, as the other curves do.
+
+## Brazilian percussion on Manguebyte's drum machine (19 October 2026)
+
+Manguebyte (commit 61cde87) plays Aratu's percussion keys on every
+`drum_kit` preset, by physical modelling and at one level on every kit:
+the pandeiro, zabumba, triangle, agogô, surdo, tamborim, alfaia, gonguê,
+ganzá, cuíca and cajón (keys 67 to 103), the hand clap (39) and the
+guitar's golpe (88). The event names Aratu gives these strokes were
+already Manguebyte's key names, so the editor looks them up in one table.
+
+A part whose own sound is a drum machine plays them itself. Any other
+part that plays them (`Part::plays_percussion`: a percussion line, a strum
+line for its golpe, or a clap in a drum line; `percussion` in the parts'
+JSON) gets a second Manguebyte part beside its own, a `drum_kit` with the
+part's effects and numbers, made when the part is set up, so the first
+stroke already sounds there. Only the strokes the part's own kit has no key
+for go to it. While that part is being made, or when Manguebyte cannot run,
+the stand-in plays them as before; nothing else plays in the stand-in now
+but a recorded voice whose download failed, or everything when Manguebyte
+is off.

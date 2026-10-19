@@ -934,9 +934,14 @@ arco (`strings.*`, também em pizzicato), os sopros (`flute`, `clarinet`,
 `sax`, `trumpet`, `trombone`) e as vozes (`choir.aah`, `choir.ooh`,
 `voice.solo`) como instrumentos modelados. Cada parte tem os seus efeitos no motor, e a
 mixagem passa por um reverb compartilhado, um compressor de cola e um
-limitador. A percussão brasileira e o golpe ainda tocam num motor
-provisório, até o Manguebyte tê-los; se algo der errado numa apresentação,
-o interruptor do painel Sons desliga o Manguebyte e tudo passa a tocar no
+limitador. A percussão brasileira (pandeiro, zabumba, triângulo,
+agogô, surdo, tamborim, alfaia, gonguê, ganzá, cuíca e cajón), o golpe e a
+palma tocam na bateria eletrônica do Manguebyte, modelados, iguais em todos
+os kits: quando o som da parte não tem teclas para eles (`drums.kit`,
+`drums.acoustic`, um violão no seu golpe), uma bateria eletrônica os toca
+ao lado dela, com os efeitos e os números da parte. Um motor provisório toca
+uma voz gravada cujo download falhou; se algo der errado numa apresentação, o
+interruptor do painel Sons desliga o Manguebyte e tudo passa a tocar no
 provisório.
 
 **Um som só toca depois de baixado.** Ao apertar **Tocar** ou **Ouvir**, o Aratu espera

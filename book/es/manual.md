@@ -954,10 +954,15 @@ polifónico; la celesta y el steelpan (`mallets.celesta`,
 `sax`, `trumpet`, `trombone`) y las voces (`choir.aah`, `choir.ooh`,
 `voice.solo`) como instrumentos modelados. Cada parte tiene sus
 efectos en el motor, y la mezcla pasa por una reverb compartida, un
-compresor de pegamento y un limitador. La percusión brasileña y el golpe
-aún suenan con un motor provisional, hasta que Manguebyte los tenga; si
-algo sale mal en una presentación, el interruptor del panel Sonidos apaga
-Manguebyte y todo pasa al provisional.
+compresor de pegamento y un limitador. La percusión brasileña (pandeiro,
+zabumba, triángulo, agogó, surdo, tamborim, alfaia, gonguê, ganzá, cuíca y
+cajón), el golpe y la palmada suenan en la caja de ritmos de Manguebyte,
+modelados, iguales en todos los kits: cuando el sonido de la parte no tiene
+teclas para ellos (`drums.kit`, `drums.acoustic`, una guitarra en su
+golpe), una caja de ritmos los toca a su lado, con los efectos y los números
+de la parte. Un motor provisional toca una voz grabada cuya descarga
+falló; si algo sale mal en una presentación, el interruptor del panel
+Sonidos apaga Manguebyte y todo pasa al provisional.
 
 **Un sonido solo suena después de descargado.** Al pulsar **Tocar** o **Escuchar**,
 Aratu espera a que lleguen los sonidos de la pieza, y un aviso abajo de la

@@ -20,6 +20,9 @@ export interface PartInfo {
   name: string;
   /** "drums", "guitar", "keys" or "synth": the default sound. */
   instrument: string;
+  /** It plays Brazilian percussion, a golpe or a clap, which only a drum
+   * machine has keys for. */
+  percussion: boolean;
   chain: string[];
   params: ParamValue[];
 }

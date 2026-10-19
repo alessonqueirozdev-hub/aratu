@@ -100,3 +100,62 @@ impl Perc {
         }
     }
 }
+
+impl crate::model::Part {
+    /// Whether the part plays strokes that only a drum machine has keys
+    /// for: Brazilian percussion, a guitar's golpe, or a hand clap in a drum
+    /// line. The editor gives such a part a drum machine beside its own
+    /// sound, when its own cannot play them.
+    pub fn plays_percussion(&self) -> bool {
+        use crate::ast::{BarContent, LineKind, Sound};
+        use crate::ratio::Ratio;
+        self.lines.iter().any(|l| match l.kind {
+            LineKind::Percussion(_) | LineKind::Strum => true,
+            LineKind::Drums => l.bars.iter().any(|b| match &b.content {
+                BarContent::Beats(beats) => beats.iter().any(|beat| {
+                    let mut clap = false;
+                    crate::dynamics::visit(
+                        &beat.slots,
+                        Ratio::int(0),
+                        Ratio::int(1),
+                        &mut |h, _, _| {
+                            clap |= h.sound == Sound::Drum('p');
+                        },
+                    );
+                    clap
+                }),
+                _ => false,
+            }),
+            _ => false,
+        })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    fn plays(src: &str, part: &str) -> bool {
+        let compiled = crate::compile(src);
+        compiled
+            .piece
+            .all_parts()
+            .find(|p| p.name == part)
+            .unwrap_or_else(|| panic!("no part {part}"))
+            .plays_percussion()
+    }
+
+    #[test]
+    fn percussion_a_golpe_or_a_clap_asks_for_a_drum_machine() {
+        assert!(plays("alfaia = O -o o_oo o", "alfaia"));
+        assert!(plays(
+            "drums { bd = b b b b; pandeiro = pd td pd td }",
+            "drums"
+        ));
+        assert!(plays("drums { bd = b b b b; clap = - p - p }", "drums"));
+        assert!(plays(
+            "guitar { chords = | Am | }\nguitar { strum = d d t d }",
+            "guitar"
+        ));
+        assert!(!plays("drums { bd = b b b b; hh = cc cc cc cc }", "drums"));
+        assert!(!plays("bass = | c2 _ eb2 _ |", "bass"));
+    }
+}

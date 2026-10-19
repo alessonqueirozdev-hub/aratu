@@ -3,10 +3,12 @@
 // The sound of the editor. Manguebyte's engine plays almost every voice: one
 // engine, one numbered part of it for each part of the piece, with the
 // part's effects and Manguebyte's master bus (a shared reverb, a glue
-// compressor, a true-peak limiter). Beside it, the Web Audio stand-in plays
-// what Manguebyte does not have yet (the Brazilian percussion, the golpe on a
-// guitar part), a sampled voice while its samples come, and everything when
-// Manguebyte cannot run or the Sounds panel turns it off. Each part keeps a
+// compressor, a true-peak limiter). A part that plays Brazilian percussion,
+// a golpe or a clap its own sound has no key for gets a second Manguebyte
+// part beside it, a drum machine, whose keys play them. Beside Manguebyte,
+// the Web Audio stand-in plays a sampled voice whose download to Manguebyte
+// failed, and everything when Manguebyte cannot run or the Sounds panel
+// turns it off. Each part keeps a
 // stand-in chain (high-pass, low-pass, volume, pan, delay and reverb sends)
 // for that. A part's voice is the code at the head of its chain
 // (`bass: bass.slap -> reverb`), from the catalogue in the crate.
@@ -31,6 +33,38 @@ const MB_DRUMS: Record<string, number> = {
   "mid-tom": 47,
   "floor-tom": 43,
   "guitar-tap": 88,
+};
+
+/** The keys only Manguebyte's drum machine (`drum_kit`) plays, on every
+ * kit alike: Aratu's Brazilian percussion, modelled, the hand clap, the
+ * shaker and the guitar's golpe. */
+const PERC_KEYS: Record<string, number> = {
+  clap: 39,
+  "agogo-high": 67,
+  "agogo-low": 68,
+  "cuica-high": 78,
+  "cuica-low": 79,
+  "triangle-closed": 80,
+  "triangle-open": 81,
+  shaker: 82,
+  "surdo-muted": 86,
+  "surdo-open": 87,
+  "guitar-tap": 88,
+  "pandeiro-thumb": 89,
+  "pandeiro-fingers": 90,
+  "pandeiro-slap": 91,
+  "pandeiro-muted": 92,
+  "zabumba-open": 93,
+  "zabumba-muted": 94,
+  "zabumba-stick": 95,
+  "tamborim-open": 96,
+  "tamborim-muted": 97,
+  "alfaia-open": 98,
+  "alfaia-muted": 99,
+  "gongue-open": 100,
+  "gongue-muted": 101,
+  "cajon-bass": 102,
+  "cajon-slap": 103,
 };
 
 /** What Manguebyte plays a voice with: an instrument, the preset of the
@@ -458,6 +492,12 @@ interface Chain {
   /** The Manguebyte part being made for a new voice: until it is ready,
    * the voice before it goes on sounding. */
   next?: MbPart;
+  /** It plays percussion its voice may have no keys for. */
+  percussion: boolean;
+  /** The drum machine beside the part's own sound, for that percussion. */
+  perc?: MbPart;
+  /** Settles when that drum machine is ready, or could not be made. */
+  percLoading?: Promise<void>;
   /** The voice asked for last, ready or on its way. */
   wanted: string;
   /** The voice the part sounds with now; "" while the first one is still
@@ -632,6 +672,7 @@ export class Engine {
       release: 0.15,
       effects: [],
       configured: new Map(),
+      percussion: false,
       wanted: "",
       heard: "",
       effectsSet: "",
@@ -650,6 +691,7 @@ export class Engine {
   private configurePart(part: PartInfo, globals: ParamValue[], moving: Set<string>): void {
     const c = this.chain(part.name);
     c.instrument = part.instrument;
+    c.percussion = part.percussion;
     const written = part.chain[0] ?? "";
     const head = this.aliases[written] ?? written;
     const isBass = /bass|baixo|bajo/i.test(part.name);
@@ -668,7 +710,11 @@ export class Engine {
     c.effects = part.chain.filter((n) => MB_EFFECTS.has(n) || n === "reverb");
     // The voice starts on its way now; it sounds once it has arrived.
     this.route(c);
-    if (c.mb?.ready && c.effectsSet !== c.effects.join(">")) void this.mbChain(c, c.mb);
+    this.routePerc(c);
+    if (c.effectsSet !== c.effects.join(">")) {
+      if (c.mb?.ready) void this.mbChain(c, c.mb);
+      if (c.perc?.ready) void this.mbChain(c, c.perc);
+    }
     // Defaults from the chain, then the numbers written in the piece.
     const now = this.ctx.currentTime;
     const defaults: ParamValue[] = [
@@ -702,8 +748,10 @@ export class Engine {
     if (c.mb?.ready && id.startsWith("highpass.") && !c.effects.includes("highpass")) {
       c.effects.push("highpass");
       void this.mbChain(c, c.mb);
+      if (c.perc?.ready) void this.mbChain(c, c.perc);
     }
     if (c.mb?.ready) this.mbParam(c.mb, id, v, when);
+    if (c.perc?.ready) this.mbParam(c.perc, id, v, when);
     const set = (p: AudioParam, value: number): void => {
       if (glide > 0) p.setTargetAtTime(value, Math.max(when - glide, 0), glide / 3);
       else p.setTargetAtTime(value, when, 0.015);
@@ -768,6 +816,51 @@ export class Engine {
     this.loadingChanged();
   }
 
+  /** Gives a part that plays percussion its own voice has no keys for a
+   * drum machine beside it, in Manguebyte, with the part's effects and
+   * numbers; lets it go when the part no longer needs it. */
+  private routePerc(c: Chain): void {
+    const own = this.mbVoice(c.voice)?.kind;
+    const needed = c.percussion && own !== "drum_kit" && Engine.manguebyteWanted();
+    if (!needed) {
+      if (c.perc) this.dropPart(c.perc);
+      c.perc = undefined;
+      return;
+    }
+    if (c.perc || c.percLoading) return;
+    const loading = this.startPerc(c).finally(() => {
+      if (c.percLoading === loading) c.percLoading = undefined;
+    });
+    c.percLoading = loading;
+  }
+
+  private async startPerc(c: Chain): Promise<void> {
+    const engine = await this.engineMb();
+    if (!engine) return;
+    const part: MbPart = {
+      voice: "percussion",
+      kind: "drum_kit",
+      index: this.takeMbPart(),
+      ready: false,
+      failed: false,
+      made: false,
+    };
+    try {
+      await engine.createPart(part.index, "drum_kit", "none");
+      part.made = true;
+      // The percussion is the same on every kit; the acoustic one is set.
+      engine.setPreset(part.index, "drum_kit", "acoustic", this.ctx.currentTime);
+      await this.mbChain(c, part);
+      if (!c.percussion) return this.dropPart(part);
+      part.ready = true;
+      c.perc = part;
+    } catch (error) {
+      // The stand-in goes on playing the percussion.
+      console.warn("Manguebyte:", error);
+      this.dropPart(part);
+    }
+  }
+
   /** Settles when every part named (every part, when none are) sounds with
    * the voice asked for: downloaded, or failed with its fallback playing.
    * There is no time limit here; each download has its own. */
@@ -775,7 +868,7 @@ export class Engine {
     const chains = () =>
       parts ? parts.flatMap((n) => this.chains.get(n) ?? []) : [...this.chains.values()];
     for (;;) {
-      const waits = chains().flatMap((c) => (c.loading ? [c.loading] : []));
+      const waits = chains().flatMap((c) => [c.loading, c.percLoading].filter((w) => w !== undefined));
       if (waits.length === 0) return;
       await Promise.allSettled(waits);
     }
@@ -1052,16 +1145,23 @@ export class Engine {
     const accent = e.acc === 1;
     const i = part.index;
     if (e.drum) {
-      // The drum machine also claps; the Brazilian percussion and the
-      // golpe on a melodic part stay with the stand-in for now.
-      const note =
-        e.drum === "clap" && (part.kind === "analog_kit" || part.kind === "drum_kit")
-          ? 39
-          : e.drum === "shaker" && part.kind === "drum_kit"
-            ? 82
-            : MB_DRUMS[e.drum];
-      if (note === undefined || !KIT_KINDS.has(part.kind)) return false;
-      engine.noteOn(i, note, velocity, when, 0, accent);
+      // The part's own kit plays the drums it has keys for: a drum machine
+      // every one, the 808-style kit its clap too. The rest go to the drum
+      // machine beside the part.
+      let own: number | undefined;
+      if (part.kind === "drum_kit") own = MB_DRUMS[e.drum] ?? PERC_KEYS[e.drum];
+      else if (part.kind === "analog_kit" && e.drum === "clap") own = 39;
+      else if (KIT_KINDS.has(part.kind)) own = MB_DRUMS[e.drum];
+      if (own !== undefined) {
+        engine.noteOn(i, own, velocity, when, 0, accent);
+      } else {
+        const perc = c.perc;
+        const key = PERC_KEYS[e.drum];
+        if (!perc?.ready || key === undefined) return false;
+        engine.noteOn(perc.index, key, velocity, when, 0, accent);
+        this.made.push({ mb: engine, part: perc.index });
+        return true;
+      }
     } else if (e.note !== undefined) {
       if (KIT_KINDS.has(part.kind)) return false;
       engine.noteOn(i, e.note, velocity, when, 0, accent);
@@ -1501,8 +1601,8 @@ export class Engine {
         this.noiseHit(c.input, when, "highpass", 4000, 0.7, g * 0.35, 0.006);
         return;
       }
-      // Brazilian percussion and the cajón, drawn from simple parts until
-      // recordings come: skins are falling sines, bells a few partials,
+      // Brazilian percussion and the cajón, for when Manguebyte cannot play
+      // them, drawn from simple parts: skins are falling sines, bells a few partials,
       // jingles and shakers filtered noise. The deep drums (alfaia, surdo,
       // zabumba, the cajón's bass) were measured against Manguebyte's kits:
       // one line of them peaks about as high as a whole kit's beat.
@@ -2146,9 +2246,11 @@ export class Engine {
     // without a click.
     const engine = this.mbLive;
     for (const c of this.chains.values()) {
-      if (engine && c.mb) {
-        engine.cancel(c.mb.index, now);
-        engine.allNotesOff(c.mb.index, now);
+      for (const part of [c.mb, c.perc]) {
+        if (engine && part) {
+          engine.cancel(part.index, now);
+          engine.allNotesOff(part.index, now);
+        }
       }
     }
   }
