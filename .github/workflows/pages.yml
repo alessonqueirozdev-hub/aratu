@@ -51,7 +51,7 @@ jobs:
           printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/aratu_deploy
           chmod 600 ~/.ssh/aratu_deploy
           echo "147.15.41.209 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIImWp/o6TeqgaFKq0K+lnoaHZfdX/D6A6S+ZTQvSIIVk" > ~/.ssh/known_hosts
-          rsync -az --delete --stats -e "ssh -i $HOME/.ssh/aratu_deploy -o IdentitiesOnly=yes" dist/ aratu-deploy@147.15.41.209: | grep -E "Number of (regular )?files|Total transferred"
+          rsync -az --checksum --delete --stats -e "ssh -i $HOME/.ssh/aratu_deploy -o IdentitiesOnly=yes" dist/ aratu-deploy@147.15.41.209: | grep -E "Number of (regular )?files|Total transferred"
           rm -f ~/.ssh/aratu_deploy
       - uses: actions/upload-pages-artifact@v3
         with:
