@@ -39,6 +39,20 @@ jobs:
       - run: npm run check
       - run: node scripts/build.mjs
       - run: npm run smoke
+      # The same files go to the VPS that serves aratu.live beside MusiMind's
+      # API: rsync over SSH as aratu-deploy, whose key can only write
+      # /srv/aratu/site (rrsync). Skipped while the secret is not set.
+      - name: Send the site to the VPS
+        env:
+          DEPLOY_KEY: ${{ secrets.ARATU_DEPLOY_KEY }}
+        run: |
+          if [ -z "$DEPLOY_KEY" ]; then echo "No ARATU_DEPLOY_KEY: skipped."; exit 0; fi
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/aratu_deploy
+          chmod 600 ~/.ssh/aratu_deploy
+          echo "147.15.41.209 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIImWp/o6TeqgaFKq0K+lnoaHZfdX/D6A6S+ZTQvSIIVk" > ~/.ssh/known_hosts
+          rsync -az --delete --stats -e "ssh -i $HOME/.ssh/aratu_deploy -o IdentitiesOnly=yes" dist/ aratu-deploy@147.15.41.209: | grep -E "Number of (regular )?files|Total transferred"
+          rm -f ~/.ssh/aratu_deploy
       - uses: actions/upload-pages-artifact@v3
         with:
           path: web/dist
