@@ -20,6 +20,8 @@ export interface BlockContext {
   openInPlay(text: string): void;
   /** Steps per beat the rhythm maps are refined to. */
   quantum(): number;
+  /** The page's Content Security Policy nonce, for CodeMirror's styles. */
+  nonce?: string;
 }
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string): HTMLElementTagNameMap[K] {
@@ -66,6 +68,7 @@ export function mountBlocks(root: HTMLElement, ctx: BlockContext): Session[] {
       engine: ctx.engine,
       lang: ctx.lang,
       compact: true,
+      nonce: ctx.nonce,
       onCompile: (p) => {
         map.draw(p, session.text);
         const errors = p.diagnostics.filter((d) => d.severity === "error");
@@ -116,6 +119,7 @@ export function mountBlocks(root: HTMLElement, ctx: BlockContext): Session[] {
       engine: ctx.engine,
       lang: ctx.lang,
       compact: true,
+      nonce: ctx.nonce,
     });
     sessions.push(target);
     const hear = el("button", "btn btn-goal", `♪ ${tr("listenAnswer", lang)}`);

@@ -4,7 +4,7 @@
 // musician's words, and the symbols that are sounding lit up as they play.
 
 import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
-import { HighlightStyle, StreamLanguage, bracketMatching, syntaxHighlighting } from "@codemirror/language";
+import { StreamLanguage, bracketMatching, syntaxHighlighting } from "@codemirror/language";
 import { type Diagnostic as CmDiagnostic, lintGutter, setDiagnostics } from "@codemirror/lint";
 import {
   type ChangeSet,
@@ -25,7 +25,7 @@ import {
   keymap,
   lineNumbers,
 } from "@codemirror/view";
-import { tags as t } from "@lezer/highlight";
+import { tagHighlighter, tags as t } from "@lezer/highlight";
 import type { Diagnostic } from "./aratu";
 
 // Folded (lower case, no accents), in English, Portuguese and Spanish, as
@@ -153,20 +153,22 @@ const aratuLanguage = StreamLanguage.define<State>({
   },
 });
 
-const style = HighlightStyle.define([
-  { tag: t.comment, color: "var(--muted)", fontStyle: "italic" },
-  { tag: t.keyword, color: "var(--keyword)", fontWeight: "600" },
-  { tag: t.atom, color: "var(--dynamic)", fontWeight: "600" },
-  { tag: t.number, color: "var(--number)" },
-  { tag: t.meta, color: "var(--barline)", fontWeight: "700" },
-  { tag: t.labelName, color: "var(--marker)", fontWeight: "600" },
-  { tag: t.definition(t.variableName), color: "var(--name)", fontWeight: "600" },
-  { tag: t.typeName, color: "var(--chord)" },
-  { tag: t.punctuation, color: "var(--hold)" },
-  { tag: t.bracket, color: "var(--barline)" },
-  { tag: t.operator, color: "var(--operator)" },
-  { tag: t.variableName, color: "var(--text)" },
-  { tag: t.strong, color: "var(--accent)", fontWeight: "800" },
+// Each kind of word gets a class of its own, coloured in style.css with the
+// theme: rules there, under .aratu-root, hold over the page around.
+const style = tagHighlighter([
+  { tag: t.comment, class: "ar-comment" },
+  { tag: t.keyword, class: "ar-keyword" },
+  { tag: t.atom, class: "ar-dynamic" },
+  { tag: t.number, class: "ar-number" },
+  { tag: t.meta, class: "ar-barline" },
+  { tag: t.labelName, class: "ar-marker" },
+  { tag: t.definition(t.variableName), class: "ar-name" },
+  { tag: t.typeName, class: "ar-chord" },
+  { tag: t.punctuation, class: "ar-hold" },
+  { tag: t.bracket, class: "ar-bracket" },
+  { tag: t.operator, class: "ar-operator" },
+  { tag: t.variableName, class: "ar-word" },
+  { tag: t.strong, class: "ar-accent" },
 ]);
 
 // Spans that are sounding right now.

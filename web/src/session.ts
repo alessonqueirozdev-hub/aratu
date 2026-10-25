@@ -6,7 +6,7 @@
 // at a time.
 
 import { ChangeSet } from "@codemirror/state";
-import type { EditorView } from "@codemirror/view";
+import { EditorView } from "@codemirror/view";
 import type { Aratu, BarInfo, Lang, Program } from "./aratu";
 import type { Engine } from "./audio";
 import { createEditor, narrowScreen, setWrapping, showDiagnostics, showPlaying } from "./editor";
@@ -24,6 +24,8 @@ export interface SessionOptions {
   lang: () => Lang;
   /** A smaller editor, for the book. */
   compact?: boolean;
+  /** The page's Content Security Policy nonce, for CodeMirror's styles. */
+  nonce?: string;
   onCompile?(program: Program): void;
   onChange?(text: string): void;
   onBar?(info: BarInfo, at: number): void;
@@ -33,9 +35,14 @@ export interface SessionOptions {
   onLit?(spans: { from: number; to: number }[]): void;
 }
 
+/** What can sound: a session, or a player without an editor (see lite.ts). */
+export interface Sounding {
+  stop(): void;
+}
+
 export class Session {
-  /** The session that is sounding, if any. */
-  static active: Session | null = null;
+  /** What is sounding, if anything: one at a time on the page. */
+  static active: Sounding | null = null;
 
   readonly view: EditorView;
   /** The last compiled version, with errors or not. */
@@ -87,10 +94,15 @@ export class Session {
         run: () => void this.play(),
         stop: () => this.stop(),
       },
-      [knobs, visuals, effects],
+      this.extensions(),
       o.compact,
     );
     lendVisuals(this.view, this.visualSource);
+  }
+
+  /** What every view of the text has besides the editor itself. */
+  private extensions() {
+    return [knobs, visuals, effects, this.o.nonce ? EditorView.cspNonce.of(this.o.nonce) : []];
   }
 
   /** What the drawings under the lines draw from. */
@@ -165,6 +177,11 @@ export class Session {
     if (Session.active && Session.active !== this) Session.active.stop();
     Session.active = this;
     const engine = this.o.engine();
+    // The engine is made again when Manguebyte is switched on or off.
+    if (this.player && this.player.engine !== engine) {
+      this.player.dispose();
+      this.player = null;
+    }
     if (!this.player) {
       this.player = new Player(this.o.aratu, engine, {
         bar: (info, at) => {
@@ -283,6 +300,13 @@ export class Session {
     window.clearTimeout(this.timer);
     this.unmirror();
     this.view.destroy();
+    // The versions compiled go back to the language.
+    this.player?.dispose();
+    this.player = null;
+    for (const p of [this.ready, this.broken]) if (p) this.o.aratu.release(p.handle);
+    this.ready = null;
+    this.broken = null;
+    this.latest = null;
   }
 
   private views(): EditorView[] {
@@ -307,7 +331,7 @@ export class Session {
         run: () => void this.play(),
         stop: () => this.stop(),
       },
-      [knobs, visuals, effects],
+      this.extensions(),
       this.o.compact,
     );
     lendVisuals(mirror, this.visualSource);

@@ -66,6 +66,20 @@ with `sitemap.xml` and `robots.txt`, for search engines and for sharing a
 link. Their absolute links (canonical, alternates, the site map) come from
 `ARATU_SITE_URL`, by default <https://aratu.live/>.
 
+## The editor in another page
+
+The editor is also a library, for a page or an app that holds it:
+`mount(el, options)` puts the whole editor in an element, and
+`mountPlayer(el, code, options)` a piece that only plays. `npm run lib`
+builds it into `web/dist-lib/`: one ES module, its types, its styles (every
+rule under `.aratu-root`, so it neither reaches the page around it nor is
+reached by the page's resets), the wasm, Manguebyte's engine, the samples
+and the book. [`web/lib/README.md`](web/lib/README.md) says how to use it.
+`npm run lib:test` serves a page that holds it as an app would, at a deep
+route, under a strict Content Security Policy and Tailwind's reset, to try
+it in a browser; the site itself, `web/src/main.ts`, is one more page that
+mounts it.
+
 ## A taste
 
 ```

@@ -24,12 +24,18 @@ export const options = {
   loader: { ".aratu": "text" },
 };
 
+/** The site's style: the editor's (the library's, scoped to .aratu-root)
+ * and the site's own around it, in one file. */
+export function siteStyle() {
+  return `${readFileSync(join(web, "src", "style.css"), "utf8")}\n${readFileSync(join(web, "src", "site.css"), "utf8")}`;
+}
+
 export function copyStatic() {
   mkdirSync(dist, { recursive: true });
   cpSync(join(web, "public"), dist, { recursive: true });
   // The page's absolute links (canonical, Open Graph) need the site's address.
   writeFileSync(join(dist, "index.html"), readFileSync(join(web, "index.html"), "utf8").replaceAll("%SITE_URL%", SITE_URL));
-  cpSync(join(web, "src", "style.css"), join(dist, "style.css"));
+  writeFileSync(join(dist, "style.css"), siteStyle());
   buildBook(dist);
   buildSite(dist);
 }

@@ -1,0 +1,6 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later
+   Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md. */
+
+/* A page that keeps its styles in cascade layers, as Tailwind 4 does: its
+   reset and base rules in "base", Aratu's after them. */
+@layer base, aratu;

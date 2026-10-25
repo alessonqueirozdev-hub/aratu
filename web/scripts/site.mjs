@@ -160,12 +160,6 @@ function head(p, { title, description, type }, alternates, style) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="${FONTS}" />
     <link rel="stylesheet" href="${up(p.path)}style.css?v=${style}" />
-    <script>
-      // The editor's dark theme, if chosen there; the page reads the same without it.
-      try {
-        if (localStorage.getItem("aratu.theme") === "dark") document.documentElement.dataset.theme = "dark";
-      } catch {}
-    </script>
   </head>`;
 }
 
@@ -320,6 +314,7 @@ ${body}
 export function buildSite(outDir) {
   const style = createHash("sha256")
     .update(readFileSync(join(web, "src", "style.css")))
+    .update(readFileSync(join(web, "src", "site.css")))
     .digest("hex")
     .slice(0, 10);
   const all = pages();
@@ -335,9 +330,15 @@ export function buildSite(outDir) {
     const alternates = alternatesOf(p.key);
     const c = content(p);
     const html = `<!doctype html>
-<html lang="${HTML_LANG[p.lang]}" data-theme="light">
+<html lang="${HTML_LANG[p.lang]}">
   ${head(p, c, alternates, style)}
-  <body>
+  <body class="aratu-root aratu-page" data-theme="light">
+    <script>
+      // The editor's dark theme, if chosen there; the page reads the same without it.
+      try {
+        if (localStorage.getItem("aratu.theme") === "dark") document.body.dataset.theme = "dark";
+      } catch {}
+    </script>
     ${header(p, alternates, homes)}
   ${c.main}
     ${footer(p.lang)}

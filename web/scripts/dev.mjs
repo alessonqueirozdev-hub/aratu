@@ -13,7 +13,7 @@ import { copyStatic, options } from "./build.mjs";
 
 const web = join(dirname(fileURLToPath(import.meta.url)), "..");
 const dist = join(web, "dist");
-const port = Number(process.env.PORT ?? 5173);
+const port = Number(process.argv.find((a) => a.startsWith("--port="))?.slice(7) ?? process.env.PORT ?? 5173);
 
 buildWasm();
 copyStatic();
@@ -26,7 +26,7 @@ const rebuild = () => {
     console.error(e.message);
   }
 };
-for (const f of ["index.html", join("src", "style.css")]) {
+for (const f of ["index.html", join("src", "style.css"), join("src", "site.css")]) {
   watch(join(web, f), rebuild);
 }
 watch(join(web, "..", "book"), { recursive: true }, rebuild);

@@ -1,6 +1,7 @@
 /target
 /web/node_modules
 /web/dist
+/web/dist-lib
 /web/public/aratu.wasm
 /web/.samples-cache
 /web/.manguebyte-cache

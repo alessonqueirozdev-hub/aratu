@@ -4,7 +4,7 @@
 // A click on a code writes it into the piece; ▶ plays a bar of it.
 
 import type { Aratu, VoiceCatalogue, VoiceInfo } from "./aratu";
-import { Engine, playsOnManguebyte } from "./audio";
+import { type Engine, playsOnManguebyte } from "./audio";
 import { type Lang, tr } from "./i18n";
 
 export interface SoundsOptions {
@@ -13,6 +13,10 @@ export interface SoundsOptions {
   lang: () => Lang;
   /** Writes a voice's code into the piece, where the cursor is. */
   insert: (code: string) => void;
+  /** Whether Manguebyte plays, and switching it on or off: what sounds
+   * stops, and a new engine plays from the next play on. */
+  manguebyte: () => boolean;
+  setManguebyte: (on: boolean) => void;
 }
 
 const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string) => {
@@ -53,20 +57,22 @@ export class SoundsPanel {
     const engineRow = el("label", "sound-engine");
     const box = el("input");
     box.type = "checkbox";
-    box.checked = Engine.manguebyteWanted();
+    box.checked = this.o.manguebyte();
     box.onchange = () => {
-      try {
-        localStorage.setItem("aratu.manguebyte", box.checked ? "on" : "off");
-      } catch {
-        // Without storage the switch cannot be kept.
-      }
-      location.reload();
+      this.stopPreview?.();
+      this.o.setManguebyte(box.checked);
+      this.render();
     };
     engineRow.append(box, el("span", "", tr("mbSwitch", lang)));
     const engineHelp = el("p", "sound-help", tr("mbHelp", lang));
     const list = el("div", "sound-list");
     this.box.append(search, help, engineRow, engineHelp, list);
     this.list(list);
+  }
+
+  /** Stops a preview that is sounding. */
+  dispose(): void {
+    this.stopPreview?.();
   }
 
   /** Marks a sampled voice as loading, ready or failed. */
@@ -117,7 +123,7 @@ export class SoundsPanel {
     code.onclick = () => this.o.insert(v.code);
     const name = el("span", "sound-name", v.name);
     row.append(play, code, name);
-    if (playsOnManguebyte(v.code, v.sampled) && Engine.manguebyteWanted()) {
+    if (playsOnManguebyte(v.code, v.sampled) && this.o.manguebyte()) {
       row.append(el("span", "sound-mb", "Manguebyte"));
     }
     if (v.sampled) {

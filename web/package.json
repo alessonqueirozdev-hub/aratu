@@ -10,8 +10,10 @@
     "wasm": "node scripts/build-wasm.mjs",
     "dev": "node scripts/dev.mjs",
     "build": "tsc --noEmit && node scripts/build.mjs",
+    "lib": "tsc --noEmit && node scripts/build-lib.mjs",
+    "lib:test": "node scripts/lib-test.mjs",
     "check": "tsc --noEmit",
-    "smoke": "node scripts/smoke.mjs && node scripts/site-smoke.mjs && node scripts/samples-smoke.mjs",
+    "smoke": "node scripts/smoke.mjs && node scripts/site-smoke.mjs && node scripts/samples-smoke.mjs && node scripts/lib-smoke.mjs",
     "og": "node scripts/og.mjs"
   },
   "devDependencies": {

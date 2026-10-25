@@ -17,7 +17,7 @@
 
 import type { AratuEvent, BarInfo, ParamValue, PartInfo, Program, VoiceCatalogue } from "./aratu";
 import { type Instrument, ManguebyteEngine, type PresetKind } from "../public/manguebyte/engine.js";
-import { AratuBridge } from "../public/manguebyte/bridge.js";
+import type { AratuBridge } from "../public/manguebyte/bridge.js";
 import { detailOf, limited } from "./download";
 import { type Loaded, Sampler } from "./sampler";
 import { encodeWav } from "./wav";
@@ -568,13 +568,25 @@ export class Engine {
   private readonly aliases: Record<string, string>;
   /** The voices made by the event being played, for `play` to return. */
   private made: Voice[] = [];
+  /** The folder Aratu's files are in: manguebyte/, samples/. */
   private readonly base: string;
+  /** Whether Manguebyte plays (the Sounds panel can switch it off). */
+  private readonly mbWanted: boolean;
+  /** The deploy's stamp, put on Manguebyte's wasm. */
+  private readonly version: string | null;
+  private destroyed = false;
 
-  constructor(catalogue?: VoiceCatalogue, base = document.baseURI) {
+  constructor(
+    catalogue?: VoiceCatalogue,
+    base = document.baseURI,
+    options: { manguebyte?: boolean; version?: string | null } = {},
+  ) {
     this.ctx = new AudioContext({ latencyHint: "interactive" });
     const ctx = this.ctx;
     this.base = base;
-    this.sampler = new Sampler(ctx);
+    this.mbWanted = options.manguebyte ?? true;
+    this.version = options.version ?? null;
+    this.sampler = new Sampler(ctx, new URL("samples", base).href);
     this.aliases = catalogue?.aliases ?? {};
     this.sampled = new Set(
       (catalogue?.families ?? []).flatMap((f) => f.voices.filter((v) => v.sampled).map((v) => v.code)),
@@ -832,7 +844,7 @@ export class Engine {
    * numbers; lets it go when the part no longer needs it. */
   private routePerc(c: Chain): void {
     const own = this.mbVoice(c.voice)?.kind;
-    const needed = c.percussion && own !== "drum_kit" && Engine.manguebyteWanted();
+    const needed = c.percussion && own !== "drum_kit" && this.mbWanted;
     if (!needed) {
       if (c.perc) this.dropPart(c.perc);
       c.perc = undefined;
@@ -925,7 +937,13 @@ export class Engine {
     part.made = false;
     engine.allNotesOff(part.index);
     window.setTimeout(() => {
-      void engine.removePart(part.index).then(() => this.freeMbParts.push(part.index));
+      if (this.destroyed) return;
+      engine.removePart(part.index).then(
+        () => this.freeMbParts.push(part.index),
+        () => {
+          // The engine was closed meanwhile.
+        },
+      );
     }, 600);
   }
 
@@ -1039,6 +1057,8 @@ export class Engine {
   /** The bridge to the DAW: the page's audio clock is its clock, so every
    * time given here becomes a beat on the DAW's timeline. */
   private async connectDaw(port: number): Promise<ManguebyteEngine> {
+    // Fetched only when a DAW is asked for.
+    const { AratuBridge } = await import("../public/manguebyte/bridge.js");
     const bridge = await limited(
       AratuBridge.connect({ port, clock: () => this.ctx.currentTime, name: "Aratu" }),
     );
@@ -1063,6 +1083,7 @@ export class Engine {
 
   /** Manguebyte's engine, made once, its output joining the stand-in's. */
   private engineMb(): Promise<ManguebyteEngine | null> {
+    if (this.destroyed) return Promise.resolve(null);
     const daw = this.daw;
     if (daw) {
       this.mbEngine ??= this.connectDaw(daw.port)
@@ -1105,10 +1126,10 @@ export class Engine {
       }
       // The Sounds panel can turn Manguebyte off: everything then plays in
       // the stand-in, a way out on stage if something goes wrong.
-      if (!Engine.manguebyteWanted()) return null;
+      if (!this.mbWanted) return null;
       try {
-        const version = new URL(import.meta.url).searchParams.get("v");
-        const url = new URL(`manguebyte/manguebyte_web.wasm${version ? `?v=${version}` : ""}`, this.base);
+        const url = new URL("manguebyte/manguebyte_web.wasm", this.base);
+        if (this.version) url.searchParams.set("v", this.version);
         const r = await limited(fetch(url));
         if (!r.ok) throw new Error(`${url.pathname}: ${r.status}`);
         return await WebAssembly.compile(await limited(r.arrayBuffer()));
@@ -1118,16 +1139,6 @@ export class Engine {
       }
     })();
     return this.mbModule;
-  }
-
-  /** Whether the person wants Manguebyte to play (the Sounds panel's
-   * switch, kept in this browser). */
-  static manguebyteWanted(): boolean {
-    try {
-      return localStorage.getItem("aratu.manguebyte") !== "off";
-    } catch {
-      return true;
-    }
   }
 
   /** Makes a Manguebyte part for `voice`, downloads what it plays, and
@@ -2383,5 +2394,49 @@ export class Engine {
         }
       }
     }
+  }
+
+  /** Whether `destroy` has been called. */
+  get closed(): boolean {
+    return this.destroyed;
+  }
+
+  /** Lets everything go: what sounds, a recording, the DAW, Manguebyte's
+   * worklet and its memory, and the AudioContext itself. */
+  async destroy(): Promise<void> {
+    if (this.destroyed) return;
+    this.destroyed = true;
+    this.allOff();
+    this.notify = () => {};
+    this.sampler.onChange = () => {};
+    this.tellProblem = () => {};
+    this.tellLoading = () => {};
+    this.dawHooks = {};
+    if (this.recorder) {
+      try {
+        this.recorder.rec.stop();
+      } catch {
+        // Already stopped.
+      }
+      this.recorder = null;
+    }
+    const mb = this.mbEngine;
+    this.mbEngine = null;
+    this.mbLive = null;
+    this.daw = null;
+    this.chains.clear();
+    this.waves.clear();
+    try {
+      const engine = await mb;
+      if (engine) {
+        // The worklet frees the engine's memory when asked; a context that
+        // no longer runs may never answer, and closing it frees all anyway.
+        await Promise.race([engine.close(), new Promise((done) => window.setTimeout(done, 400))]);
+        engine.node.disconnect();
+      }
+    } catch {
+      // It never started, or is closed already.
+    }
+    if (this.ctx.state !== "closed") await this.ctx.close().catch(() => {});
   }
 }

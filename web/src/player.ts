@@ -64,7 +64,7 @@ export class Player {
 
   constructor(
     private readonly aratu: Aratu,
-    private readonly engine: Engine,
+    readonly engine: Engine,
     private readonly hooks: PlayerHooks,
   ) {}
 
@@ -120,6 +120,14 @@ export class Player {
     this.bars = [];
     this.sounds = [];
     this.engine.allOff();
+  }
+
+  /** Stops, and lets go of the versions of the piece it holds. */
+  dispose(): void {
+    this.stop();
+    for (const p of [this.program, this.pending]) if (p) this.aratu.release(p.handle);
+    this.program = null;
+    this.pending = null;
   }
 
   /** Makes `program` the one playing. Its new live lines sound from `bar`;

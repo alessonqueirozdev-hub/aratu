@@ -1,10 +1,25 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later
+   Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md.
+   Made with Aratu, by Alesson Lucas Oliveira de Queiroz (https://aratu.live). */
+
 /* Aratu: music paper. The scenes are boxed like a score's rehearsal marks,
    the bar count is set in an engraver's face.
    A light theme for the classroom and the projector, a dark one for
-   playing live. */
+   playing live.
 
-:root,
-:root[data-theme="light"] {
+   Every rule is under .aratu-root, the element an editor or a player is
+   mounted in: nothing here reaches the page around it, and nothing the
+   page sets for its own elements (a reset such as Tailwind's preflight, a
+   rule for every button or heading) reaches in. The root starts from the
+   initial value of everything it would inherit; the elements in it start
+   from the browser's own styles, as on a page of their own. */
+
+.aratu-root {
+  all: initial;
+}
+
+.aratu-root,
+.aratu-root[data-theme="light"] {
   --bg: #f6f1e6;
   --paper: #fffdf8;
   --panel: #f1ead9;
@@ -42,7 +57,7 @@
   color-scheme: light;
 }
 
-:root[data-theme="dark"] {
+.aratu-root[data-theme="dark"] {
   --bg: #15100d;
   --paper: #1d1612;
   --panel: #221a15;
@@ -79,12 +94,11 @@
   color-scheme: dark;
 }
 
-:root {
+.aratu-root {
   --font-display: "Gloock", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
   --font-ui: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
   --font-mono: "Atkinson Hyperlegible Mono", "JetBrains Mono", "Cascadia Code", Consolas, monospace;
   --radius: 6px;
-  --top-h: 66px;
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   /* What a phone's camera, round corners and home bar cover: nothing is
      put there. */
@@ -92,180 +106,96 @@
   --safe-right: env(safe-area-inset-right, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
+  /* Over what the stage covers, whatever the page has: its header, its
+     menus. */
+  --aratu-stage-z: 1000;
+  /* The page may say what it covers of the window, for what stays in
+     sight as it scrolls (the transport, the book's contents) and for the
+     box of downloads at the foot: --aratu-offset-top and
+     --aratu-offset-bottom, set on any element around the root. */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  background-color: var(--bg);
+  background-image: var(--grain);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 16px;
+  line-height: normal;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-margin-top: var(--aratu-offset-top, 0px);
 }
 
-* {
+/* The browser's own styles for what is inside, over the page's. The
+   drawings (svg) keep what they are drawn with, and a root inside another
+   (the site's page is one) its own rules. CodeMirror's element keeps the
+   rules of its theme that are written for it alone (as heavy as this one,
+   and they come first); every rule of its theme for what is inside it is
+   heavier, and still holds. */
+.aratu-root :where(:not(svg, svg *, .cm-editor, .aratu-root)) {
+  all: revert;
+}
+
+.aratu-root ::before,
+.aratu-root ::after {
+  box-sizing: content-box;
+}
+
+.aratu-root svg {
+  display: inline;
+  border: 0 none;
+  vertical-align: baseline;
+}
+
+.aratu-root * {
   box-sizing: border-box;
   scrollbar-width: thin;
   scrollbar-color: var(--rule) transparent;
 }
 
-html,
-body {
-  margin: 0;
-  min-height: 100%;
-  background-color: var(--bg);
-  color: var(--text);
-  font-family: var(--font-ui);
-  font-size: 16px;
-  -webkit-text-size-adjust: 100%;
+.aratu-root ::placeholder {
+  color: var(--muted);
+  opacity: 1;
 }
 
-body {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  padding-left: var(--safe-left);
-  padding-right: var(--safe-right);
-  background-image: var(--grain);
-}
-
-a {
+.aratu-root a {
   color: var(--accent);
   text-underline-offset: 0.18em;
 }
 
-[hidden] {
+.aratu-root [hidden] {
   display: none !important;
 }
 
-.sprite {
-  position: absolute;
-  width: 0;
-  height: 0;
-  overflow: hidden;
-}
-
-svg.i {
+.aratu-root svg.i {
   width: 18px;
   height: 18px;
   flex: none;
 }
 
-.serif,
-h1,
-h2,
-h3,
-.brand .name {
+.aratu-root .serif,
+.aratu-root h1,
+.aratu-root h2,
+.aratu-root h3 {
   font-family: var(--font-display);
   font-weight: 400;
 }
 
-:focus-visible {
+.aratu-root :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
-::selection {
+.aratu-root ::selection {
   background: color-mix(in srgb, var(--accent) 28%, transparent);
-}
-
-/* The header. The tab you are on is underlined in orange. */
-
-.top {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  gap: 10px 30px;
-  height: calc(var(--top-h) + var(--safe-top));
-  padding: var(--safe-top) clamp(14px, 3vw, 30px) 0;
-  background: var(--paper);
-  border-bottom: 1px solid var(--line);
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  text-decoration: none;
-  color: var(--text);
-  min-width: 0;
-}
-
-.brand img {
-  display: block;
-  flex: none;
-}
-
-.brand-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.05;
-  min-width: 0;
-}
-
-.brand .name {
-  font-size: 31px;
-  letter-spacing: 0.005em;
-  color: var(--accent);
-}
-
-.brand .tagline {
-  margin-top: 2px;
-  color: var(--muted);
-  font-size: 13px;
-  font-style: italic;
-  white-space: nowrap;
-}
-
-.tabs {
-  display: flex;
-  align-self: stretch;
-  gap: 2px;
-}
-
-.tabs a {
-  position: relative;
-  display: flex;
-  align-items: center;
-  padding: 0 15px;
-  color: var(--soft);
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 15.5px;
-  letter-spacing: 0.01em;
-  white-space: nowrap;
-  transition: color 150ms;
-}
-
-.tabs a:hover {
-  color: var(--text);
-}
-
-.tabs a::after {
-  content: "";
-  position: absolute;
-  left: 12px;
-  right: 12px;
-  bottom: -1px;
-  height: 3px;
-  border-radius: 3px 3px 0 0;
-  background: var(--accent);
-  transform: scaleX(0);
-  transition: transform 220ms var(--ease);
-}
-
-.tabs a.here {
-  color: var(--text);
-}
-
-.tabs a.here::after {
-  transform: scaleX(1);
-}
-
-.prefs {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 12px;
 }
 
 /* Buttons. */
 
-button,
-select {
+.aratu-root button,
+.aratu-root select {
   font: inherit;
   color: var(--text);
   background: var(--paper);
@@ -280,16 +210,16 @@ select {
     transform 80ms;
 }
 
-button:hover,
-select:hover {
+.aratu-root button:hover,
+.aratu-root select:hover {
   border-color: var(--accent);
 }
 
-button:active {
+.aratu-root button:active {
   transform: translateY(1px);
 }
 
-.btn {
+.aratu-root .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -298,52 +228,52 @@ button:active {
   white-space: nowrap;
 }
 
-.btn.big {
+.aratu-root .btn.big {
   height: 46px;
   padding: 0 18px;
   font-size: 16px;
 }
 
-.btn-play {
+.aratu-root .btn-play {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-ink);
   box-shadow: 0 2px 0 color-mix(in srgb, var(--accent) 55%, #000);
 }
 
-.btn-play:hover {
+.aratu-root .btn-play:hover {
   border-color: var(--accent);
   background: color-mix(in srgb, var(--accent) 88%, #fff);
 }
 
 /* Playing: green, the mangrove's colour, with a slow breath. */
-.btn-play.on {
+
+.aratu-root .btn-play.on {
   background: var(--mangue);
   border-color: var(--mangue);
   color: var(--accent-ink);
   box-shadow: 0 2px 0 color-mix(in srgb, var(--mangue) 55%, #000);
 }
 
-.btn-check {
+.aratu-root .btn-check {
   background: var(--mangue);
   border-color: var(--mangue);
   color: var(--accent-ink);
 }
 
-.btn-goal {
+.aratu-root .btn-goal {
   color: var(--mangue);
   border-color: var(--mangue);
 }
 
-.btn-quiet {
+.aratu-root .btn-quiet {
   color: var(--soft);
   font-weight: 500;
 }
 
 /* Segmented choices: the languages, the grid. */
 
-.lang,
-.seg {
+.aratu-root .seg {
   display: inline-flex;
   align-items: stretch;
   border: 1px solid var(--rule);
@@ -352,9 +282,7 @@ button:active {
   overflow: hidden;
 }
 
-.lang button,
-.lang a,
-.seg button {
+.aratu-root .seg button {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -370,74 +298,37 @@ button:active {
   text-decoration: none;
 }
 
-.lang button + button,
-.lang a + a,
-.seg button + button {
+.aratu-root .seg button + button {
   border-left: 1px solid var(--line);
 }
 
-.lang button:hover,
-.lang a:hover,
-.seg button:hover {
+.aratu-root .seg button:hover {
   color: var(--text);
   background: var(--panel);
 }
 
-.lang button.on,
-.lang a.on,
-.seg button.on {
+.aratu-root .seg button.on {
   background: var(--accent);
   color: var(--accent-ink);
 }
 
-.theme-switch {
-  display: inline-flex;
-  gap: 2px;
-  padding: 2px;
-  border: 1px solid var(--rule);
-  border-radius: 999px;
-  background: var(--paper);
-}
-
-.theme-switch button {
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--muted);
-}
-
-.theme-switch button .i {
-  width: 17px;
-  height: 17px;
-}
-
-.theme-switch button.on {
-  background: var(--panel);
-  color: var(--accent);
-}
-
 /* Views, and how they come in. */
 
-.view {
+.aratu-root .view {
   flex: 1;
   min-height: 0;
   /* Nothing coming in from the side may widen a phone's page. */
   overflow-x: clip;
 }
 
-@keyframes rise {
+@keyframes aratu-rise {
   from {
     opacity: 0;
     transform: translateY(10px);
   }
 }
 
-@keyframes turn {
+@keyframes aratu-turn {
   from {
     opacity: 0.15;
     transform: translateY(6px);
@@ -445,35 +336,35 @@ button:active {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .toolbar > *,
-  .tools > *,
-  .play-view > .work,
-  .play-view > .rhythm,
-  .book-view > .toc,
-  .book-view > .page {
-    animation: rise 520ms var(--ease) both;
+  .aratu-root .toolbar > *,
+  .aratu-root .tools > *,
+  .aratu-root .play-view > .work,
+  .aratu-root .play-view > .rhythm,
+  .aratu-root .book-view > .toc,
+  .aratu-root .book-view > .page {
+    animation: aratu-rise 520ms var(--ease) both;
   }
-  .toolbar > :nth-child(2) {
+  .aratu-root .toolbar > :nth-child(2) {
     animation-delay: 50ms;
   }
-  .tools > * {
+  .aratu-root .tools > * {
     animation-delay: 100ms;
   }
-  .play-view > .work,
-  .book-view > .page {
+  .aratu-root .play-view > .work,
+  .aratu-root .book-view > .page {
     animation-delay: 140ms;
   }
-  .play-view > .rhythm {
+  .aratu-root .play-view > .rhythm {
     animation-delay: 220ms;
   }
-  .page.turn {
-    animation: turn 380ms var(--ease) both;
+  .aratu-root .page.turn {
+    animation: aratu-turn 380ms var(--ease) both;
   }
 }
 
 /* Play. */
 
-.play-view {
+.aratu-root .play-view {
   display: flex;
   flex-direction: column;
   padding: 16px clamp(12px, 2vw, 24px) 10px;
@@ -483,7 +374,7 @@ button:active {
 /* The transport: the buttons, the display, the stage and sharing; under
    them, over the score, its rehearsal marks and the examples. */
 
-.toolbar {
+.aratu-root .toolbar {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto auto auto auto;
   grid-template-areas:
@@ -495,10 +386,11 @@ button:active {
 
 /* While the page scrolls (following the music, say), the transport stays
    in reach under the header. */
+
 @media (min-width: 721px) and (min-height: 501px) {
-  .toolbar {
+  .aratu-root .toolbar {
     position: sticky;
-    top: calc(var(--top-h) + var(--safe-top));
+    top: var(--aratu-offset-top, 0px);
     z-index: 6;
     margin: -16px calc(-1 * clamp(12px, 2vw, 24px)) 0;
     padding: 16px clamp(12px, 2vw, 24px) 10px;
@@ -507,33 +399,34 @@ button:active {
   }
 }
 
-.transport {
+.aratu-root .transport {
   grid-area: transport;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.tools {
+.aratu-root .tools {
   display: contents;
 }
 
-#follow {
+.aratu-root [data-ref="follow"] {
   grid-area: follow;
 }
 
-#stage {
+.aratu-root [data-ref="stage"] {
   grid-area: stage;
 }
 
-#daw {
+.aratu-root [data-ref="daw"] {
   grid-area: daw;
 }
 
 /* Playing in a DAW: the port, the button and how it stands. */
-.daw-panel {
+
+.aratu-root .daw-panel {
   position: absolute;
-  z-index: 70;
+  z-index: calc(var(--aratu-stage-z) + 50);
   width: min(340px, calc(100vw - 16px));
   padding: 12px 14px 14px;
   border: 1px solid var(--rule);
@@ -544,19 +437,19 @@ button:active {
   font-family: var(--font-ui);
 }
 
-.daw-panel h3 {
+.aratu-root .daw-panel h3 {
   margin: 0 0 6px;
   font-size: 15px;
 }
 
-.daw-panel p {
+.aratu-root .daw-panel p {
   margin: 0 0 10px;
   color: var(--soft);
   font-size: 13px;
   line-height: 1.45;
 }
 
-.daw-port {
+.aratu-root .daw-port {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -565,7 +458,7 @@ button:active {
   font-size: 13px;
 }
 
-.daw-port input {
+.aratu-root .daw-port input {
   width: 96px;
   padding: 6px 8px;
   border: 1px solid var(--rule);
@@ -575,25 +468,26 @@ button:active {
   font: inherit;
 }
 
-.daw-connect {
+.aratu-root .daw-connect {
   width: 100%;
   height: 36px;
   margin-bottom: 10px;
 }
 
-.daw-panel .daw-state {
+.aratu-root .daw-panel .daw-state {
   margin: 0;
   color: var(--text);
 }
 
-.tools .btn.on {
+.aratu-root .tools .btn.on {
   border-color: var(--accent);
   background: color-mix(in srgb, var(--accent) 12%, var(--paper));
   color: var(--accent);
 }
 
 /* The sound on the display: its wave, or its frequencies. */
-.scope {
+
+.aratu-root .scope {
   flex: 1 1 auto;
   align-self: stretch;
   min-width: 0;
@@ -605,11 +499,12 @@ button:active {
 
 /* Drawings under a line of the code (`bass.wave`, `arp.roll`), as wide as
    a line of music and as tall as two of text. */
-.cm-visual {
+
+:where(.aratu-root) .cm-visual {
   padding: 2px 0 8px;
 }
 
-.cm-visual canvas {
+:where(.aratu-root) .cm-visual canvas {
   display: block;
   width: min(100%, 46em);
   height: 2.6em;
@@ -623,7 +518,8 @@ button:active {
 
 /* An effect's curve beside its name in a chain; the tube glows as hard as
    it is driven. */
-.cm-fx {
+
+:where(.aratu-root) .cm-fx {
   display: inline-block;
   margin: 0 3px 0 4px;
   padding: 0 2px;
@@ -634,40 +530,41 @@ button:active {
   line-height: 0;
 }
 
-.cm-fx svg {
+:where(.aratu-root) .cm-fx svg {
   display: block;
   width: 2.9em;
   height: 1em;
 }
 
-.cm-fx-curve {
+:where(.aratu-root) .cm-fx-curve {
   fill: none;
   stroke: currentColor;
   stroke-width: 1.6;
   stroke-linejoin: round;
 }
 
-.cm-fx-zero {
+:where(.aratu-root) .cm-fx-zero {
   stroke: color-mix(in srgb, var(--muted) 50%, transparent);
   stroke-width: 0.8;
 }
 
-.cm-fx-eq {
+:where(.aratu-root) .cm-fx-eq {
   cursor: pointer;
 }
 
-.cm-fx-eq:hover {
+:where(.aratu-root) .cm-fx-eq:hover {
   outline: 1px solid var(--accent);
 }
 
-.cm-fx-tube {
+:where(.aratu-root) .cm-fx-tube {
   box-shadow: 0 0 calc(var(--heat, 0) * 12px) color-mix(in srgb, var(--accent) calc(var(--heat, 0) * 90%), transparent);
 }
 
 /* The equalizer, opened from its curve. */
-.eq-panel {
+
+.aratu-root .eq-panel {
   position: absolute;
-  z-index: 70;
+  z-index: calc(var(--aratu-stage-z) + 50);
   width: 344px;
   padding: 10px 12px 12px;
   border: 1px solid var(--rule);
@@ -678,27 +575,27 @@ button:active {
   font-family: var(--font-ui);
 }
 
-.eq-head {
+.aratu-root .eq-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 8px;
 }
 
-.eq-head b {
+.aratu-root .eq-head b {
   font-family: var(--font-display);
   font-size: 18px;
   font-weight: 400;
 }
 
-.eq-close {
+.aratu-root .eq-close {
   padding: 2px 8px;
   border: 0;
   background: none;
   color: var(--muted);
 }
 
-.eq-graph {
+.aratu-root .eq-graph {
   display: block;
   width: 320px;
   height: 150px;
@@ -707,81 +604,81 @@ button:active {
   touch-action: none;
 }
 
-.eq-grid {
+.aratu-root .eq-grid {
   stroke: var(--line);
   stroke-width: 1;
 }
 
-.eq-zero {
+.aratu-root .eq-zero {
   stroke: var(--rule);
 }
 
-.eq-curve {
+.aratu-root .eq-curve {
   fill: none;
   stroke: var(--accent);
   stroke-width: 2.2;
 }
 
-.eq-band {
+.aratu-root .eq-band {
   fill: var(--accent);
   stroke: var(--paper);
   stroke-width: 2;
   cursor: grab;
 }
 
-.eq-mid {
+.aratu-root .eq-mid {
   fill: var(--accent-2);
 }
 
-.eq-high {
+.aratu-root .eq-high {
   fill: var(--mangue);
 }
 
-.eq-legend,
-.eq-hint {
+.aratu-root .eq-legend,
+.aratu-root .eq-hint {
   margin: 8px 0 0;
   color: var(--soft);
   font-size: 12px;
   line-height: 1.4;
 }
 
-.eq-hint {
+.aratu-root .eq-hint {
   color: var(--muted);
 }
 
-.eq-legend {
+.aratu-root .eq-legend {
   white-space: pre-line;
   font-variant-numeric: tabular-nums;
 }
 
-.cm-visual-roll canvas {
+:where(.aratu-root) .cm-visual-roll canvas {
   height: 3.4em;
   background: color-mix(in srgb, var(--panel) 55%, transparent);
 }
 
-#share {
+.aratu-root [data-ref="share"] {
   grid-area: share;
 }
 
-#scenes {
+.aratu-root [data-ref="scenes"] {
   grid-area: scenes;
 }
 
-.examples {
+.aratu-root .examples {
   grid-area: examples;
   justify-self: end;
 }
 
-.btn-stop .i {
+.aratu-root .btn-stop .i {
   width: 16px;
   height: 16px;
 }
 
-.btn.record .i {
+.aratu-root .btn.record .i {
   color: var(--error);
 }
 
-.status {
+.aratu-root .status {
   grid-area: status;
   position: relative;
   display: flex;
@@ -797,17 +694,17 @@ button:active {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
-:root[data-theme="dark"] .status {
+.aratu-root[data-theme="dark"] .status {
   box-shadow: inset 0 0 0 1px var(--line);
 }
 
-.stat {
+.aratu-root .stat {
   display: inline-flex;
   align-items: center;
   gap: 8px;
 }
 
-.stat b {
+.aratu-root .stat b {
   color: var(--display-muted);
   font-size: 10px;
   font-weight: 700;
@@ -816,31 +713,32 @@ button:active {
   text-transform: uppercase;
 }
 
-#bar,
-#bpm,
-.sig,
-.btn.scene,
-#stage-bar-n,
-.stage-tempo,
-.toc-n {
+.aratu-root [data-ref="bar"],
+.aratu-root [data-ref="bpm"],
+.aratu-root .sig,
+.aratu-root .btn.scene,
+.aratu-root [data-ref="stage-bar-n"],
+.aratu-root .stage-tempo,
+.aratu-root .toc-n {
   font-variant-numeric: lining-nums tabular-nums;
 }
 
-#bar {
+.aratu-root [data-ref="bar"] {
   min-width: 2ch;
   font-family: var(--font-display);
   font-size: 30px;
   line-height: 1;
 }
 
-#bpm {
+.aratu-root [data-ref="bpm"] {
   font-family: var(--font-display);
   font-size: 20px;
   line-height: 1;
 }
 
 /* The meter, stacked as a score writes it. */
-.sig {
+
+.aratu-root .sig {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
@@ -849,19 +747,20 @@ button:active {
   line-height: 0.86;
 }
 
-#meter:not(:has(.sig)) {
+.aratu-root [data-ref="meter"]:not(:has(.sig)) {
   font-family: var(--font-display);
   font-size: 18px;
 }
 
 /* The beats of the bar: the first bigger, the one now lit. */
-.beat {
+
+.aratu-root .beat {
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
 
-.beat i {
+.aratu-root .beat i {
   width: 8px;
   height: 8px;
   border-radius: 50%;
@@ -871,22 +770,23 @@ button:active {
     transform 70ms;
 }
 
-.beat i:first-child {
+.aratu-root .beat i:first-child {
   width: 11px;
   height: 11px;
 }
 
-.beat i.now {
+.aratu-root .beat i.now {
   background: color-mix(in srgb, currentColor 70%, transparent);
 }
 
-.beat i.hit {
+.aratu-root .beat i.hit {
   background: var(--accent);
   transform: scale(1.35);
 }
 
 /* How far the bar has gone, along the display's foot. */
-.bar-progress {
+
+.aratu-root .bar-progress {
   position: absolute;
   left: 0;
   right: 0;
@@ -898,22 +798,22 @@ button:active {
   pointer-events: none;
 }
 
-.bar-progress.run {
-  animation: bar-run var(--bar-len, 2s) linear both;
+.aratu-root .bar-progress.run {
+  animation: aratu-bar-run var(--bar-len, 2s) linear both;
 }
 
-@keyframes bar-run {
+@keyframes aratu-bar-run {
   to {
     transform: scaleX(1);
   }
 }
 
-.tools .btn {
+.aratu-root .tools .btn {
   height: 40px;
   padding: 0 14px;
 }
 
-.examples {
+.aratu-root .examples {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -924,7 +824,7 @@ button:active {
   text-transform: uppercase;
 }
 
-.examples select {
+.aratu-root .examples select {
   max-width: 240px;
   height: 40px;
   padding: 0 34px 0 12px;
@@ -942,13 +842,14 @@ button:active {
 
 /* Scenes: eight places for the piece, boxed like a score's rehearsal
    marks; in the toolbar and on stage. */
-.scenes {
+
+.aratu-root .scenes {
   display: inline-flex;
   align-items: center;
   gap: 4px;
 }
 
-.scenes-label {
+.aratu-root .scenes-label {
   margin-right: 4px;
   color: var(--muted);
   font-size: 11px;
@@ -957,7 +858,7 @@ button:active {
   text-transform: uppercase;
 }
 
-.btn.scene {
+.aratu-root .btn.scene {
   width: 30px;
   height: 32px;
   padding: 0;
@@ -970,33 +871,34 @@ button:active {
   line-height: 1;
 }
 
-.btn.scene.filled {
+.aratu-root .btn.scene.filled {
   border-style: solid;
   border-color: var(--text);
   background: var(--paper);
   color: var(--text);
 }
 
-.btn.scene.on {
+.aratu-root .btn.scene.on {
   border-color: var(--accent);
   background: var(--accent);
   color: var(--accent-ink);
 }
 
 /* Recording: the button glows while it records. */
-.btn.record.on {
+
+.aratu-root .btn.record.on {
   color: var(--error);
   border-color: var(--error);
-  animation: record-pulse 1.2s ease-in-out infinite;
+  animation: aratu-record-pulse 1.2s ease-in-out infinite;
 }
 
-@keyframes record-pulse {
+@keyframes aratu-record-pulse {
   50% {
     box-shadow: 0 0 0 4px color-mix(in srgb, var(--error) 25%, transparent);
   }
 }
 
-.work {
+.aratu-root .work {
   flex: 1;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 340px;
@@ -1004,7 +906,7 @@ button:active {
   min-height: 440px;
 }
 
-.sheet {
+.aratu-root .sheet {
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -1012,11 +914,11 @@ button:active {
   overflow: hidden;
 }
 
-.editor .cm-editor {
+:where(.aratu-root) .editor .cm-editor {
   height: 100%;
 }
 
-.side {
+.aratu-root .side {
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -1027,18 +929,18 @@ button:active {
   box-shadow: var(--shadow);
 }
 
-.side > div:not(.side-tabs) {
+.aratu-root .side > div:not(.side-tabs) {
   padding: 14px 16px;
 }
 
-.side h2,
-.toc h2 {
+.aratu-root .side h2,
+.aratu-root .toc h2 {
   margin: 0 0 10px;
   font-size: 22px;
   color: var(--text);
 }
 
-.side-tabs {
+.aratu-root .side-tabs {
   position: sticky;
   top: 0;
   z-index: 1;
@@ -1049,7 +951,7 @@ button:active {
   border-bottom: 1px solid var(--line);
 }
 
-.side-tabs button {
+.aratu-root .side-tabs button {
   padding: 12px 10px 10px;
   border: 0;
   border-bottom: 2px solid transparent;
@@ -1062,16 +964,16 @@ button:active {
   text-transform: uppercase;
 }
 
-.side-tabs button:hover {
+.aratu-root .side-tabs button:hover {
   color: var(--text);
 }
 
-.side-tabs button.on {
+.aratu-root .side-tabs button.on {
   color: var(--text);
   border-bottom-color: var(--accent);
 }
 
-.messages {
+.aratu-root .messages {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -1079,7 +981,7 @@ button:active {
   gap: 8px;
 }
 
-.messages li {
+.aratu-root .messages li {
   padding: 9px 12px;
   border-left: 3px solid var(--warning);
   background: var(--panel);
@@ -1089,16 +991,16 @@ button:active {
   cursor: pointer;
 }
 
-.messages li.error {
+.aratu-root .messages li.error {
   border-left-color: var(--error);
 }
 
-.messages li.good {
+.aratu-root .messages li.good {
   border-left-color: var(--good);
   cursor: default;
 }
 
-.messages li small {
+.aratu-root .messages li small {
   display: block;
   margin-bottom: 2px;
   color: var(--muted);
@@ -1106,14 +1008,14 @@ button:active {
   font-size: 12px;
 }
 
-.note {
+.aratu-root .note {
   color: var(--soft);
   font-size: 14px;
 }
 
 /* The Sounds panel. */
 
-.sound-search {
+.aratu-root .sound-search {
   width: 100%;
   padding: 8px 10px;
   border: 1px solid var(--rule);
@@ -1123,14 +1025,14 @@ button:active {
   font: inherit;
 }
 
-.sound-help {
+.aratu-root .sound-help {
   margin: 8px 0 4px;
   color: var(--muted);
   font-size: 13px;
   line-height: 1.45;
 }
 
-.sound-family {
+.aratu-root .sound-family {
   margin: 16px 0 4px;
   padding-bottom: 3px;
   border-bottom: 1px solid var(--line);
@@ -1141,14 +1043,14 @@ button:active {
   text-transform: uppercase;
 }
 
-.sound-row {
+.aratu-root .sound-row {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 3px 0;
 }
 
-.sound-play {
+.aratu-root .sound-play {
   flex: none;
   width: 26px;
   height: 26px;
@@ -1160,12 +1062,12 @@ button:active {
   font-size: 11px;
 }
 
-.sound-play.on {
+.aratu-root .sound-play.on {
   background: var(--accent);
   color: var(--accent-ink);
 }
 
-.sound-code {
+.aratu-root .sound-code {
   flex: none;
   padding: 2px 6px;
   border: 0;
@@ -1177,11 +1079,11 @@ button:active {
   cursor: copy;
 }
 
-.sound-code:hover {
+.aratu-root .sound-code:hover {
   outline: 1px solid var(--accent);
 }
 
-.sound-name {
+.aratu-root .sound-name {
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -1191,7 +1093,7 @@ button:active {
   white-space: nowrap;
 }
 
-.sound-state {
+.aratu-root .sound-state {
   flex: none;
   padding: 1px 6px;
   border-radius: 10px;
@@ -1200,17 +1102,17 @@ button:active {
   font-size: 11px;
 }
 
-.sound-state[data-state="ready"] {
+.aratu-root .sound-state[data-state="ready"] {
   background: color-mix(in srgb, var(--mangue) 30%, transparent);
 }
 
-.sound-state[data-state="failed"] {
+.aratu-root .sound-state[data-state="failed"] {
   background: color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 /* Which engine plays a voice. */
 
-.sound-engine {
+.aratu-root .sound-engine {
   display: flex;
   gap: 8px;
   align-items: flex-start;
@@ -1219,7 +1121,7 @@ button:active {
   cursor: pointer;
 }
 
-.sound-mb {
+.aratu-root .sound-mb {
   flex: none;
   padding: 1px 6px;
   border-radius: 10px;
@@ -1230,7 +1132,7 @@ button:active {
 
 /* The twelve-tone matrix. */
 
-.matrix-toggle {
+.aratu-root .matrix-toggle {
   padding: 4px 10px;
   border: 1px solid var(--rule);
   border-radius: var(--radius);
@@ -1240,12 +1142,12 @@ button:active {
   font-size: 13px;
 }
 
-.matrix {
+.aratu-root .matrix {
   margin-top: 10px;
   overflow-x: auto;
 }
 
-.matrix-grid {
+.aratu-root .matrix-grid {
   display: grid;
   grid-template-columns: repeat(calc(var(--n) + 2), minmax(26px, auto));
   gap: 1px;
@@ -1253,9 +1155,9 @@ button:active {
   font-size: 12px;
 }
 
-.matrix-cell,
-.matrix-form,
-.matrix-corner {
+.aratu-root .matrix-cell,
+.aratu-root .matrix-form,
+.aratu-root .matrix-corner {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1263,16 +1165,16 @@ button:active {
   padding: 0 2px;
 }
 
-.matrix-cell {
+.aratu-root .matrix-cell {
   background: var(--code-bg);
   color: var(--text);
 }
 
-.matrix-cell.prime {
+.aratu-root .matrix-cell.prime {
   background: color-mix(in srgb, var(--accent) 18%, var(--code-bg));
 }
 
-.matrix-form {
+.aratu-root .matrix-form {
   border: 0;
   background: none;
   color: var(--accent);
@@ -1282,17 +1184,17 @@ button:active {
   cursor: copy;
 }
 
-.matrix-form:hover {
+.aratu-root .matrix-form:hover {
   text-decoration: underline;
 }
 
 /* The rhythm map under the editor. */
 
-.rhythm {
+.aratu-root .rhythm {
   padding: 14px 16px 16px;
 }
 
-.rhythm-head {
+.aratu-root .rhythm-head {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -1300,13 +1202,13 @@ button:active {
   margin-bottom: 10px;
 }
 
-.rhythm-head h2 {
+.aratu-root .rhythm-head h2 {
   margin: 0;
   font-size: 22px;
   color: var(--text);
 }
 
-.rhythm-head p {
+.aratu-root .rhythm-head p {
   margin: 0;
   color: var(--muted);
   font-size: 14px;
@@ -1314,7 +1216,7 @@ button:active {
   min-width: 260px;
 }
 
-.quantum-label {
+.aratu-root .quantum-label {
   display: inline-flex;
   align-items: center;
   padding: 0 10px;
@@ -1326,40 +1228,41 @@ button:active {
   text-transform: uppercase;
 }
 
-.quantum-label + button {
+.aratu-root .quantum-label + button {
   border-left: 0 !important;
 }
 
-.rhythm-grid {
+.aratu-root .rhythm-grid {
   overflow-x: auto;
 }
 
-.rhythm-grid .grid-row {
+.aratu-root .rhythm-grid .grid-row {
   grid-template-columns: 120px repeat(var(--bars), minmax(max(240px, var(--bar-min, 0px)), 1fr));
 }
 
-.rhythm-grid .grid-bar {
+.aratu-root .rhythm-grid .grid-bar {
   height: 34px;
 }
 
-.rhythm-grid .grid-hit {
+.aratu-root .rhythm-grid .grid-hit {
   top: 6px;
   height: 22px;
   line-height: 22px;
   font-size: 13px;
 }
 
-.rhythm-grid .grid-label {
+.aratu-root .rhythm-grid .grid-label {
   font-size: 13px;
 }
 
 /* The timeline: bar numbers and sections on top, the names kept in sight
    while it scrolls, a playhead across every row. */
-.grid.timeline {
+
+.aratu-root .grid.timeline {
   position: relative;
 }
 
-.timeline .grid-label {
+.aratu-root .timeline .grid-label {
   position: sticky;
   left: 0;
   z-index: 3;
@@ -1370,11 +1273,11 @@ button:active {
   background: var(--paper);
 }
 
-.grid-head .grid-label {
+.aratu-root .grid-head .grid-label {
   background: var(--paper);
 }
 
-.grid-mark {
+.aratu-root .grid-mark {
   position: relative;
   display: flex;
   align-items: baseline;
@@ -1388,14 +1291,14 @@ button:active {
   white-space: nowrap;
 }
 
-.grid-mark b {
+.aratu-root .grid-mark b {
   font-family: var(--font-display);
   font-size: 15px;
   font-weight: 400;
   color: var(--text);
 }
 
-.grid-section {
+.aratu-root .grid-section {
   padding: 0 6px;
   border-radius: 3px;
   background: color-mix(in srgb, var(--accent) 16%, transparent);
@@ -1406,15 +1309,15 @@ button:active {
   text-transform: uppercase;
 }
 
-.timeline .grid-num {
+.aratu-root .timeline .grid-num {
   display: none;
 }
 
-.timeline .grid-bar.playing::after {
+.aratu-root .timeline .grid-bar.playing::after {
   display: none;
 }
 
-.grid-playhead {
+.aratu-root .grid-playhead {
   position: absolute;
   top: 0;
   bottom: 0;
@@ -1429,11 +1332,11 @@ button:active {
   transition: opacity 200ms;
 }
 
-.grid-playhead.on {
+.aratu-root .grid-playhead.on {
   opacity: 1;
 }
 
-.grid-playhead::before {
+.aratu-root .grid-playhead::before {
   content: "";
   position: absolute;
   top: 0;
@@ -1443,58 +1346,70 @@ button:active {
   border-bottom: 0;
 }
 
-.hint {
+.aratu-root .hint {
   margin: 0;
   color: var(--muted);
   font-size: 13px;
 }
 
-/* The code editor, everywhere. */
+/* The code editor, everywhere. The rules for CodeMirror's elements keep
+   the weight they had before the editor became a library, under
+   :where(.aratu-root): its theme, whose <style> comes before this sheet,
+   holds where it held (the lines' height is its 1.4). */
 
-.cm-editor {
+/* CodeMirror's own element starts from the browser's styles too, with what
+   its theme sets for it (its position and display, !important, stay). */
+:where(.aratu-root) div.cm-editor {
+  all: revert;
+  box-sizing: border-box;
+  flex-direction: column;
   font-size: 15.5px;
   background: var(--code-bg);
 }
 
-.cm-editor.cm-focused {
-  outline: none;
+/* CodeMirror sets these too, in a <style> outside any cascade layer: in
+   aratu.layered.css only !important holds over it. */
+:where(.aratu-root) .cm-editor.cm-focused {
+  outline: none !important;
 }
 
 /* CodeMirror's own theme names a plain monospace, after this sheet. */
-.cm-scroller {
+
+:where(.aratu-root) .cm-scroller {
   font-family: var(--font-mono) !important;
   line-height: 1.7;
 }
 
 /* The gutter ends in a double rule, like a system's first bar line. */
-.cm-gutters {
+
+:where(.aratu-root) .cm-gutters {
   background: color-mix(in srgb, var(--panel) 65%, var(--code-bg)) !important;
   color: var(--muted) !important;
   border-right: 3px double var(--rule) !important;
 }
 
-.cm-activeLine,
-.cm-activeLineGutter {
+:where(.aratu-root) .cm-activeLine,
+:where(.aratu-root) .cm-activeLineGutter {
   background: rgba(217, 84, 30, 0.05) !important;
 }
 
-.cm-cursor {
+:where(.aratu-root) .cm-cursor {
   border-left-color: var(--accent) !important;
   border-left-width: 2px !important;
 }
 
-.cm-selectionBackground,
-.cm-focused .cm-selectionBackground {
+:where(.aratu-root) .cm-selectionBackground,
+:where(.aratu-root) .cm-focused .cm-selectionBackground {
   background: rgba(217, 84, 30, 0.2) !important;
 }
 
-.cm-playing {
+:where(.aratu-root) .cm-playing {
   background: var(--playing);
   border-radius: 3px;
   box-shadow: 0 0 6px var(--playing);
 }
 
-.cm-tooltip {
+:where(.aratu-root) .cm-tooltip {
   background: var(--paper) !important;
   color: var(--text);
   border: 1px solid var(--line) !important;
@@ -1502,30 +1417,91 @@ button:active {
   font-family: var(--font-ui);
 }
 
+/* The words of the code, by kind (editor.ts gives the classes). */
+
+.aratu-root .ar-comment {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.aratu-root .ar-keyword {
+  color: var(--keyword);
+  font-weight: 600;
+}
+
+.aratu-root .ar-dynamic {
+  color: var(--dynamic);
+  font-weight: 600;
+}
+
+.aratu-root .ar-number {
+  color: var(--number);
+}
+
+.aratu-root .ar-barline {
+  color: var(--barline);
+  font-weight: 700;
+}
+
+.aratu-root .ar-marker {
+  color: var(--marker);
+  font-weight: 600;
+}
+
+.aratu-root .ar-name {
+  color: var(--name);
+  font-weight: 600;
+}
+
+.aratu-root .ar-chord {
+  color: var(--chord);
+}
+
+.aratu-root .ar-hold {
+  color: var(--hold);
+}
+
+.aratu-root .ar-bracket {
+  color: var(--barline);
+}
+
+.aratu-root .ar-operator {
+  color: var(--operator);
+}
+
+.aratu-root .ar-word {
+  color: var(--text);
+}
+
+.aratu-root .ar-accent {
+  color: var(--accent);
+  font-weight: 800;
+}
+
 /* The book. */
 
-.book-view {
+.aratu-root .book-view {
   display: grid;
   grid-template-columns: 300px minmax(0, 1fr);
   gap: 0;
 }
 
-.toc {
+.aratu-root .toc {
   position: sticky;
-  top: calc(var(--top-h) + var(--safe-top));
+  top: var(--aratu-offset-top, 0px);
   align-self: start;
-  max-height: calc(100vh - var(--top-h) - var(--safe-top));
+  max-height: calc(100vh - var(--aratu-offset-top, 0px));
   overflow: auto;
   padding: 26px 16px 32px 20px;
   border-right: 1px solid var(--line);
   background: color-mix(in srgb, var(--panel) 70%, transparent);
 }
 
-.toc-toggle {
+.aratu-root .toc-toggle {
   display: none;
 }
 
-.toc ol {
+.aratu-root .toc ol {
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1533,7 +1509,7 @@ button:active {
   gap: 1px;
 }
 
-.toc li a {
+.aratu-root .toc li a {
   display: grid;
   grid-template-columns: 2em minmax(0, 1fr) auto;
   align-items: baseline;
@@ -1549,19 +1525,19 @@ button:active {
     color 120ms;
 }
 
-.toc-n {
+.aratu-root .toc-n {
   color: var(--muted);
   font-family: var(--font-display);
   font-size: 15px;
   font-variant-numeric: tabular-nums;
 }
 
-.toc li a:hover {
+.aratu-root .toc li a:hover {
   background: var(--paper);
   color: var(--text);
 }
 
-.toc li a.here {
+.aratu-root .toc li a.here {
   background: var(--paper);
   color: var(--text);
   font-weight: 600;
@@ -1570,23 +1546,23 @@ button:active {
     var(--shadow);
 }
 
-.toc li a.here .toc-n {
+.aratu-root .toc li a.here .toc-n {
   color: var(--accent);
 }
 
-.toc li.done a::after {
+.aratu-root .toc li.done a::after {
   content: "✓";
   color: var(--good);
   font-weight: 700;
 }
 
-.progress {
+.aratu-root .progress {
   margin: -4px 0 14px;
   color: var(--muted);
   font-size: 13px;
 }
 
-.page {
+.aratu-root .page {
   padding: 40px clamp(18px, 5vw, 72px) 72px;
   max-width: 900px;
   width: 100%;
@@ -1594,7 +1570,7 @@ button:active {
   line-height: 1.7;
 }
 
-.page h1 {
+.aratu-root .page h1 {
   font-size: 46px;
   line-height: 1.08;
   letter-spacing: -0.005em;
@@ -1604,26 +1580,26 @@ button:active {
   background: linear-gradient(var(--accent), var(--accent)) left bottom / 56px 3px no-repeat;
 }
 
-.page h2 {
+.aratu-root .page h2 {
   font-size: 29px;
   line-height: 1.2;
   margin: 46px 0 10px;
   color: var(--name);
 }
 
-.page h3 {
+.aratu-root .page h3 {
   font-family: var(--font-ui);
   font-size: 20px;
   font-weight: 700;
   margin: 28px 0 6px;
 }
 
-.page p,
-.page li {
+.aratu-root .page p,
+.aratu-root .page li {
   color: var(--text);
 }
 
-.page code {
+.aratu-root .page code {
   font-family: var(--font-mono);
   font-size: 0.86em;
   background: var(--panel);
@@ -1632,7 +1608,7 @@ button:active {
   color: var(--name);
 }
 
-.page pre {
+.aratu-root .page pre {
   background: var(--panel);
   padding: 12px 14px;
   border-radius: var(--radius);
@@ -1640,27 +1616,27 @@ button:active {
   font-size: 15px;
 }
 
-.page pre code {
+.aratu-root .page pre code {
   background: none;
   padding: 0;
 }
 
-.page table {
+.aratu-root .page table {
   border-collapse: collapse;
   margin: 16px 0;
   font-size: 16px;
   width: 100%;
 }
 
-.page th,
-.page td {
+.aratu-root .page th,
+.aratu-root .page td {
   border-bottom: 1px solid var(--line);
   padding: 8px 10px;
   text-align: left;
   vertical-align: top;
 }
 
-.page th {
+.aratu-root .page th {
   border-bottom: 2px solid var(--rule);
   color: var(--muted);
   font-size: 12px;
@@ -1669,7 +1645,7 @@ button:active {
   text-transform: uppercase;
 }
 
-.page blockquote {
+.aratu-root .page blockquote {
   position: relative;
   margin: 22px 0;
   padding: 14px 18px 14px 66px;
@@ -1681,7 +1657,8 @@ button:active {
 }
 
 /* The crab gives tips. */
-.page blockquote::before {
+
+.aratu-root .page blockquote::before {
   content: "";
   position: absolute;
   left: 14px;
@@ -1692,11 +1669,11 @@ button:active {
   border-radius: 8px;
 }
 
-.page blockquote p {
+.aratu-root .page blockquote p {
   margin: 6px 0;
 }
 
-.page-nav {
+.aratu-root .page-nav {
   display: flex;
   justify-content: space-between;
   gap: 12px;
@@ -1705,7 +1682,7 @@ button:active {
   border-top: 1px solid var(--line);
 }
 
-.page-nav a {
+.aratu-root .page-nav a {
   padding: 12px 18px;
   border: 1px solid var(--rule);
   border-radius: var(--radius);
@@ -1717,11 +1694,11 @@ button:active {
     transform 150ms var(--ease);
 }
 
-.page-nav a:hover {
+.aratu-root .page-nav a:hover {
   border-color: var(--accent);
 }
 
-.page-nav a.next {
+.aratu-root .page-nav a.next {
   margin-left: auto;
   background: var(--accent);
   border-color: var(--accent);
@@ -1729,100 +1706,22 @@ button:active {
   box-shadow: 0 2px 0 color-mix(in srgb, var(--accent) 55%, #000);
 }
 
-.page-nav a.next:hover {
+.aratu-root .page-nav a.next:hover {
   transform: translateX(3px);
 }
 
-.page-link {
+.aratu-root .page-link {
   margin: 18px 0 0;
   font-size: 14px;
 }
 
-.page-link a {
+.aratu-root .page-link a {
   color: var(--muted);
-}
-
-/* The pages to read (scripts/site.mjs): the book without the editor, which
-   need no script, for search engines and for sharing a link. */
-
-a.btn {
-  padding: 8px 14px;
-  border: 1px solid var(--rule);
-  border-radius: var(--radius);
-  background: var(--paper);
-  color: var(--text);
-  text-decoration: none;
-}
-
-a.btn:hover {
-  border-color: var(--accent);
-}
-
-a.btn-play {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-ink);
-}
-
-.read-view {
-  display: flex;
-  justify-content: center;
-}
-
-.open-in {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 14px;
-  margin: 16px 0 24px;
-  color: var(--soft);
-  font-size: 16px;
-}
-
-.read-list {
-  padding-left: 1.4em;
-}
-
-.read-list li {
-  margin: 12px 0;
-}
-
-.read-list a {
-  font-weight: 600;
-}
-
-.read-list p {
-  margin: 2px 0 0;
-  color: var(--soft);
-  font-size: 16px;
-  line-height: 1.5;
-}
-
-.page .read-block pre {
-  margin: 0;
-  border-radius: 0;
-  background: var(--code-bg);
-}
-
-.read-block .block-answer {
-  border-top: 1px solid var(--line);
-  padding: 8px 14px;
-}
-
-.read-block .block-answer summary {
-  cursor: pointer;
-  font-weight: 600;
-  color: var(--mangue);
-}
-
-.page .read-block .block-answer pre {
-  margin: 8px -14px -8px;
-  border-top: 1px solid var(--line);
 }
 
 /* A live block. */
 
-.aratu-block {
+.aratu-root .aratu-block {
   margin: 22px 0 28px;
   background: var(--paper);
   border: 1px solid var(--line);
@@ -1831,12 +1730,12 @@ a.btn-play {
   overflow: hidden;
 }
 
-.aratu-block[data-kind="exercise"] {
+.aratu-root .aratu-block[data-kind="exercise"] {
   border-color: var(--mangue);
   border-width: 1.5px;
 }
 
-.block-top {
+.aratu-root .block-top {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -1846,7 +1745,7 @@ a.btn-play {
   border-bottom: 1px solid var(--line);
 }
 
-.block-label {
+.aratu-root .block-label {
   font-weight: 700;
   font-size: 11px;
   letter-spacing: 0.14em;
@@ -1854,98 +1753,98 @@ a.btn-play {
   color: var(--muted);
 }
 
-.aratu-block[data-kind="exercise"] .block-label {
+.aratu-root .aratu-block[data-kind="exercise"] .block-label {
   color: var(--mangue);
 }
 
-.block-label.done::after {
+.aratu-root .block-label.done::after {
   content: " ✓";
   color: var(--good);
 }
 
-.block-buttons {
+.aratu-root .block-buttons {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   margin-left: auto;
 }
 
-.block-buttons .btn {
+.aratu-root .block-buttons .btn {
   height: 34px;
   padding: 0 12px;
   font-size: 14px;
 }
 
-.block-editor .cm-editor {
+:where(.aratu-root) .block-editor .cm-editor {
   font-size: 16.5px;
 }
 
-.block-editor .cm-content {
-  padding: 10px 6px;
+:where(.aratu-root) .block-editor .cm-content {
+  padding: 10px 6px !important;
 }
 
-.block-result:empty {
+.aratu-root .block-result:empty {
   display: none;
 }
 
-.block-result {
+.aratu-root .block-result {
   padding: 10px 16px;
   font-size: 16px;
   border-top: 1px solid var(--line);
 }
 
-.block-result p {
+.aratu-root .block-result p {
   margin: 4px 0;
 }
 
-.block-result ul {
+.aratu-root .block-result ul {
   margin: 6px 0 4px;
   padding-left: 20px;
 }
 
-.block-result.good {
+.aratu-root .block-result.good {
   background: color-mix(in srgb, var(--good) 12%, var(--paper));
   color: var(--text);
   font-weight: 600;
 }
 
-.block-result.almost {
+.aratu-root .block-result.almost {
   background: color-mix(in srgb, var(--warning) 12%, var(--paper));
 }
 
-.block-result.bad {
+.aratu-root .block-result.bad {
   background: color-mix(in srgb, var(--error) 10%, var(--paper));
 }
 
-.block-result li.more {
+.aratu-root .block-result li.more {
   color: var(--muted);
   list-style: none;
 }
 
-.block-goal {
+.aratu-root .block-goal {
   border-top: 1px dashed var(--mangue);
 }
 
 /* The rhythm grid: beats of each bar, with the written symbols on them. */
 
-.block-grid:empty {
+.aratu-root .block-grid:empty {
   display: none;
 }
 
-.block-grid {
+.aratu-root .block-grid {
   padding: 8px 14px 12px;
   border-top: 1px solid var(--line);
   overflow-x: auto;
 }
 
-.grid {
+.aratu-root .grid {
   display: grid;
   gap: 4px;
   min-width: min-content;
   padding-top: 16px;
 }
 
-.grid-row {
+.aratu-root .grid-row {
   display: grid;
   /* A bar with many steps is wider, so each step keeps room for its letter. */
   grid-template-columns: 92px repeat(var(--bars), minmax(max(150px, var(--bar-min, 0px)), 1fr));
@@ -1953,7 +1852,7 @@ a.btn-play {
   align-items: center;
 }
 
-.grid-label {
+.aratu-root .grid-label {
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--muted);
@@ -1962,7 +1861,7 @@ a.btn-play {
   white-space: nowrap;
 }
 
-.grid-bar {
+.aratu-root .grid-bar {
   position: relative;
   height: 30px;
   border-left: 2px solid var(--barline);
@@ -1979,21 +1878,21 @@ a.btn-play {
   touch-action: none;
 }
 
-.grid-bar.repeat .grid-hit:not(.on) {
+.aratu-root .grid-bar.repeat .grid-hit:not(.on) {
   opacity: 0.45;
 }
 
-.grid-empty {
+.aratu-root .grid-empty {
   height: 30px;
 }
 
-.grid-bar.locked {
+.aratu-root .grid-bar.locked {
   cursor: default;
   background-color: transparent;
   opacity: 0.75;
 }
 
-.grid-num {
+.aratu-root .grid-num {
   position: absolute;
   top: -17px;
   font-size: 11px;
@@ -2003,7 +1902,7 @@ a.btn-play {
   pointer-events: none;
 }
 
-.grid-hit {
+.aratu-root .grid-hit {
   position: absolute;
   top: 5px;
   transform: translateX(1px);
@@ -2024,34 +1923,34 @@ a.btn-play {
     background 80ms;
 }
 
-.grid-hit.short {
+.aratu-root .grid-hit.short {
   min-width: 0;
   max-width: 18px;
   padding: 0;
 }
 
-.grid-hit.long {
+.aratu-root .grid-hit.long {
   text-align: left;
   border-radius: 6px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.grid-tie {
+.aratu-root .grid-tie {
   background: color-mix(in srgb, var(--accent) 35%, transparent);
   min-width: 0;
   border-radius: 0 6px 6px 0;
 }
 
-.grid-hit:not(.grid-tie) {
+.aratu-root .grid-hit:not(.grid-tie) {
   cursor: grab;
 }
 
-.grid-bar.locked .grid-hit {
+.aratu-root .grid-bar.locked .grid-hit {
   cursor: default;
 }
 
-.grid-hit.dragging {
+.aratu-root .grid-hit.dragging {
   cursor: grabbing;
   opacity: 0.85;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
@@ -2060,13 +1959,13 @@ a.btn-play {
 
 /* An accent: bigger, bolder, ringed, with the score's accent sign above. */
 
-.grid-hit.accented {
+.aratu-root .grid-hit.accented {
   font-weight: 800;
   box-shadow: 0 0 0 2px var(--text);
   z-index: 1;
 }
 
-.grid-hit.accented::after {
+.aratu-root .grid-hit.accented::after {
   /* The accent wedge, wide and flat as a score draws it. */
   content: "";
   position: absolute;
@@ -2080,13 +1979,13 @@ a.btn-play {
   pointer-events: none;
 }
 
-.grid-hit:not(.accented):not(.long):not(.grid-tie) {
+.aratu-root .grid-hit:not(.accented):not(.long):not(.grid-tie) {
   transform: translateX(1px) scale(0.85);
 }
 
 /* The needle, and the symbols it passes. */
 
-.grid-bar.playing::after {
+.aratu-root .grid-bar.playing::after {
   content: "";
   position: absolute;
   top: -3px;
@@ -2098,8 +1997,8 @@ a.btn-play {
   pointer-events: none;
 }
 
-.grid-hit.on,
-.grid-hit.on:not(.accented):not(.long):not(.grid-tie) {
+.aratu-root .grid-hit.on,
+.aratu-root .grid-hit.on:not(.accented):not(.long):not(.grid-tie) {
   transform: translateX(1px) scale(1.3);
   background: var(--mangue);
   z-index: 1;
@@ -2107,7 +2006,7 @@ a.btn-play {
 
 /* Knobs beside numbers. */
 
-.cm-knob {
+:where(.aratu-root) .cm-knob {
   display: inline-block;
   vertical-align: middle;
   margin: 0 2px 0 4px;
@@ -2116,82 +2015,70 @@ a.btn-play {
   user-select: none;
 }
 
-.cm-knob svg {
+:where(.aratu-root) .cm-knob svg {
   display: block;
 }
 
-.cm-knob .track {
+:where(.aratu-root) .cm-knob .track {
   fill: var(--panel);
   stroke: var(--line);
   stroke-width: 2;
 }
 
-.cm-knob .value {
+:where(.aratu-root) .cm-knob .value {
   fill: none;
   stroke: var(--accent);
   stroke-width: 2.5;
   stroke-linecap: round;
 }
 
-.cm-knob line {
+:where(.aratu-root) .cm-knob line {
   stroke: var(--accent-2);
   stroke-width: 2;
   stroke-linecap: round;
 }
 
-.cm-knob:hover .track,
-.cm-knob.turning .track {
+:where(.aratu-root) .cm-knob:hover .track,
+:where(.aratu-root) .cm-knob.turning .track {
   stroke: var(--accent);
 }
 
 /* A parameter that moves: a second needle shows where it is now. */
-.cm-knob line.now {
+
+:where(.aratu-root) .cm-knob line.now {
   display: none;
   stroke: var(--accent);
   stroke-width: 2.5;
 }
 
-.cm-knob.moving line.now {
+:where(.aratu-root) .cm-knob.moving line.now {
   display: inline;
 }
 
-.cm-knob.moving .track {
+:where(.aratu-root) .cm-knob.moving .track {
   stroke: var(--accent);
-}
-
-/* The footer. */
-
-.bottom {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 24px;
-  padding: 12px clamp(14px, 3vw, 30px);
-  border-top: 1px solid var(--line);
-  color: var(--muted);
-  font-size: 13px;
-  background: var(--paper);
 }
 
 /* What is downloading, and the sounds that could not be: over every view,
    the stage included. */
 
-.sound-status {
+.aratu-root .sound-status {
   position: fixed;
   left: 50%;
-  bottom: 16px;
+  bottom: calc(16px + var(--aratu-offset-bottom, 0px));
   transform: translateX(-50%);
-  z-index: 60;
+  z-index: calc(var(--aratu-stage-z) + 40);
   width: min(640px, calc(100vw - 32px));
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.sound-status[hidden] {
+.aratu-root .sound-status[hidden] {
   display: none;
 }
 
-.sound-status p {
+.aratu-root .sound-status p {
   margin: 0;
   padding: 9px 12px;
   border-radius: var(--radius);
@@ -2199,11 +2086,11 @@ a.btn-play {
   color: var(--text);
   border: 1px solid var(--line);
   box-shadow: var(--shadow);
-  font-size: 0.92rem;
+  font-size: 0.92em;
   line-height: 1.35;
 }
 
-.sound-status .sound-loading::before {
+.aratu-root .sound-status .sound-loading::before {
   content: "";
   display: inline-block;
   width: 0.7em;
@@ -2213,16 +2100,16 @@ a.btn-play {
   border: 2px solid var(--accent);
   border-right-color: transparent;
   vertical-align: -1px;
-  animation: sound-spin 0.8s linear infinite;
+  animation: aratu-sound-spin 0.8s linear infinite;
 }
 
-@keyframes sound-spin {
+@keyframes aratu-sound-spin {
   to {
     transform: rotate(360deg);
   }
 }
 
-.sound-status .sound-problem {
+.aratu-root .sound-status .sound-problem {
   display: flex;
   gap: 10px;
   align-items: flex-start;
@@ -2230,62 +2117,61 @@ a.btn-play {
   border-left-width: 4px;
 }
 
-.sound-status .sound-problem span {
+.aratu-root .sound-status .sound-problem span {
   flex: 1;
 }
 
-.sound-status .sound-problem span::before {
+.aratu-root .sound-status .sound-problem span::before {
   content: "⚠ ";
   color: var(--error);
 }
 
-.sound-status .sound-problem button {
+.aratu-root .sound-status .sound-problem button {
   border: 0;
   background: none;
   color: var(--muted);
-  font-size: 1rem;
+  font-size: 16px;
   padding: 0 2px;
 }
 
 /* The stage: the code, full screen, under a rail that always shows where
    the piece is. The controls on the rail fade while the mouse rests. */
 
-.stage-bar,
-.stage-msg {
+.aratu-root .stage-bar,
+.aratu-root .stage-msg {
   display: none;
 }
 
-body.stage {
+.aratu-root.stage {
   --rail: 64px;
   overflow: hidden;
   background: var(--code-bg);
 }
 
-body.stage .top,
-body.stage .bottom,
-body.stage .toolbar,
-body.stage .side,
-body.stage .hint,
-body.stage #view-play > .rhythm {
+.aratu-root.stage .toolbar,
+.aratu-root.stage .side,
+.aratu-root.stage .hint,
+.aratu-root.stage [data-view="play"] > .rhythm {
   display: none !important;
 }
 
-body.stage .play-view {
+.aratu-root.stage .play-view {
   position: fixed;
   inset: 0;
-  z-index: 20;
+  z-index: var(--aratu-stage-z);
   margin: 0;
   padding: 0;
   max-width: none;
   background: var(--code-bg);
   animation: none;
+  overscroll-behavior: contain;
 }
 
-body.stage .play-view > * {
+.aratu-root.stage .play-view > * {
   animation: none;
 }
 
-body.stage .work {
+.aratu-root.stage .work {
   position: absolute;
   inset: calc(var(--rail) + var(--safe-top)) var(--safe-right) 0 var(--safe-left);
   display: block;
@@ -2294,7 +2180,8 @@ body.stage .work {
 }
 
 /* The first beat of each bar breathes along the edges of the code. */
-body.stage .work::after {
+
+.aratu-root.stage .work::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -2303,15 +2190,15 @@ body.stage .work::after {
   transition: box-shadow 160ms ease-out;
 }
 
-body.stage.downbeat .work::after {
+.aratu-root.stage.downbeat .work::after {
   box-shadow:
     inset 0 0 0 2px color-mix(in srgb, var(--accent) 75%, transparent),
     inset 0 0 90px color-mix(in srgb, var(--accent) 16%, transparent);
   transition-duration: 30ms;
 }
 
-body.stage #editor,
-body.stage #editor-mirror {
+.aratu-root.stage [data-ref="editor"],
+.aratu-root.stage [data-ref="editor-mirror"] {
   height: 100%;
   min-height: 0;
   border: 0;
@@ -2320,36 +2207,36 @@ body.stage #editor-mirror {
   background: var(--code-bg);
 }
 
-body.stage #editor .cm-editor,
-body.stage #editor-mirror .cm-editor {
+:where(.aratu-root.stage) [data-ref="editor"] .cm-editor,
+:where(.aratu-root.stage) [data-ref="editor-mirror"] .cm-editor {
   font-size: var(--stage-font, 30px);
 }
 
-body.stage #editor .cm-gutters,
-body.stage #editor-mirror .cm-gutters {
-  display: none;
+:where(.aratu-root.stage) [data-ref="editor"] .cm-gutters,
+:where(.aratu-root.stage) [data-ref="editor-mirror"] .cm-gutters {
+  display: none !important;
 }
 
-body.stage #editor .cm-content {
-  padding: 5vh 6vw 30vh;
+:where(.aratu-root.stage) [data-ref="editor"] .cm-content {
+  padding: 5vh 6vw 30vh !important;
 }
 
-body.stage .cm-scroller {
+:where(.aratu-root.stage) .cm-scroller {
   scrollbar-width: thin;
   scrollbar-color: var(--line) transparent;
 }
 
-body.stage .cm-activeLine {
+:where(.aratu-root.stage) .cm-activeLine {
   background: transparent !important;
 }
 
-body.stage .cm-playing {
+:where(.aratu-root.stage) .cm-playing {
   box-shadow:
     0 0 18px var(--playing),
     0 0 4px var(--playing);
 }
 
-body.stage .stage-bar {
+.aratu-root.stage .stage-bar {
   position: fixed;
   top: 0;
   left: 0;
@@ -2365,26 +2252,26 @@ body.stage .stage-bar {
   transition: box-shadow 160ms ease-out;
 }
 
-body.stage.downbeat .stage-bar {
+.aratu-root.stage.downbeat .stage-bar {
   box-shadow: 0 10px 34px -16px color-mix(in srgb, var(--accent) 70%, transparent);
   transition-duration: 30ms;
 }
 
-.stage-hud {
+.aratu-root .stage-hud {
   display: flex;
   align-items: center;
   gap: 18px;
   flex: none;
 }
 
-.stage-count {
+.aratu-root .stage-count {
   display: inline-flex;
   align-items: center;
   gap: 16px;
   color: var(--text);
 }
 
-#stage-bar-n {
+.aratu-root [data-ref="stage-bar-n"] {
   min-width: 2ch;
   font-family: var(--font-display);
   font-size: 42px;
@@ -2393,29 +2280,29 @@ body.stage.downbeat .stage-bar {
   transition: color 160ms;
 }
 
-body.stage.downbeat #stage-bar-n {
+.aratu-root.stage.downbeat [data-ref="stage-bar-n"] {
   color: var(--accent);
   transition-duration: 30ms;
 }
 
-.stage-count .beat i {
+.aratu-root .stage-count .beat i {
   width: 10px;
   height: 10px;
 }
 
-.stage-count .beat i:first-child {
+.aratu-root .stage-count .beat i:first-child {
   width: 14px;
   height: 14px;
 }
 
-.stage-tempo {
+.aratu-root .stage-tempo {
   color: var(--muted);
   font-family: var(--font-display);
   font-size: 18px;
   white-space: nowrap;
 }
 
-.stage-controls {
+.aratu-root .stage-controls {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -2426,7 +2313,7 @@ body.stage.downbeat #stage-bar-n {
   transition: opacity 400ms;
 }
 
-body.stage .stage-bar .stage-exit {
+.aratu-root.stage .stage-bar .stage-exit {
   flex: none;
   transition:
     opacity 400ms,
@@ -2434,15 +2321,15 @@ body.stage .stage-bar .stage-exit {
     color 150ms;
 }
 
-.stage-controls::-webkit-scrollbar {
+.aratu-root .stage-controls::-webkit-scrollbar {
   display: none;
 }
 
-.stage-controls > * {
+.aratu-root .stage-controls > * {
   flex: none;
 }
 
-.stage-tools {
+.aratu-root .stage-tools {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -2450,7 +2337,7 @@ body.stage .stage-bar .stage-exit {
   border-left: 1px solid var(--line);
 }
 
-body.stage .stage-bar .btn {
+.aratu-root.stage .stage-bar .btn {
   height: 40px;
   padding: 0 12px;
   border-color: var(--line);
@@ -2459,66 +2346,67 @@ body.stage .stage-bar .btn {
   font-size: 14px;
 }
 
-body.stage .stage-bar .btn:hover {
+.aratu-root.stage .stage-bar .btn:hover {
   border-color: var(--accent);
   color: var(--text);
 }
 
-body.stage .stage-bar .btn.on {
+.aratu-root.stage .stage-bar .btn.on {
   border-color: var(--accent);
   background: color-mix(in srgb, var(--accent) 14%, transparent);
   color: var(--accent);
 }
 
-body.stage .stage-bar .btn-play,
-body.stage .stage-bar #stage-stop {
+.aratu-root.stage .stage-bar .btn-play,
+.aratu-root.stage .stage-bar [data-ref="stage-stop"] {
   width: 44px;
   height: 44px;
   padding: 0;
   border-radius: 50%;
 }
 
-body.stage .stage-bar .btn-play {
+.aratu-root.stage .stage-bar .btn-play {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-ink);
 }
 
-body.stage .stage-bar .btn-play.on {
+.aratu-root.stage .stage-bar .btn-play.on {
   background: var(--mangue);
   border-color: var(--mangue);
   color: var(--accent-ink);
 }
 
-.font-step {
+.aratu-root .font-step {
   font-family: var(--font-display);
   font-size: 18px !important;
   font-weight: 400 !important;
 }
 
-.font-step small {
+.aratu-root .font-step small {
   font-family: var(--font-ui);
   font-size: 13px;
   font-weight: 700;
 }
 
-body.stage .stage-exit:hover {
+.aratu-root.stage .stage-exit:hover {
   border-color: var(--error) !important;
   color: var(--error) !important;
 }
 
 /* The labels show where there is room; the icons always. */
+
 @media (max-width: 1360px) {
-  .stage-tools .btn span {
+  .aratu-root .stage-tools .btn span {
     display: none;
   }
 }
 
-body.stage .stage-bar .scenes-label {
+.aratu-root.stage .stage-bar .scenes-label {
   display: none;
 }
 
-body.stage .stage-bar .btn.scene {
+.aratu-root.stage .stage-bar .btn.scene {
   width: 32px;
   height: 36px;
   padding: 0;
@@ -2526,35 +2414,36 @@ body.stage .stage-bar .btn.scene {
   font-size: 16px;
 }
 
-body.stage .stage-bar .btn.scene.filled {
+.aratu-root.stage .stage-bar .btn.scene.filled {
   border-color: var(--soft);
   color: var(--text);
   background: transparent;
 }
 
-body.stage .stage-bar .btn.scene.on {
+.aratu-root.stage .stage-bar .btn.scene.on {
   border-color: var(--accent);
   background: var(--accent);
   color: var(--accent-ink);
 }
 
-body.stage .stage-bar .bar-progress {
+.aratu-root.stage .stage-bar .bar-progress {
   bottom: -1px;
 }
 
-body.stage.idle {
+.aratu-root.stage.idle {
   cursor: none;
 }
 
-body.stage.idle .stage-controls,
-body.stage.idle .stage-bar .stage-exit {
+.aratu-root.stage.idle .stage-controls,
+.aratu-root.stage.idle .stage-bar .stage-exit {
   opacity: 0;
   pointer-events: none;
 }
 
 /* A problem in the piece shows at the foot, never over the line being
    written. */
-body.stage .stage-msg:not([hidden]) {
+
+.aratu-root.stage .stage-msg:not([hidden]) {
   display: block;
   position: fixed;
   left: max(20px, var(--safe-left));
@@ -2572,11 +2461,11 @@ body.stage .stage-msg:not([hidden]) {
   box-shadow: var(--shadow);
 }
 
-body.stage.stage-map .work {
+.aratu-root.stage.stage-map .work {
   bottom: 36vh;
 }
 
-body.stage.stage-map #view-play > .rhythm {
+.aratu-root.stage.stage-map [data-view="play"] > .rhythm {
   display: block !important;
   position: fixed;
   left: 0;
@@ -2590,14 +2479,14 @@ body.stage.stage-map #view-play > .rhythm {
   border-width: 1px 0 0;
 }
 
-body.stage.stage-map #view-play > .rhythm .rhythm-head p {
+.aratu-root.stage.stage-map [data-view="play"] > .rhythm .rhythm-head p {
   display: none;
 }
 
 /* Two columns on stage: the second view goes on where the first ends,
    past a double bar line. */
 
-body.stage.stage-split .work {
+.aratu-root.stage.stage-split .work {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   /* One row, the height of the screen: each column scrolls inside it, so
@@ -2606,33 +2495,34 @@ body.stage.stage-split .work {
   gap: 0;
 }
 
-body.stage #editor-mirror {
+.aratu-root.stage [data-ref="editor-mirror"] {
   border-left: 5px double color-mix(in srgb, var(--barline) 45%, transparent);
 }
 
-body.stage.stage-split #editor .cm-content,
-body.stage.stage-split #editor-mirror .cm-content {
-  padding: 5vh 3vw 30vh;
+:where(.aratu-root.stage.stage-split) [data-ref="editor"] .cm-content,
+:where(.aratu-root.stage.stage-split) [data-ref="editor-mirror"] .cm-content {
+  padding: 5vh 3vw 30vh !important;
 }
 
 /* Room below, so the second column can always start after the first. */
-body.stage.stage-split #editor-mirror .cm-content {
-  padding-bottom: 100vh;
+
+:where(.aratu-root.stage.stage-split) [data-ref="editor-mirror"] .cm-content {
+  padding-bottom: 100vh !important;
 }
 
 /* Melody lists on the stage. */
 
-.stage-lists {
+.aratu-root .stage-lists {
   display: inline-flex;
   flex-wrap: nowrap;
   gap: 6px;
 }
 
-.stage-lists:empty {
+.aratu-root .stage-lists:empty {
   display: none;
 }
 
-.stage-list {
+.aratu-root .stage-list {
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -2640,7 +2530,7 @@ body.stage.stage-split #editor-mirror .cm-content {
   border-right: 1px solid var(--line);
 }
 
-.stage-list-label {
+.aratu-root .stage-list-label {
   margin-right: 4px;
   color: var(--muted);
   font-family: var(--font-mono);
@@ -2648,13 +2538,13 @@ body.stage.stage-split #editor-mirror .cm-content {
   white-space: nowrap;
 }
 
-body.stage .stage-bar .stage-list-choice {
+.aratu-root.stage .stage-bar .stage-list-choice {
   min-width: 34px;
   height: 34px;
   padding: 0 8px;
 }
 
-body.stage .stage-bar .stage-list-choice.on {
+.aratu-root.stage .stage-bar .stage-list-choice.on {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-ink);
@@ -2663,51 +2553,50 @@ body.stage .stage-bar .stage-list-choice.on {
 /* Narrower screens. */
 
 @media (max-width: 1180px) {
-  .brand .tagline {
-    display: none;
-  }
-  .stat b {
+  .aratu-root .stat b {
     display: none;
   }
 }
 
 /* The transport keeps its icons, so the display keeps its room. */
+
 @media (max-width: 1000px) {
-  .transport .btn span {
+  .aratu-root .transport .btn span {
     display: none;
   }
-  .transport .btn {
+  .aratu-root .transport .btn {
     width: 48px;
     padding: 0;
   }
-  .transport .btn-play {
+  .aratu-root .transport .btn-play {
     width: 60px;
   }
 }
 
 /* Beside the display, the tools keep only their icons too, where the row
    is short of room and not yet a row of its own. */
+
 @media (min-width: 721px) and (max-width: 1360px) {
-  .tools > .btn span {
+  .aratu-root .tools > .btn span {
     display: none;
   }
-  .tools > .btn {
+  .aratu-root .tools > .btn {
     width: 46px;
     padding: 0;
   }
   /* The examples go under the icons, as wide as they are together. */
-  .toolbar {
+  .aratu-root .toolbar {
     grid-template-areas:
       "transport status follow daw stage share"
       "scenes scenes examples examples examples examples";
   }
-  .examples {
+  .aratu-root .examples {
     min-width: 0;
   }
-  .examples > span {
+  .aratu-root .examples > span {
     display: none;
   }
-  .examples select {
+  .aratu-root .examples select {
     width: 100%;
     min-width: 0;
   }
@@ -2715,22 +2604,21 @@ body.stage .stage-bar .stage-list-choice.on {
 
 @media (max-width: 900px) {
   /* minmax(0, ...) lets a column be narrower than its widest content. */
-  .work {
+  .aratu-root .work {
     grid-template-columns: minmax(0, 1fr);
   }
-  #editor {
+  .aratu-root [data-ref="editor"] {
     height: 64vh;
     min-height: 340px;
   }
-  .side {
+  .aratu-root .side {
     max-height: 420px;
   }
-
   /* The book's contents fold into a bar under the header. */
-  .book-view {
+  .aratu-root .book-view {
     grid-template-columns: minmax(0, 1fr);
   }
-  .toc {
+  .aratu-root .toc {
     z-index: 5;
     max-height: none;
     padding: 0;
@@ -2740,10 +2628,10 @@ body.stage .stage-bar .stage-list-choice.on {
     backdrop-filter: blur(8px);
     overflow: visible;
   }
-  .toc h2 {
+  .aratu-root .toc h2 {
     display: none;
   }
-  .toc-toggle {
+  .aratu-root .toc-toggle {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -2757,10 +2645,10 @@ body.stage .stage-bar .stage-list-choice.on {
     font-weight: 600;
     text-align: left;
   }
-  .toc-toggle:active {
+  .aratu-root .toc-toggle:active {
     transform: none;
   }
-  .toc-kind {
+  .aratu-root .toc-kind {
     flex: none;
     color: var(--muted);
     font-size: 11px;
@@ -2768,183 +2656,88 @@ body.stage .stage-bar .stage-list-choice.on {
     letter-spacing: 0.12em;
     text-transform: uppercase;
   }
-  .toc-here {
+  .aratu-root .toc-here {
     flex: 1;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .toc-toggle .i {
+  .aratu-root .toc-toggle .i {
     color: var(--accent);
     transition: transform 220ms var(--ease);
   }
-  .toc.open .toc-toggle .i {
+  .aratu-root .toc.open .toc-toggle .i {
     transform: rotate(180deg);
   }
-  .toc ol,
-  .toc .progress {
+  .aratu-root .toc ol,
+  .aratu-root .toc .progress {
     display: none;
   }
-  .toc.open .progress {
+  .aratu-root .toc.open .progress {
     display: block;
     margin: 0;
     padding: 0 clamp(14px, 3vw, 30px) 6px;
   }
-  .toc.open ol {
+  .aratu-root .toc.open ol {
     display: grid;
     max-height: 60vh;
     overflow: auto;
     padding: 0 clamp(8px, 2vw, 22px) 14px;
   }
-  .page {
+  .aratu-root .page {
     padding: 28px clamp(16px, 4vw, 40px) 56px;
     font-size: 17px;
   }
-  .page h1 {
+  .aratu-root .page h1 {
     font-size: 38px;
   }
 }
 
-/* Phones: the tabs go to the foot of the screen, under the thumb. */
+/* Phones. */
 
 @media (max-width: 720px) {
-  :root {
-    --top-h: 54px;
-  }
-  body {
-    padding-bottom: calc(64px + var(--safe-bottom));
-  }
-  .top {
-    gap: 8px;
-    padding: var(--safe-top) 12px 0;
-  }
-  .brand {
-    gap: 8px;
-  }
-  .brand img {
-    width: 34px;
-    height: 34px;
-  }
-  .brand .name {
-    font-size: 25px;
-  }
-  .tabs {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 40;
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0;
-    padding: 4px max(4px, var(--safe-right)) calc(4px + var(--safe-bottom)) max(4px, var(--safe-left));
-    background: color-mix(in srgb, var(--paper) 94%, transparent);
-    backdrop-filter: blur(12px);
-    border-top: 1px solid var(--line);
-    box-shadow: 0 -6px 20px -14px rgba(0, 0, 0, 0.35);
-  }
-  .tabs a {
-    flex-direction: column;
-    justify-content: center;
-    gap: 3px;
-    height: 56px;
-    padding: 0 2px;
-    color: var(--muted);
-    font-size: 11.5px;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .tabs a::before {
-    content: "";
-    position: static;
-    width: 24px;
-    height: 24px;
-    background: currentColor;
-    -webkit-mask: var(--icon) center / contain no-repeat;
-    mask: var(--icon) center / contain no-repeat;
-  }
-  .tabs a::after {
-    left: 50%;
-    right: auto;
-    top: 0;
-    bottom: auto;
-    width: 26px;
-    height: 3px;
-    margin-left: -13px;
-    border-radius: 0 0 3px 3px;
-  }
-  .tabs a.here {
-    color: var(--accent);
-  }
-  .tabs a[data-icon="play"] {
-    --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linejoin='round'><circle cx='12' cy='12' r='9'/><path d='M10 8.3v7.4l6-3.7z' fill='black'/></svg>");
-  }
-  .tabs a[data-icon="learn"] {
-    --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linejoin='round'><path d='M3 5.5c3-1 6-1 9 1 3-2 6-2 9-1v13c-3-1-6-1-9 1-3-2-6-2-9-1z'/><path d='M12 6.5v13'/></svg>");
-  }
-  .tabs a[data-icon="manual"] {
-    --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><rect x='5' y='3' width='14' height='18' rx='1.5'/><path d='M9 8h6M9 12h6M9 16h4'/></svg>");
-  }
-  .tabs a[data-icon="inside"] {
-    --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><path d='M9 4C7 4 6 5 6 7v2c0 1.5-1 3-2.5 3C5 12 6 13.5 6 15v2c0 2 1 3 3 3M15 4c2 0 3 1 3 3v2c0 1.5 1 3 2.5 3-1.5 0-2.5 1.5-2.5 3v2c0 2-1 3-3 3'/></svg>");
-  }
-  .prefs {
-    gap: 6px;
-  }
-  .lang button,
-  .lang a {
-    padding: 5px 7px;
-    font-size: 12px;
-  }
-  .theme-switch button {
-    width: 28px;
-    height: 28px;
-  }
-
   /* Play: the transport and the display on one line, the tools on a line
      that scrolls sideways. */
-  .play-view {
+  .aratu-root .play-view {
     padding: 10px 10px 8px;
     gap: 10px;
   }
-  .toolbar {
+  .aratu-root .toolbar {
     grid-template-columns: auto minmax(0, 1fr);
     grid-template-areas:
       "transport status"
       "tools tools";
     gap: 8px;
   }
-  .transport {
+  .aratu-root .transport {
     gap: 6px;
   }
-  .transport .btn span {
+  .aratu-root .transport .btn span {
     display: none;
   }
-  .transport .btn {
+  .aratu-root .transport .btn {
     width: 44px;
     padding: 0;
   }
-  .transport .btn-play {
+  .aratu-root .transport .btn-play {
     width: 54px;
   }
-  .status {
+  .aratu-root .status {
     justify-content: space-between;
     gap: 10px;
     padding: 0 12px;
   }
-  .stat b {
+  .aratu-root .stat b {
     display: none;
   }
-  #bar {
+  .aratu-root [data-ref="bar"] {
     font-size: 26px;
   }
-  .beat {
+  .aratu-root .beat {
     gap: 4px;
   }
-  .tools {
+  .aratu-root .tools {
     grid-area: tools;
     display: flex;
     align-items: center;
@@ -2955,170 +2748,163 @@ body.stage .stage-bar .stage-list-choice.on {
     overflow-x: auto;
     scrollbar-width: none;
   }
-  .tools::-webkit-scrollbar {
+  .aratu-root .tools::-webkit-scrollbar {
     display: none;
   }
-  .tools > * {
+  .aratu-root .tools > * {
     flex: none;
   }
-  .examples > span {
+  .aratu-root .examples > span {
     display: none;
   }
-  .examples select {
+  .aratu-root .examples select {
     max-width: 62vw;
   }
-  #editor {
+  .aratu-root [data-ref="editor"] {
     height: 58vh;
     min-height: 300px;
   }
-  .cm-editor {
+  :where(.aratu-root) div.cm-editor {
     font-size: 14px;
   }
-  .side {
+  .aratu-root .side {
     max-height: none;
   }
-  .rhythm {
+  .aratu-root .rhythm {
     padding: 12px 10px;
   }
-  .rhythm-head p {
+  .aratu-root .rhythm-head p {
     min-width: 0;
     flex-basis: 100%;
     font-size: 13px;
   }
-  .rhythm-grid .grid-row {
+  .aratu-root .rhythm-grid .grid-row {
     grid-template-columns: 76px repeat(var(--bars), minmax(max(190px, var(--bar-min, 0px)), 1fr));
   }
-  .hint {
+  .aratu-root .hint {
     display: none;
   }
-
   /* The book. */
-  .toc-toggle {
+  .aratu-root .toc-toggle {
     padding: 11px 16px;
   }
-  .page {
+  .aratu-root .page {
     padding: 22px 16px 44px;
     font-size: 17px;
     line-height: 1.65;
   }
-  .page h1 {
+  .aratu-root .page h1 {
     font-size: 32px;
     padding-bottom: 16px;
   }
-  .page h2 {
+  .aratu-root .page h2 {
     font-size: 25px;
     margin-top: 36px;
   }
-  .page table {
+  .aratu-root .page table {
     display: block;
     overflow-x: auto;
     font-size: 15px;
   }
-  .page pre {
+  .aratu-root .page pre {
     font-size: 13.5px;
   }
-  .page blockquote {
+  .aratu-root .page blockquote {
     padding: 12px 14px 12px 58px;
   }
-  .page blockquote::before {
+  .aratu-root .page blockquote::before {
     left: 12px;
     width: 34px;
     height: 34px;
   }
-  .page-nav {
+  .aratu-root .page-nav {
     flex-direction: column;
   }
-  .page-nav a {
+  .aratu-root .page-nav a {
     text-align: center;
   }
-  .page-nav a.next {
+  .aratu-root .page-nav a.next {
     order: -1;
     margin-left: 0;
   }
-  .aratu-block {
+  .aratu-root .aratu-block {
     margin-left: -6px;
     margin-right: -6px;
   }
-  .block-buttons {
+  .aratu-root .block-buttons {
     margin-left: 0;
     width: 100%;
   }
-  .block-buttons .btn {
+  .aratu-root .block-buttons .btn {
     flex: 1 1 auto;
   }
-  .block-editor .cm-editor {
+  :where(.aratu-root) .block-editor .cm-editor {
     font-size: 15px;
   }
-  .grid-row {
+  .aratu-root .grid-row {
     grid-template-columns: 70px repeat(var(--bars), minmax(max(140px, var(--bar-min, 0px)), 1fr));
-  }
-
-  .bottom {
-    padding: 12px 16px 16px;
-  }
-  .sound-status {
-    bottom: calc(76px + var(--safe-bottom));
   }
 }
 
 /* The stage on a phone, upright or lying down: one column, a slimmer rail,
    the tools in a row that scrolls. */
+
 @media (max-width: 720px), (max-height: 500px) {
-  body.stage {
+  .aratu-root.stage {
     --rail: 54px;
     padding-bottom: 0;
   }
-  body.stage .sound-status {
+  .aratu-root.stage .sound-status {
     bottom: calc(12px + var(--safe-bottom));
   }
-  body.stage .stage-bar {
+  .aratu-root.stage .stage-bar {
     gap: 10px;
     padding: var(--safe-top) max(8px, var(--safe-right)) 0 max(12px, var(--safe-left));
   }
-  .stage-hud {
+  .aratu-root .stage-hud {
     gap: 10px;
   }
-  .stage-count {
+  .aratu-root .stage-count {
     gap: 10px;
   }
-  #stage-bar-n {
+  .aratu-root [data-ref="stage-bar-n"] {
     font-size: 30px;
   }
-  .stage-tempo {
+  .aratu-root .stage-tempo {
     display: none;
   }
-  .stage-count .beat i {
+  .aratu-root .stage-count .beat i {
     width: 7px;
     height: 7px;
   }
-  .stage-count .beat i:first-child {
+  .aratu-root .stage-count .beat i:first-child {
     width: 10px;
     height: 10px;
   }
-  body.stage .stage-bar .btn {
+  .aratu-root.stage .stage-bar .btn {
     height: 36px;
     padding: 0 9px;
   }
-  body.stage .stage-bar .btn-play,
-  body.stage .stage-bar #stage-stop {
+  .aratu-root.stage .stage-bar .btn-play,
+  .aratu-root.stage .stage-bar [data-ref="stage-stop"] {
     width: 38px;
     height: 38px;
   }
-  body.stage .stage-bar .btn.scene {
+  .aratu-root.stage .stage-bar .btn.scene {
     width: 28px;
     height: 32px;
   }
-  #stage-split {
+  .aratu-root [data-ref="stage-split"] {
     display: none !important;
   }
-  .stage-tools .btn span,
-  .stage-exit span {
+  .aratu-root .stage-tools .btn span,
+  .aratu-root .stage-exit span {
     display: none;
   }
-  body.stage #editor .cm-content {
-    padding: 3vh 4vw 30vh;
+  :where(.aratu-root.stage) [data-ref="editor"] .cm-content {
+    padding: 3vh 4vw 30vh !important;
   }
-  body.stage .stage-msg:not([hidden]) {
+  .aratu-root.stage .stage-msg:not([hidden]) {
     left: max(8px, var(--safe-left));
     right: max(8px, var(--safe-right));
     bottom: calc(10px + var(--safe-bottom));
@@ -3128,13 +2914,14 @@ body.stage .stage-bar .stage-list-choice.on {
 }
 
 /* A touch screen has no resting mouse: the controls stay. */
+
 @media (pointer: coarse) {
-  body.stage.idle .stage-controls,
-  body.stage.idle .stage-bar .stage-exit {
+  .aratu-root.stage.idle .stage-controls,
+  .aratu-root.stage.idle .stage-bar .stage-exit {
     opacity: 1;
     pointer-events: auto;
   }
-  body.stage.idle {
+  .aratu-root.stage.idle {
     cursor: auto;
   }
 }

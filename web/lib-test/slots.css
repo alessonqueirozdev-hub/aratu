@@ -1,0 +1,26 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later
+   Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md. */
+
+/* The test page's own places for the editor and the players, the same with
+   or without the host's styles, so what is drawn in them can be compared. */
+
+.host-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px;
+  background: #ddf;
+}
+
+.host-slot {
+  width: 1200px;
+  margin: 12px auto;
+}
+
+.host-players {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+  max-width: 1200px;
+  margin: 12px auto;
+}

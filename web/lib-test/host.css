@@ -1,0 +1,135 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later
+   Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md. */
+
+/* What a host app's own stylesheet sets for every element, after its
+   reset: the kind of base rules an app writes (a Tailwind 3 app's "base
+   layer" is emitted outside any cascade layer), some of them on purpose
+   loud. The host's own elements show them; none may reach into
+   .aratu-root. */
+
+html {
+  font-family: Georgia, serif;
+  font-size: 18px;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  color: #123;
+  background: #eef;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+  touch-action: manipulation;
+  font-style: italic;
+  word-spacing: 0.3em;
+  text-align: center;
+}
+
+* {
+  scrollbar-width: auto;
+  scrollbar-color: red yellow;
+}
+
+::selection {
+  background: rgba(0, 128, 0, 0.4);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 3px solid lime;
+  outline-offset: 4px;
+  border-radius: 12px;
+}
+
+button,
+a,
+[role="button"] {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+input,
+select,
+textarea {
+  min-height: unset;
+  min-width: unset;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-family: Impact, sans-serif;
+  color: #c00;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+h2 {
+  font-size: 40px;
+}
+
+p {
+  line-height: 2.2;
+  color: #600;
+}
+
+small {
+  font-size: 0.8125rem;
+}
+
+::placeholder {
+  color: hotpink;
+  opacity: 0.7;
+}
+
+input:where(:not([type="checkbox"]):not([type="radio"]):not([type="range"])),
+select,
+textarea {
+  font-family: inherit;
+  font-size: 0.9375rem;
+  color: #333;
+  background-color: #ffe;
+  border: 3px solid purple;
+  border-radius: 20px;
+}
+
+button {
+  background: magenta;
+  color: yellow;
+  padding: 20px;
+  font-size: 22px;
+  text-transform: uppercase;
+}
+
+a {
+  color: lime;
+}
+
+ul,
+ol {
+  padding-left: 80px;
+  list-style: square;
+}
+
+li {
+  margin: 10px 0;
+}
+
+div,
+span {
+  line-height: 3;
+}
+
+canvas {
+  border: 2px dashed red;
+}
+
+table {
+  border: 4px solid black;
+}

@@ -287,10 +287,15 @@ const BANDS = [
   { name: "high", word: "eqHigh" as const },
 ];
 
-let open: HTMLElement | null = null;
+/** The equalizer open on the page, if any, and how to take away the
+ * listeners that close it. */
+let open: { panel: HTMLElement; off: () => void } | null = null;
 
-function closeEq(): void {
-  open?.remove();
+/** Closes the equalizer, if one is open (under `root`, when given). */
+export function closeEq(root?: HTMLElement): void {
+  if (root && open && !root.contains(open.panel)) return;
+  open?.off();
+  open?.panel.remove();
   open = null;
 }
 
@@ -314,7 +319,7 @@ function openEq(view: EditorView, part: string, state: FxState, anchor: HTMLElem
   close.className = "eq-close";
   close.textContent = "✕";
   close.setAttribute("aria-label", tr("soundClose", lang));
-  close.onclick = closeEq;
+  close.onclick = () => closeEq();
   head.append(title, close);
   const s = svg(W, H);
   s.classList.add("eq-graph");
@@ -439,21 +444,30 @@ function openEq(view: EditorView, part: string, state: FxState, anchor: HTMLElem
   hint.className = "eq-hint";
   hint.textContent = tr("eqHint", lang);
   panel.append(hint);
-  document.body.append(panel);
+  // In the editor's root, so its styles (and full screen, on stage) reach
+  // it; placed in the root's own terms, inside the window.
+  const host = view.dom.closest<HTMLElement>(".aratu-root") ?? document.body;
+  host.append(panel);
   const r = anchor.getBoundingClientRect();
-  panel.style.left = `${Math.max(8, Math.min(window.innerWidth - W - 40, r.left))}px`;
-  panel.style.top = `${Math.min(window.innerHeight - 260, r.bottom + 6) + window.scrollY}px`;
-  open = panel;
-  draw();
+  const box = host === document.body ? { left: -window.scrollX, top: -window.scrollY } : host.getBoundingClientRect();
+  panel.style.left = `${Math.max(8, Math.min(window.innerWidth - W - 40, r.left)) - box.left}px`;
+  panel.style.top = `${Math.min(window.innerHeight - 260, r.bottom + 6) - box.top}px`;
   const away = (e: Event) => {
-    if (!panel.contains(e.target as Node)) {
-      closeEq();
-      document.removeEventListener("pointerdown", away, true);
-    }
+    if (!panel.contains(e.target as Node)) closeEq();
   };
-  setTimeout(() => document.addEventListener("pointerdown", away, true), 0);
+  const key = (e: KeyboardEvent) => {
+    if (e.key === "Escape") closeEq();
+  };
+  // Not the click that opened it.
+  const later = window.setTimeout(() => document.addEventListener("pointerdown", away, true), 0);
+  document.addEventListener("keydown", key);
+  open = {
+    panel,
+    off: () => {
+      window.clearTimeout(later);
+      document.removeEventListener("pointerdown", away, true);
+      document.removeEventListener("keydown", key);
+    },
+  };
+  draw();
 }
-
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && open) closeEq();
-});

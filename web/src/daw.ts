@@ -11,31 +11,20 @@ import type { Transport } from "../public/manguebyte/bridge.js";
 import type { Engine } from "./audio";
 import { type Lang, tr } from "./i18n";
 import type { Session } from "./session";
+import { Listeners, type Store } from "./shared";
 
 export interface DawOptions {
   button: HTMLElement;
+  /** Where the panel goes: the editor's root, so its styles reach it. */
+  root: HTMLElement;
   engine: () => Engine;
   session: () => Session;
   lang: () => Lang;
+  /** Keeps the port between visits. */
+  store: Store;
 }
 
 const PORT = 47870;
-
-function load(key: string): string | null {
-  try {
-    return localStorage.getItem(key);
-  } catch {
-    return null;
-  }
-}
-
-function save(key: string, value: string): void {
-  try {
-    localStorage.setItem(key, value);
-  } catch {
-    // A private window: the port is asked for again next time.
-  }
-}
 
 /** When a piece that starts at `beat` on the DAW's timeline first meets one
  * of the DAW's bar lines, at least `room` beats ahead. */
@@ -46,7 +35,10 @@ export function nextBarLine(t: Pick<Transport, "barStart" | "timeSignature">, be
   return t.barStart + Math.max(0, passed) * bar;
 }
 
-export function setupDaw(o: DawOptions): void {
+/** The DAW button's panel; `dispose` takes it away with its listeners and
+ * lets the DAW go. */
+export function setupDaw(o: DawOptions): { words(): void; dispose(): void } {
+  const listeners = new Listeners();
   const panel = document.createElement("div");
   panel.className = "daw-panel";
   panel.hidden = true;
@@ -59,7 +51,7 @@ export function setupDaw(o: DawOptions): void {
   port.type = "number";
   port.min = "1024";
   port.max = "65535";
-  port.value = load("aratu.daw.port") ?? String(PORT);
+  port.value = o.store.get("daw.port") ?? String(PORT);
   row.append(portWord, port);
   const connect = document.createElement("button");
   connect.className = "btn daw-connect";
@@ -67,7 +59,7 @@ export function setupDaw(o: DawOptions): void {
   state.className = "daw-state";
   state.setAttribute("role", "status");
   panel.append(title, about, row, connect, state);
-  document.body.append(panel);
+  o.root.append(panel);
 
   let connected = false;
   let busy = false;
@@ -91,20 +83,23 @@ export function setupDaw(o: DawOptions): void {
     words();
   };
 
+  // Under the button, inside the window, placed in the root's own terms.
   const place = () => {
     const r = o.button.getBoundingClientRect();
-    panel.style.top = `${r.bottom + window.scrollY + 8}px`;
-    panel.style.left = `${Math.max(8, Math.min(window.innerWidth - panel.offsetWidth - 8, r.right - panel.offsetWidth))}px`;
+    const box = o.root.getBoundingClientRect();
+    const left = Math.max(8, Math.min(window.innerWidth - panel.offsetWidth - 8, r.right - panel.offsetWidth));
+    panel.style.top = `${r.bottom + 8 - box.top}px`;
+    panel.style.left = `${left - box.left}px`;
   };
-  o.button.addEventListener("click", () => {
+  listeners.add(o.button, "click", () => {
     panel.hidden = !panel.hidden;
     words();
     if (!panel.hidden) place();
   });
-  document.addEventListener("pointerdown", (e) => {
+  listeners.add(document, "pointerdown", (e) => {
     if (!panel.hidden && !panel.contains(e.target as Node) && !o.button.contains(e.target as Node)) panel.hidden = true;
   });
-  window.addEventListener("resize", () => !panel.hidden && place());
+  listeners.add(window, "resize", () => !panel.hidden && place());
 
   // The DAW leads the piece.
   const transport = (t: Transport) => {
@@ -132,7 +127,7 @@ export function setupDaw(o: DawOptions): void {
     void session.play(at);
   };
 
-  connect.addEventListener("click", async () => {
+  listeners.add(connect, "click", async () => {
     const engine = o.engine();
     busy = true;
     if (connected) {
@@ -150,7 +145,7 @@ export function setupDaw(o: DawOptions): void {
       tell("dawBadPort");
       return;
     }
-    save("aratu.daw.port", String(n));
+    o.store.set("daw.port", String(n));
     tell("dawConnecting");
     o.session().stop();
     engine.dawHooks = {
@@ -180,4 +175,18 @@ export function setupDaw(o: DawOptions): void {
     words();
   });
   words();
+  return {
+    words,
+    dispose() {
+      listeners.removeAll();
+      window.clearTimeout(tempoTimer);
+      panel.remove();
+      if (connected) {
+        connected = false;
+        const engine = o.engine();
+        engine.dawHooks = {};
+        void engine.useDaw(null).catch(() => {});
+      }
+    },
+  };
 }

@@ -1,0 +1,33 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later
+     Copyright (C) 2026 Alesson Lucas Oliveira de Queiroz. Terms: LICENSE and NOTICE.md. -->
+<!-- A host page for Aratu as a library (scripts/lib-test.mjs serves it at a
+     deep route, /app/…, with the library under /static/aratu/v1/ and a
+     strict Content Security Policy). Its styles: Tailwind 3's preflight and
+     loud rules of its own (?css=plain, the default), the same in cascade
+     layers (?css=layered), or none (?css=none). -->
+<html lang="en" class="host-html" data-theme="host" data-host="1">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Aratu in a host page</title>
+    <script src="/lib-test/probe.js"></script>
+    <script type="module" src="/lib-test/test.js"></script>
+  </head>
+  <body class="host-body" data-host="body">
+    <header class="host-bar">
+      <button type="button" id="mount">Mount the editor</button>
+      <button type="button" id="destroy">Destroy it</button>
+      <button type="button" id="players">Mount three players</button>
+      <button type="button" id="unplayers">Destroy them</button>
+      <button type="button" id="dark">Dark</button>
+      <button type="button" id="es">Español</button>
+      <a href="#host-link">A link of the host's</a>
+    </header>
+    <h2 id="host-heading">The host's heading</h2>
+    <p id="host-text">The host's paragraph, with <a href="#x">a link</a>.</p>
+    <ul id="host-list"><li>One of the host's items</li></ul>
+    <div id="editor" class="host-slot"></div>
+    <div id="players-slot" class="host-players"></div>
+  </body>
+</html>
