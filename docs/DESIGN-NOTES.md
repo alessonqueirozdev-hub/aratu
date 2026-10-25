@@ -1241,3 +1241,37 @@ are not available over the bridge; `partWave` falls back to the notes when
 the read rejects. Not tried yet: a real DAW from aratu.live (the plugin was
 tried by Manguebyte in REAPER from a page on 127.0.0.1), Chrome's local
 network permission prompt, and Safari's rules for `ws://` from `https://`.
+
+## The account is MusiMind's (25 October 2026)
+
+MusiMind already keeps Aratu pieces (its tables `aplicacoes.tb_obra_aratu`
+and `tb_obra_aratu_versao`, its RPCs `aratu_*` and the routes under
+`/api/aratu/obras`, with versions, moderation and a 64 KB cap), for the
+Aratu inside it. So the editor's account is a MusiMind account, and no
+database of Aratu's own was made: `account.ts` speaks MusiMind's auth
+(`/api/auth/login`, `register`, `refresh`, `logout`) and those routes,
+and `pieces.ts` is the button and its panel. The tokens come in the body,
+not in cookies, so the same code works beside MusiMind or across origins.
+The access token lasts minutes; a 401 trades the refresh token for a new
+pair once (one trade at a time, since a refresh token is good once) and
+asks again.
+
+Signing up asks what MusiMind's `/auth/register` requires: the terms
+accepted and the date of birth, and under 18 a guardian's name and e-mail
+(the LGPD's article 14), shown only when the date says so.
+
+The piece in the editor is the account's only once asked ("Keep it in my
+account"), and then a draft is saved 1.2 s after the typing stops and a
+version when asked. Putting an example, a shared link or a book's piece in
+the editor detaches it first, so nothing is saved over the account's
+piece. Before a restore, a pending draft is saved, so MusiMind's restore,
+which first keeps what is saved as a version, keeps what the editor had.
+
+The API is looked for under `api` beside the page (`aratu.api` in this
+browser's storage points elsewhere, to try a copy): the button shows only
+when `/api/auth/me` answers in JSON, so the copy on GitHub Pages shows no
+account until aratu.live is served beside MusiMind's API. Tried against a
+fake API that follows the routes' contracts (sign up as a minor, keep,
+autosave, an expired token renewed, versions and a restore, an example
+detaching, open, rename, a wrong password, sign out and in, delete); not
+yet against MusiMind itself.

@@ -759,6 +759,22 @@ in the order it plays, with its section on top, and a row for each part;
 an orange line runs across it and it scrolls along. A piece that starts
 again (a form, a loop) shows one round.
 
+**The account.** The **Sign in** button, at the top, opens a MusiMind
+account, the same one MusiMind's own Aratu uses, or makes one (a name, an
+e-mail, a password of 8 characters or more, the date of birth, a parent's
+or guardian's name and e-mail under 18, and MusiMind's terms accepted).
+Signed in, **Keep it in my account** saves the piece in the editor there;
+from then on every change is saved about a second after the typing stops,
+as a draft, and **Save a version** keeps a numbered version that
+**Versions** can bring back (what the editor had is kept as a version
+first). **My pieces** lists them, to open, rename or delete. A piece is at
+most 64 KB, and its name and comments go through MusiMind's moderation.
+Opening an example, a shared link or a piece from the book leaves the
+account's piece as it was. The session is an access token of a few minutes
+and a refresh token traded for a new pair when it runs out, kept in this
+browser; **Sign out** ends it. The button is there only where MusiMind's
+API answers beside the editor (under `/api`).
+
 **Playing in a DAW.** The **DAW** button, in Play, connects to
 Manguebyte's Aratu Bridge plugin on a DAW's track (port 47870 unless the
 plugin is set to another, `ws://127.0.0.1`). The page then sends the plugin

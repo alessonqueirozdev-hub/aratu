@@ -11,6 +11,8 @@ import { PHONE, narrowScreen, setWrapping } from "./editor";
 import { Aratu, type Program } from "./aratu";
 import { Engine, type SoundProblem } from "./audio";
 import { setupDaw } from "./daw";
+import { Account } from "./account";
+import { Pieces } from "./pieces";
 import { mountBlocks } from "./blocks";
 import { RhythmMap } from "./rhythm";
 import { examples } from "./examples";
@@ -287,6 +289,9 @@ async function main(): Promise<void> {
     stageLists();
   };
 
+  // The account (a MusiMind account) and its pieces; made right after the
+  // editor, which it reads and writes.
+  let pieces: Pieces | null = null;
   const playground: Session = new Session({
     parent: $("editor"),
     text: load("aratu.text") ?? examples[0].text,
@@ -296,6 +301,7 @@ async function main(): Promise<void> {
     onCompile: messages,
     onChange: (t) => {
       save("aratu.text", t);
+      pieces?.edited();
       if (document.body.classList.contains("stage")) requestAnimationFrame(() => fitFont());
     },
     onBar: (info, at) => {
@@ -633,6 +639,17 @@ async function main(): Promise<void> {
   };
   showFollow();
 
+  pieces = new Pieces({
+    button: $<HTMLButtonElement>("account"),
+    account: new Account(Account.base(), () => lang),
+    lang: () => lang,
+    text: () => playground.text,
+    open: (text) => {
+      playground.text = text;
+    },
+    spare: (text) => examples.some((x) => x.text === text),
+  });
+
   // Playing in a DAW, through the Aratu Bridge plugin (see daw.ts).
   setupDaw({ button: $("daw"), engine: getEngine, session: () => playground, lang: () => lang });
   for (const id of ["follow", "stage-follow"]) {
@@ -812,7 +829,9 @@ async function main(): Promise<void> {
 
   $<HTMLSelectElement>("examples").onchange = (e) => {
     const ex = examples.find((x) => x.id === (e.target as HTMLSelectElement).value);
-    if (ex) playground.text = ex.text;
+    if (!ex) return;
+    pieces?.detach();
+    playground.text = ex.text;
   };
 
   // Share: the piece goes in a link, in the part after #, so it never
@@ -842,6 +861,7 @@ async function main(): Promise<void> {
     const text = await decodePiece(code);
     if (text === null) return note(tr("sharedBroken", lang), 10000);
     if (text === playground.text) return;
+    pieces?.detach();
     // Set as an edit, so Ctrl+Z brings back the piece that was here.
     playground.text = text;
     note(tr("sharedOpened", lang), 10000);
@@ -972,6 +992,7 @@ async function main(): Promise<void> {
     // Lessons start from eighths, so a beat can be built by clicking.
     quantum: () => (quantum === 1 ? 2 : quantum),
     openInPlay: (text: string) => {
+      pieces?.detach();
       playground.text = text;
       location.hash = "#/tocar";
     },
@@ -1119,6 +1140,7 @@ async function main(): Promise<void> {
     lang = l;
     save("aratu.lang", l);
     applyWords();
+    pieces?.relabel();
     soundStatus();
     renderScenes();
     playground.compile();

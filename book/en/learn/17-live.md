@@ -253,6 +253,16 @@ drawn from the notes again.
 > Press play in the DAW at 120: the line becomes `tempo: 120` and the
 > music comes in on the DAW's next bar line.
 
+## Keeping it in your account
+
+Without an account, the piece is kept in this browser. With a MusiMind
+account (the **Sign in** button, at the top), it is kept in the account and
+opens on any computer: press **Keep it in my account**, and from then on
+every change is saved by itself, a few seconds later. **Save a version**
+keeps a snapshot of the piece to come back to, in **Versions**; **My
+pieces** has them all, to open, rename or delete. Opening an example or a
+shared link does not touch the account's piece: it stays as it was.
+
 ## Sharing and recording
 
 Like what you made? **Share** copies a link with your piece inside: send it

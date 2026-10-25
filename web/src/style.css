@@ -530,6 +530,260 @@ button:active {
   grid-area: daw;
 }
 
+/* The account: the button at the top and its panel. */
+.account-open {
+  height: 34px;
+  max-width: 160px;
+  padding: 0 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 14px;
+}
+
+.account-open.on {
+  border-color: var(--mangue);
+  color: var(--mangue);
+}
+
+.acct-panel {
+  position: absolute;
+  z-index: 80;
+  width: min(380px, calc(100vw - 16px));
+  max-height: min(78vh, 680px);
+  overflow-y: auto;
+  padding: 14px 16px 16px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--paper);
+  box-shadow: var(--shadow), 0 18px 40px -18px rgba(0, 0, 0, 0.45);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 14px;
+}
+
+.acct-panel h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+}
+
+.acct-panel h4 {
+  margin: 14px 0 8px;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.acct-about,
+.acct-note {
+  margin: 0 0 10px;
+  color: var(--soft);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.acct-tabs {
+  display: flex;
+  margin-bottom: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.acct-tabs button {
+  flex: 1;
+  justify-content: center;
+}
+
+.acct-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.acct-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--soft);
+  font-size: 13px;
+}
+
+.acct-field input,
+.acct-title {
+  padding: 8px 10px;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: var(--code-bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+}
+
+.acct-guardian {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 8px 10px 10px;
+  border: 1px dashed var(--rule);
+  border-radius: 8px;
+}
+
+.acct-guardian legend {
+  padding: 0 4px;
+  color: var(--soft);
+  font-size: 12px;
+}
+
+.acct-terms {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--soft);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.acct-terms a,
+.acct-link {
+  color: var(--accent);
+}
+
+.acct-link {
+  align-self: center;
+  font-size: 13px;
+}
+
+.acct-go {
+  height: 38px;
+}
+
+.acct-error {
+  margin: 0;
+  color: var(--error);
+  font-size: 13px;
+}
+
+.acct-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.acct-who {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.acct-who span {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 12px;
+  text-overflow: ellipsis;
+}
+
+.acct-out {
+  height: 30px;
+  padding: 0 10px;
+  font-size: 13px;
+}
+
+.acct-title {
+  width: 100%;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+  font-weight: 600;
+}
+
+.acct-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.acct-row .btn {
+  height: 32px;
+  padding: 0 10px;
+  font-size: 13px;
+}
+
+.acct-status {
+  min-height: 1.2em;
+  margin: 8px 0 0;
+  color: var(--soft);
+  font-size: 12px;
+}
+
+.acct-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.acct-list li {
+  display: flex;
+  align-items: center;
+  border-top: 1px solid var(--line);
+}
+
+.acct-list li.on .acct-name {
+  color: var(--accent);
+}
+
+.acct-open {
+  display: flex;
+  flex: 1;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+  padding: 8px 4px;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.acct-open:hover .acct-name {
+  text-decoration: underline;
+}
+
+.acct-name {
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.acct-when {
+  flex: none;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.acct-del {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.acct-del:hover {
+  color: var(--error);
+}
+
+.acct-versions {
+  margin: 8px 0 0;
+}
+
 /* Playing in a DAW: the port, the button and how it stands. */
 .daw-panel {
   position: absolute;

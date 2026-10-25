@@ -260,6 +260,17 @@ responde que sí. Por la DAW no llegan las ondas de las partes, así que
 > Dale play a la DAW a 120: la línea pasa a `tempo: 120` y la música entra
 > en el compás siguiente de la DAW.
 
+## Guardar en tu cuenta
+
+Sin cuenta, la pieza queda guardada en este navegador. Con una cuenta de
+MusiMind (el botón **Entrar**, arriba), queda guardada en la cuenta y se
+abre en cualquier ordenador: pulsa **Guardar en mi cuenta**, y desde
+entonces cada cambio se guarda solo, pocos segundos después. **Guardar
+versión** guarda un retrato de la pieza para volver a él después, en
+**Versiones**; en **Mis piezas** están todas, para abrir, renombrar o
+borrar. Abrir un ejemplo o un enlace compartido no toca la pieza de la
+cuenta: sigue allí como estaba.
+
 ## Compartir y grabar
 
 ¿Te gustó lo que hiciste? **Compartir** copia un enlace con tu música

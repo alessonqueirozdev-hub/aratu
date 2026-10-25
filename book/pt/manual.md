@@ -768,6 +768,22 @@ para cada compasso, na ordem em que toca, com a seção em cima, e uma
 fileira para cada parte; uma linha laranja corre por ele e ele rola
 junto. Uma peça que recomeça (uma forma, um loop) aparece uma volta só.
 
+**A conta.** O botão **Entrar**, no alto, abre uma conta do MusiMind, a
+mesma que o Aratu de dentro do MusiMind usa, ou cria uma (nome, e-mail,
+senha de 8 caracteres ou mais, data de nascimento, nome e e-mail de um
+responsável para menores de 18, e o aceite dos termos do MusiMind). Com a
+conta aberta, **Guardar na minha conta** salva lá a peça do editor; daí em
+diante cada mudança é salva cerca de um segundo depois que a digitação
+para, como rascunho, e **Salvar versão** guarda uma versão numerada que
+**Versões** traz de volta (o que o editor tinha vira uma versão antes).
+**Minhas peças** lista todas, para abrir, renomear ou apagar. Uma peça tem
+no máximo 64 KB, e o nome e os comentários passam pela moderação do
+MusiMind. Abrir um exemplo, um link compartilhado ou uma peça do livro
+deixa a peça da conta como estava. A sessão é um token de acesso de poucos
+minutos e um token de renovação trocado por um par novo quando ele acaba,
+guardados neste navegador; **Sair** encerra. O botão só aparece onde a API
+do MusiMind responde ao lado do editor (em `/api`).
+
 **Tocar numa DAW.** O botão **DAW**, em Tocar, conecta ao plugin
 Aratu Bridge do Manguebyte numa trilha da DAW (porta 47870, a não ser que o
 plugin esteja em outra; `ws://127.0.0.1`). A página passa a mandar ao

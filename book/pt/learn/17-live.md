@@ -256,6 +256,17 @@ a ser desenhada pelas notas.
 > Dê play na DAW a 120: a linha vira `tempo: 120` e a música entra no
 > compasso seguinte da DAW.
 
+## Guardar na sua conta
+
+Sem conta, a peça fica guardada neste navegador. Com uma conta do MusiMind
+(o botão **Entrar**, no alto), ela fica guardada na conta e abre em
+qualquer computador: aperte **Guardar na minha conta**, e daí em diante
+cada mudança é salva sozinha, poucos segundos depois. **Salvar versão**
+guarda um retrato da peça para voltar a ele depois, em **Versões**; em
+**Minhas peças** ficam todas, para abrir, renomear ou apagar. Abrir um
+exemplo ou um link compartilhado não mexe na peça da conta: ela continua
+lá como estava.
+
 ## Compartilhar e gravar
 
 Gostou do que fez? **Compartilhar** copia um link com a sua música dentro:
