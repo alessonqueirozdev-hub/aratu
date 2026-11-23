@@ -34,9 +34,8 @@ Live coding of music bar by bar, in Rust with a web editor (wasm). Public:
 
 ## How to test
 
-```
-bash scripts/cloud-setup.sh --test     # = ./scripts/check.sh
-```
+On GitHub: `ci.yml` (Rust and the web editor) and `pages.yml` (the site).
+With a clone: `./scripts/check.sh`.
 
 ## Environment variables
 
