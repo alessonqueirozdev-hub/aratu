@@ -1275,3 +1275,21 @@ fake API that follows the routes' contracts (sign up as a minor, keep,
 autosave, an expired token renewed, versions and a restore, an example
 detaching, open, rename, a wrong password, sign out and in, delete); not
 yet against MusiMind itself.
+
+## Manguebyte 0.2.0 in the browser (28 November 2026)
+
+The vendored engine went from 61cde87 (0.1.0, 19 October) to 44da4f1, 235
+commits on. The browser engine itself changed in two places, both mixing
+loops now vectorised: its JavaScript, parameters, instruments, presets and
+effects are the same, and Aratu's types for it stand. What the crates under
+it gained (tunings, many new effects, sampler filters and controller
+modulation) has no way in from JavaScript yet; the sampled voices use none of
+the new SFZ opcodes. The module is still built without `simd128`.
+
+The machine this was done on has neither Node.js nor the wasm target, so
+`.github/workflows/engine.yml` builds the engine for a pull request that
+changes it and keeps the folder to commit. `web/scripts/engine-smoke.mjs`,
+part of `npm run smoke`, plays the committed module through the same
+`engine.js` and `worklet.js` the editor loads and checks it against the
+editor's voice tables and the language's parameter table. The engine's
+module is now part of the page's version stamp.

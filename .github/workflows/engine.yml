@@ -1,0 +1,40 @@
+name: Engine
+
+# Builds Manguebyte's browser engine at the commit web/scripts/manguebyte.mjs
+# pins, for a pull request that changes it: runs the engine's own JavaScript
+# tests and Aratu's engine smoke test against that build, and keeps the
+# folder to commit as web/public/manguebyte/ (the `manguebyte` artifact).
+
+on:
+  pull_request:
+    paths:
+      - web/scripts/manguebyte*
+      - web/public/manguebyte/**
+      - .github/workflows/engine.yml
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: node scripts/manguebyte.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: manguebyte
+          path: web/public/manguebyte/
+      - name: Test the engine's JavaScript
+        run: |
+          MANGUEBYTE_WASM="$PWD/public/manguebyte/manguebyte_web.wasm" \
+            node --test --test-reporter=tap ".manguebyte-cache/src/crates/manguebyte-web/js/tests/*.test.mjs" | tee node-tests.txt
+          grep -Eq "^# fail 0$" node-tests.txt
+          grep -Eq "^# skipped 0$" node-tests.txt
+      - run: node scripts/engine-smoke.mjs
