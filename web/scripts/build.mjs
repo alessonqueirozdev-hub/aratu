@@ -36,10 +36,12 @@ export function copyStatic() {
 
 /** Stamps the page's script and style with a version made from their
  * content, so a browser that kept an older copy fetches the new one as
- * soon as the page changes. The script passes its stamp on to the wasm. */
+ * soon as the page changes. The script passes its stamp on to the two wasm
+ * modules, the language's and Manguebyte's engine. */
 export function stampVersions() {
   const hash = createHash("sha256");
-  for (const f of ["main.js", "style.css", "aratu.wasm"]) hash.update(readFileSync(join(dist, f)));
+  const stamped = ["main.js", "style.css", "aratu.wasm", "manguebyte/manguebyte_web.wasm"];
+  for (const f of stamped) hash.update(readFileSync(join(dist, f)));
   const v = hash.digest("hex").slice(0, 10);
   const page = join(dist, "index.html");
   const html = readFileSync(page, "utf8")

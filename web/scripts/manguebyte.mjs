@@ -22,8 +22,11 @@ const REPO = "https://github.com/alessonqueirozdev-hub/manguebyte.git";
 // instrument and preset brought to the same loudness, -24 LUFS, with a
 // sampled instrument playing as soon as its samples are decoded. Wave 5e:
 // the drum kits, the poly synth and the modelled mallets, bowed strings,
-// winds and choir.
-const COMMIT = process.argv[2] ?? "61cde87abf912da01e83385cd6eab00ac089167f";
+// winds and choir. Now Manguebyte 0.2.0 and the work since, up to ADR 0028
+// (the browser engine's interface is the one above). The `engine` workflow
+// builds this commit on every pull request that changes it, for a machine
+// without Node.js or the wasm target.
+const COMMIT = process.argv[2] ?? "44da4f1c2179d7be7a14d1bc06adbc329925e46d";
 
 const web = join(dirname(fileURLToPath(import.meta.url)), "..");
 const cache = join(web, ".manguebyte-cache");
